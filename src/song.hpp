@@ -18,6 +18,7 @@ public:
   void setAuthor(const string& author);
   void setInfo(const string& info);
   int addTrack();
+  bool removeTrack(int id);
   
   const string& getTitle() const;
   const string& getAuthor() const;

@@ -11,6 +11,7 @@ dino_SOURCES = \
 	patterneditor.cpp patterneditor.hpp \
 	cceditor.cpp cceditor.hpp \
 	sequencer.cpp sequencer.hpp \
+	singletextcombo.cpp singletextcombo.hpp \
 	trackwidget.cpp trackwidget.hpp \
 	evilscrolledwindow.hpp
 

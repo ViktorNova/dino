@@ -5,9 +5,9 @@
 #include <sstream>
 #include <utility>
 
+#include "dino.hpp"
 #include "evilscrolledwindow.hpp"
 #include "song.hpp"
-#include "dino.hpp"
 #include "trackwidget.hpp"
 
 
@@ -18,6 +18,10 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) : mSeq("Dino") {
   // insert the pattern editor widgets into the GUI
   window = w<Gtk::Window>(xml, "mainWindow");
   w<HBox>(xml, "hbxTrackCombo")->pack_start(mCmbTrack);
+  mTrackPatternConnection = mCmbTrack.signal_changed().
+    connect(bind(sigc::mem_fun(*this, &Dino::updatePatternCombo), -1));
+  mPatternEditorConnection = mCmbPattern.signal_changed().
+    connect(sigc::mem_fun(*this, &Dino::updateEditorWidgets));
   w<HBox>(xml, "hbxPatternCombo")->pack_start(mCmbPattern);
   Scrollbar* scbHorizontal = w<Scrollbar>(xml, "scbPatternEditor");
   Scrollbar* scbVertical = w<Scrollbar>(xml, "scbNoteEditor");
@@ -85,7 +89,6 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) : mSeq("Dino") {
     mi->signal_activate().connect(sigc::mem_fun(*this, iter->second));
   }
   
-  
   window->show_all();
 }
 
@@ -148,19 +151,23 @@ void Dino::slotEditAddTrack() {
  
 
 void Dino::slotEditDeleteTrack() {
-  
+  int trackID = mCmbTrack.getActiveID();
+  if (trackID >= 0) {
+    mSong.removeTrack(trackID);
+    updateTrackWidgets();
+    updateTrackCombo();
+  }
 }
 
 
 void Dino::slotEditAddPattern() {
-  istringstream iss(mCmbTrack.get_active_text());
-  int trackID;
-  iss>>trackID;
-  int patternID = mSong.getTracks().find(trackID)->second.addPattern(8, 4, 4);
-  Pattern* pat = &mSong.getTracks().find(trackID)->
-    second.getPatterns().find(patternID)->second; 
-  pe.setPattern(pat);
-  cce.setPattern(pat);
+  int trackID = mCmbTrack.getActiveID();
+  if (trackID >= 0) {
+    int patternID = mSong.getTracks().find(trackID)->second.addPattern(8,4, 4);
+    Pattern* pat = &mSong.getTracks().find(trackID)->
+      second.getPatterns().find(patternID)->second;
+    updatePatternCombo(patternID);
+  }
 }
  
 
@@ -203,18 +210,65 @@ void Dino::updateTrackWidgets() {
 
 
 void Dino::updateTrackCombo() {
-  //mCmbTrack.clear();
-  char tmp[10];
-  for (map<int, Track>::iterator iter = mSong.getTracks().begin();
-       iter != mSong.getTracks().end(); ++iter) {
-    sprintf(tmp, "%03d", iter->first);
-    mCmbTrack.append_text(tmp);
+  mTrackPatternConnection.block();
+  int oldActive = mCmbTrack.getActiveID();
+  mCmbTrack.clear();
+  int newActive = -1;
+  if (mSong.getTracks().size() > 0) {
+    char tmp[10];
+    for (map<int, Track>::iterator iter = mSong.getTracks().begin();
+	 iter != mSong.getTracks().end(); ++iter) {
+      sprintf(tmp, "%03d", iter->first);
+      mCmbTrack.appendText(tmp, iter->first);
+      if (newActive == -1 || iter->first <= oldActive)
+	newActive = iter->first;
+    }
   }
+  else {
+    mCmbTrack.appendText("No tracks");
+  }
+  mCmbTrack.setActiveID(newActive);
+  mTrackPatternConnection.unblock();
+  if (oldActive == -1 || newActive != oldActive)
+    updatePatternCombo();
 }
 
 
-void Dino::updatePatternCombo() {
+void Dino::updatePatternCombo(int activePattern) {
+  int newActive = activePattern;
+  mCmbPattern.clear();
+  int trackID = mCmbTrack.getActiveID();
+  if (trackID >= 0) {
+    const Track& trk(mSong.getTracks().find(trackID)->second);
+    mCmbPattern.clear();
+    map<int, Pattern>::const_iterator iter;
+    char tmp[10];
+    for (iter = trk.getPatterns().begin(); 
+	 iter != trk.getPatterns().end(); ++iter) {
+      sprintf(tmp, "%03d", iter->first);
+      mCmbPattern.appendText(tmp, iter->first);
+      if (newActive == -1)
+	newActive = iter->first;
+    }
+  }
+  
+  if (newActive == -1)
+    mCmbPattern.appendText("No patterns");
+  mCmbPattern.setActiveID(newActive);
+  updateEditorWidgets();
+}
 
+
+void Dino::updateEditorWidgets() {
+  int trackID = mCmbTrack.getActiveID();
+  int patternID = mCmbPattern.getActiveID();
+  Pattern* pat = NULL;
+  if (trackID != -1 && patternID != -1) {
+    Track& trk = mSong.getTracks().find(trackID)->second;
+    pat = &(trk.getPatterns().find(patternID)->second);
+  }
+  pe.setPattern(pat);
+  cce.setPattern(pat);
 }
 
 

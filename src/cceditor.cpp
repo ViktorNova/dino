@@ -24,15 +24,17 @@ CCEditor::CCEditor() : height(64 + 3), colWidth(8), pat(NULL), lineStep(-1),
 
 
 void CCEditor::setPattern(Pattern* pat) {
-  this->pat = pat;
-  if (pat) {
-    width = colWidth * pat->getLength() * pat->getSteps();
-    set_size_request(pat->getLength() * pat->getSteps() * colWidth + 1,
-		     height);
+  if (this->pat != pat) {
+    this->pat = pat;
+    if (pat) {
+      width = colWidth * pat->getLength() * pat->getSteps();
+      set_size_request(pat->getLength() * pat->getSteps() * colWidth + 1,
+		       height);
+    }
+    else
+      set_size_request(-1, height);
+    update();
   }
-  else
-    set_size_request(-1, height);
-  update();
 }
 
 

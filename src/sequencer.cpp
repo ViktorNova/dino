@@ -107,7 +107,6 @@ int Sequencer::initJack(const string& clientName) {
 
 bool Sequencer::checkSync() {
   if (mSyncState == Syncing) {
-    cerr<<"Syncing"<<endl;
     map<int, Track>::const_iterator iter;
     for (iter = mSong->getTracks().begin(); iter != mSong->getTracks().end();
 	 ++iter)

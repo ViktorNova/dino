@@ -27,13 +27,15 @@ PatternEditor::PatternEditor() : rowHeight(8), colWidth(8), maxNote(128),
 
 
 void PatternEditor::setPattern(Pattern* pat) {
-  this->pat = pat;
-  if (pat) {
-    set_size_request(pat->getLength() * pat->getSteps() * colWidth + 1,
-		     maxNote * rowHeight + 1);
+  if (this->pat != pat) {
+    this->pat = pat;
+    if (pat) {
+      set_size_request(pat->getLength() * pat->getSteps() * colWidth + 1,
+		       maxNote * rowHeight + 1);
+    }
+    else
+      set_size_request();
   }
-  else
-    set_size_request();
 }
 
 

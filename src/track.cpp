@@ -194,7 +194,7 @@ bool Track::getNextNote(int& beat, int& tick, int& value, int& length,
       return false;
     // we might want notes from next pattern, if it starts early enough
     else if (currentSeqEntry->next && 
-	     currentSeqEntry->next->start < beforeBeat) {
+	     currentSeqEntry->next->start <= beforeBeat) {
       currentSeqEntry = currentSeqEntry->next;
       if (currentSeqEntry) {
 	currentSeqEntry->pattern->findNextNote(0);
@@ -205,7 +205,6 @@ bool Track::getNextNote(int& beat, int& tick, int& value, int& length,
 	totalLength = pat->getSteps() * currentSeqEntry->length;
 	bStep = (bStep < totalLength ? bStep : totalLength);
       }
-      cerr<<"Pattern switch"<<endl;
     }
     // it doesn't
     else

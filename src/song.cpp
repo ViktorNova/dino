@@ -37,6 +37,16 @@ int Song::addTrack() {
 }
 
 
+bool Song::removeTrack(int id) {
+  map<int, Track>::iterator iter = mTracks.find(id);
+  if (iter == mTracks.end())
+    return false;
+  mTracks.erase(iter);
+  mDirty = true;
+  return true;
+}
+
+
 const string& Song::getTitle() const {
   return mTitle;
 }

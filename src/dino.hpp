@@ -7,6 +7,7 @@
 #include "cceditor.hpp"
 #include "patterneditor.hpp"
 #include "sequencer.hpp"
+#include "singletextcombo.hpp"
 #include "song.hpp"
 
 
@@ -60,7 +61,8 @@ private:
   
   void updateTrackWidgets();
   void updateTrackCombo();
-  void updatePatternCombo();
+  void updatePatternCombo(int activePattern = -1);
+  void updateEditorWidgets();
   
   // internal callbacks
   void slotCCNumberChanged();
@@ -72,8 +74,10 @@ private:
   CCEditor cce;
   VBox* mVbxTrackEditor;
   
-  ComboBoxText mCmbTrack;
-  ComboBoxText mCmbPattern;
+  SingleTextCombo mCmbTrack;
+  SingleTextCombo mCmbPattern;
+  sigc::connection mTrackPatternConnection;
+  sigc::connection mPatternEditorConnection;
   SpinButton* sbCCNumber;
   Label* lbCCDescription;
   SpinButton* sbCCEditorSize;

@@ -30,11 +30,13 @@ Sequencer::Sequencer(const string& clientName)
 
 
 Sequencer::~Sequencer() {
-  jack_transport_stop(m_jack_client);
-  jack_position_t pos;
-  memset(&pos, 0, sizeof(pos));
-  jack_transport_reposition(m_jack_client, &pos);
-  jack_client_close(m_jack_client);
+  if (m_jack_client) {
+    jack_transport_stop(m_jack_client);
+    jack_position_t pos;
+    memset(&pos, 0, sizeof(pos));
+    jack_transport_reposition(m_jack_client, &pos);
+    jack_client_close(m_jack_client);
+  }
 }
   
 
@@ -123,7 +125,7 @@ bool Sequencer::check_sync() {
 
 int Sequencer::jack_sync_callback(jack_transport_state_t state, 
 				jack_position_t* pos) {
-  if (m_sync_state == InSync) {
+  if (m_sync_state == InSync || m_sync_state == Waiting) {
     m_sync_to_beat = int(pos->bar * pos->beats_per_bar);
     m_sync_to_tick = pos->tick;
     m_sync_state = Syncing;
@@ -142,7 +144,7 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   // Nothing to sequence?
   if (!m_song)
     return 0;
-
+  
   // try to get access to the song - if not, return (can't keep Jack waiting)
   Mutex::Lock lock(m_song->get_big_lock(), TRY_LOCK);
   if (!lock.locked())
@@ -157,6 +159,14 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   const int cTick = pos.tick;
   const int beforeBeat = cBeat + int((cTick + tickAhead) / 10000.0);
   const int beforeTick = (cTick + tickAhead) % 10000;
+  
+  // is it over yet?
+  if (cBeat >= m_song->get_length()) {
+    jack_transport_stop(m_jack_client);
+    jack_position_t beginning;
+    memset(&beginning, 0, sizeof(jack_position_t));
+    jack_transport_reposition(m_jack_client, &beginning);
+  }
   
   // if we're rolling and we have something to sequence, sequence it
   if ((state == JackTransportRolling) && (pos.valid & JackPositionBBT)) {

@@ -1,9 +1,12 @@
 #include <cstdio>
 #include <iostream>
 
-#include <libxml/tree.h>
+#include <libxml++/libxml++.h>
 
 #include "song.hpp"
+
+
+using namespace xmlpp;
 
 
 Song::Song() : m_dirty(false), m_length(32) {
@@ -110,31 +113,74 @@ bool Song::is_dirty() const {
 
 
 bool Song::write_file(const string& filename) const {
-  xmlDocPtr doc = xmlNewDoc(xmlCharStrdup("1.0"));
-  xmlNodePtr dino = xmlNewDocNode(doc, NULL, xmlCharStrdup("dinosong"), NULL);
-  xmlDocSetRootElement(doc, dino);
-  xmlNewChild(dino, NULL, xmlCharStrdup("title"), 
-	      xmlCharStrdup(m_title.c_str()));
-  xmlNewChild(dino, NULL, xmlCharStrdup("author"), 
-	      xmlCharStrdup(m_author.c_str()));
-  xmlNewChild(dino, NULL, xmlCharStrdup("info"), 
-	      xmlCharStrdup(m_info.c_str()));
-  
-  char idStr[20];
-  for (map<int, Track>::const_iterator iter = m_tracks.begin(); 
-       iter != m_tracks.end(); ++iter) {
-    xmlNodePtr node = iter->second.get_xml_node(doc);
-    sprintf(idStr, "%d", iter->first);
-    xmlNewProp(node, xmlCharStrdup("id"), xmlCharStrdup(idStr));
-    xmlAddChild(dino, node);
-    iter->second.make_clean();
+  Document doc;
+  Element* dino_elt = doc.create_root_node("dinosong");
+  dino_elt->add_child("title")->set_child_text(m_title);
+  dino_elt->add_child("author")->set_child_text(m_author);
+  dino_elt->add_child("info")->set_child_text(m_info);
+  char length_txt[10];
+  sprintf(length_txt, "%d", m_length);
+  dino_elt->add_child("length")->set_child_text(length_txt);
+  map<int, Track>::const_iterator iter;
+  for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter) {
+    Element* track_elt = dino_elt->add_child("track");
+    char id_txt[10];
+    sprintf(id_txt, "%d", iter->first);
+    track_elt->set_attribute("id", id_txt);
+    if (!iter->second.fill_xml_node(track_elt))
+      return false;
   }
   
-  xmlSaveFormatFile(filename.c_str(), doc, 1);
+  doc.write_to_file_formatted(filename);
   m_dirty = false;
 }
 
 
 bool Song::load_file(const string& filename) {
+  DomParser parser(filename);
+  const Document* doc = parser.get_document();
+  const Element* dino_elt = doc->get_root_node();
+  const TextNode* text_node;
+  Node::NodeList::const_iterator iter;
   
+  // parse info
+  Node::NodeList nodes = dino_elt->get_children();
+  for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    const Element* elt = dynamic_cast<Element*>(*iter);
+    if (!elt)
+      continue;
+    else if (elt->get_name() == "title") {
+      if ((text_node = elt->get_child_text()) != NULL) {
+	m_title = text_node->get_content();
+	signal_title_changed(m_title);
+      }
+    }
+    else if (elt->get_name() == "author") {
+      if ((text_node = elt->get_child_text()) != NULL) {
+	m_author = text_node->get_content();
+	signal_author_changed(m_author);
+      }
+    }
+    else if (elt->get_name() == "info") {
+      if ((text_node = elt->get_child_text()) != NULL) {
+	m_info = text_node->get_content();
+	signal_info_changed(m_info);
+      }
+    }
+    else if (elt->get_name() == "length") {
+      sscanf(elt->get_child_text()->get_content().c_str(), "%d", &m_length);
+      signal_length_changed(m_length);
+    }
+  }
+  
+  // parse all tracks
+  nodes = dino_elt->get_children("track");
+  for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    const Element* track_elt = dynamic_cast<const Element*>(*iter);
+    int id;
+    sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
+    m_tracks[id] = Track(m_length);
+    m_tracks[id].parse_xml_node(track_elt);
+    signal_track_added(id);
+  }
 }

@@ -4,11 +4,12 @@
 #include <map>
 
 #include <sigc++/signal.h>
-#include <libxml/tree.h>
+#include <libxml++/libxml++.h>
 
 
 using namespace sigc;
 using namespace std;
+using namespace xmlpp;
 
 
 /** This class stores information about a pattern. A pattern is a sequence of
@@ -61,6 +62,7 @@ public:
   typedef map<pair<int, int>, Note*, Compair> NoteMap;
   
   // accessors
+  const string& get_name() const;
   NoteMap& get_notes();
   const NoteMap& get_notes() const;
   CCData& get_cc(int cc_number);
@@ -79,7 +81,8 @@ public:
   // XML I/O
   bool is_dirty() const;
   void make_clean() const;
-  xmlNodePtr get_xml_node(xmlDocPtr doc) const;
+  bool fill_xml_node(Element* elt) const;
+  bool parse_xml_node(const Element* elt);
   
   // sequencing
   bool get_next_note(int& step, int& value, 
@@ -88,6 +91,7 @@ public:
   
 public:
   
+  signal<void, string> signal_name_changed;
   signal<void, int> signal_length_changed;
   signal<void, int> signal_steps_changed;
   signal<void, int> signal_cc_steps_changed;
@@ -100,6 +104,7 @@ public:
 
 private:
   
+  string m_name;
   /** Pattern length in beats */
   int m_length;
   /** Number of steps per beat */

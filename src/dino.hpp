@@ -85,6 +85,7 @@ private:
   PatternEditor m_pe;
   CCEditor m_cce;
   VBox* m_vbx_track_editor;
+  VBox* m_vbx_track_labels;
   
   SingleTextCombo m_cmb_track;
   SingleTextCombo m_cmb_pattern;
@@ -95,6 +96,7 @@ private:
   SpinButton* m_sb_cc_number;
   Label* m_lb_cc_description;
   SpinButton* m_sb_cc_editor_size;
+  ::Ruler m_sequence_ruler;
   ::Ruler m_pattern_ruler_1;
   Entry* m_ent_title;
   Entry* m_ent_author;

@@ -7,6 +7,7 @@
 using namespace Gtk;
 using namespace Gdk;
 using namespace Glib;
+using namespace sigc;
 
 
 class Ruler : public DrawingArea {
@@ -20,6 +21,11 @@ public:
 
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
+  virtual bool on_button_press_event(GdkEventButton* event);
+
+public:
+  
+  signal<void, double, int> signal_clicked;
   
 private:
   

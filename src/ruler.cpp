@@ -7,6 +7,7 @@ using namespace std;
   : mLength(length), mSubs(subs), mInterval(interval), 
     mDivSize(size), mHeight(height) {
   set_size_request(mLength * mDivSize + 1, mHeight);
+  add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
 }
 
   
@@ -72,4 +73,10 @@ bool ::Ruler::on_expose_event(GdkEventExpose* event) {
     }
   }
   return true;
+}
+
+
+bool ::Ruler::on_button_press_event(GdkEventButton* event) {
+  double pos = event->x / mDivSize;
+  signal_clicked(pos, event->button);
 }

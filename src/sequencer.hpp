@@ -97,6 +97,7 @@ private:
   bool m_valid;
 
   volatile enum {
+    Waiting,
     InSync,
     Syncing,
     SyncDone

@@ -12,7 +12,8 @@ AC_PROG_CXX
 
 # Checks for libraries.
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4 >= 2.4.1)
-PKG_CHECK_MODULES(GTHREAD, gthread-2.0, 2.4.6)
+PKG_CHECK_MODULES(GTHREAD, gthread-2.0, >= 2.4.6)
+PKG_CHECK_MODULES(LIBXMLPP, libxml++-2.6, >= 2.6.1)
 PKG_CHECK_MODULES(ALSA, alsa >= 1.0.6)
 PKG_CHECK_MODULES(JACK, jack >= 0.99.5)
 

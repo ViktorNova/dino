@@ -9,6 +9,7 @@
 #include "evilscrolledwindow.hpp"
 #include "ruler.hpp"
 #include "song.hpp"
+#include "tracklabel.hpp"
 #include "trackwidget.hpp"
 
 
@@ -16,7 +17,8 @@ using namespace sigc;
 
 
 Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_xml(xml), m_seq("Dino"), m_pattern_ruler_1(0, 1, 1, 20, 20) {
+  : m_xml(xml), m_seq("Dino"), m_pattern_ruler_1(0, 1, 1, 20, 20),
+    m_sequence_ruler(32, 1, 4, 20, 20) {
 
   m_seq.set_song(m_song);
   
@@ -29,7 +31,6 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml)
   init_menus();
   
   m_window->show_all();
-  
 }
 
 
@@ -44,7 +45,9 @@ void Dino::slot_file_new() {
 
 
 void Dino::slot_file_open() {
-  
+  m_seq.stop();
+  m_song.load_file("output.dino");
+  m_seq.goto_beat(0);
 }
 
 
@@ -136,13 +139,18 @@ void Dino::slot_help_about_dino() {
 
 void Dino::update_track_widgets() {
   m_vbx_track_editor->children().clear();
+  m_vbx_track_labels->children().clear();
   for (map<int, Track>::iterator iter = m_song.get_tracks().begin();
        iter != m_song.get_tracks().end(); ++iter) {
     TrackWidget* tw = manage(new TrackWidget(&m_song));
     tw->set_track(&iter->second);
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
+    TrackLabel* tl = manage(new TrackLabel(&m_song));
+    tl->set_track(&iter->second);
+    m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
   }
   m_vbx_track_editor->show_all();
+  m_vbx_track_labels->show_all();
 }
 
 
@@ -155,8 +163,9 @@ void Dino::update_track_combo(int activeTrack) {
     char tmp[10];
     for (map<int, Track>::iterator iter = m_song.get_tracks().begin();
 	 iter != m_song.get_tracks().end(); ++iter) {
-      sprintf(tmp, "%03d", iter->first);
-      m_cmb_track.append_text(tmp, iter->first);
+      sprintf(tmp, "%03d ", iter->first);
+      m_cmb_track.append_text(string(tmp) + iter->second.get_name(), 
+			      iter->first);
       if (newActive == -1 || (activeTrack == -1 && iter->first <= oldActive))
 	newActive = iter->first;
     }
@@ -182,8 +191,9 @@ void Dino::update_pattern_combo(int activePattern) {
     char tmp[10];
     for (iter = trk.get_patterns().begin(); 
 	 iter != trk.get_patterns().end(); ++iter) {
-      sprintf(tmp, "%03d", iter->first);
-      m_cmb_pattern.append_text(tmp, iter->first);
+      sprintf(tmp, "%03d ", iter->first);
+      m_cmb_pattern.append_text(string(tmp) + iter->second.get_name(), 
+				iter->first);
       if (newActive == -1)
 	newActive = iter->first;
     }
@@ -307,6 +317,7 @@ void Dino::init_pattern_editor() {
 void Dino::init_sequence_editor() {
   // get the widgets
   VBox* boxArrangementEditor = w<VBox>("box_arrangement_editor");
+  VBox* box_track_labels  = w<VBox>("box_track_labels");
   Scrollbar* scbHorizontal = w<Scrollbar>("scbh_arrangement_editor");
   Scrollbar* scbVertical = w<Scrollbar>("scbv_arrangement_editor");
   Box* boxSequenceRuler = w<Box>("box_sequence_ruler");
@@ -315,8 +326,7 @@ void Dino::init_sequence_editor() {
   EvilScrolledWindow* scwSequenceRuler = 
     manage(new EvilScrolledWindow(true, false));
   boxSequenceRuler->pack_start(*scwSequenceRuler);
-  scwSequenceRuler->add(*manage(new ::Ruler(m_song.get_length(),
-					    1, 4, 20, 20)));
+  scwSequenceRuler->add(m_sequence_ruler);
 
   // add the box for the trackwidgets
   EvilScrolledWindow* scwArrangementEditor = manage(new EvilScrolledWindow);
@@ -324,10 +334,20 @@ void Dino::init_sequence_editor() {
   m_vbx_track_editor = manage(new VBox(false, 2));
   scwArrangementEditor->add(*m_vbx_track_editor);
   
+  // add the box for the track labels
+  EvilScrolledWindow* scw_track_labels = manage(new EvilScrolledWindow(false));
+  box_track_labels->pack_start(*scw_track_labels);
+  m_vbx_track_labels = manage(new VBox(false, 2));
+  scw_track_labels->add(*m_vbx_track_labels);
+  Viewport* vp = dynamic_cast<Viewport*>(scw_track_labels->get_child());
+  if (vp)
+    vp->set_shadow_type(SHADOW_NONE);
+  
   // synchronise scrolling
   scwSequenceRuler->set_hadjustment(scwArrangementEditor->get_hadjustment());
   scbHorizontal->set_adjustment(*scwArrangementEditor->get_hadjustment());
   scbVertical->set_adjustment(*scwArrangementEditor->get_vadjustment());
+  scw_track_labels->set_vadjustment(*scwArrangementEditor->get_vadjustment());
   
   // connect external signals
   slot<void, int> update_track_view = 
@@ -335,6 +355,8 @@ void Dino::init_sequence_editor() {
   m_song.signal_track_added.connect(update_track_view);
   m_song.signal_track_removed.connect(update_track_view);
   m_song.signal_length_changed.connect(update_track_view);
+  m_sequence_ruler.signal_clicked.
+    connect(hide(mem_fun(m_seq, &Sequencer::goto_beat)));
   
   update_track_widgets();
 }
@@ -369,21 +391,13 @@ void Dino::init_menus() {
 }
 
 
-int foo() {
-  static int c = 1024;
-  cerr<<"foo: "<<c<<endl;
-  return ++c;
-}
-
-void bar(int i) {
-  cerr<<i<<endl;
-}
-
-
 void Dino::init_info_editor() {
   m_ent_title = w<Entry>("ent_title");
   m_ent_author = w<Entry>("ent_author");
   m_text_info = w<TextView>("text_info");
+  
+  m_ent_title->set_text(m_song.get_title());
+  m_ent_author->set_text(m_song.get_author());
   
   m_song.signal_title_changed.connect(mem_fun(m_ent_title, &Entry::set_text));
   m_song.signal_author_changed.connect(mem_fun(m_ent_author,&Entry::set_text));

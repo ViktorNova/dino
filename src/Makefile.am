@@ -1,4 +1,4 @@
-AM_CPPFLAGS = @LIBGLADEMM_CFLAGS@ @GTHREAD_CFLAGS@ @ALSA_CFLAGS@ @JACK_CFLAGS@
+AM_CPPFLAGS = @LIBGLADEMM_CFLAGS@ @GTHREAD_CFLAGS@ @LIBXMLPP_CFLAGS@ @ALSA_CFLAGS@ @JACK_CFLAGS@
 
 bin_PROGRAMS = dino
 
@@ -13,7 +13,8 @@ dino_SOURCES = \
 	ruler.cpp ruler.hpp \
 	sequencer.cpp sequencer.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
+	tracklabel.hpp tracklabel.cpp \
 	trackwidget.cpp trackwidget.hpp \
 	evilscrolledwindow.hpp
 
-dino_LDADD = @LIBGLADEMM_LIBS@ @GTHREAD_LIBS@ @ALSA_LIBS@ @JACK_LIBS@
+dino_LDADD = @LIBGLADEMM_LIBS@ @GTHREAD_LIBS@ @LIBXMLPP_LIBS@ @ALSA_LIBS@ @JACK_LIBS@

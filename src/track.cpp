@@ -5,7 +5,8 @@
 
 
 Track::Track(int length) 
-  : m_length(length), m_dirty(false), m_current_seq_entry(NULL) {
+  : m_length(length), m_dirty(false), 
+    m_current_seq_entry(NULL), m_name("Untitled") {
 
 }
 
@@ -284,33 +285,91 @@ void Track::find_next_note(int beat, int tick) const {
 
 
 /** Serialize this track to a XML node and return it. */
-xmlNodePtr Track::get_xml_node(xmlDocPtr doc) const {
-  xmlNodePtr node = xmlNewDocNode(doc, NULL, xmlCharStrdup("track"), NULL);
-  char tmpStr[20];
+bool Track::fill_xml_node(Element* elt) const {
   
+  // info 
+  elt->add_child("name")->set_child_text(m_name);
+ 
   // the patterns
   for (map<int, Pattern>::const_iterator iter = m_patterns.begin();
        iter != m_patterns.end(); ++iter) {
-    xmlNodePtr child = iter->second.get_xml_node(doc);
-    sprintf(tmpStr, "%d", iter->first);
-    xmlNewProp(child, xmlCharStrdup("id"), xmlCharStrdup(tmpStr));
-    xmlAddChild(node, child);
+    Element* pat_elt = elt->add_child("pattern");
+    char id_txt[10];
+    sprintf(id_txt, "%d", iter->first);
+    pat_elt->set_attribute("id", id_txt);
+    iter->second.fill_xml_node(pat_elt);
   }
   
   // the sequence
-  xmlNodePtr seq = xmlNewDocNode(doc, NULL, xmlCharStrdup("sequence"), NULL);
-  xmlAddChild(node, seq);
+  Element* seq_elt = elt->add_child("sequence");
+  char tmp_txt[10];
   for (Sequence::const_iterator iter = m_sequence.begin();
        iter != m_sequence.end(); ++iter) {
-    xmlNodePtr entry = xmlNewDocNode(doc, NULL, xmlCharStrdup("entry"), NULL);
-    sprintf(tmpStr, "%d", iter->first);
-    xmlNewProp(entry, xmlCharStrdup("beat"), xmlCharStrdup(tmpStr));
-    sprintf(tmpStr, "%d", iter->second->pattern_id);
-    xmlNewProp(entry, xmlCharStrdup("pattern"), xmlCharStrdup(tmpStr));
-    sprintf(tmpStr, "%d", iter->second->length);
-    xmlNewProp(entry, xmlCharStrdup("length"), xmlCharStrdup(tmpStr));
-    xmlAddChild(seq, entry);
+    Element* entry_elt = seq_elt->add_child("entry");
+    sprintf(tmp_txt, "%d", iter->first);
+    entry_elt->set_attribute("beat", tmp_txt);
+    sprintf(tmp_txt, "%d", iter->second->pattern_id);
+    entry_elt->set_attribute("pattern", tmp_txt);
+    sprintf(tmp_txt, "%d", iter->second->length);
+    entry_elt->set_attribute("length", tmp_txt);
   }
   
-  return node;
+  return true;
+}
+
+
+bool Track::parse_xml_node(const Element* elt) {
+  Node::NodeList nodes;
+  Node::NodeList::const_iterator iter;
+  
+  // parse info
+  nodes = elt->get_children("name");
+  if (nodes.begin() != nodes.end()) {
+    const Element* name_elt = dynamic_cast<const Element*>(*nodes.begin());
+    if (name_elt) {
+      m_name = name_elt->get_child_text()->get_content();
+      signal_name_changed(m_name);
+    }
+  }
+  
+  // parse patterns
+  nodes = elt->get_children("pattern");
+  for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    const Element* pat_elt = dynamic_cast<const Element*>(*iter);
+    if (!pat_elt)
+      continue;
+    int id, length, steps, cc_steps;
+    sscanf(pat_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
+    sscanf(pat_elt->get_attribute("length")->get_value().c_str(), 
+	   "%d", &length);
+    sscanf(pat_elt->get_attribute("steps")->get_value().c_str(), "%d", &steps);
+    sscanf(pat_elt->get_attribute("ccsteps")->get_value().c_str(), "%d", 
+	   &cc_steps);
+    m_patterns[id] = Pattern(length, steps, cc_steps);
+    m_patterns[id].parse_xml_node(pat_elt);
+  }
+  
+  // parse sequence
+  nodes = elt->get_children("sequence");
+  if (nodes.begin() != nodes.end()) {
+    const Element* seq_elt = dynamic_cast<const Element*>(*nodes.begin());
+    if (seq_elt) {
+      Node::NodeList e_nodes = (*nodes.begin())->get_children("entry");
+      Node::NodeList::const_iterator e_iter;
+      for (e_iter = e_nodes.begin(); e_iter != e_nodes.end(); ++e_iter) {
+	const Element* entry_elt = dynamic_cast<const Element*>(*e_iter);
+	if (!entry_elt)
+	  continue;
+	int beat, pattern, length;
+	sscanf(entry_elt->get_attribute("beat")->get_value().c_str(), 
+	       "%d", &beat);
+	sscanf(entry_elt->get_attribute("pattern")->get_value().c_str(), 
+	       "%d", &pattern);
+	sscanf(entry_elt->get_attribute("length")->get_value().c_str(), 
+	       "%d", &length);
+	set_sequence_entry(beat, pattern, length);
+      }
+    }
+  }
+  return true;
 }

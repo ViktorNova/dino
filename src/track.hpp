@@ -5,13 +5,14 @@
 #include <vector>
 
 #include <sigc++/signal.h>
-#include <libxml/tree.h>
+#include <libxml++/libxml++.h>
 
 #include "pattern.hpp"
 
 
 using namespace sigc;
 using namespace std;
+using namespace xmlpp;
 
 
 /** This class represents a track, which holds information about an instrument
@@ -57,7 +58,8 @@ public:
   // XML I/O
   bool is_dirty() const;
   void make_clean() const;
-  xmlNodePtr get_xml_node(xmlDocPtr doc) const;
+  bool fill_xml_node(Element* elt) const;
+  bool parse_xml_node(const Element* elt);
   
   // sequencing
   bool get_next_note(int& beat, int& tick, int& value, int& length, 

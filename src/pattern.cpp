@@ -5,12 +5,13 @@
 #include "pattern.hpp"
 
 
-Pattern::Pattern() : m_dirty(false), m_next_note(NULL) {
+Pattern::Pattern() : m_dirty(false), m_next_note(NULL), m_name("Untitled") {
   
 }
 
 
-Pattern::Pattern(int length, int steps, int ccSteps) : m_dirty(false) {
+Pattern::Pattern(int length, int steps, int ccSteps) 
+  : m_dirty(false), m_next_note(NULL), m_name("Untitled") {
   this->m_length = length;
   this->m_steps = steps;
   this->m_cc_steps = ccSteps;
@@ -18,6 +19,11 @@ Pattern::Pattern(int length, int steps, int ccSteps) : m_dirty(false) {
   m_max_step = -1;
   m_min_note = 128;
   m_max_note = -1;
+}
+
+
+const string& Pattern::get_name() const {
+  return m_name;
 }
 
 
@@ -275,25 +281,54 @@ void Pattern::make_clean() const {
 }
 
 
-xmlNodePtr Pattern::get_xml_node(xmlDocPtr doc) const {
-  xmlNodePtr node = xmlNewDocNode(doc, NULL, xmlCharStrdup("pattern"), NULL);
-  char tmpStr[20];
-  sprintf(tmpStr, "%d", get_length());
-  xmlNewProp(node, xmlCharStrdup("length"), xmlCharStrdup(tmpStr));
-  sprintf(tmpStr, "%d", get_steps());
-  xmlNewProp(node, xmlCharStrdup("steps"), xmlCharStrdup(tmpStr));
-  sprintf(tmpStr, "%d", get_cc_steps());
-  xmlNewProp(node, xmlCharStrdup("ccsteps"), xmlCharStrdup(tmpStr));
+bool Pattern::fill_xml_node(Element* elt) const {
+  char tmp_txt[10];
+  elt->add_child("name")->set_child_text(m_name);
+  sprintf(tmp_txt, "%d", get_length());
+  elt->set_attribute("length", tmp_txt);
+  sprintf(tmp_txt, "%d", get_steps());
+  elt->set_attribute("steps", tmp_txt);
+  sprintf(tmp_txt, "%d", get_cc_steps());
+  elt->set_attribute("ccsteps", tmp_txt);
   for (NoteMap::const_iterator iter = m_notes.begin(); iter != m_notes.end();
        ++iter) {
-    xmlNodePtr note = xmlNewDocNode(doc, NULL, xmlCharStrdup("note"), NULL);
-    sprintf(tmpStr, "%d", iter->first.first);
-    xmlNewProp(note, xmlCharStrdup("step"), xmlCharStrdup(tmpStr));
-    sprintf(tmpStr, "%d", iter->first.second);
-    xmlNewProp(note, xmlCharStrdup("value"), xmlCharStrdup(tmpStr));
-    sprintf(tmpStr, "%d", iter->second->length);
-    xmlNewProp(note, xmlCharStrdup("length"), xmlCharStrdup(tmpStr));
-    xmlAddChild(node, note);
+    Element* note_elt = elt->add_child("note");
+    sprintf(tmp_txt, "%d", iter->first.first);
+    note_elt->set_attribute("step", tmp_txt);
+    sprintf(tmp_txt, "%d", iter->first.second);
+    note_elt->set_attribute("value", tmp_txt);
+    sprintf(tmp_txt, "%d", iter->second->length);
+    note_elt->set_attribute("length", tmp_txt);
   }
-  return node;
+  return true;
+}
+
+
+bool Pattern::parse_xml_node(const Element* elt) {
+  m_name = "";
+  Node::NodeList nodes = elt->get_children("name");
+  if (nodes.begin() != nodes.end()) {
+    const Element* name_elt = dynamic_cast<const Element*>(*nodes.begin());
+    if (name_elt) {
+      m_name = name_elt->get_child_text()->get_content();
+      signal_name_changed(m_name);
+    }
+  }
+
+  char tmp_txt[10];
+  nodes = elt->get_children("note");
+  Node::NodeList::const_iterator iter;
+  for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    const Element* note_elt = dynamic_cast<const Element*>(*iter);
+    if (!note_elt)
+      continue;
+    int step, value, length;
+    sscanf(note_elt->get_attribute("step")->get_value().c_str(), "%d", &step);
+    sscanf(note_elt->get_attribute("value")->get_value().c_str(), 
+	   "%d", &value);
+    sscanf(note_elt->get_attribute("length")->get_value().c_str(), 
+	   "%d", &length);
+    add_note(step, value, length);
+  }
+  return true;
 }

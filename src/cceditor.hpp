@@ -4,6 +4,7 @@
 #include <gtkmm.h>
 
 #include "pattern.hpp"
+#include "song.hpp"
 
 
 using namespace Gdk;
@@ -13,9 +14,9 @@ using namespace Gtk;
 
 class CCEditor : public DrawingArea {
 public:
-  CCEditor();
+  CCEditor(Song& song);
   
-  void set_pattern(Pattern* pat);
+  void set_pattern(int track, int pattern);
   void set_cc_number(int cc_number);
   void set_height(int height);  
   
@@ -31,9 +32,11 @@ protected:
   void update(int step = -1);
   
 private:
+  Song& m_song;
+  
   RefPtr<GC> m_gc;
   RefPtr<Colormap> m_colormap;
-  Color m_bg_color, m_bg_color2, m_fg_color, m_edge_color;
+  Color m_bg_color, m_bg_color2, m_grid_color, m_fg_color, m_edge_color;
   int m_col_width;
   int m_width, m_height;
   double m_v_scale;

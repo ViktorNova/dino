@@ -37,13 +37,19 @@ public:
   InstrumentInfo get_first_instrument();
   InstrumentInfo get_next_instrument();
   void set_instrument(int track, int client, int port);
+  void reset_ports();
   
 private:
   
   bool init_jack(const string& client_name);
   bool init_alsa(const string& client_name);
   
+  void track_added(int track);
+  void track_removed(int track);
+
   void sequencing_loop();
+  void schedule_note(int beat, int tick, int port, int channel, 
+		     int value, int velocity, int length);
   
   // JACK callbacks
   int jack_sync_callback(jack_transport_state_t state, jack_position_t* pos);

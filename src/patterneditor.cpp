@@ -1,10 +1,12 @@
 #include <iostream>
 
 #include "patterneditor.hpp"
+#include "song.hpp"
 
 
-PatternEditor::PatternEditor() : m_row_height(8), m_col_width(8), m_max_note(128), 
-				 m_pat(NULL) {
+PatternEditor::PatternEditor(Song& song) 
+  : m_song(song), m_row_height(8), m_col_width(8), 
+    m_max_note(128), m_pat(NULL) {
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
   m_bg_color2.set_rgb(60000, 60000, 65535);
@@ -26,11 +28,19 @@ PatternEditor::PatternEditor() : m_row_height(8), m_col_width(8), m_max_note(128
 }
 
 
-void PatternEditor::set_pattern(Pattern* pat) {
-  if (this->m_pat != pat) {
-    this->m_pat = pat;
+void PatternEditor::set_pattern(int track, int pattern) {
+  Pattern* pat = NULL;
+  if (pattern != -1)
+    pat = &(m_song.get_tracks()[track].get_patterns()[pattern]);
+  if (pat != m_pat) {
+    m_pat = pat;
     if (m_pat) {
-      set_size_request(m_pat->get_length() * m_pat->get_steps() * m_col_width + 1,
+      int s = m_pat->get_steps(), cc = m_pat->get_cc_steps();
+      if (s == cc)
+	m_col_width = 8;
+      else
+	m_col_width = 4 * cc / s;
+      set_size_request(m_pat->get_length() * s * m_col_width + 1, 
 		       m_max_note * m_row_height + 1);
     }
     else
@@ -51,6 +61,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     // button one adds notes
     if (event->button == 1) {
       m_added_note = make_pair(step, note);
+      Mutex::Lock(m_song.get_big_lock());
       m_pat->add_note(m_added_note.first, m_added_note.second, 1);
       update();
     }
@@ -60,6 +71,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       int start = m_pat->delete_note(step, note);
       if (start != -1) {
 	m_added_note = make_pair(start, note);
+	Mutex::Lock(m_song.get_big_lock());
 	m_pat->add_note(m_added_note.first, m_added_note.second, step - start + 1);
 	update();
       }
@@ -67,6 +79,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
     // button 3 deletes
     else if (event->button == 3) {
+      Mutex::Lock(m_song.get_big_lock());
       m_pat->delete_note(int(event->x) / m_col_width, 
 		      m_max_note - int(event->y) / m_row_height - 1);
       update();
@@ -89,6 +102,7 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
       step = m_added_note.first;
     else if (step >= m_pat->get_length() * m_pat->get_steps())
       step = m_pat->get_length() * m_pat->get_steps() - 1;
+    Mutex::Lock(m_song.get_big_lock());
     m_pat->add_note(m_added_note.first, m_added_note.second, step - m_added_note.first +1);
     m_added_note = make_pair(-1, -1);
     update();
@@ -111,6 +125,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       step = m_added_note.first;
     else if (step >= m_pat->get_length() * m_pat->get_steps())
       step = m_pat->get_length() * m_pat->get_steps() - 1;
+    Mutex::Lock(m_song.get_big_lock());
     m_pat->add_note(m_added_note.first, m_added_note.second, step - m_added_note.first +1);
     update();
     m_drag_step = step;
@@ -123,6 +138,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       return true;
     if (step >= 0 && step < m_pat->get_length() * m_pat->get_steps() &&
 	note >= 0 && note < m_max_note) {
+      Mutex::Lock(m_song.get_big_lock());
       m_pat->delete_note(step, note);
       update();
       m_drag_step = step;
@@ -174,9 +190,9 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
-  const list<Pattern::Note>& notes(m_pat->get_notes());
-  list<Pattern::Note>::const_iterator iter;
-  for (iter = notes.begin(); iter != notes.end(); ++iter) {
+  const Pattern::Note* notes(m_pat->get_notes());
+  const Pattern::Note* iter;
+  for (iter = notes->next; iter != NULL; iter = iter->next) {
     m_gc->set_foreground(m_fg_color);
     win->draw_rectangle(m_gc, true, iter->step * m_col_width + 1, 
 			(m_max_note - iter->value - 1) * m_row_height + 1, 

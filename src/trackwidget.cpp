@@ -75,11 +75,12 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   // draw patterns
   Pango::FontDescription fd("helvetica bold 12");
   get_pango_context()->set_font_description(fd);
-  Track::Sequence::const_iterator iter = m_track->get_sequence().begin();
+  const Track::SequenceEntry* iter = m_track->get_sequence();
   char tmp[10];
-  for ( ; iter != m_track->get_sequence().end(); ++iter) {
+  for ( ; iter; iter = iter->next) {
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
+    cerr<<iter<<endl;
     int length = iter->length;
     win->draw_rectangle(m_gc, true, iter->start * m_col_width, 0,
 			length * m_col_width, height-1);
@@ -128,6 +129,7 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
     if (m_track->get_sequence_entry(beat, bBeat, pattern, length)) {
       m_drag_beat = bBeat;
       m_drag_pattern = pattern;
+      Mutex::Lock(m_song->get_big_lock());
       m_track->set_sequence_entry(bBeat, pattern, beat - bBeat + 1);
       update();
     }
@@ -135,6 +137,7 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 3:
+    Mutex::Lock(m_song->get_big_lock());
     m_track->remove_sequence_entry(beat);
     update();
     return true;

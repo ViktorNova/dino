@@ -6,15 +6,18 @@
 #include "pattern.hpp"
 
 
-CCEditor::CCEditor() : m_height(64 + 3), m_col_width(8), m_pat(NULL), 
-		       m_line_step(-1), m_v_scale((m_height - 3) / 128.0) {
+CCEditor::CCEditor(Song& song) 
+  : m_song(song), m_height(64 + 3), m_col_width(8), m_pat(NULL), 
+    m_line_step(-1), m_v_scale((m_height - 3) / 128.0), m_cc_number(0) {
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
   m_bg_color2.set_rgb(60000, 60000, 65535);
+  m_grid_color.set_rgb(40000, 40000, 40000);
   m_edge_color.set_rgb(0, 0, 0);
   m_fg_color.set_rgb(0, 40000, 0);
   m_colormap->alloc_color(m_bg_color);
   m_colormap->alloc_color(m_bg_color2);
+  m_colormap->alloc_color(m_grid_color);
   m_colormap->alloc_color(m_fg_color);
   m_colormap->alloc_color(m_edge_color);
   
@@ -23,13 +26,21 @@ CCEditor::CCEditor() : m_height(64 + 3), m_col_width(8), m_pat(NULL),
 }
 
 
-void CCEditor::set_pattern(Pattern* pat) {
+void CCEditor::set_pattern(int track, int pattern) {
+  Pattern* pat = NULL;
+  if (pattern != -1)
+    pat = &(m_song.get_tracks()[track].get_patterns()[pattern]);
   if (m_pat != pat) {
     m_pat = pat;
     if (m_pat) {
-      m_width = m_col_width * m_pat->get_length() * m_pat->get_steps();
-      set_size_request(m_pat->get_length() * m_pat->get_steps() * m_col_width + 1,
-		       m_height);
+      int s = m_pat->get_steps(), cc = m_pat->get_cc_steps();
+      if (s == cc)
+	m_col_width = 8;
+      else
+	m_col_width = 4;
+      m_width = m_col_width * m_pat->get_length() * m_pat->get_cc_steps();
+      set_size_request(m_pat->get_length() * m_pat->get_cc_steps() * 
+		       m_col_width + 1, m_height);
     }
     else
       set_size_request(-1, m_height);
@@ -48,10 +59,10 @@ void CCEditor::set_cc_number(int ccNumber) {
 void CCEditor::set_height(int height) {
   assert(height > 0);
   m_height = height + 3;
-  m_v_scale = m_height / 128.0;
+  m_v_scale = height / 128.0;
   if (m_pat)
-    set_size_request(m_pat->get_length() * m_pat->get_steps() * m_col_width + 1,
-		     m_height);
+    set_size_request(m_pat->get_length() * m_pat->get_cc_steps() 
+		     * m_col_width + 1, m_height);
   else
     set_size_request(-1, m_height);
   
@@ -77,7 +88,7 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
     int step = int(event->x) / m_col_width;
     int value = int(127 - event->y / m_v_scale);
     value = value > 0 ? value : 0;
-    if (step >= 0 && step < m_pat->get_length() * m_pat->get_steps()) {
+    if (step >= 0 && step < m_pat->get_length() * m_pat->get_cc_steps()) {
       m_line_step = step;
       m_line_value = value;
     }
@@ -102,7 +113,7 @@ bool CCEditor::on_button_release_event(GdkEventButton* event) {
     int step = int(event->x) / m_col_width;
     int value = int(127 - event->y / m_v_scale);
     step = step >= 0 ? step : 0;
-    int totalSteps = m_pat->get_length() * m_pat->get_steps();
+    int totalSteps = m_pat->get_length() * m_pat->get_cc_steps();
     step = step < totalSteps ? step : totalSteps - 1;
     value = value > 0 ? value : 0;
     value = value < 128 ? value : 127;
@@ -187,8 +198,23 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
   if (!m_pat)
     return true;
   
-  int width = m_pat->get_length() * m_pat->get_steps() * m_col_width;
-  int height = 128;
+  int width = m_pat->get_length() * m_pat->get_cc_steps() * m_col_width;
+  int height = m_height;
+  
+  // draw background
+  for (int b = 0; b < m_pat->get_length(); ++b) {
+    if (b % 2 == 0)
+      m_gc->set_foreground(m_bg_color);
+    else
+      m_gc->set_foreground(m_bg_color2);
+    win->draw_rectangle(m_gc, true, b * m_pat->get_cc_steps() * m_col_width, 
+			0, m_pat->get_cc_steps() * m_col_width, height);
+  }
+  m_gc->set_foreground(m_grid_color);
+  for (int c = 0; c < m_pat->get_cc_steps() * m_pat->get_length() + 1; ++c) {
+    win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
+  }
+  
   const Pattern::CCData& data = m_pat->get_cc(m_cc_number);
   std::map<int, Pattern::CCEvent*>::const_iterator iter;
   iter = data.changes.upper_bound(event->area.x / m_col_width - 2);
@@ -197,10 +223,12 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
 	++iter) {
     m_gc->set_foreground(m_fg_color);
     win->draw_rectangle(m_gc, true, iter->first * m_col_width, 
-			(128 - iter->second->value - 1) * m_v_scale, m_col_width, 3);
+			int((128 - iter->second->value - 1) * m_v_scale), 
+			m_col_width, 3);
     m_gc->set_foreground(m_edge_color);
     win->draw_rectangle(m_gc, false, iter->first * m_col_width, 
-			(128 - iter->second->value - 1) * m_v_scale, m_col_width, 3);
+			int((128 - iter->second->value - 1) * m_v_scale), 
+			m_col_width, 3);
   }
   
   return true;

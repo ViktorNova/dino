@@ -26,15 +26,18 @@ public:
       scheduled start and length for a pattern. */
   struct SequenceEntry {
     SequenceEntry(int patID, Pattern* patPtr, int st, int len) 
-      : pattern_id(patID), pattern(patPtr), start(st), length(len) { }
+      : pattern_id(patID), pattern(patPtr), start(st), length(len), 
+	prev(NULL), next(NULL) { }
     int pattern_id;
     Pattern* pattern;
     int start;
     int length;
+    SequenceEntry* prev;
+    SequenceEntry* next;
   };
   
   /** For convenience. */
-  typedef list<SequenceEntry> Sequence;
+  typedef SequenceEntry* Sequence;
   
   
   Track(int length = 0, const string& name = "Untitled");
@@ -43,12 +46,13 @@ public:
   const string& get_name() const;
   map<int, Pattern>& get_patterns();
   const map<int, Pattern>& get_patterns() const;
-  Sequence& get_sequence();
+  SequenceEntry* get_sequence();
   bool get_sequence_entry(int at, int& beat, int& pattern, int& length) const;
   int get_channel() const;
   
   // mutators
-  int add_pattern(int length, int steps, int ccSteps);
+  void set_name(const string& name);
+  int add_pattern(const string& name, int length, int steps, int ccSteps);
   void set_sequence_entry(int beat, int pattern, int length = -1);
   bool remove_sequence_entry(int beat);
   void set_length(int length);
@@ -80,14 +84,13 @@ private:
   
   string m_name;
   map<int, Pattern> m_patterns;
-  Sequence m_sequence;
+  SequenceEntry* m_seq_head;
   int m_length;
   int m_channel;
   
   mutable bool m_dirty;
   
-  mutable Sequence::const_iterator m_current_seq_entry;
-  mutable list<Pattern::Note>::const_iterator m_next_note;
+  mutable SequenceEntry* m_current_seq_entry;
   
 };
 

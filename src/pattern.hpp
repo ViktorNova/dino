@@ -20,7 +20,7 @@ class Pattern {
 public:
   
   Pattern();
-  Pattern(int length, int steps, int cc_steps);
+  Pattern(const string& name, int length, int steps, int cc_steps);
   
   /** This struct contains information about a single CC event. */
   struct CCEvent {
@@ -52,14 +52,17 @@ public:
   
   /** This struct contains information about a Note on / Note off pair. */
   struct Note {
-    Note(int stp, int val, int len) : step(stp), value(val), length(len) { }
+    Note(int stp, int val, int len) 
+      : step(stp), value(val), length(len), prev(NULL), next(NULL) { }
     int step, value, length;
+    Note* prev;
+    Note* next;
   };
   
   // accessors
   const string& get_name() const;
-  list<Note>& get_notes();
-  const list<Note>& get_notes() const;
+  Note* get_notes();
+  const Note* get_notes() const;
   CCData& get_cc(int cc_number);
   int get_steps() const;
   int get_cc_steps() const;
@@ -68,6 +71,7 @@ public:
 		      int* max_step, int* max_note);
   
   // mutators
+  void set_name(const string& name);
   void add_note(int step, int value, int length);
   int delete_note(int step, int value);
   void add_cc(int ccNumber, int step, int value);
@@ -104,7 +108,7 @@ private:
   /** Number of steps per beat */
   int m_steps;
   /** The notes in the pattern */
-  list<Note> m_notes;
+  Note*  m_note_head;
   /** Number of CC steps per beat */
   int m_cc_steps;
   /** The MIDI control changes in the pattern */
@@ -115,8 +119,7 @@ private:
   // dirty rect
   int m_min_step, m_min_note, m_max_step, m_max_note;
   
-  mutable list<Note>::const_iterator m_next_note;
-  mutable bool m_first_note;
+  mutable volatile Note* m_next_note;
 };
 
 

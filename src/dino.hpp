@@ -6,6 +6,7 @@
 #include <ladcca/ladcca.h>
 
 #include "cceditor.hpp"
+#include "octavelabel.hpp"
 #include "patterneditor.hpp"
 #include "ruler.hpp"
 #include "sequencer.hpp"
@@ -41,6 +42,7 @@ public:
   void slot_edit_delete();
   void slot_edit_add_track();
   void slot_edit_delete_track();
+  void slot_edit_edit_track_properties();
   void slot_edit_add_pattern();
   void slot_edit_delete_pattern();
   
@@ -60,13 +62,12 @@ private:
     return dynamic_cast<T*>(m_xml->get_widget(name));
   }
   
+  void reset_gui();
   void update_track_widgets();
-  void update_track_combo(int activeTrack = -1);
-  void update_pattern_combo(int activePattern = -1);
+  void update_track_combo();
+  void update_pattern_combo();
   void update_editor_widgets();
   void update_port_combo();
-  void update_channel_combo();
-  void active_track_changed();
   void init_pattern_editor();
   void init_sequence_editor();
   void init_info_editor();
@@ -77,6 +78,16 @@ private:
   void slot_cc_number_changed();
   void slot_cc_editor_size_changed();
   bool slot_check_ladcca_events();
+  void set_active_track(int active_track);
+  void set_active_pattern(int active_pattern);
+  
+  // internal signals
+  signal<void, int> signal_active_track_changed;
+  signal<void, int, int> signal_active_pattern_changed;
+  
+  Song m_song;
+  int m_active_track;
+  int m_active_pattern;
   
   RefPtr<Xml> m_xml;
   Gtk::Window* m_window;
@@ -87,15 +98,16 @@ private:
   
   SingleTextCombo m_cmb_track;
   SingleTextCombo m_cmb_pattern;
-  connection m_track_pattern_connection;
-  connection m_pattern_editor_connection;
-  connection m_pattern_added_connection;
-  connection m_pattern_removed_connection;
+  connection m_track_combo_connection;
+  connection m_pattern_combo_connection;
+  connection m_conn_pat_added;
+  connection m_conn_pat_removed;
   SpinButton* m_sb_cc_number;
   Label* m_lb_cc_description;
   SpinButton* m_sb_cc_editor_size;
   ::Ruler m_sequence_ruler;
-  ::Ruler m_pattern_ruler_1;
+  PatternRuler m_pattern_ruler_1;
+  OctaveLabel m_octave_label;
   Entry* m_ent_title;
   Entry* m_ent_author;
   TextView* m_text_info;
@@ -106,10 +118,12 @@ private:
   SpinButton* m_dlgtrack_sbn_channel;
   
   Dialog* m_dlg_pattern_properties;
+  Entry* m_dlgpat_ent_name;
+  SpinButton* m_dlgpat_sbn_length;
+  SpinButton* m_dlgpat_sbn_steps;
+  SpinButton* m_dlgpat_sbn_cc_steps;
   
   static char* cc_descriptions[];
-  
-  Song m_song;
   
   Dialog* m_about_dialog;
   

@@ -27,13 +27,18 @@ public:
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   
   void update();
+  void set_active_track(int id);
   
 private:
   
+  void slot_name_changed(const string& name);
+  
   const Song* m_song;
   Track* m_track;
+  connection m_name_connection;
   int m_id;
   int m_width, m_height;
+  bool m_is_active;
 
   RefPtr<GC> m_gc;
   RefPtr<Colormap> m_colormap;

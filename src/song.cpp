@@ -48,6 +48,7 @@ int Song::add_track(const string& name) {
   else
     id = iter->first + 1;
   m_tracks[id] = Track(m_length, name);
+  m_tracks[id].find_next_note(0, 0);
   m_dirty = true;
   signal_track_added(id);
   return id;
@@ -115,12 +116,12 @@ bool Song::is_dirty() const {
 bool Song::write_file(const string& filename) const {
   Document doc;
   Element* dino_elt = doc.create_root_node("dinosong");
-  dino_elt->add_child("title")->set_child_text(m_title);
-  dino_elt->add_child("author")->set_child_text(m_author);
-  dino_elt->add_child("info")->set_child_text(m_info);
+  dino_elt->set_attribute("title", m_title);
+  dino_elt->set_attribute("author", m_author);
   char length_txt[10];
   sprintf(length_txt, "%d", m_length);
-  dino_elt->add_child("length")->set_child_text(length_txt);
+  dino_elt->set_attribute("length", length_txt);
+  dino_elt->add_child("info")->set_child_text(m_info);
   map<int, Track>::const_iterator iter;
   for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter) {
     Element* track_elt = dino_elt->add_child("track");
@@ -144,34 +145,18 @@ bool Song::load_file(const string& filename) {
   const TextNode* text_node;
   Node::NodeList::const_iterator iter;
   
-  // parse info
-  Node::NodeList nodes = dino_elt->get_children();
-  for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
-    const Element* elt = dynamic_cast<Element*>(*iter);
-    if (!elt)
-      continue;
-    else if (elt->get_name() == "title") {
-      if ((text_node = elt->get_child_text()) != NULL) {
-	m_title = text_node->get_content();
-	signal_title_changed(m_title);
-      }
-    }
-    else if (elt->get_name() == "author") {
-      if ((text_node = elt->get_child_text()) != NULL) {
-	m_author = text_node->get_content();
-	signal_author_changed(m_author);
-      }
-    }
-    else if (elt->get_name() == "info") {
-      if ((text_node = elt->get_child_text()) != NULL) {
-	m_info = text_node->get_content();
-	signal_info_changed(m_info);
-      }
-    }
-    else if (elt->get_name() == "length") {
-      sscanf(elt->get_child_text()->get_content().c_str(), "%d", &m_length);
-      signal_length_changed(m_length);
-    }
+  // get attributes
+  m_title = dino_elt->get_attribute("title")->get_value();
+  m_author = dino_elt->get_attribute("author")->get_value();
+  sscanf(dino_elt->get_attribute("length")->get_value().c_str(), 
+	 "%d", &m_length);
+  
+  // get info
+  Node::NodeList nodes = dino_elt->get_children("info");
+  if (nodes.begin() != nodes.end()) {
+    const Element* elt = dynamic_cast<Element*>(*nodes.begin());
+    if (elt && (text_node = elt->get_child_text()) != NULL)
+      m_info = text_node->get_content();
   }
   
   // parse all tracks
@@ -182,17 +167,14 @@ bool Song::load_file(const string& filename) {
     sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
     m_tracks[id] = Track(m_length);
     m_tracks[id].parse_xml_node(track_elt);
-    signal_track_added(id);
   }
 }
 
 
 void Song::clear() {
-  set_title("");
-  set_author("");
-  set_info("");
-  signal_length_changed(m_length = 32);
-  std::map<int, Track>::const_iterator iter;
-  for (iter = m_tracks.begin(); iter != m_tracks.end(); )
-    remove_track((iter++)->first);
+  m_title = "";
+  m_author = "";
+  m_info = "";
+  m_length = 0;
+  m_tracks.clear();
 }

@@ -1,4 +1,4 @@
-AM_CPPFLAGS = @LIBGLADEMM_CFLAGS@ @GTHREAD_CFLAGS@ @LIBXMLPP_CFLAGS@ @ALSA_CFLAGS@ @JACK_CFLAGS@ @LADCCA_CFLAGS@
+AM_CPPFLAGS = @LIBGLADEMM_CFLAGS@ @GTHREAD_CFLAGS@ @LIBXMLPP_CFLAGS@ @ALSA_CFLAGS@ @JACK_CFLAGS@ @LADCCA_CFLAGS@ @DEBUG_CFLAGS@
 
 bin_PROGRAMS = dino
 
@@ -8,6 +8,7 @@ dino_SOURCES = \
 	pattern.cpp pattern.hpp \
 	track.cpp track.hpp \
 	song.cpp song.hpp \
+	octavelabel.cpp octavelabel.hpp \
 	patterneditor.cpp patterneditor.hpp \
 	cceditor.cpp cceditor.hpp \
 	ruler.cpp ruler.hpp \

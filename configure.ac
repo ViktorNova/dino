@@ -18,6 +18,8 @@ PKG_CHECK_MODULES(ALSA, alsa >= 1.0.6)
 PKG_CHECK_MODULES(JACK, jack >= 0.99.5)
 PKG_CHECK_MODULES(LADCCA, ladcca-1.0 >= 0.4.0)
 
+DEBUG_CFLAGS=-fno-default-inline
+AC_SUBST(DEBUG_CFLAGS)
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.

@@ -278,7 +278,7 @@
 		  <property name="show_arrow">True</property>
 
 		  <child>
-		    <widget class="GtkToolButton" id="toolbutton4">
+		    <widget class="GtkToolButton" id="tbn_add_pattern">
 		      <property name="visible">True</property>
 		      <property name="tooltip" translatable="yes">Add a new pattern</property>
 		      <property name="label" translatable="yes">Add</property>
@@ -295,7 +295,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="toolbutton5">
+		    <widget class="GtkToolButton" id="tbn_delete_pattern">
 		      <property name="visible">True</property>
 		      <property name="tooltip" translatable="yes">Delete the active pattern</property>
 		      <property name="label" translatable="yes">Delete</property>
@@ -312,7 +312,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="toolbutton6">
+		    <widget class="GtkToolButton" id="tbn_duplicate_pattern">
 		      <property name="visible">True</property>
 		      <property name="tooltip" translatable="yes">Duplicate the active pattern</property>
 		      <property name="label" translatable="yes">Duplicate</property>
@@ -329,7 +329,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="toolbutton7">
+		    <widget class="GtkToolButton" id="tbn_set_pattern_properties">
 		      <property name="visible">True</property>
 		      <property name="tooltip" translatable="yes">Change the properties for the active pattern</property>
 		      <property name="label" translatable="yes">Properties</property>
@@ -709,8 +709,9 @@
 		  <property name="show_arrow">True</property>
 
 		  <child>
-		    <widget class="GtkToolButton" id="tbnAddTrack">
+		    <widget class="GtkToolButton" id="tbn_add_track">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Add a new track</property>
 		      <property name="label" translatable="yes">Add</property>
 		      <property name="use_underline">True</property>
 		      <property name="stock_id">gtk-add</property>
@@ -725,8 +726,9 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="tbnDeleteTrack">
+		    <widget class="GtkToolButton" id="tbn_delete_track">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Delete the active track</property>
 		      <property name="label" translatable="yes">Delete</property>
 		      <property name="use_underline">True</property>
 		      <property name="stock_id">gtk-delete</property>
@@ -741,8 +743,9 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="tbnDuplicateTrack">
+		    <widget class="GtkToolButton" id="tbn_duplicate_track">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Duplicate the active track</property>
 		      <property name="label" translatable="yes">Duplicate</property>
 		      <property name="use_underline">True</property>
 		      <property name="stock_id">gtk-copy</property>
@@ -757,8 +760,9 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="tbnSetTrackProperties">
+		    <widget class="GtkToolButton" id="tbn_set_track_properties">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Set the properties for the active track</property>
 		      <property name="label" translatable="yes">Properties</property>
 		      <property name="use_underline">True</property>
 		      <property name="stock_id">gtk-properties</property>
@@ -786,14 +790,15 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToggleToolButton" id="toggletoolbutton1">
+		    <widget class="GtkToolButton" id="tbn_play">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Play</property>
+		      <property name="tooltip" translatable="yes">Play</property>
+		      <property name="label" translatable="yes"></property>
 		      <property name="use_underline">True</property>
+		      <property name="stock_id">gtk-go-forward</property>
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
-		      <property name="active">False</property>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>
@@ -802,26 +807,38 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToggleToolButton" id="toggletoolbutton2">
+		    <widget class="GtkToolItem" id="toolitem1">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Pause</property>
-		      <property name="use_underline">True</property>
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
-		      <property name="active">False</property>
+
+		      <child>
+			<widget class="GtkToolButton" id="tbn_stop">
+			  <property name="visible">True</property>
+			  <property name="tooltip" translatable="yes">Stop</property>
+			  <property name="label" translatable="yes"></property>
+			  <property name="use_underline">True</property>
+			  <property name="stock_id">gtk-stop</property>
+			  <property name="visible_horizontal">True</property>
+			  <property name="visible_vertical">True</property>
+			  <property name="is_important">False</property>
+			</widget>
+		      </child>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>
-		      <property name="homogeneous">True</property>
+		      <property name="homogeneous">False</property>
 		    </packing>
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="toolbutton12">
+		    <widget class="GtkToolButton" id="tbn_go_to_start">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Stop</property>
+		      <property name="tooltip" translatable="yes">Go to start</property>
+		      <property name="label" translatable="yes"></property>
 		      <property name="use_underline">True</property>
+		      <property name="stock_id">gtk-goto-first</property>
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>

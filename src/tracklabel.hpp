@@ -18,7 +18,7 @@ public:
   
   TrackLabel(const Song* song = NULL);
   
-  void set_track(Track* track);
+  void set_track(int id, Track* track);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -32,6 +32,7 @@ private:
   
   const Song* m_song;
   Track* m_track;
+  int m_id;
   int m_width, m_height;
 
   RefPtr<GC> m_gc;

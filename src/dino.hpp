@@ -55,13 +55,13 @@ private:
       the widget with name @c name. If there is no widget in @c xml with that
       name it returns NULL. */
   template <class T>
-  inline static T* w(RefPtr<Xml> xml, const char* name) {
+  inline static T* w(RefPtr<Xml> xml, const string& name) {
     return dynamic_cast<T*>(xml->get_widget(name));
   }
   
   /** Even more convenient. */
   template <class T>
-  inline T* w(const char* name) {
+  inline T* w(const string& name) {
     return dynamic_cast<T*>(m_xml->get_widget(name));
   }
   

@@ -146,7 +146,7 @@ void Dino::update_track_widgets() {
     tw->set_track(&iter->second);
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
     TrackLabel* tl = manage(new TrackLabel(&m_song));
-    tl->set_track(&iter->second);
+    tl->set_track(iter->first, &iter->second);
     m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
   }
   m_vbx_track_editor->show_all();
@@ -364,7 +364,7 @@ void Dino::init_sequence_editor() {
 
 void Dino::init_menus() {
   // connect menu signals
-  map<const char*, void (Dino::*)(void)> menuSlots;
+  map<string, void (Dino::*)(void)> menuSlots;
   menuSlots["new1"] = &Dino::slot_file_new;
   menuSlots["open1"] = &Dino::slot_file_open;
   menuSlots["save1"] = &Dino::slot_file_save;
@@ -382,11 +382,25 @@ void Dino::init_menus() {
   menuSlots["play1"] = &Dino::slot_transport_play;
   menuSlots["stop1"] = &Dino::slot_transport_stop;
   menuSlots["go_to_start1"] = &Dino::slot_transport_go_to_start;
-  map<const char*, void (Dino::*)(void)>::const_iterator iter;
+  map<string, void (Dino::*)(void)>::const_iterator iter;
   for (iter = menuSlots.begin(); iter != menuSlots.end(); ++iter) {
-    MenuItem* mi = w<Gtk::MenuItem>(iter->first);
+    MenuItem* mi = w<MenuItem>(iter->first);
     assert(mi);
-    mi->signal_activate().connect(sigc::mem_fun(*this, iter->second));
+    mi->signal_activate().connect(mem_fun(*this, iter->second));
+  }
+  
+  // and toolbuttons
+  map<string, void (Dino::*)(void)> toolSlots;
+  toolSlots["tbn_add_pattern"] = &Dino::slot_edit_add_pattern;
+  toolSlots["tbn_delete_pattern"] = &Dino::slot_edit_delete_pattern;
+  toolSlots["tbn_add_track"] = &Dino::slot_edit_add_track;
+  toolSlots["tbn_delete_track"] = &Dino::slot_edit_delete_track;
+  toolSlots["tbn_play"] = &Dino::slot_transport_play;
+  toolSlots["tbn_stop"] = &Dino::slot_transport_stop;
+  toolSlots["tbn_go_to_start"] = &Dino::slot_transport_go_to_start;
+  for (iter = toolSlots.begin(); iter != toolSlots.end(); ++iter) {
+    w<ToolButton>(iter->first)->signal_clicked().
+      connect(mem_fun(*this, iter->second));
   }
 }
 

@@ -22,9 +22,10 @@ TrackLabel::TrackLabel(const Song* song)
 }
   
 
-void TrackLabel::set_track(Track* track) {
+void TrackLabel::set_track(int id, Track* track) {
   assert(track);
   m_track = track;
+  m_id = id;
 }
 
 
@@ -38,7 +39,9 @@ void TrackLabel::on_realize() {
   FontDescription fd("helvetica bold 12");
   get_pango_context()->set_font_description(fd);
   m_layout = Layout::create(get_pango_context());
-  m_layout->set_text(m_track->get_name());
+  char tmp[10];
+  sprintf(tmp, "%03d ", m_id);
+  m_layout->set_text(string(tmp) + m_track->get_name());
 }
 
 

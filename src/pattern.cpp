@@ -21,6 +21,13 @@ Pattern::Pattern(int length, int steps, int ccSteps) : m_dirty(false) {
 }
 
 
+/** This function tries to add a new note with the given parameters. If 
+    there is another note starting at the same step and with the same value,
+    the old note will be deleted. If there is a note that is playing at that
+    step with the same value, the old note will be shortened so it ends just
+    before @c step. This function will also update the @c previous and 
+    @c next pointers in the Note, so the doubly linked list will stay
+    consistent with the note map. */
 void Pattern::add_note(int step, int value, int noteLength) {
   assert(step >= 0 && step < m_length * m_steps);
   assert(value >= 0 && value < 128);
@@ -97,6 +104,11 @@ void Pattern::add_note(int step, int value, int noteLength) {
 }
 
 
+/** This function will delete the note with the given value playing at the
+    given step, if there is one. It will also update the @c previous and 
+    @c next pointers so the doubly linked list will stay consistent with the
+    note map. It will return the step that the deleted note started on,
+    or -1 if no note was deleted. */
 int Pattern::delete_note(int step, int value) {
   assert(step >= 0 && step < m_length * m_steps);
   assert(value >= 0 && value < 128);
@@ -208,6 +220,10 @@ void Pattern::get_dirty_rect(int* minStep, int* minNote,
 }
 
 
+/** This function will fill in the step, value, and length of the next note
+    event that occurs before @c beforeStep, if there is one. If there isn't
+    it will return false. It <b>must be realtime safe</b> because it is 
+    used by the sequencer thread. */
 bool Pattern::get_next_note(int& step, int& value,int& length, 
 			    int beforeStep) const {
   // no notes left in the pattern
@@ -236,6 +252,9 @@ bool Pattern::get_next_note(int& step, int& value,int& length,
 }
 
 
+/** This function sets "next note" to the first note at or after the given
+    step. It <b>must be realtime safe</b> for @c step == 0 because that is
+    used by the sequencer thread. */
 void Pattern::find_next_note(int step) const {
   NoteMap::const_iterator iter = m_notes.lower_bound(make_pair(step, 0));
   if (iter == m_notes.end())

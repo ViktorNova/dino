@@ -19,7 +19,7 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml)
   : m_xml(xml), m_seq("Dino"), m_pattern_ruler_1(0, 1, 1, 20, 20) {
   
   m_seq.set_song(m_song);
-
+  
   m_window = w<Gtk::Window>("main_window");
   
   init_pattern_editor();
@@ -38,7 +38,7 @@ Gtk::Window* Dino::get_window() {
 
 
 void Dino::slot_file_new() {
-  m_song = Song();
+  //m_song = Song();
 }
 
 

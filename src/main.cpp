@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <sigc++/slot.h>
 #include <libglademm.h>
@@ -54,6 +55,7 @@ int main(int argc, char** argv) {
   // load the GUI
   Main kit(argc, argv);
   RefPtr<Xml> refXml = Xml::create("dino.glade");
+  thread_init(); 
   Dino dino(argc, argv, refXml);
   
   // run

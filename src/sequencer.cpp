@@ -134,6 +134,15 @@ int Sequencer::jack_sync_callback(jack_transport_state_t state,
 
 
 int Sequencer::jack_process_callback(jack_nframes_t nframes) {
+  // Nothing to sequence?
+  if (!m_song)
+    return 0;
+
+  // try to get access to the song - if not, return (can't keep Jack waiting)
+  Mutex::Lock lock(m_song->get_big_lock(), TRY_LOCK);
+  if (!lock.locked())
+    return 0;
+  
   const int tickAhead = 100;
   
   // get the current beat and tick
@@ -145,8 +154,7 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   const int beforeTick = (cTick + tickAhead) % 10000;
   
   // if we're rolling and we have something to sequence, sequence it
-  if ((state == JackTransportRolling) && (pos.valid & JackPositionBBT) &&
-      m_song) {
+  if ((state == JackTransportRolling) && (pos.valid & JackPositionBBT)) {
     const map<int, Track>& tracks(m_song->get_tracks());
     map<int, Track>::const_iterator iter;
     int beat, tick, value, length;

@@ -10,11 +10,16 @@ Track::Track(int length)
 }
 
 
+/** Returns the name of the track. The name is just a label that the user
+    can change. */
 const string& Track::get_name() const {
   return m_name;
 }
 
 
+/** Returns a map of the patterns in this track. This map can be changed
+    by the user, and we have no way of knowing how it's changed - this will
+    probably be replaced by higher level functions in the future. */
 map<int, Pattern>& Track::get_patterns() {
   return m_patterns;
 }
@@ -25,12 +30,16 @@ const map<int, Pattern>& Track::get_patterns() const {
 }
 
 
+/** Returns the sequence as a map of ints indexed by ints. This will probably
+    be removed or made const in the future. */
 Track::Sequence& Track::get_sequence() {
   return m_sequence;
 }
 
 
-bool Track::get_sequence_entry(int at, int& beat, int& pattern, int& length) {
+/** Return the SequenceEntry that is playing at the given beat, or -1. */
+bool Track::get_sequence_entry(int at, int& beat, 
+			       int& pattern, int& length) const {
   for (Sequence::const_iterator iter = m_sequence.begin(); 
        iter != m_sequence.end() && iter->first <= at; ++iter) {
     if (iter->first + iter->second->length > at) {
@@ -44,6 +53,7 @@ bool Track::get_sequence_entry(int at, int& beat, int& pattern, int& length) {
 }
 
 
+/** Creates and adds a new pattern in this track with the given parameters.*/
 int Track::add_pattern(int length, int steps, int ccSteps) {
   int id;
   if (m_patterns.rbegin() != m_patterns.rend())
@@ -56,6 +66,7 @@ int Track::add_pattern(int length, int steps, int ccSteps) {
 }
 
 
+/** Set the sequency entry at the given beat to the given pattern and length.*/
 void Track::set_sequence_entry(int beat, int pattern, int length) {
   
   assert(beat >= 0);
@@ -137,6 +148,8 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
 }
 
 
+/** Remove the sequence entry (pattern) that is playing at the given beat.
+    If no pattern is playing at that beat, return @c false. */
 bool Track::remove_sequence_entry(int beat) {
   Sequence::iterator iter = m_sequence.begin();
   for ( ; iter != m_sequence.end(); ++iter) {
@@ -156,6 +169,7 @@ bool Track::remove_sequence_entry(int beat) {
 }
 
 
+/** Set the length of the track. Only the Song should do this. */
 void Track::set_length(int length) {
   if (length != m_length) {
     m_length = length;
@@ -164,6 +178,7 @@ void Track::set_length(int length) {
 }
 
 
+/** Has the track been changed since the last makeClean()? */
 bool Track::is_dirty() const {
   if (m_dirty)
     return true;
@@ -175,7 +190,7 @@ bool Track::is_dirty() const {
   return false;
 }
 
-
+/** Reset the dirty flag. */
 void Track::make_clean() const {
   m_dirty = false;
   for (map<int, Pattern>::const_iterator iter = m_patterns.begin();
@@ -184,6 +199,9 @@ void Track::make_clean() const {
 }
 
 
+/** Get the next note event that occurs before the given time, or return 
+    false if there isn't one. This function <b>must be realtime safe</b>
+    because it is used by the sequencer thread. */
 bool Track::get_next_note(int& beat, int& tick, int& value, int& length,
 			  int beforeBeat, int beforeTick) const {
   // no patterns left to play
@@ -237,12 +255,17 @@ bool Track::get_next_note(int& beat, int& tick, int& value, int& length,
 }
 
 
+/** Get the next CC event, or return false if there isn't one. This 
+    function <b>must be realtime safe</b> because it is used by the 
+    sequencer thread. */
 bool Track::get_next_cc_event(int& step, int& tick, 
 			   int& number, int& value) const {
   return false;
 }
 
 
+/** Sets "next note" to the next note after or at the given step. This 
+    function does not have to be realtime safe. */  
 void Track::find_next_note(int beat, int tick) const {
   Sequence::const_iterator iter;
   for (iter = m_sequence.begin(); iter != m_sequence.end(); ++iter) {
@@ -260,6 +283,7 @@ void Track::find_next_note(int beat, int tick) const {
 }
 
 
+/** Serialize this track to a XML node and return it. */
 xmlNodePtr Track::get_xml_node(xmlDocPtr doc) const {
   xmlNodePtr node = xmlNewDocNode(doc, NULL, xmlCharStrdup("track"), NULL);
   char tmpStr[20];

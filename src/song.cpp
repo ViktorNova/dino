@@ -91,6 +91,11 @@ int Song::get_length() const {
 }
 
 
+Mutex& Song::get_big_lock() const {
+  return m_big_lock;
+}
+
+
 bool Song::is_dirty() const {
   if (m_dirty)
     return true;

@@ -264,14 +264,11 @@ void Sequencer::schedule_note(int beat, int tick, int port, int channel,
 
 int Sequencer::jack_sync_callback(jack_transport_state_t state, 
 				  jack_position_t* pos) {
-  cerr<<"jack_sync_callback()"<<endl;
   if (m_sync_state == InSync || m_sync_state == Waiting) {
-    cerr<<"set to Syncing"<<endl;
     m_sync_state = Syncing;
     return 0;
   }
   if (m_sync_state == SyncDone) {
-    cerr<<"InSync"<<endl;
     m_sync_state = InSync;
     return 1;
   }
@@ -285,7 +282,7 @@ void Sequencer::jack_timebase_callback(jack_transport_state_t state,
 				       int new_pos) {
   double bpm = 150;
   int bpb = 4;
-  double fpb = 44100 * 60 / bpm;
+  double fpb = pos->frame_rate * 60 / bpm;
   double fpt = fpb / 10000;
   pos->bar = int(pos->frame / (bpb * fpb));
   pos->beat = int(pos->frame / fpb) % bpb;

@@ -76,10 +76,10 @@ void Pattern::add_note(int step, int value, int noteLength) {
       iter->next = to_be_deleted->next;
       if (iter->next)
 	iter->next->prev = iter;
-      if (m_next_note == to_be_deleted) {
-	Mutex::Lock lock(m_lock);
+      Mutex::Lock lock(m_lock);
+      if (m_next_note == to_be_deleted)
 	m_next_note = to_be_deleted->prev;
-      }
+      lock.release();
       delete to_be_deleted;
     }
     
@@ -147,10 +147,10 @@ int Pattern::delete_note(int step, int value) {
       iter->prev->next = iter->next;
       if (iter->next)
 	iter->next->prev = iter->prev;
-      if (iter == m_next_note) {
-	Mutex::Lock lock(m_lock);
+      Mutex::Lock lock(m_lock);
+      if (iter == m_next_note)
 	m_next_note = iter->prev;
-      }
+      lock.release();
       delete iter;
       signal_note_removed(rStep, rNote);
       return result;

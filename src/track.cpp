@@ -122,10 +122,10 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
 	iter->next = to_be_deleted->next;
 	if (to_be_deleted->next)
 	  to_be_deleted->next->prev = iter;
-	if (to_be_deleted == m_current_seq_entry) {
-	  Mutex::Lock lock(m_lock);
+	Mutex::Lock lock(m_lock);
+	if (to_be_deleted == m_current_seq_entry)
 	  m_current_seq_entry = m_current_seq_entry->prev;
-	}
+	lock.release();
 	delete to_be_deleted;
       }
       break;
@@ -172,10 +172,10 @@ bool Track::remove_sequence_entry(int beat) {
       iter->prev->next = iter->next;
       if (iter->next)
 	iter->next->prev = iter->prev;
-      if (m_current_seq_entry == iter) {
-	Mutex::Lock lock(m_lock);
+      Mutex::Lock lock(m_lock);
+      if (m_current_seq_entry == iter)
 	m_current_seq_entry = iter->prev;
-      }
+      lock.release();
       delete iter;
       signal_sequence_entry_removed(r_beat);
       return true;

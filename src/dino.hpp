@@ -72,6 +72,7 @@ private:
   void active_track_changed();
   void init_pattern_editor();
   void init_sequence_editor();
+  void init_info_editor();
   void init_menus();
   
   // internal callbacks
@@ -95,6 +96,10 @@ private:
   Label* m_lb_cc_description;
   SpinButton* m_sb_cc_editor_size;
   ::Ruler m_pattern_ruler_1;
+  Entry* m_ent_title;
+  Entry* m_ent_author;
+  TextView* m_text_info;
+
   static char* cc_descriptions[];
   
   Song m_song;

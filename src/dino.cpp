@@ -25,6 +25,7 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml)
   
   init_pattern_editor();
   init_sequence_editor();
+  init_info_editor();
   init_menus();
   
   m_window->show_all();
@@ -365,6 +366,33 @@ void Dino::init_menus() {
     assert(mi);
     mi->signal_activate().connect(sigc::mem_fun(*this, iter->second));
   }
+}
+
+
+int foo() {
+  static int c = 1024;
+  cerr<<"foo: "<<c<<endl;
+  return ++c;
+}
+
+void bar(int i) {
+  cerr<<i<<endl;
+}
+
+
+void Dino::init_info_editor() {
+  m_ent_title = w<Entry>("ent_title");
+  m_ent_author = w<Entry>("ent_author");
+  m_text_info = w<TextView>("text_info");
+  
+  m_song.signal_title_changed.connect(mem_fun(m_ent_title, &Entry::set_text));
+  m_song.signal_author_changed.connect(mem_fun(m_ent_author,&Entry::set_text));
+  slot<void> set_title = compose(mem_fun(m_song, &Song::set_title),
+				 mem_fun(m_ent_title, &Entry::get_text));
+  m_ent_title->signal_changed().connect(set_title);
+  slot<void> set_author = compose(mem_fun(m_song, &Song::set_author),
+				  mem_fun(m_ent_author, &Entry::get_text));
+  m_ent_author->signal_changed().connect(set_author);
 }
 
 

@@ -47,11 +47,15 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       event->y < m_max_note * m_row_height) {
     int note = m_max_note - int(event->y) / m_row_height - 1;
     int step = int(event->x) / m_col_width;
+
+    // button one adds notes
     if (event->button == 1) {
       m_added_note = make_pair(step, note);
       m_pat->add_note(m_added_note.first, m_added_note.second, 1);
       update();
     }
+    
+    // button 2 changes the length
     else if (event->button == 2) {
       int start = m_pat->delete_note(step, note);
       if (start != -1) {
@@ -60,11 +64,14 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
 	update();
       }
     }
+    
+    // button 3 deletes
     else if (event->button == 3) {
       m_pat->delete_note(int(event->x) / m_col_width, 
 		      m_max_note - int(event->y) / m_row_height - 1);
       update();
     }
+
     m_drag_step = step;
     m_drag_note = note;
   }

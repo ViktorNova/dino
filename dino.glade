@@ -1011,7 +1011,7 @@
 	      </child>
 
 	      <child>
-		<widget class="GtkEntry" id="entry1">
+		<widget class="GtkEntry" id="ent_title">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="editable">True</property>
@@ -1032,7 +1032,7 @@
 	      </child>
 
 	      <child>
-		<widget class="GtkEntry" id="entry2">
+		<widget class="GtkEntry" id="ent_author">
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="editable">True</property>
@@ -1086,7 +1086,7 @@
 		  <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
 
 		  <child>
-		    <widget class="GtkTextView" id="textview1">
+		    <widget class="GtkTextView" id="text_info">
 		      <property name="visible">True</property>
 		      <property name="can_focus">True</property>
 		      <property name="editable">True</property>

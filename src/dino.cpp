@@ -21,12 +21,11 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml)
   m_seq.set_song(m_song);
   
   m_window = w<Gtk::Window>("main_window");
+  m_about_dialog = w<Dialog>("dlg_about");
   
   init_pattern_editor();
   init_sequence_editor();
   init_menus();
-  
-  m_about_dialog = w<Dialog>("dlg_about");
   
   m_window->show_all();
 }
@@ -83,14 +82,17 @@ void Dino::slot_edit_delete() {
 
 
 void Dino::slot_edit_add_track() {
+  Mutex::Lock(m_song.get_big_lock());
   m_song.add_track();
 }
  
 
 void Dino::slot_edit_delete_track() {
   int trackID = m_cmb_track.get_active_id();
-  if (trackID >= 0)
+  if (trackID >= 0) {
+    Mutex::Lock(m_song.get_big_lock());
     m_song.remove_track(trackID);
+  }
 }
 
 

@@ -76,6 +76,10 @@ void Pattern::add_note(int step, int value, int noteLength) {
       iter->next = to_be_deleted->next;
       if (iter->next)
 	iter->next->prev = iter;
+      if (m_next_note == to_be_deleted) {
+	Mutex::Lock lock(m_lock);
+	m_next_note = to_be_deleted->prev;
+      }
       delete to_be_deleted;
     }
     
@@ -100,10 +104,13 @@ void Pattern::add_note(int step, int value, int noteLength) {
   Note* note = new Note(step, value, noteLength);
   note->prev = position;
   note->next = position->next;
-  position->next = note;
+  
+  Mutex::Lock lock(m_lock);
   if (note->next)
     note->next->prev = note;
-  
+  position->next = note;
+  lock.release();
+
   m_min_note = value < m_min_note ? value : m_min_note;
   m_max_note = value > m_max_note ? value : m_max_note;
   m_min_step = step < m_min_step ? step : m_min_step;
@@ -140,6 +147,10 @@ int Pattern::delete_note(int step, int value) {
       iter->prev->next = iter->next;
       if (iter->next)
 	iter->next->prev = iter->prev;
+      if (iter == m_next_note) {
+	Mutex::Lock lock(m_lock);
+	m_next_note = iter->prev;
+      }
       delete iter;
       signal_note_removed(rStep, rNote);
       return result;
@@ -234,6 +245,7 @@ void Pattern::get_dirty_rect(int* minStep, int* minNote,
     used by the sequencer thread. */
 bool Pattern::get_next_note(int& step, int& value,int& length, 
 			    int beforeStep) const{
+  Mutex::Lock lock(m_lock);
   // no notes left in the pattern
   if (m_next_note == NULL)
     return false;
@@ -256,6 +268,7 @@ bool Pattern::get_next_note(int& step, int& value,int& length,
     step. It <b>must be realtime safe</b> for @c step == 0 because that is
     used by the sequencer thread. */
 void Pattern::find_next_note(int step) const {
+  Mutex::Lock lock(m_lock);
   cerr<<"find_next_note("<<step<<")"<<endl;
   const Note* iter = m_note_head;
   for ( ; iter->next != NULL && iter->next->step < step; iter = iter->next);

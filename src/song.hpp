@@ -24,8 +24,8 @@ public:
   const string& get_title() const;
   const string& get_author() const;
   const string& get_info() const;
-  const map<int, Track>& get_tracks() const;
-  map<int, Track>& get_tracks();
+  const map<int, Track*>& get_tracks() const;
+  map<int, Track*>& get_tracks();
   int get_length() const;
   Mutex& get_big_lock() const;
   
@@ -59,7 +59,7 @@ private:
   string m_title;
   string m_author;
   string m_info;
-  map<int, Track> m_tracks;
+  map<int, Track*> m_tracks;
   int m_length;
 
   mutable Mutex m_big_lock;

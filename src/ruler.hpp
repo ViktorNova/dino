@@ -48,15 +48,15 @@ public:
   PatternRuler(const Song& song) : ::Ruler(0, 1, 1, 20, 20), m_song(song) { }
   void set_pattern(int track, int pattern) {
     if (track != -1 && pattern != -1) {
-      const Pattern& pat(m_song.get_tracks().find(track)->second.
+      const Pattern* pat(m_song.get_tracks().find(track)->second->
 			 get_patterns().find(pattern)->second);
-      set_length(pat.get_length());
-      set_subdivisions(pat.get_steps());
+      set_length(pat->get_length());
+      set_subdivisions(pat->get_steps());
       set_interval(1);
-      if (pat.get_steps() == pat.get_cc_steps())
-	set_division_size(8 * pat.get_steps());
+      if (pat->get_steps() == pat->get_cc_steps())
+	set_division_size(8 * pat->get_steps());
       else
-	set_division_size(4 * pat.get_cc_steps());
+	set_division_size(4 * pat->get_cc_steps());
     }
     else
       set_length(0);

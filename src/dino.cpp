@@ -105,7 +105,7 @@ void Dino::slot_edit_add_track() {
   if (m_dlg_track_properties->run() == RESPONSE_OK) {
     Mutex::Lock(m_song.get_big_lock());
     int id = m_song.add_track(m_dlgtrack_ent_name->get_text());
-    m_song.get_tracks()[id].
+    m_song.get_tracks()[id]->
       set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
     int instrument = m_dlgtrack_cmb_port.get_active_id();
     if (instrument == -1)
@@ -129,15 +129,15 @@ void Dino::slot_edit_delete_track() {
 void Dino::slot_edit_edit_track_properties() {
   if (m_active_track >= 0) {
     Mutex::Lock(m_song.get_big_lock());
-    Track& t(m_song.get_tracks()[m_active_track]);
-    m_dlgtrack_ent_name->set_text(t.get_name());
+    Track* t(m_song.get_tracks()[m_active_track]);
+    m_dlgtrack_ent_name->set_text(t->get_name());
     update_port_combo();
     m_dlgtrack_cmb_port.set_active_id(-1);
-    m_dlgtrack_sbn_channel->set_value(t.get_channel() + 1);
+    m_dlgtrack_sbn_channel->set_value(t->get_channel() + 1);
     m_dlg_track_properties->show_all();
     if (m_dlg_track_properties->run() == RESPONSE_OK) {
-      t.set_name(m_dlgtrack_ent_name->get_text());
-      t.set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
+      t->set_name(m_dlgtrack_ent_name->get_text());
+      t->set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
       int instrument = m_dlgtrack_cmb_port.get_active_id();
       if (instrument == -1)
 	m_seq.set_instrument(m_active_track, -1, -1);
@@ -161,11 +161,11 @@ void Dino::slot_edit_add_pattern() {
       Mutex::Lock(m_song.get_big_lock());
       
       int patternID = m_song.get_tracks().find(m_active_track)->
-	second.add_pattern(m_dlgpat_ent_name->get_text(),
-			   m_dlgpat_sbn_length->get_value_as_int(),
-			   m_dlgpat_sbn_steps->get_value_as_int(),
-			   m_dlgpat_sbn_steps->get_value_as_int() *
-			   m_dlgpat_sbn_cc_steps->get_value_as_int());
+	second->add_pattern(m_dlgpat_ent_name->get_text(),
+			    m_dlgpat_sbn_length->get_value_as_int(),
+			    m_dlgpat_sbn_steps->get_value_as_int(),
+			    m_dlgpat_sbn_steps->get_value_as_int() *
+			    m_dlgpat_sbn_cc_steps->get_value_as_int());
     }
     m_dlg_pattern_properties->hide();
   }
@@ -216,13 +216,13 @@ void Dino::reset_gui() {
 void Dino::update_track_widgets() {
   m_vbx_track_editor->children().clear();
   m_vbx_track_labels->children().clear();
-  for (map<int, Track>::iterator iter = m_song.get_tracks().begin();
+  for (map<int, Track*>::iterator iter = m_song.get_tracks().begin();
        iter != m_song.get_tracks().end(); ++iter) {
     TrackWidget* tw = manage(new TrackWidget(&m_song));
-    tw->set_track(&iter->second);
+    tw->set_track(iter->second);
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
     TrackLabel* tl = manage(new TrackLabel(&m_song));
-    tl->set_track(iter->first, &iter->second);
+    tl->set_track(iter->first, iter->second);
     m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
     signal_active_track_changed.
       connect(mem_fun(*tl, &TrackLabel::set_active_track));
@@ -239,10 +239,10 @@ void Dino::update_track_combo() {
   int newActive = m_active_track;
   if (m_song.get_tracks().size() > 0) {
     char tmp[10];
-    for (map<int, Track>::iterator iter = m_song.get_tracks().begin();
+    for (map<int, Track*>::iterator iter = m_song.get_tracks().begin();
 	 iter != m_song.get_tracks().end(); ++iter) {
       sprintf(tmp, "%03d ", iter->first);
-      m_cmb_track.append_text(string(tmp) + iter->second.get_name(), 
+      m_cmb_track.append_text(string(tmp) + iter->second->get_name(), 
 			      iter->first);
       if (newActive == -1 || (m_active_track == -1 &&iter->first <= oldActive))
 	newActive = iter->first;
@@ -263,14 +263,14 @@ void Dino::update_pattern_combo() {
   m_cmb_pattern.clear();
   int trackID = m_cmb_track.get_active_id();
   if (trackID >= 0) {
-    const Track& trk(m_song.get_tracks().find(trackID)->second);
+    const Track* trk(m_song.get_tracks().find(trackID)->second);
     m_cmb_pattern.clear();
-    map<int, Pattern>::const_iterator iter;
+    map<int, Pattern*>::const_iterator iter;
     char tmp[10];
-    for (iter = trk.get_patterns().begin(); 
-	 iter != trk.get_patterns().end(); ++iter) {
+    for (iter = trk->get_patterns().begin(); 
+	 iter != trk->get_patterns().end(); ++iter) {
       sprintf(tmp, "%03d ", iter->first);
-      m_cmb_pattern.append_text(string(tmp) + iter->second.get_name(), 
+      m_cmb_pattern.append_text(string(tmp) + iter->second->get_name(), 
 				iter->first);
       if (newActive == -1)
 	newActive = iter->first;
@@ -582,10 +582,10 @@ void Dino::set_active_track(int active_track) {
     m_conn_pat_added.disconnect();
     m_conn_pat_removed.disconnect();
     if (m_active_track != -1) {
-      Track& t(m_song.get_tracks()[m_active_track]);
+      Track* t(m_song.get_tracks()[m_active_track]);
       slot<void> update_slot = mem_fun(*this, &Dino::update_pattern_combo);
-      m_conn_pat_added = t.signal_pattern_added.connect(hide(update_slot));
-      m_conn_pat_removed = t.signal_pattern_removed.connect(hide(update_slot));
+      m_conn_pat_added = t->signal_pattern_added.connect(hide(update_slot));
+      m_conn_pat_removed= t->signal_pattern_removed.connect(hide(update_slot));
     }
     set_active_pattern(-1);
     signal_active_track_changed(m_active_track);

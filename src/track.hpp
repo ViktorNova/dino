@@ -4,12 +4,14 @@
 #include <string>
 #include <vector>
 
+#include <glibmm/thread.h>
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
 #include "pattern.hpp"
 
 
+using namespace Glib;
 using namespace sigc;
 using namespace std;
 using namespace xmlpp;
@@ -44,8 +46,8 @@ public:
   
   // accessors
   const string& get_name() const;
-  map<int, Pattern>& get_patterns();
-  const map<int, Pattern>& get_patterns() const;
+  map<int, Pattern*>& get_patterns();
+  const map<int, Pattern*>& get_patterns() const;
   SequenceEntry* get_sequence();
   bool get_sequence_entry(int at, int& beat, int& pattern, int& length) const;
   int get_channel() const;
@@ -83,12 +85,14 @@ public:
 private:
   
   string m_name;
-  map<int, Pattern> m_patterns;
+  map<int, Pattern*> m_patterns;
   SequenceEntry* m_seq_head;
   int m_length;
   int m_channel;
   
   mutable bool m_dirty;
+  
+  mutable Mutex m_lock;
   
   mutable SequenceEntry* m_current_seq_entry;
   

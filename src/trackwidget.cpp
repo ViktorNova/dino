@@ -107,7 +107,8 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   switch (event->button) {
   case 1: {
     char tmp[10];
-    std::map<int, Pattern>::const_iterator iter= m_track->get_patterns().begin();
+    std::map<int, Pattern*>::const_iterator iter
+      = m_track->get_patterns().begin();
     m_pattern_menu.items().clear();
     for ( ; iter != m_track->get_patterns().end(); ++iter) {
       sprintf(tmp, "%03d", iter->first);
@@ -158,8 +159,10 @@ bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
 
   if ((event->state & GDK_BUTTON2_MASK) && m_drag_beat != -1 &&
       beat >= m_drag_beat && 
-      beat - m_drag_beat +1 <= m_track->get_patterns()[m_drag_pattern].get_length()) {
-    m_track->set_sequence_entry(m_drag_beat, m_drag_pattern, beat - m_drag_beat + 1);
+      beat - m_drag_beat + 1 <= 
+      m_track->get_patterns()[m_drag_pattern]->get_length()) {
+    m_track->set_sequence_entry(m_drag_beat, m_drag_pattern, 
+				beat - m_drag_beat + 1);
     update();
     return true;
   }
@@ -169,7 +172,7 @@ bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
 
 
 void TrackWidget::slot_insert_pattern(int pattern, int position) {
-  int length = m_track->get_patterns()[pattern].get_length();
+  int length = m_track->get_patterns()[pattern]->get_length();
   m_track->set_sequence_entry(position, pattern, length);
   update();
 }

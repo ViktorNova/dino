@@ -21,12 +21,12 @@ const string& Track::get_name() const {
 /** Returns a map of the patterns in this track. This map can be changed
     by the user, and we have no way of knowing how it's changed - this will
     probably be replaced by higher level functions in the future. */
-map<int, Pattern>& Track::get_patterns() {
+map<int, Pattern*>& Track::get_patterns() {
   return m_patterns;
 }
 
 
-const map<int, Pattern>& Track::get_patterns() const {
+const map<int, Pattern*>& Track::get_patterns() const {
   return m_patterns;
 }
 
@@ -77,7 +77,7 @@ int Track::add_pattern(const string& name, int length,
     id = m_patterns.rbegin()->first + 1;
   else
     id = 1;
-  m_patterns[id] = Pattern(name, length, steps, ccSteps);
+  m_patterns[id] = new Pattern(name, length, steps, ccSteps);
   signal_pattern_added(id);
   return id;
 }
@@ -89,12 +89,12 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
   assert(beat < m_length);
   assert(m_patterns.find(pattern) != m_patterns.end());
   assert(length > 0 || length == -1);
-  assert(length <= m_patterns.find(pattern)->second.get_length());
+  assert(length <= m_patterns.find(pattern)->second->get_length());
   
   // if length is -1, get it from the pattern
   int newLength;
   if (length == -1)
-    newLength = m_patterns[pattern].get_length();
+    newLength = m_patterns[pattern]->get_length();
   else
     newLength = length;
   
@@ -115,13 +115,19 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
     else if (iter->start == beat) {
       if (iter->pattern_id == pattern)
 	is_update = true;
-      SequenceEntry* to_be_deleted = iter;
-      iter = iter->prev;
-      position = iter;
-      iter->next = to_be_deleted->next;
-      if (to_be_deleted->next)
-	to_be_deleted->next->prev = iter;
-      delete to_be_deleted;
+      else {
+	SequenceEntry* to_be_deleted = iter;
+	iter = iter->prev;
+	position = iter;
+	iter->next = to_be_deleted->next;
+	if (to_be_deleted->next)
+	  to_be_deleted->next->prev = iter;
+	if (to_be_deleted == m_current_seq_entry) {
+	  Mutex::Lock lock(m_lock);
+	  m_current_seq_entry = m_current_seq_entry->prev;
+	}
+	delete to_be_deleted;
+      }
       break;
     }
   }
@@ -135,19 +141,25 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
     newLength = m_length - beat;
   
   // insert the new entry
-  SequenceEntry* entry = new SequenceEntry(pattern, 
-					   &m_patterns.find(pattern)->second, 
-					   beat, newLength);
-  entry->next = position->next;
-  entry->prev = position;
-  position->next = entry;
-  if (entry->next)
-    entry->next->prev = entry;
-  
-  if (is_update)
-    signal_sequence_entry_changed(beat, pattern, newLength);
-  else
+  if (!is_update) {
+    SequenceEntry* entry = new SequenceEntry(pattern, 
+					     m_patterns.find(pattern)->second, 
+					     beat, newLength);
+    entry->next = position->next;
+    entry->prev = position;
+    
+    Mutex::Lock lock(m_lock);
+    position->next = entry;
+    lock.release();
+    
+    if (entry->next)
+      entry->next->prev = entry;
     signal_sequence_entry_added(beat, pattern, newLength);  
+  }
+  else {
+    position->length = newLength;
+    signal_sequence_entry_changed(beat, pattern, newLength);
+  }
 }
 
 
@@ -160,6 +172,10 @@ bool Track::remove_sequence_entry(int beat) {
       iter->prev->next = iter->next;
       if (iter->next)
 	iter->next->prev = iter->prev;
+      if (m_current_seq_entry == iter) {
+	Mutex::Lock lock(m_lock);
+	m_current_seq_entry = iter->prev;
+      }
       delete iter;
       signal_sequence_entry_removed(r_beat);
       return true;
@@ -188,9 +204,9 @@ void Track::set_channel(int channel) {
 bool Track::is_dirty() const {
   if (m_dirty)
     return true;
-  for (map<int, Pattern>::const_iterator iter = m_patterns.begin();
+  for (map<int, Pattern*>::const_iterator iter = m_patterns.begin();
        iter != m_patterns.end(); ++iter) {
-    if (iter->second.is_dirty())
+    if (iter->second->is_dirty())
       return true;
   }
   return false;
@@ -199,9 +215,9 @@ bool Track::is_dirty() const {
 /** Reset the dirty flag. */
 void Track::make_clean() const {
   m_dirty = false;
-  for (map<int, Pattern>::const_iterator iter = m_patterns.begin();
+  for (map<int, Pattern*>::const_iterator iter = m_patterns.begin();
        iter != m_patterns.end(); ++iter)
-    iter->second.make_clean();
+    iter->second->make_clean();
 }
 
 
@@ -210,6 +226,7 @@ void Track::make_clean() const {
     because it is used by the sequencer thread. */
 bool Track::get_next_note(int& beat, int& tick, int& value, int& length,
 			  int beforeBeat, int beforeTick) const {
+  Mutex::Lock lock(m_lock);
   // no patterns left to play
   if (!m_current_seq_entry)
     return false;
@@ -276,6 +293,7 @@ bool Track::get_next_cc_event(int& step, int& tick,
 /** Sets "next note" to the next note after or at the given step. This 
     function does not have to be realtime safe. */  
 void Track::find_next_note(int beat, int tick) const {
+  Mutex::Lock lock(m_lock);
   cerr<<"find_next_note("<<beat<<", "<<tick<<")"<<endl;
   SequenceEntry* iter;
   for (iter = m_seq_head; iter; iter = iter->next) {
@@ -304,13 +322,13 @@ bool Track::fill_xml_node(Element* elt) const {
   elt->set_attribute("channel", tmp_txt);
  
   // the patterns
-  for (map<int, Pattern>::const_iterator iter = m_patterns.begin();
+  for (map<int, Pattern*>::const_iterator iter = m_patterns.begin();
        iter != m_patterns.end(); ++iter) {
     Element* pat_elt = elt->add_child("pattern");
     char id_txt[10];
     sprintf(id_txt, "%d", iter->first);
     pat_elt->set_attribute("id", id_txt);
-    iter->second.fill_xml_node(pat_elt);
+    iter->second->fill_xml_node(pat_elt);
   }
   
   // the sequence
@@ -354,8 +372,8 @@ bool Track::parse_xml_node(const Element* elt) {
     sscanf(pat_elt->get_attribute("ccsteps")->get_value().c_str(), "%d", 
 	   &cc_steps);
     string name = pat_elt->get_attribute("name")->get_value();
-    m_patterns[id] = Pattern(name, length, steps, cc_steps);
-    m_patterns[id].parse_xml_node(pat_elt);
+    m_patterns[id] = new Pattern(name, length, steps, cc_steps);
+    m_patterns[id]->parse_xml_node(pat_elt);
   }
   
   // parse sequence

@@ -41,14 +41,14 @@ void Song::set_info(const string& info) {
 
 
 int Song::add_track(const string& name) {
-  map<int, Track>::reverse_iterator iter = m_tracks.rbegin();
+  map<int, Track*>::reverse_iterator iter = m_tracks.rbegin();
   int id;
   if (iter == m_tracks.rend())
     id = 1;
   else
     id = iter->first + 1;
-  m_tracks[id] = Track(m_length, name);
-  m_tracks[id].find_next_note(0, 0);
+  m_tracks[id] = new Track(m_length, name);
+  m_tracks[id]->find_next_note(0, 0);
   m_dirty = true;
   signal_track_added(id);
   return id;
@@ -56,9 +56,10 @@ int Song::add_track(const string& name) {
 
 
 bool Song::remove_track(int id) {
-  map<int, Track>::iterator iter = m_tracks.find(id);
+  map<int, Track*>::iterator iter = m_tracks.find(id);
   if (iter == m_tracks.end())
     return false;
+  delete iter->second;
   m_tracks.erase(iter);
   m_dirty = true;
   signal_track_removed(id);
@@ -81,12 +82,12 @@ const string& Song::get_info() const {
 }
 
 
-const map<int, Track>& Song::get_tracks() const {
+const map<int, Track*>& Song::get_tracks() const {
   return m_tracks;
 }
 
 
-map<int, Track>& Song::get_tracks() {
+map<int, Track*>& Song::get_tracks() {
   return m_tracks;
 }
 
@@ -104,9 +105,9 @@ Mutex& Song::get_big_lock() const {
 bool Song::is_dirty() const {
   if (m_dirty)
     return true;
-  for (map<int, Track>::const_iterator iter = m_tracks.begin(); 
+  for (map<int, Track*>::const_iterator iter = m_tracks.begin(); 
        iter != m_tracks.end(); ++iter) {
-    if (iter->second.is_dirty())
+    if (iter->second->is_dirty())
       return true;
   }
   return false;
@@ -122,13 +123,13 @@ bool Song::write_file(const string& filename) const {
   sprintf(length_txt, "%d", m_length);
   dino_elt->set_attribute("length", length_txt);
   dino_elt->add_child("info")->set_child_text(m_info);
-  map<int, Track>::const_iterator iter;
+  map<int, Track*>::const_iterator iter;
   for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter) {
     Element* track_elt = dino_elt->add_child("track");
     char id_txt[10];
     sprintf(id_txt, "%d", iter->first);
     track_elt->set_attribute("id", id_txt);
-    if (!iter->second.fill_xml_node(track_elt))
+    if (!iter->second->fill_xml_node(track_elt))
       return false;
   }
   
@@ -165,8 +166,8 @@ bool Song::load_file(const string& filename) {
     const Element* track_elt = dynamic_cast<const Element*>(*iter);
     int id;
     sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
-    m_tracks[id] = Track(m_length);
-    m_tracks[id].parse_xml_node(track_elt);
+    m_tracks[id] = new Track(m_length);
+    m_tracks[id]->parse_xml_node(track_elt);
   }
 }
 

@@ -29,7 +29,7 @@ CCEditor::CCEditor(Song& song)
 void CCEditor::set_pattern(int track, int pattern) {
   Pattern* pat = NULL;
   if (pattern != -1)
-    pat = &(m_song.get_tracks()[track].get_patterns()[pattern]);
+    pat = m_song.get_tracks()[track]->get_patterns()[pattern];
   if (m_pat != pat) {
     m_pat = pat;
     if (m_pat) {

@@ -4,10 +4,12 @@
 #include <list>
 #include <map>
 
+#include <glibmm/thread.h>
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
 
+using namespace Glib;
 using namespace sigc;
 using namespace std;
 using namespace xmlpp;
@@ -113,6 +115,8 @@ private:
   int m_cc_steps;
   /** The MIDI control changes in the pattern */
   map<int, CCData> m_control_changes;
+  
+  mutable Mutex m_lock;
   
   mutable bool m_dirty;
   

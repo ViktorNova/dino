@@ -94,7 +94,7 @@ void Sequencer::set_instrument(int track, int client, int port) {
 
 
 void Sequencer::reset_ports() {
-  map<int, Track>::const_iterator iter = m_song.get_tracks().begin();
+  map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
   for ( ; iter != m_song.get_tracks().end(); ++iter)
     track_added(iter->first);
 }
@@ -172,9 +172,10 @@ void Sequencer::sequencing_loop() {
     
     // need to sync
     if (m_sync_state == Syncing) {
-      map<int, Track>::const_iterator iter = m_song.get_tracks().begin();
+      Mutex::Lock lock(m_song.get_big_lock());
+      map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
       for ( ; iter != m_song.get_tracks().end(); ++iter)
-	iter->second.find_next_note(pos.beat, pos.tick);
+	iter->second->find_next_note(pos.beat, pos.tick);
       m_sync_state = SyncDone;
     }
 
@@ -206,15 +207,18 @@ void Sequencer::sequencing_loop() {
       Mutex::Lock lock(m_song.get_big_lock());
       int beat, tick, value, length, client, port, channel;
       int tick_ahead = 10000;
-      int before_beat = int(pos.bar * pos.beats_per_bar) + pos.beat;
-      before_beat += (pos.tick + tick_ahead) / 10000;
+      int tick_drop = 500;
+      int current_beat = int(pos.bar * pos.beats_per_bar) + pos.beat;
+      int before_beat = current_beat + (pos.tick + tick_ahead) / 10000;
       int before_tick = (pos.tick + tick_ahead) % 10000;
-      map<int, Track>::const_iterator iter = m_song.get_tracks().begin();
+      map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
       for ( ; iter != m_song.get_tracks().end(); ++iter) {
-	while(iter->second.get_next_note(beat, tick, value, length, 
-					 before_beat, before_tick))
-	  schedule_note(beat, tick, iter->first, iter->second.get_channel(),
-			value, 64, length);
+	while(iter->second->get_next_note(beat, tick, value, length, 
+					  before_beat, before_tick))
+	  if ((current_beat - beat) * 10000 + pos.tick - tick <= tick_drop) {
+	    schedule_note(beat, tick, iter->first, iter->second->get_channel(),
+			  value, 64, length);
+	  }
       }
       snd_seq_drain_output(m_alsa_client);
     }

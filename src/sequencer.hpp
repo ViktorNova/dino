@@ -23,12 +23,12 @@ class Song;
 class Sequencer {
 public:
   /** Create a new Sequencer object with the ALSA and Jack client name 
-      @c clientName. */
-  Sequencer(const string& clientName);
+      @c client_name. */
+  Sequencer(const string& client_name);
   ~Sequencer();
   
   /** Set the song that the sequencer should play. */
-  void setSong(const Song& song);
+  void set_song(const Song& song);
   
   /** Start playing from the current position. */
   void play();
@@ -37,72 +37,72 @@ public:
   void stop();
   /** Go to the given position. If we are playing, start playing again when 
       we get there. */
-  void gotoBeat(double beat);
+  void goto_beat(double beat);
   
 private:
   
   /** Initialise the ALSA client with the given client name. */
-  int initALSA(const string& clientName);
+  int init_alsa(const string& client_name);
   /** Initialise the Jack client with the given client name. */
-  int initJack(const string& clientName);
+  int init_jack(const string& client_name);
   
   /** This function checks if we are in sync with Jack Transport, if not it
       updates the sequencer to be in sync. */
-  bool checkSync();
+  bool check_sync();
   
   // ========== Jack callbacks ==========
   /** This function is called by libjack when Jack Transport wants to start 
       playing or change position. If we're not ready yet we return 0. */
-  int jackSyncCallback(jack_transport_state_t state, jack_position_t* pos);
+  int jack_sync_callback(jack_transport_state_t state, jack_position_t* pos);
   /** This function is called by libjack when the Jack graph starts working
       on a new buffer. We use this as a timer callback for the sequencer. */
-  int jackProcessCallback(jack_nframes_t nframes);
+  int jack_process_callback(jack_nframes_t nframes);
   /** This function is called by libjack when Jack wants us to fill in the
       bar, beat, tick, and bpm values. */
-  void jackTimebaseCallback(jack_transport_state_t state, 
-			    jack_nframes_t nframes, jack_position_t* pos, 
-			    int new_pos);
+  void jack_timebase_callback(jack_transport_state_t state, 
+			      jack_nframes_t nframes, jack_position_t* pos, 
+			      int new_pos);
   
   /** Schedule a note at the given beat and tick. Send the current beat and
       tick so that we can use relative time scheduling. This function
       will schedule a note on and a note off. */
-  void scheduleNote(int beat, int tick, int value, int length, 
+  void schedule_note(int beat, int tick, int value, int length, 
 		    int currentBeat, int currentTick);
   
   // static wrappers for Jack callbacks - because we can't register member
   // functions directly
-  static int jackSyncCallback_(jack_transport_state_t state, 
-			       jack_position_t* pos, void* arg) {
-    return static_cast<Sequencer*>(arg)->jackSyncCallback(state, pos);
+  static int jack_sync_callback_(jack_transport_state_t state, 
+				 jack_position_t* pos, void* arg) {
+    return static_cast<Sequencer*>(arg)->jack_sync_callback(state, pos);
   }
-  static int jackProcessCallback_(jack_nframes_t nframes, void* arg) {
-    return static_cast<Sequencer*>(arg)->jackProcessCallback(nframes);
+  static int jack_process_callback_(jack_nframes_t nframes, void* arg) {
+    return static_cast<Sequencer*>(arg)->jack_process_callback(nframes);
   }
-  static void jackTimebaseCallback_(jack_transport_state_t state,
-				    jack_nframes_t nframes,
-				    jack_position_t* pos, int new_pos,
-				    void* arg) {
-    static_cast<Sequencer*>(arg)->jackTimebaseCallback(state, nframes, pos,
-						       new_pos);
+  static void jack_timebase_callback_(jack_transport_state_t state,
+				      jack_nframes_t nframes,
+				      jack_position_t* pos, int new_pos,
+				      void* arg) {
+    static_cast<Sequencer*>(arg)->jack_timebase_callback(state, nframes, pos,
+							 new_pos);
   }
 
   
-  const Song* mSong;
+  const Song* m_song;
   
-  jack_client_t* jackClient;
-  snd_seq_t* alsaClient;
-  int alsaPort;
-  int alsaQueue;
+  jack_client_t* m_jack_client;
+  snd_seq_t* m_alsa_client;
+  int m_alsa_port;
+  int m_alsa_queue;
 
-  bool mValid;
+  bool m_valid;
 
   volatile enum {
     InSync,
     Syncing,
     SyncDone
-  } mSyncState;
-  int mSyncToBeat;
-  int mSyncToTick;
+  } m_sync_state;
+  int m_sync_to_beat;
+  int m_sync_to_tick;
 };
 
 

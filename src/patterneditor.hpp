@@ -15,7 +15,7 @@ class PatternEditor : public DrawingArea {
 public:
   PatternEditor();
   
-  void setPattern(Pattern* pat);
+  void set_pattern(Pattern* pat);
   
 protected:
   
@@ -29,20 +29,21 @@ protected:
   void update();
   
 private:
-  RefPtr<GC> gc;
-  RefPtr<Colormap> colormap;
-  Color bgColor, bgColor2, fgColor, gridColor, edgeColor, hlColor;
-  int rowHeight;
-  int colWidth;
-  int maxNote;
+  RefPtr<GC> m_gc;
+  RefPtr<Colormap> m_colormap;
+  Color m_bg_color, m_bg_color2, m_fg_color, m_grid_color, 
+    m_edge_color, m_hl_color;
+  int m_row_height;
+  int m_col_width;
+  int m_max_note;
   
-  pair<int, int> addedNote;
-  int dragStep;
-  int dragNote;
+  pair<int, int> m_added_note;
+  int m_drag_step;
+  int m_drag_note;
   
-  RefPtr<Pixmap> pix;
-  int dMinStep, dMaxStep, dMinNote, dMaxNote;
-  Pattern* pat;
+  RefPtr<Pixmap> m_pix;
+  int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
+  Pattern* m_pat;
 };
 
 

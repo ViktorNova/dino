@@ -7,49 +7,49 @@
 
 
 SingleTextCombo::SingleTextCombo() {
-  mStore = ListStore::create(mTextColumns);
-  set_model(mStore);
-  pack_start(mTextColumns.mText);
+  m_store = ListStore::create(m_text_columns);
+  set_model(m_store);
+  pack_start(m_text_columns.m_text);
 }
 
 
-void SingleTextCombo::appendText(const ustring& text, int id) {
-  TreeModel::iterator iter = mStore->append();
+void SingleTextCombo::append_text(const ustring& text, int id) {
+  TreeModel::iterator iter = m_store->append();
   TreeModel::Row row = *iter;
-  row[mTextColumns.mText] = text;
-  row[mTextColumns.mID] = id;
+  row[m_text_columns.m_text] = text;
+  row[m_text_columns.m_id] = id;
 }
 
 
-void SingleTextCombo::prependText(const ustring& text, int id) {
-  TreeModel::iterator iter = mStore->prepend();
+void SingleTextCombo::prepend_text(const ustring& text, int id) {
+  TreeModel::iterator iter = m_store->prepend();
   TreeModel::Row row = *iter;
-  row[mTextColumns.mText] = text;
+  row[m_text_columns.m_text] = text;
 }
 
 
-int SingleTextCombo::getActiveID() const {
+int SingleTextCombo::get_active_id() const {
   int result = -1;
   TreeModel::iterator activeRow = get_active();
   if(activeRow) {
     TreeModel::Row row = *activeRow;
-    result = row[mTextColumns.mID];
+    result = row[m_text_columns.m_id];
   }
   return result;
 }
 
 
 void SingleTextCombo::clear() {
-  mStore->clear();
+  m_store->clear();
 }
 
 
-bool SingleTextCombo::setActiveID(int ID) {
+bool SingleTextCombo::set_active_id(int ID) {
   RefPtr<TreeModel> model = get_model();
   if(model) {
     for(TreeModel::iterator iter = model->children().begin(); 
 	iter != model->children().end(); ++iter) {
-      int thisID = (*iter)[mTextColumns.mID];
+      int thisID = (*iter)[m_text_columns.m_id];
       if(thisID == ID) {
         set_active(iter);
         return true;

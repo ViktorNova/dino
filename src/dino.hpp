@@ -24,31 +24,29 @@ class Dino {
 public:
   Dino(int argc, char** argv, RefPtr<Xml> xml);
   
-  Gtk::Window* getWindow();
+  Gtk::Window* get_window();
   
   // menu and toolbutton callbacks
-  void slotFileNew();
-  void slotFileOpen();
-  void slotFileSave();
-  void slotFileSaveAs();
-  void slotFileQuit();
+  void slot_file_new();
+  void slot_file_open();
+  void slot_file_save();
+  void slot_file_save_as();
+  void slot_file_quit();
   
-  void slotEditCut();
-  void slotEditCopy();
-  void slotEditPaste();
-  void slotEditDelete();
-  void slotEditAddTrack();
-  void slotEditDeleteTrack();
-  void slotEditAddPattern();
-  void slotEditDeletePattern();
+  void slot_edit_cut();
+  void slot_edit_copy();
+  void slot_edit_paste();
+  void slot_edit_delete();
+  void slot_edit_add_track();
+  void slot_edit_delete_track();
+  void slot_edit_add_pattern();
+  void slot_edit_delete_pattern();
   
-  void slotTransportPlay();
-  void slotTransportStop();
-  void slotTransportGoToStart();
+  void slot_transport_play();
+  void slot_transport_stop();
+  void slot_transport_go_to_start();
   
-  void slotHelpAboutDino();
-  
-  void dontresize(Allocation& a);
+  void slot_help_about_dino();
   
 private:
   
@@ -60,36 +58,35 @@ private:
     return dynamic_cast<T*>(xml->get_widget(name));
   }
   
-  void updateTrackWidgets();
-  void updateTrackCombo();
-  void updatePatternCombo(int activePattern = -1);
-  void updateEditorWidgets();
+  void update_track_widgets();
+  void update_track_combo();
+  void update_pattern_combo(int activePattern = -1);
+  void update_editor_widgets();
   
   // internal callbacks
-  void slotCCNumberChanged();
-  void slotCCEditorSizeChanged();
+  void slot_cc_number_changed();
+  void slot_cc_editor_size_changed();
   
+  Gtk::Window* m_window;
+  PatternEditor m_pe;
+  CCEditor m_cce;
+  VBox* m_vbx_track_editor;
   
-  Gtk::Window* window;
-  PatternEditor pe;
-  CCEditor cce;
-  VBox* mVbxTrackEditor;
+  SingleTextCombo m_cmb_track;
+  SingleTextCombo m_cmb_pattern;
+  sigc::connection m_track_pattern_connection;
+  sigc::connection m_pattern_editor_connection;
+  SpinButton* m_sb_cc_number;
+  Label* m_lb_cc_description;
+  SpinButton* m_sb_cc_editor_size;
+  ::Ruler m_pattern_ruler_1;
+  static char* cc_descriptions[];
   
-  SingleTextCombo mCmbTrack;
-  SingleTextCombo mCmbPattern;
-  sigc::connection mTrackPatternConnection;
-  sigc::connection mPatternEditorConnection;
-  SpinButton* sbCCNumber;
-  Label* lbCCDescription;
-  SpinButton* sbCCEditorSize;
-  ::Ruler mPatternRuler1;
-  static char* mCCDescriptions[];
+  Song m_song;
   
-  Song mSong;
+  Dialog* m_about_dialog;
   
-  Dialog* mAboutDialog;
-  
-  Sequencer mSeq;
+  Sequencer m_seq;
 };
 
 

@@ -20,16 +20,16 @@ public:
   SingleTextCombo();
   
   /** Add a string at the end of the combo box with the ID number @c id. */
-  void appendText(const ustring& text, int id = -1);
+  void append_text(const ustring& text, int id = -1);
   /** Add a string at the beginning of the combo box with the ID number 
       @c id. */
-  void prependText(const ustring& text, int id = -1);
+  void prepend_text(const ustring& text, int id = -1);
   
   /** Returns the ID number for the active entry. */
-  int getActiveID() const;
+  int get_active_id() const;
   /** Set the active entry to the one with ID number @c id. If there is no
       such entry, return @c false. */
-  bool setActiveID(int id);
+  bool set_active_id(int id);
   
   /** Remove all entries. */
   void clear();
@@ -41,13 +41,13 @@ protected:
       store an additional ID number. */
   class TextModelColumns : public TreeModel::ColumnRecord {
   public:
-    TextModelColumns() { add(mText); add(mID); }
-    TreeModelColumn<ustring> mText;
-    TreeModelColumn<int> mID;
+    TextModelColumns() { add(m_text); add(m_id); }
+    TreeModelColumn<ustring> m_text;
+    TreeModelColumn<int> m_id;
   };
 
-  TextModelColumns mTextColumns;
-  RefPtr<ListStore> mStore;
+  TextModelColumns m_text_columns;
+  RefPtr<ListStore> m_store;
 };
 
 

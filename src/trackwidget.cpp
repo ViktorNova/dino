@@ -8,39 +8,39 @@ using namespace std;
 
 
 TrackWidget::TrackWidget(const Song* song) 
-  : mSong(song), mColWidth(20), mDragBeat(-1), mDragPattern(-1) {
+  : m_song(song), m_col_width(20), m_drag_beat(-1), m_drag_pattern(-1) {
   assert(song);
-  mColormap  = Colormap::get_system();
-  bgColor.set_rgb(65535, 65535, 65535);
-  bgColor2.set_rgb(65535, 60000, 50000);
-  fgColor.set_rgb(40000, 40000, 65535);
-  gridColor.set_rgb(40000, 40000, 40000);
-  edgeColor.set_rgb(0, 0, 0);
-  hlColor.set_rgb(65535, 0, 0);
-  mColormap->alloc_color(bgColor);
-  mColormap->alloc_color(bgColor2);
-  mColormap->alloc_color(fgColor);
-  mColormap->alloc_color(gridColor);
-  mColormap->alloc_color(edgeColor);
-  mColormap->alloc_color(hlColor);
+  m_colormap  = Colormap::get_system();
+  m_bg_color.set_rgb(65535, 65535, 65535);
+  m_bg_color2.set_rgb(65535, 60000, 50000);
+  m_fg_color.set_rgb(40000, 40000, 65535);
+  m_grid_color.set_rgb(40000, 40000, 40000);
+  m_edge_color.set_rgb(0, 0, 0);
+  m_hl_color.set_rgb(65535, 0, 0);
+  m_colormap->alloc_color(m_bg_color);
+  m_colormap->alloc_color(m_bg_color2);
+  m_colormap->alloc_color(m_fg_color);
+  m_colormap->alloc_color(m_grid_color);
+  m_colormap->alloc_color(m_edge_color);
+  m_colormap->alloc_color(m_hl_color);
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
-  set_size_request(mColWidth * mSong->getLength(), mColWidth);
+  set_size_request(m_col_width * m_song->get_length(), m_col_width);
 }
   
 
-void TrackWidget::setTrack(Track* track) {
+void TrackWidget::set_track(Track* track) {
   assert(track);
-  mTrack = track;
+  m_track = track;
 }
 
 
 void TrackWidget::on_realize() {
   DrawingArea::on_realize();
   RefPtr<Gdk::Window> win = get_window();
-  gc = GC::create(win);
-  gc->set_background(bgColor);
-  gc->set_foreground(fgColor);
+  m_gc = GC::create(win);
+  m_gc->set_background(m_bg_color);
+  m_gc->set_foreground(m_fg_color);
   win->clear();
 }
 
@@ -50,49 +50,49 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
   
-  int width = mColWidth * mSong->getLength();
-  int height = mColWidth;
+  int width = m_col_width * m_song->get_length();
+  int height = m_col_width;
   Rectangle bounds(0, 0, width + 1, height);
-  gc->set_clip_rectangle(bounds);
+  m_gc->set_clip_rectangle(bounds);
   
   // draw background
   int bpb = 4;
-  for (int b = 0; b < mSong->getLength(); ++b) {
+  for (int b = 0; b < m_song->get_length(); ++b) {
     if (b % (2*bpb) < bpb)
-      gc->set_foreground(bgColor);
+      m_gc->set_foreground(m_bg_color);
     else
-      gc->set_foreground(bgColor2);
-    win->draw_rectangle(gc, true, b * mColWidth, 0, mColWidth, height);
+      m_gc->set_foreground(m_bg_color2);
+    win->draw_rectangle(m_gc, true, b * m_col_width, 0, m_col_width, height);
   }
-  gc->set_foreground(gridColor);
-  win->draw_line(gc, 0, 0, width, 0);
-  win->draw_line(gc, 0, height-1, width, height-1);
-  for (int c = 0; c < mSong->getLength() + 1; ++c) {
-    win->draw_line(gc, c * mColWidth, 0, c * mColWidth, height);
+  m_gc->set_foreground(m_grid_color);
+  win->draw_line(m_gc, 0, 0, width, 0);
+  win->draw_line(m_gc, 0, height-1, width, height-1);
+  for (int c = 0; c < m_song->get_length() + 1; ++c) {
+    win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
   // draw patterns
   Pango::FontDescription fd("helvetica bold 12");
   get_pango_context()->set_font_description(fd);
-  Track::Sequence::const_iterator iter = mTrack->getSequence().begin();
+  Track::Sequence::const_iterator iter = m_track->get_sequence().begin();
   char tmp[10];
-  for ( ; iter != mTrack->getSequence().end(); ++iter) {
-    gc->set_clip_rectangle(bounds);
-    gc->set_foreground(fgColor);
+  for ( ; iter != m_track->get_sequence().end(); ++iter) {
+    m_gc->set_clip_rectangle(bounds);
+    m_gc->set_foreground(m_fg_color);
     int length = iter->second->length;
-    win->draw_rectangle(gc, true, iter->first * mColWidth, 0,
-			length * mColWidth, height-1);
-    gc->set_foreground(edgeColor);
-    win->draw_rectangle(gc, false, iter->first * mColWidth, 0,
-			length * mColWidth, height-1);
+    win->draw_rectangle(m_gc, true, iter->first * m_col_width, 0,
+			length * m_col_width, height-1);
+    m_gc->set_foreground(m_edge_color);
+    win->draw_rectangle(m_gc, false, iter->first * m_col_width, 0,
+			length * m_col_width, height-1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
-    sprintf(tmp, "%03d", iter->second->patternID);
+    sprintf(tmp, "%03d", iter->second->pattern_id);
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Rectangle textBounds(iter->first * mColWidth, 0, 
-			 length * mColWidth, height - 1);
-    gc->set_clip_rectangle(textBounds);
-    win->draw_layout(gc, iter->first * mColWidth + 2, (height - lHeight)/2, l);
+    Rectangle textBounds(iter->first * m_col_width, 0, 
+			 length * m_col_width, height - 1);
+    m_gc->set_clip_rectangle(textBounds);
+    win->draw_layout(m_gc, iter->first * m_col_width + 2, (height - lHeight)/2, l);
   }
   
   return true;
@@ -100,41 +100,41 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
 
 
 bool TrackWidget::on_button_press_event(GdkEventButton* event) {
-  int beat = int(event->x) / mColWidth;
+  int beat = int(event->x) / m_col_width;
 
   switch (event->button) {
   case 1: {
     char tmp[10];
-    std::map<int, Pattern>::const_iterator iter= mTrack->getPatterns().begin();
-    mPatternMenu.items().clear();
-    for ( ; iter != mTrack->getPatterns().end(); ++iter) {
+    std::map<int, Pattern>::const_iterator iter= m_track->get_patterns().begin();
+    m_pattern_menu.items().clear();
+    for ( ; iter != m_track->get_patterns().end(); ++iter) {
       sprintf(tmp, "%03d", iter->first);
       Menu_Helpers::MenuElem
-	elem(tmp, bind(bind(mem_fun(*this, &TrackWidget::slotInsertPattern), 
+	elem(tmp, bind(bind(mem_fun(*this, &TrackWidget::slot_insert_pattern), 
 			    beat), iter->first));
-      mPatternMenu.items().push_back(elem);
+      m_pattern_menu.items().push_back(elem);
     }
-    if (mPatternMenu.items().size() == 0) {
+    if (m_pattern_menu.items().size() == 0) {
       Menu_Helpers::MenuElem elem("No patterns");
-      mPatternMenu.items().push_back(elem);
+      m_pattern_menu.items().push_back(elem);
     }
-    mPatternMenu.popup(event->button, event->time);
+    m_pattern_menu.popup(event->button, event->time);
     return true;
   }
     
   case 2: {
     int bBeat, pattern, length;
-    if (mTrack->getSequenceEntry(beat, bBeat, pattern, length)) {
-      mDragBeat = bBeat;
-      mDragPattern = pattern;
-      mTrack->setSequenceEntry(bBeat, pattern, beat - bBeat + 1);
+    if (m_track->get_sequence_entry(beat, bBeat, pattern, length)) {
+      m_drag_beat = bBeat;
+      m_drag_pattern = pattern;
+      m_track->set_sequence_entry(bBeat, pattern, beat - bBeat + 1);
       update();
     }
     return true;
   }
     
   case 3:
-    mTrack->removeSequenceEntry(beat);
+    m_track->remove_sequence_entry(beat);
     update();
     return true;
   } 
@@ -145,17 +145,17 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
 
 bool TrackWidget::on_button_release_event(GdkEventButton* event) {
   if (event->button == 2)
-    mDragBeat = -1;
+    m_drag_beat = -1;
 }
 
 
 bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
-  int beat = int(event->x) / mColWidth;
+  int beat = int(event->x) / m_col_width;
 
-  if ((event->state & GDK_BUTTON2_MASK) && mDragBeat != -1 &&
-      beat >= mDragBeat && 
-      beat - mDragBeat +1 <= mTrack->getPatterns()[mDragPattern].getLength()) {
-    mTrack->setSequenceEntry(mDragBeat, mDragPattern, beat - mDragBeat + 1);
+  if ((event->state & GDK_BUTTON2_MASK) && m_drag_beat != -1 &&
+      beat >= m_drag_beat && 
+      beat - m_drag_beat +1 <= m_track->get_patterns()[m_drag_pattern].get_length()) {
+    m_track->set_sequence_entry(m_drag_beat, m_drag_pattern, beat - m_drag_beat + 1);
     update();
     return true;
   }
@@ -164,9 +164,9 @@ bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
 }
 
 
-void TrackWidget::slotInsertPattern(int pattern, int position) {
-  int length = mTrack->getPatterns()[pattern].getLength();
-  mTrack->setSequenceEntry(position, pattern, length);
+void TrackWidget::slot_insert_pattern(int pattern, int position) {
+  int length = m_track->get_patterns()[pattern].get_length();
+  m_track->set_sequence_entry(position, pattern, length);
   update();
 }
 

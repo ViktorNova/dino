@@ -5,33 +5,33 @@
 #include "pattern.hpp"
 
 
-Pattern::Pattern() : mDirty(false), nextNote(NULL) {
+Pattern::Pattern() : m_dirty(false), m_next_note(NULL) {
   
 }
 
 
-Pattern::Pattern(int length, int steps, int ccSteps) : mDirty(false) {
-  this->length = length;
-  this->steps = steps;
-  this->ccSteps = ccSteps;
-  minStep = length * steps;
-  maxStep = -1;
-  minNote = 128;
-  maxNote = -1;
+Pattern::Pattern(int length, int steps, int ccSteps) : m_dirty(false) {
+  this->m_length = length;
+  this->m_steps = steps;
+  this->m_cc_steps = ccSteps;
+  m_min_step = m_length * m_steps;
+  m_max_step = -1;
+  m_min_note = 128;
+  m_max_note = -1;
 }
 
 
-void Pattern::addNote(int step, int value, int noteLength) {
-  assert(step >= 0 && step < length * steps);
+void Pattern::add_note(int step, int value, int noteLength) {
+  assert(step >= 0 && step < m_length * m_steps);
   assert(value >= 0 && value < 128);
   assert(noteLength > 0);
-  assert(step + noteLength <= length * steps);
+  assert(step + noteLength <= m_length * m_steps);
   pair<int, int> p = make_pair(step, value);
   Note* previous = NULL;
   Note* next = NULL;
   NoteMap::iterator iter;
   
-  for (iter = notes.begin(); iter != notes.end(); ++iter) {
+  for (iter = m_notes.begin(); iter != m_notes.end(); ++iter) {
     
     // we're looking at a note that's before the new one
     if (iter->first.first < step || 
@@ -40,8 +40,8 @@ void Pattern::addNote(int step, int value, int noteLength) {
       // it could be overlapping, if so, shorten it
       if (iter->first.second == value && 
 	  iter->first.first + iter->second->length > step) {
-	maxStep = (iter->first.first + iter->second->length > maxStep ? 
-		   iter->first.first + iter->second->length : maxStep);
+	m_max_step = (iter->first.first + iter->second->length > m_max_step ? 
+		   iter->first.first + iter->second->length : m_max_step);
 	iter->second->length = step - iter->first.first;
       }
     }
@@ -49,8 +49,8 @@ void Pattern::addNote(int step, int value, int noteLength) {
     // we're looking at a note with the same pitch and start time - delete it
     else if (iter->first.first == step && iter->first.second == value) {
       delete iter->second;
-      maxStep = (iter->first.first + iter->second->length > maxStep ?
-		 iter->first.first + iter->second->length : maxStep);
+      m_max_step = (iter->first.first + iter->second->length > m_max_step ?
+		 iter->first.first + iter->second->length : m_max_step);
     }
     
     // we're looking at a node after the new one - link to it and exit the loop
@@ -63,7 +63,7 @@ void Pattern::addNote(int step, int value, int noteLength) {
   
   // check if there is a note that begins before the end of the new note,
   // if so shorten the new note
-  for (iter = notes.upper_bound(p); iter != notes.end(); ++iter) {
+  for (iter = m_notes.upper_bound(p); iter != m_notes.end(); ++iter) {
     if (iter->first.second == value) {
       if (iter->first.first > step && step + noteLength > iter->first.first)
 	noteLength = iter->first.first - step;
@@ -80,34 +80,34 @@ void Pattern::addNote(int step, int value, int noteLength) {
     next->previous = note;
   if (previous)
     previous->next = note;
-  notes[p] = note;
+  m_notes[p] = note;
   
-  minNote = value < minNote ? value : minNote;
-  maxNote = value > maxNote ? value : maxNote;
-  minStep = step < minStep ? step : minStep;
-  maxStep = step + noteLength - 1 > maxStep ? step + noteLength - 1 : maxStep;
+  m_min_note = value < m_min_note ? value : m_min_note;
+  m_max_note = value > m_max_note ? value : m_max_note;
+  m_min_step = step < m_min_step ? step : m_min_step;
+  m_max_step = step + noteLength - 1 > m_max_step ? step + noteLength - 1 : m_max_step;
 }
 
 
-int Pattern::deleteNote(int step, int value) {
-  assert(step >= 0 && step < length * steps);
+int Pattern::delete_note(int step, int value) {
+  assert(step >= 0 && step < m_length * m_steps);
   assert(value >= 0 && value < 128);
-  for (NoteMap::iterator iter = notes.begin(); 
-       iter != notes.end() && iter->first.first <= step; ++iter) {
+  for (NoteMap::iterator iter = m_notes.begin(); 
+       iter != m_notes.end() && iter->first.first <= step; ++iter) {
     if (iter->first.second == value && iter->first.first <= step &&
 	iter->first.first + iter->second->length > step) {
       int result = iter->first.first;
-      minNote = iter->first.second < minNote ? iter->first.second : minNote;
-      maxNote = iter->first.second > maxNote ? iter->first.second : maxNote;
-      minStep = iter->first.first < minStep ? iter->first.first : minStep;
-      maxStep = (iter->first.first + iter->second->length - 1 > maxStep ? 
-		 iter->first.first + iter->second->length - 1 : maxStep);
+      m_min_note = iter->first.second < m_min_note ? iter->first.second : m_min_note;
+      m_max_note = iter->first.second > m_max_note ? iter->first.second : m_max_note;
+      m_min_step = iter->first.first < m_min_step ? iter->first.first : m_min_step;
+      m_max_step = (iter->first.first + iter->second->length - 1 > m_max_step ? 
+		 iter->first.first + iter->second->length - 1 : m_max_step);
       if (iter->second->previous)
 	iter->second->previous->next = iter->second->next;
       if (iter->second->next)
 	iter->second->next->previous = iter->second->previous;
       delete iter->second;
-      notes.erase(iter);
+      m_notes.erase(iter);
       return result;
     }
   }
@@ -115,18 +115,18 @@ int Pattern::deleteNote(int step, int value) {
 }
 
 
-void Pattern::addCC(int ccNumber, int step, int value) {
+void Pattern::add_cc(int ccNumber, int step, int value) {
   assert(ccNumber >= 0 && ccNumber < 128);
-  assert(step >= 0 && step < length * ccSteps);
+  assert(step >= 0 && step < m_length * m_cc_steps);
   assert(value >= 0 && value < 128);
-  controlChanges[ccNumber].changes[step] = new CCEvent(ccNumber, value);
+  m_control_changes[ccNumber].changes[step] = new CCEvent(ccNumber, value);
 }
 
 
-int Pattern::deleteCC(int ccNumber, int step) {
+int Pattern::delete_cc(int ccNumber, int step) {
   assert(ccNumber >= 0 && ccNumber < 128);
-  assert(step >= 0 && step < length * ccSteps);
-  CCData& data(controlChanges[ccNumber]);
+  assert(step >= 0 && step < m_length * m_cc_steps);
+  CCData& data(m_control_changes[ccNumber]);
   map<int, CCEvent*>::iterator iter = data.changes.find(step);
   if (iter != data.changes.end()) {
     delete iter->second;
@@ -136,75 +136,75 @@ int Pattern::deleteCC(int ccNumber, int step) {
 }
 
 
-Pattern::NoteMap& Pattern::getNotes() {
-  return notes;
+Pattern::NoteMap& Pattern::get_notes() {
+  return m_notes;
 }
 
 
-const Pattern::NoteMap& Pattern::getNotes() const {
-  return notes;
+const Pattern::NoteMap& Pattern::get_notes() const {
+  return m_notes;
 }
 
 
-Pattern::CCData& Pattern::getCC(int ccNumber) {
+Pattern::CCData& Pattern::get_cc(int ccNumber) {
   assert(ccNumber >= 0 && ccNumber < 128);
-  return controlChanges[ccNumber];
+  return m_control_changes[ccNumber];
 }
 
 
-int Pattern::getSteps() const {
-  return steps;
+int Pattern::get_steps() const {
+  return m_steps;
 }
 
 
-int Pattern::getCCSteps() const {
-  return ccSteps;
+int Pattern::get_cc_steps() const {
+  return m_cc_steps;
 }
 
 
-int Pattern::getLength() const {
-  return length;
+int Pattern::get_length() const {
+  return m_length;
 }
   
 
-void Pattern::getDirtyRect(int* minStep, int* minNote, 
-			   int* maxStep, int* maxNote) {
+void Pattern::get_dirty_rect(int* minStep, int* minNote, 
+			     int* maxStep, int* maxNote) {
   if (minStep)
-    *minStep = this->minStep;
+    *minStep = this->m_min_step;
   if (minNote)
-    *minNote = this->minNote;
+    *minNote = this->m_min_note;
   if (maxStep)
-    *maxStep = this->maxStep;
+    *maxStep = this->m_max_step;
   if (maxNote)
-    *maxNote = this->maxNote;
-  this->minStep = length * steps;
-  this->maxStep = -1;
-  this->minNote = 128;
-  this->maxNote = -1;
+    *maxNote = this->m_max_note;
+  this->m_min_step = m_length * m_steps;
+  this->m_max_step = -1;
+  this->m_min_note = 128;
+  this->m_max_note = -1;
 }
 
 
-bool Pattern::getNextNote(int& step, int& value,int& length, 
-			  int beforeStep) const {
+bool Pattern::get_next_note(int& step, int& value,int& length, 
+			    int beforeStep) const {
   // no notes left in the pattern
-  if (!nextNote)
+  if (!m_next_note)
     return false;
   
-  // this is the first call since a findNextNote(), so use the current pointer
-  if (mFirstNote && nextNote->step < beforeStep) {
-    mFirstNote = false;
-    step = nextNote->step;
-    value = nextNote->value;
-    length = nextNote->length;
+  // this is the first call since a find_next_note(), so use the current pointer
+  if (m_first_note && m_next_note->step < beforeStep) {
+    m_first_note = false;
+    step = m_next_note->step;
+    value = m_next_note->value;
+    length = m_next_note->length;
     return true;
   }
   
   // this is not the first call, so go to next note and use that
-  if (!mFirstNote && nextNote->next && nextNote->next->step < beforeStep) {
-    nextNote = nextNote->next;
-    step = nextNote->step;
-    value = nextNote->value;
-    length = nextNote->length;
+  if (!m_first_note && m_next_note->next && m_next_note->next->step < beforeStep) {
+    m_next_note = m_next_note->next;
+    step = m_next_note->step;
+    value = m_next_note->value;
+    length = m_next_note->length;
     return true;
   }
   
@@ -212,36 +212,36 @@ bool Pattern::getNextNote(int& step, int& value,int& length,
 }
 
 
-void Pattern::findNextNote(int step) const {
-  NoteMap::const_iterator iter = notes.lower_bound(make_pair(step, 0));
-  if (iter == notes.end())
-    nextNote = NULL;
+void Pattern::find_next_note(int step) const {
+  NoteMap::const_iterator iter = m_notes.lower_bound(make_pair(step, 0));
+  if (iter == m_notes.end())
+    m_next_note = NULL;
   else
-    nextNote = iter->second;
-  mFirstNote = true;
+    m_next_note = iter->second;
+  m_first_note = true;
 }
 
 
-bool Pattern::isDirty() const {
-  return mDirty;
+bool Pattern::is_dirty() const {
+  return m_dirty;
 }
 
 
-void Pattern::makeClean() const {
-  mDirty = false;
+void Pattern::make_clean() const {
+  m_dirty = false;
 }
 
 
-xmlNodePtr Pattern::getXMLNode(xmlDocPtr doc) const {
+xmlNodePtr Pattern::get_xml_node(xmlDocPtr doc) const {
   xmlNodePtr node = xmlNewDocNode(doc, NULL, xmlCharStrdup("pattern"), NULL);
   char tmpStr[20];
-  sprintf(tmpStr, "%d", getLength());
+  sprintf(tmpStr, "%d", get_length());
   xmlNewProp(node, xmlCharStrdup("length"), xmlCharStrdup(tmpStr));
-  sprintf(tmpStr, "%d", getSteps());
+  sprintf(tmpStr, "%d", get_steps());
   xmlNewProp(node, xmlCharStrdup("steps"), xmlCharStrdup(tmpStr));
-  sprintf(tmpStr, "%d", getCCSteps());
+  sprintf(tmpStr, "%d", get_cc_steps());
   xmlNewProp(node, xmlCharStrdup("ccsteps"), xmlCharStrdup(tmpStr));
-  for (NoteMap::const_iterator iter = notes.begin(); iter != notes.end();
+  for (NoteMap::const_iterator iter = m_notes.begin(); iter != m_notes.end();
        ++iter) {
     xmlNodePtr note = xmlNewDocNode(doc, NULL, xmlCharStrdup("note"), NULL);
     sprintf(tmpStr, "%d", iter->first.first);

@@ -10,24 +10,24 @@ using namespace Gtk;
 class EvilScrolledWindow : public ScrolledWindow {
 public:
   
-  EvilScrolledWindow(bool horizontalEvilness = true, 
-		     bool verticalEvilness = true) 
+  EvilScrolledWindow(bool horizontal_evilness = true, 
+		     bool vertical_evilness = true) 
     : ScrolledWindow(),
-      mHorEvil(horizontalEvilness), mVerEvil(verticalEvilness) {
+      m_hor_evil(horizontal_evilness), m_ver_evil(vertical_evilness) {
     set_policy(POLICY_NEVER, POLICY_NEVER);
   }
   
   virtual void on_size_request(Requisition* req) {
     ScrolledWindow::on_size_request(req);
-    if (mHorEvil)
+    if (m_hor_evil)
       req->width = 0;
-    if (mVerEvil)
+    if (m_ver_evil)
       req->height = 0;
   }
 
 private:
-  bool mHorEvil;
-  bool mVerEvil;
+  bool m_hor_evil;
+  bool m_ver_evil;
 };
 
 

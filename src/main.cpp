@@ -57,8 +57,8 @@ int main(int argc, char** argv) {
   Dino dino(argc, argv, refXml);
   
   // run
-  if (dino.getWindow())
-    Main::run(*dino.getWindow());
+  if (dino.get_window())
+    Main::run(*dino.get_window());
   else {
     cerr<<"Could not load the GUI!"<<endl;
     return 1;

@@ -13,93 +13,93 @@
 
 
 Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) 
-  : mSeq("Dino"), mPatternRuler1(0, 1, 1, 20, 20) {
+  : m_seq("Dino"), m_pattern_ruler_1(0, 1, 1, 20, 20) {
   
-  mSeq.setSong(mSong);
+  m_seq.set_song(m_song);
   
   // insert the pattern editor widgets into the GUI
-  window = w<Gtk::Window>(xml, "mainWindow");
-  w<HBox>(xml, "hbxTrackCombo")->pack_start(mCmbTrack);
-  mTrackPatternConnection = mCmbTrack.signal_changed().
-    connect(bind(sigc::mem_fun(*this, &Dino::updatePatternCombo), -1));
-  mPatternEditorConnection = mCmbPattern.signal_changed().
-    connect(sigc::mem_fun(*this, &Dino::updateEditorWidgets));
-  w<HBox>(xml, "hbxPatternCombo")->pack_start(mCmbPattern);
-  Scrollbar* scbHorizontal = w<Scrollbar>(xml, "scbPatternEditor");
-  Scrollbar* scbVertical = w<Scrollbar>(xml, "scbNoteEditor");
-  Box* boxPatternRuler1 = w<Box>(xml, "boxPatternRuler1");
+  m_window = w<Gtk::Window>(xml, "main_window");
+  w<HBox>(xml, "hbx_track_combo")->pack_start(m_cmb_track);
+  m_track_pattern_connection = m_cmb_track.signal_changed().
+    connect(bind(sigc::mem_fun(*this, &Dino::update_pattern_combo), -1));
+  m_pattern_editor_connection = m_cmb_pattern.signal_changed().
+    connect(sigc::mem_fun(*this, &Dino::update_editor_widgets));
+  w<HBox>(xml, "hbx_pattern_combo")->pack_start(m_cmb_pattern);
+  Scrollbar* scbHorizontal = w<Scrollbar>(xml, "scb_pattern_editor");
+  Scrollbar* scbVertical = w<Scrollbar>(xml, "scb_note_editor");
+  Box* boxPatternRuler1 = w<Box>(xml, "box_pattern_ruler_1");
   EvilScrolledWindow* scwPatternRuler1 = 
     manage(new EvilScrolledWindow(true, false));
   boxPatternRuler1->pack_start(*scwPatternRuler1);
   VBox* vboxtmp = new VBox;
   scwPatternRuler1->add(*vboxtmp);
-  vboxtmp->pack_start(mPatternRuler1);
+  vboxtmp->pack_start(m_pattern_ruler_1);
   EvilScrolledWindow* scwNoteEditor = manage(new EvilScrolledWindow);
   scwPatternRuler1->set_hadjustment(scwNoteEditor->get_hadjustment());
   EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
-  Box* boxNoteEditor = w<Box>(xml, "boxNoteEditor");
-  Box* boxCCEditor = w<Box>(xml, "boxCCEditor");
+  Box* boxNoteEditor = w<Box>(xml, "box_note_editor");
+  Box* boxCCEditor = w<Box>(xml, "box_cc_editor");
   boxNoteEditor->pack_start(*scwNoteEditor);
   boxCCEditor->pack_start(*scwCCEditor);
-  scwNoteEditor->add(pe);
-  scwCCEditor->add(cce);
+  scwNoteEditor->add(m_pe);
+  scwCCEditor->add(m_cce);
   scbHorizontal->set_adjustment(*scwNoteEditor->get_hadjustment());
   scwCCEditor->set_hadjustment(*scwNoteEditor->get_hadjustment());
   scbVertical->set_adjustment(*scwNoteEditor->get_vadjustment());
-  sbCCNumber = w<SpinButton>(xml, "sbCCNumber");
-  lbCCDescription = w<Label>(xml, "lbCCDescription");
-  sbCCNumber->signal_value_changed().
-    connect(sigc::mem_fun(this, &Dino::slotCCNumberChanged));
-  sbCCNumber->set_value(1);
-  sbCCNumber->set_numeric(true);
-  sbCCEditorSize = w<SpinButton>(xml, "sbCCEditorSize");
-  sbCCEditorSize->signal_value_changed().
-    connect(sigc::mem_fun(this, &Dino::slotCCEditorSizeChanged));
-  sbCCEditorSize->set_editable(false);
+  m_sb_cc_number = w<SpinButton>(xml, "sb_cc_number");
+  m_lb_cc_description = w<Label>(xml, "lb_cc_description");
+  m_sb_cc_number->signal_value_changed().
+    connect(sigc::mem_fun(this, &Dino::slot_cc_number_changed));
+  m_sb_cc_number->set_value(1);
+  m_sb_cc_number->set_numeric(true);
+  m_sb_cc_editor_size = w<SpinButton>(xml, "sb_cc_editor_size");
+  m_sb_cc_editor_size->signal_value_changed().
+    connect(sigc::mem_fun(this, &Dino::slot_cc_editor_size_changed));
+  m_sb_cc_editor_size->set_editable(false);
   
   // insert the arrangement editor widgets into the GUI
-  VBox* boxArrangementEditor = w<VBox>(xml, "boxArrangementEditor");
-  scbHorizontal = w<Scrollbar>(xml, "scbHArrangementEditor");
-  scbVertical = w<Scrollbar>(xml, "scbVArrangementEditor");
-  Box* boxSequenceRuler = w<Box>(xml, "boxSequenceRuler");
+  VBox* boxArrangementEditor = w<VBox>(xml, "box_arrangement_editor");
+  scbHorizontal = w<Scrollbar>(xml, "scbh_arrangement_editor");
+  scbVertical = w<Scrollbar>(xml, "scbv_arrangement_editor");
+  Box* boxSequenceRuler = w<Box>(xml, "box_sequence_ruler");
   EvilScrolledWindow* scwSequenceRuler = 
     manage(new EvilScrolledWindow(true, false));
   boxSequenceRuler->pack_start(*scwSequenceRuler);
   vboxtmp = new VBox;
   scwSequenceRuler->add(*vboxtmp);
-  vboxtmp->pack_start(*manage(new ::Ruler(mSong.getLength(), 1, 4, 20, 20)));
+  vboxtmp->pack_start(*manage(new ::Ruler(m_song.get_length(), 1, 4, 20, 20)));
   EvilScrolledWindow* scwArrangementEditor = manage(new EvilScrolledWindow);
   scwSequenceRuler->set_hadjustment(scwArrangementEditor->get_hadjustment());
   scbHorizontal->set_adjustment(*scwArrangementEditor->get_hadjustment());
   scbVertical->set_adjustment(*scwArrangementEditor->get_vadjustment());
   boxArrangementEditor->pack_start(*scwArrangementEditor);
-  mVbxTrackEditor = manage(new VBox(false, 2));
-  scwArrangementEditor->add(*mVbxTrackEditor);
-  updateTrackWidgets();
-  updateTrackCombo();
+  m_vbx_track_editor = manage(new VBox(false, 2));
+  scwArrangementEditor->add(*m_vbx_track_editor);
+  update_track_widgets();
+  update_track_combo();
   
   // get other widgets
-  mAboutDialog = w<Dialog>(xml, "dlgAbout");
+  m_about_dialog = w<Dialog>(xml, "dlg_about");
   
   // connect menu signals
   map<const char*, void (Dino::*)(void)> menuSlots;
-  menuSlots["new1"] = &Dino::slotFileNew;
-  menuSlots["open1"] = &Dino::slotFileOpen;
-  menuSlots["save1"] = &Dino::slotFileSave;
-  menuSlots["save_as1"] = &Dino::slotFileSaveAs;
-  menuSlots["quit1"] = &Dino::slotFileQuit;
-  menuSlots["cut1"] = &Dino::slotEditCut;
-  menuSlots["copy1"] = &Dino::slotEditCopy;
-  menuSlots["paste1"] = &Dino::slotEditPaste;
-  menuSlots["delete1"] = &Dino::slotEditDelete;
-  menuSlots["add_track1"] = &Dino::slotEditAddTrack;
-  menuSlots["delete_track1"] = &Dino::slotEditDeleteTrack;
-  menuSlots["add_pattern1"] = &Dino::slotEditAddPattern;
-  menuSlots["delete_pattern1"] = &Dino::slotEditDeletePattern;
-  menuSlots["about1"] = &Dino::slotHelpAboutDino;
-  menuSlots["play1"] = &Dino::slotTransportPlay;
-  menuSlots["stop1"] = &Dino::slotTransportStop;
-  menuSlots["go_to_start1"] = &Dino::slotTransportGoToStart;
+  menuSlots["new1"] = &Dino::slot_file_new;
+  menuSlots["open1"] = &Dino::slot_file_open;
+  menuSlots["save1"] = &Dino::slot_file_save;
+  menuSlots["save_as1"] = &Dino::slot_file_save_as;
+  menuSlots["quit1"] = &Dino::slot_file_quit;
+  menuSlots["cut1"] = &Dino::slot_edit_cut;
+  menuSlots["copy1"] = &Dino::slot_edit_copy;
+  menuSlots["paste1"] = &Dino::slot_edit_paste;
+  menuSlots["delete1"] = &Dino::slot_edit_delete;
+  menuSlots["add_track1"] = &Dino::slot_edit_add_track;
+  menuSlots["delete_track1"] = &Dino::slot_edit_delete_track;
+  menuSlots["add_pattern1"] = &Dino::slot_edit_add_pattern;
+  menuSlots["delete_pattern1"] = &Dino::slot_edit_delete_pattern;
+  menuSlots["about1"] = &Dino::slot_help_about_dino;
+  menuSlots["play1"] = &Dino::slot_transport_play;
+  menuSlots["stop1"] = &Dino::slot_transport_stop;
+  menuSlots["go_to_start1"] = &Dino::slot_transport_go_to_start;
   map<const char*, void (Dino::*)(void)>::const_iterator iter;
   for (iter = menuSlots.begin(); iter != menuSlots.end(); ++iter) {
     MenuItem* mi = w<Gtk::MenuItem>(xml, iter->first);
@@ -107,209 +107,209 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml)
     mi->signal_activate().connect(sigc::mem_fun(*this, iter->second));
   }
   
-  window->show_all();
+  m_window->show_all();
 }
 
 
-Gtk::Window* Dino::getWindow() {
-  return window;
+Gtk::Window* Dino::get_window() {
+  return m_window;
 }
 
 
-void Dino::slotFileNew() {
-  mSong = Song();
+void Dino::slot_file_new() {
+  m_song = Song();
 }
 
 
-void Dino::slotFileOpen() {
+void Dino::slot_file_open() {
   
 }
 
 
-void Dino::slotFileSave() {
-  mSong.writeFile("output.dino");
+void Dino::slot_file_save() {
+  m_song.write_file("output.dino");
 }
 
 
-void Dino::slotFileSaveAs() {
-  mSong.writeFile("output.dino");
+void Dino::slot_file_save_as() {
+  m_song.write_file("output.dino");
 }
 
 
-void Dino::slotFileQuit() {
+void Dino::slot_file_quit() {
   Main::quit();
 }
 
 
-void Dino::slotEditCut() {
+void Dino::slot_edit_cut() {
 
 }
 
 
-void Dino::slotEditCopy() {
+void Dino::slot_edit_copy() {
 
 }
 
 
-void Dino::slotEditPaste() {
+void Dino::slot_edit_paste() {
 
 }
 
 
-void Dino::slotEditDelete() {
+void Dino::slot_edit_delete() {
   
 }
 
 
-void Dino::slotEditAddTrack() {
-  mSong.addTrack();
-  updateTrackWidgets();
-  updateTrackCombo();
+void Dino::slot_edit_add_track() {
+  m_song.add_track();
+  update_track_widgets();
+  update_track_combo();
 }
  
 
-void Dino::slotEditDeleteTrack() {
-  int trackID = mCmbTrack.getActiveID();
+void Dino::slot_edit_delete_track() {
+  int trackID = m_cmb_track.get_active_id();
   if (trackID >= 0) {
-    mSong.removeTrack(trackID);
-    updateTrackWidgets();
-    updateTrackCombo();
+    m_song.remove_track(trackID);
+    update_track_widgets();
+    update_track_combo();
   }
 }
 
 
-void Dino::slotEditAddPattern() {
-  int trackID = mCmbTrack.getActiveID();
+void Dino::slot_edit_add_pattern() {
+  int trackID = m_cmb_track.get_active_id();
   if (trackID >= 0) {
-    int patternID = mSong.getTracks().find(trackID)->second.addPattern(8,4, 4);
-    Pattern* pat = &mSong.getTracks().find(trackID)->
-      second.getPatterns().find(patternID)->second;
-    updatePatternCombo(patternID);
+    int patternID = m_song.get_tracks().find(trackID)->second.add_pattern(8,4, 4);
+    Pattern* pat = &m_song.get_tracks().find(trackID)->
+      second.get_patterns().find(patternID)->second;
+    update_pattern_combo(patternID);
   }
 }
  
 
-void Dino::slotEditDeletePattern() {
+void Dino::slot_edit_delete_pattern() {
   
 }
 
 
-void Dino::slotTransportPlay() {
-  mSeq.play();
+void Dino::slot_transport_play() {
+  m_seq.play();
 }
 
 
-void Dino::slotTransportStop() {
-  mSeq.stop();
+void Dino::slot_transport_stop() {
+  m_seq.stop();
 }
 
 
-void Dino::slotTransportGoToStart() {
-  mSeq.gotoBeat(0);
+void Dino::slot_transport_go_to_start() {
+  m_seq.goto_beat(0);
 }
 
 
-void Dino::slotHelpAboutDino() {
-  assert(mAboutDialog != NULL);
-  mAboutDialog->run();
+void Dino::slot_help_about_dino() {
+  assert(m_about_dialog != NULL);
+  m_about_dialog->run();
 }
 
 
-void Dino::updateTrackWidgets() {
-  mVbxTrackEditor->children().clear();
-  for (map<int, Track>::iterator iter = mSong.getTracks().begin();
-       iter != mSong.getTracks().end(); ++iter) {
-    TrackWidget* tw = manage(new TrackWidget(&mSong));
-    tw->setTrack(&iter->second);
-    mVbxTrackEditor->pack_start(*tw, PACK_SHRINK);
+void Dino::update_track_widgets() {
+  m_vbx_track_editor->children().clear();
+  for (map<int, Track>::iterator iter = m_song.get_tracks().begin();
+       iter != m_song.get_tracks().end(); ++iter) {
+    TrackWidget* tw = manage(new TrackWidget(&m_song));
+    tw->set_track(&iter->second);
+    m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
   }
-  mVbxTrackEditor->show_all();
+  m_vbx_track_editor->show_all();
 }
 
 
-void Dino::updateTrackCombo() {
-  mTrackPatternConnection.block();
-  int oldActive = mCmbTrack.getActiveID();
-  mCmbTrack.clear();
+void Dino::update_track_combo() {
+  m_track_pattern_connection.block();
+  int oldActive = m_cmb_track.get_active_id();
+  m_cmb_track.clear();
   int newActive = -1;
-  if (mSong.getTracks().size() > 0) {
+  if (m_song.get_tracks().size() > 0) {
     char tmp[10];
-    for (map<int, Track>::iterator iter = mSong.getTracks().begin();
-	 iter != mSong.getTracks().end(); ++iter) {
+    for (map<int, Track>::iterator iter = m_song.get_tracks().begin();
+	 iter != m_song.get_tracks().end(); ++iter) {
       sprintf(tmp, "%03d", iter->first);
-      mCmbTrack.appendText(tmp, iter->first);
+      m_cmb_track.append_text(tmp, iter->first);
       if (newActive == -1 || iter->first <= oldActive)
 	newActive = iter->first;
     }
   }
   else {
-    mCmbTrack.appendText("No tracks");
+    m_cmb_track.append_text("No tracks");
   }
-  mCmbTrack.setActiveID(newActive);
-  mTrackPatternConnection.unblock();
+  m_cmb_track.set_active_id(newActive);
+  m_track_pattern_connection.unblock();
   if (oldActive == -1 || newActive != oldActive)
-    updatePatternCombo();
+    update_pattern_combo();
 }
 
 
-void Dino::updatePatternCombo(int activePattern) {
+void Dino::update_pattern_combo(int activePattern) {
   int newActive = activePattern;
-  mCmbPattern.clear();
-  int trackID = mCmbTrack.getActiveID();
+  m_cmb_pattern.clear();
+  int trackID = m_cmb_track.get_active_id();
   if (trackID >= 0) {
-    const Track& trk(mSong.getTracks().find(trackID)->second);
-    mCmbPattern.clear();
+    const Track& trk(m_song.get_tracks().find(trackID)->second);
+    m_cmb_pattern.clear();
     map<int, Pattern>::const_iterator iter;
     char tmp[10];
-    for (iter = trk.getPatterns().begin(); 
-	 iter != trk.getPatterns().end(); ++iter) {
+    for (iter = trk.get_patterns().begin(); 
+	 iter != trk.get_patterns().end(); ++iter) {
       sprintf(tmp, "%03d", iter->first);
-      mCmbPattern.appendText(tmp, iter->first);
+      m_cmb_pattern.append_text(tmp, iter->first);
       if (newActive == -1)
 	newActive = iter->first;
     }
   }
   
   if (newActive == -1)
-    mCmbPattern.appendText("No patterns");
-  mCmbPattern.setActiveID(newActive);
-  updateEditorWidgets();
+    m_cmb_pattern.append_text("No patterns");
+  m_cmb_pattern.set_active_id(newActive);
+  update_editor_widgets();
 }
 
 
-void Dino::updateEditorWidgets() {
-  int trackID = mCmbTrack.getActiveID();
-  int patternID = mCmbPattern.getActiveID();
+void Dino::update_editor_widgets() {
+  int trackID = m_cmb_track.get_active_id();
+  int patternID = m_cmb_pattern.get_active_id();
   Pattern* pat = NULL;
   if (trackID != -1 && patternID != -1) {
-    Track& trk = mSong.getTracks().find(trackID)->second;
-    pat = &(trk.getPatterns().find(patternID)->second);
+    Track& trk = m_song.get_tracks().find(trackID)->second;
+    pat = &(trk.get_patterns().find(patternID)->second);
   }
-  pe.setPattern(pat);
-  cce.setPattern(pat);
+  m_pe.set_pattern(pat);
+  m_cce.set_pattern(pat);
   if (pat) {
-    mPatternRuler1.setLength(pat->getLength());
-    mPatternRuler1.setSubdivisions(pat->getSteps());
-    mPatternRuler1.setDivisionSize(8 * pat->getSteps());
+    m_pattern_ruler_1.setLength(pat->get_length());
+    m_pattern_ruler_1.setSubdivisions(pat->get_steps());
+    m_pattern_ruler_1.setDivisionSize(8 * pat->get_steps());
   }
   else {
-    mPatternRuler1.setLength(0);
+    m_pattern_ruler_1.setLength(0);
   }
 }
 
 
-void Dino::slotCCNumberChanged() {
-  lbCCDescription->set_text(mCCDescriptions[sbCCNumber->get_value_as_int()]);
-  cce.setCCNumber(sbCCNumber->get_value_as_int());
+void Dino::slot_cc_number_changed() {
+  m_lb_cc_description->set_text(cc_descriptions[m_sb_cc_number->get_value_as_int()]);
+  m_cce.set_cc_number(m_sb_cc_number->get_value_as_int());
 }
 
 
-void Dino::slotCCEditorSizeChanged() {
-  cce.setHeight(sbCCEditorSize->get_value_as_int());
+void Dino::slot_cc_editor_size_changed() {
+  m_cce.set_height(m_sb_cc_editor_size->get_value_as_int());
 }
 
 
-char* Dino::mCCDescriptions[] = { "Bank select MSB",
+char* Dino::cc_descriptions[] = { "Bank select MSB",
 				  "Modulation", 
 				  "Breath controller",
 				  "Undefined",

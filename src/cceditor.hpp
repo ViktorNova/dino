@@ -15,9 +15,9 @@ class CCEditor : public DrawingArea {
 public:
   CCEditor();
   
-  void setPattern(Pattern* pat);
-  void setCCNumber(int ccNumber);
-  void setHeight(int height);  
+  void set_pattern(Pattern* pat);
+  void set_cc_number(int cc_number);
+  void set_height(int height);  
   
 protected:
   
@@ -31,21 +31,21 @@ protected:
   void update(int step = -1);
   
 private:
-  RefPtr<GC> gc;
-  RefPtr<Colormap> colormap;
-  Color bgColor, bgColor2, fgColor, edgeColor;
-  int colWidth;
-  int width, height;
-  double vScale;
+  RefPtr<GC> m_gc;
+  RefPtr<Colormap> m_colormap;
+  Color m_bg_color, m_bg_color2, m_fg_color, m_edge_color;
+  int m_col_width;
+  int m_width, m_height;
+  double m_v_scale;
   
-  Pattern* pat;
-  int ccNumber;
+  Pattern* m_pat;
+  int m_cc_number;
   
-  int dragStep;
-  int lineStep;
-  int lineValue;
+  int m_drag_step;
+  int m_line_step;
+  int m_line_value;
   
-  Menu shapeMenu;
+  Menu m_shape_menu;
 };
 
 

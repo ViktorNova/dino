@@ -14,32 +14,32 @@ class Song {
 public:
   Song();
   
-  void setTitle(const string& title);
-  void setAuthor(const string& author);
-  void setInfo(const string& info);
-  int addTrack();
-  bool removeTrack(int id);
+  void set_title(const string& title);
+  void set_author(const string& author);
+  void set_info(const string& info);
+  int add_track();
+  bool remove_track(int id);
   
-  const string& getTitle() const;
-  const string& getAuthor() const;
-  const string& getInfo() const;
-  const map<int, Track>& getTracks() const;
-  map<int, Track>& getTracks();
-  int getLength() const;
+  const string& get_title() const;
+  const string& get_author() const;
+  const string& get_info() const;
+  const map<int, Track>& get_tracks() const;
+  map<int, Track>& get_tracks();
+  int get_length() const;
   
-  bool isDirty() const;
+  bool is_dirty() const;
   
-  const bool writeFile(const string& filename) const;
+  const bool write_file(const string& filename) const;
   
 private:
   
-  string mTitle;
-  string mAuthor;
-  string mInfo;
-  map<int, Track> mTracks;
-  int mLength;
+  string m_title;
+  string m_author;
+  string m_info;
+  map<int, Track> m_tracks;
+  int m_length;
   
-  mutable bool mDirty;
+  mutable bool m_dirty;
 };
 
 

@@ -5,111 +5,111 @@
 #include "song.hpp"
 
 
-Song::Song() : mDirty(false), mLength(32) {
+Song::Song() : m_dirty(false), m_length(32) {
 
 }
   
-void Song::setTitle(const string& title) {
-  mTitle = title;
-  mDirty = true;
+void Song::set_title(const string& title) {
+  m_title = title;
+  m_dirty = true;
 }
 
 
-void Song::setAuthor(const string& author) {
-  mAuthor = author;
-  mDirty = true;
+void Song::set_author(const string& author) {
+  m_author = author;
+  m_dirty = true;
 }
 
 
-void Song::setInfo(const string& info) {
-  mInfo = info;
-  mDirty = true;
+void Song::set_info(const string& info) {
+  m_info = info;
+  m_dirty = true;
 }
 
 
-int Song::addTrack() {
-  map<int, Track>::reverse_iterator iter = mTracks.rbegin();
-  if (iter == mTracks.rend())
-    mTracks[1] = Track(mLength);
+int Song::add_track() {
+  map<int, Track>::reverse_iterator iter = m_tracks.rbegin();
+  if (iter == m_tracks.rend())
+    m_tracks[1] = Track(m_length);
   else
-    mTracks[iter->first + 1] = Track(mLength);
-  mDirty = true;
+    m_tracks[iter->first + 1] = Track(m_length);
+  m_dirty = true;
 }
 
 
-bool Song::removeTrack(int id) {
-  map<int, Track>::iterator iter = mTracks.find(id);
-  if (iter == mTracks.end())
+bool Song::remove_track(int id) {
+  map<int, Track>::iterator iter = m_tracks.find(id);
+  if (iter == m_tracks.end())
     return false;
-  mTracks.erase(iter);
-  mDirty = true;
+  m_tracks.erase(iter);
+  m_dirty = true;
   return true;
 }
 
 
-const string& Song::getTitle() const {
-  return mTitle;
+const string& Song::get_title() const {
+  return m_title;
 }
 
 
-const string& Song::getAuthor() const {
-  return mAuthor;
+const string& Song::get_author() const {
+  return m_author;
 }
 
 
-const string& Song::getInfo() const {
-  return mInfo;
+const string& Song::get_info() const {
+  return m_info;
 }
 
 
-const map<int, Track>& Song::getTracks() const {
-  return mTracks;
+const map<int, Track>& Song::get_tracks() const {
+  return m_tracks;
 }
 
 
-map<int, Track>& Song::getTracks() {
-  return mTracks;
+map<int, Track>& Song::get_tracks() {
+  return m_tracks;
 }
 
 
-int Song::getLength() const {
-  return mLength;
+int Song::get_length() const {
+  return m_length;
 }
 
 
-bool Song::isDirty() const {
-  if (mDirty)
+bool Song::is_dirty() const {
+  if (m_dirty)
     return true;
-  for (map<int, Track>::const_iterator iter = mTracks.begin(); 
-       iter != mTracks.end(); ++iter) {
-    if (iter->second.isDirty())
+  for (map<int, Track>::const_iterator iter = m_tracks.begin(); 
+       iter != m_tracks.end(); ++iter) {
+    if (iter->second.is_dirty())
       return true;
   }
   return false;
 }
 
 
-const bool Song::writeFile(const string& filename) const {
+const bool Song::write_file(const string& filename) const {
   xmlDocPtr doc = xmlNewDoc(xmlCharStrdup("1.0"));
   xmlNodePtr dino = xmlNewDocNode(doc, NULL, xmlCharStrdup("dinosong"), NULL);
   xmlDocSetRootElement(doc, dino);
   xmlNewChild(dino, NULL, xmlCharStrdup("title"), 
-	      xmlCharStrdup(mTitle.c_str()));
+	      xmlCharStrdup(m_title.c_str()));
   xmlNewChild(dino, NULL, xmlCharStrdup("author"), 
-	      xmlCharStrdup(mAuthor.c_str()));
+	      xmlCharStrdup(m_author.c_str()));
   xmlNewChild(dino, NULL, xmlCharStrdup("info"), 
-	      xmlCharStrdup(mInfo.c_str()));
+	      xmlCharStrdup(m_info.c_str()));
   
   char idStr[20];
-  for (map<int, Track>::const_iterator iter = mTracks.begin(); 
-       iter != mTracks.end(); ++iter) {
-    xmlNodePtr node = iter->second.getXMLNode(doc);
+  for (map<int, Track>::const_iterator iter = m_tracks.begin(); 
+       iter != m_tracks.end(); ++iter) {
+    xmlNodePtr node = iter->second.get_xml_node(doc);
     sprintf(idStr, "%d", iter->first);
     xmlNewProp(node, xmlCharStrdup("id"), xmlCharStrdup(idStr));
     xmlAddChild(dino, node);
-    iter->second.makeClean();
+    iter->second.make_clean();
   }
   
   xmlSaveFormatFile(filename.c_str(), doc, 1);
-  mDirty = false;
+  m_dirty = false;
 }

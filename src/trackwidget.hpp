@@ -17,7 +17,7 @@ public:
   
   TrackWidget(const Song* song = NULL);
   
-  void setTrack(Track* track);
+  void set_track(Track* track);
 
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -25,23 +25,24 @@ public:
   virtual bool on_button_release_event(GdkEventButton* event);
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   
-  void slotInsertPattern(int pattern, int position);
+  void slot_insert_pattern(int pattern, int position);
   
   void update();
   
 private:
   
-  const Song* mSong;
-  Track* mTrack;
-  int mColWidth;
+  const Song* m_song;
+  Track* m_track;
+  int m_col_width;
 
-  RefPtr<GC> gc;
-  RefPtr<Colormap> mColormap;
-  Color bgColor, bgColor2, fgColor, gridColor, edgeColor, hlColor;
+  RefPtr<GC> m_gc;
+  RefPtr<Colormap> m_colormap;
+  Color m_bg_color, m_bg_color2, m_fg_color, m_grid_color, m_edge_color, 
+    m_hl_color;
   
-  int mDragBeat, mDragPattern;
+  int m_drag_beat, m_drag_pattern;
   
-  Menu mPatternMenu;
+  Menu m_pattern_menu;
 };
 
 

@@ -3,7 +3,7 @@
 
 <glade-interface>
 
-<widget class="GtkWindow" id="mainWindow">
+<widget class="GtkWindow" id="main_window">
   <property name="visible">True</property>
   <property name="title" translatable="yes">Dino</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
@@ -389,7 +389,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkSpinButton" id="sbCCNumber">
+			<widget class="GtkSpinButton" id="sb_cc_number">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
 			  <property name="climb_rate">1</property>
@@ -408,7 +408,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkLabel" id="lbCCDescription">
+			<widget class="GtkLabel" id="lb_cc_description">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes"></property>
 			  <property name="use_underline">False</property>
@@ -450,7 +450,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkSpinButton" id="sbCCEditorSize">
+			<widget class="GtkSpinButton" id="sb_cc_editor_size">
 			  <property name="visible">True</property>
 			  <property name="can_focus">True</property>
 			  <property name="climb_rate">1</property>
@@ -505,7 +505,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkHBox" id="hbxTrackCombo">
+			<widget class="GtkHBox" id="hbx_track_combo">
 			  <property name="visible">True</property>
 			  <property name="homogeneous">False</property>
 			  <property name="spacing">0</property>
@@ -543,7 +543,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkHBox" id="hbxPatternCombo">
+			<widget class="GtkHBox" id="hbx_pattern_combo">
 			  <property name="visible">True</property>
 			  <property name="homogeneous">False</property>
 			  <property name="spacing">0</property>
@@ -570,7 +570,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkHScrollbar" id="scbPatternEditor">
+		    <widget class="GtkHScrollbar" id="scb_pattern_editor">
 		      <property name="visible">True</property>
 		      <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
 		      <property name="inverted">False</property>
@@ -587,7 +587,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkVScrollbar" id="scbNoteEditor">
+		    <widget class="GtkVScrollbar" id="scb_note_editor">
 		      <property name="visible">True</property>
 		      <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
 		      <property name="inverted">False</property>
@@ -603,7 +603,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkHBox" id="boxNoteEditor">
+		    <widget class="GtkHBox" id="box_note_editor">
 		      <property name="visible">True</property>
 		      <property name="homogeneous">False</property>
 		      <property name="spacing">0</property>
@@ -623,7 +623,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkHBox" id="boxCCEditor">
+		    <widget class="GtkHBox" id="box_cc_editor">
 		      <property name="visible">True</property>
 		      <property name="homogeneous">False</property>
 		      <property name="spacing">0</property>
@@ -643,7 +643,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkVBox" id="boxPatternRuler1">
+		    <widget class="GtkVBox" id="box_pattern_ruler_1">
 		      <property name="visible">True</property>
 		      <property name="homogeneous">False</property>
 		      <property name="spacing">0</property>
@@ -849,7 +849,7 @@
 		  <property name="column_spacing">0</property>
 
 		  <child>
-		    <widget class="GtkVScrollbar" id="scbVArrangementEditor">
+		    <widget class="GtkVScrollbar" id="scbv_arrangement_editor">
 		      <property name="visible">True</property>
 		      <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
 		      <property name="inverted">False</property>
@@ -865,7 +865,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkHScrollbar" id="scbHArrangementEditor">
+		    <widget class="GtkHScrollbar" id="scbh_arrangement_editor">
 		      <property name="visible">True</property>
 		      <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
 		      <property name="inverted">False</property>
@@ -881,7 +881,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkVBox" id="boxArrangementEditor">
+		    <widget class="GtkVBox" id="box_arrangement_editor">
 		      <property name="visible">True</property>
 		      <property name="homogeneous">False</property>
 		      <property name="spacing">0</property>
@@ -901,7 +901,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkVBox" id="boxSequenceRuler">
+		    <widget class="GtkVBox" id="box_sequence_ruler">
 		      <property name="visible">True</property>
 		      <property name="homogeneous">False</property>
 		      <property name="spacing">0</property>
@@ -1161,7 +1161,7 @@
   </child>
 </widget>
 
-<widget class="GtkDialog" id="dlgAbout">
+<widget class="GtkDialog" id="dlg_about">
   <property name="border_width">5</property>
   <property name="title" translatable="yes">About Dino</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>

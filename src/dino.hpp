@@ -64,6 +64,8 @@ private:
   void update_track_combo(int activeTrack = -1);
   void update_pattern_combo(int activePattern = -1);
   void update_editor_widgets();
+  void update_port_combo();
+  void update_channel_combo();
   void active_track_changed();
   void init_pattern_editor();
   void init_sequence_editor();
@@ -97,7 +99,14 @@ private:
   Entry* m_ent_title;
   Entry* m_ent_author;
   TextView* m_text_info;
-
+  
+  Dialog* m_dlg_track_properties;
+  Entry* m_dlgtrack_ent_name;
+  SingleTextCombo m_dlgtrack_cmb_port;
+  SpinButton* m_dlgtrack_sbn_channel;
+  
+  Dialog* m_dlg_pattern_properties;
+  
   static char* cc_descriptions[];
   
   Song m_song;

@@ -19,20 +19,23 @@ using namespace sigc;
 
 
 Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_xml(xml), m_seq("Dino"), m_pattern_ruler_1(0, 1, 1, 20, 20),
+  : m_xml(xml), m_seq("Dino", m_song), m_pattern_ruler_1(0, 1, 1, 20, 20),
     m_sequence_ruler(32, 1, 4, 20, 20) {
   
-  m_seq.set_song(m_song);
-  if (m_seq.isValid()) {
-    if (init_lash(argc, argv)) {
-      signal_timeout().
-	connect(mem_fun(*this, &Dino::slot_check_ladcca_events), 500);
-    }
-    cca_alsa_client_id(m_lash_client, m_seq.get_alsa_id());
+  if (!m_seq.is_valid())
+    cerr<<"You will not be able to play any songs."<<endl;
+  
+  if (init_lash(argc, argv)) {
+    signal_timeout().
+      connect(mem_fun(*this, &Dino::slot_check_ladcca_events), 500);
+    int id;
+    if ((id = m_seq.get_alsa_id()) != -1)
+      cca_alsa_client_id(m_lash_client, m_seq.get_alsa_id());
   }
   
   m_window = w<Gtk::Window>("main_window");
   m_about_dialog = w<Dialog>("dlg_about");
+  m_dlg_pattern_properties = w<Dialog>("dlg_pattern_properties");
   
   init_pattern_editor();
   init_sequence_editor();
@@ -56,7 +59,7 @@ void Dino::slot_file_new() {
 void Dino::slot_file_open() {
   m_seq.stop();
   m_song.load_file("output.dino");
-  m_seq.goto_beat(0);
+  m_seq.go_to_beat(0);
 }
 
 
@@ -96,8 +99,22 @@ void Dino::slot_edit_delete() {
 
 
 void Dino::slot_edit_add_track() {
-  Mutex::Lock(m_song.get_big_lock());
-  m_song.add_track();
+  m_dlgtrack_ent_name->set_text("Untitled");
+  update_port_combo();
+  m_dlgtrack_cmb_port.set_active_id(-1);
+  m_dlg_track_properties->show_all();
+  if (m_dlg_track_properties->run() == RESPONSE_OK) {
+    Mutex::Lock(m_song.get_big_lock());
+    int id = m_song.add_track(m_dlgtrack_ent_name->get_text());
+    m_song.get_tracks()[id].
+      set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
+    int instrument = m_dlgtrack_cmb_port.get_active_id();
+    if (instrument == -1)
+      m_seq.set_instrument(id, -1, -1);
+    else
+      m_seq.set_instrument(id, instrument / 255, instrument % 255);
+  }
+  m_dlg_track_properties->hide();
 }
  
 
@@ -136,7 +153,7 @@ void Dino::slot_transport_stop() {
 
 
 void Dino::slot_transport_go_to_start() {
-  m_seq.goto_beat(0);
+  m_seq.go_to_beat(0);
 }
 
 
@@ -233,6 +250,20 @@ void Dino::update_editor_widgets() {
   else {
     m_pattern_ruler_1.setLength(0);
   }
+}
+
+
+void Dino::update_port_combo() {
+  m_dlgtrack_cmb_port.clear();
+  m_dlgtrack_cmb_port.append_text("None", -1);
+  Sequencer::InstrumentInfo i = m_seq.get_first_instrument();
+  for ( ; i.client >= 0; i = m_seq.get_next_instrument())
+    m_dlgtrack_cmb_port.append_text(i.name, i.client * 255 + i.port);
+}
+
+
+void Dino::update_channel_combo() {
+
 }
 
 
@@ -365,8 +396,13 @@ void Dino::init_sequence_editor() {
   m_song.signal_track_removed.connect(update_track_view);
   m_song.signal_length_changed.connect(update_track_view);
   m_sequence_ruler.signal_clicked.
-    connect(hide(mem_fun(m_seq, &Sequencer::goto_beat)));
+    connect(hide(mem_fun(m_seq, &Sequencer::go_to_beat)));
   
+  // setup the track properties dialog
+  m_dlg_track_properties = w<Dialog>("dlg_track_properties");
+  m_dlgtrack_ent_name = w<Entry>("dlgtrack_ent_name");
+  m_dlgtrack_sbn_channel = w<SpinButton>("dlgtrack_sbn_channel");
+  w<VBox>("dlgtrack_vbx_port")->pack_start(m_dlgtrack_cmb_port);
   update_track_widgets();
 }
 

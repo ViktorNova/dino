@@ -40,63 +40,51 @@ void Pattern::add_note(int step, int value, int noteLength) {
   assert(noteLength > 0);
   assert(step + noteLength <= m_length * m_steps);
   pair<int, int> p = make_pair(step, value);
-  Note* previous = NULL;
-  Note* next = NULL;
-  NoteMap::iterator iter;
+  list<Note>::iterator iter;
   
   bool isUpdate = false;
   
   for (iter = m_notes.begin(); iter != m_notes.end(); ++iter) {
     
     // we're looking at a note that's before the new one
-    if (iter->first.first < step || 
-	(iter->first.first == step && iter->first.second < value)) {
-      previous = iter->second;
+    if (iter->step < step || 
+	(iter->step == step && iter->value < value)) {
       // it could be overlapping, if so, shorten it
-      if (iter->first.second == value && 
-	  iter->first.first + iter->second->length > step) {
-	m_max_step = (iter->first.first + iter->second->length > m_max_step ? 
-		   iter->first.first + iter->second->length : m_max_step);
-	iter->second->length = step - iter->first.first;
+      if (iter->value == value && iter->step + iter->length > step) {
+	m_max_step = (iter->step + iter->length > m_max_step ? 
+		      iter->step + iter->length : m_max_step);
+	iter->length = step - iter->step;
       }
     }
     
-    // we're looking at a note with the same pitch and start time - delete it
-    else if (iter->first.first == step && iter->first.second == value) {
+    // we're looking at a note with the same pitch and start time - remove it
+    else if (iter->step == step && iter->value == value) {
       isUpdate = true;
-      delete iter->second;
-      m_max_step = (iter->first.first + iter->second->length > m_max_step ?
-		 iter->first.first + iter->second->length : m_max_step);
+      m_max_step = (iter->step + iter->length > m_max_step ?
+		    iter->step + iter->length : m_max_step);
+      m_notes.erase(iter--);
     }
     
-    // we're looking at a node after the new one - link to it and exit the loop
-    else if (iter->first.first > step ||
-	     (iter->first.first == step && iter->first.second > value)) {
-      next = iter->second;
+    // we're looking at a node after the new one - exit the loop
+    else if (iter->step > step || (iter->step == step && iter->value > value))
       break;
-    }
   }
   
   // check if there is a note that begins before the end of the new note,
   // if so shorten the new note
-  for (iter = m_notes.upper_bound(p); iter != m_notes.end(); ++iter) {
-    if (iter->first.second == value) {
-      if (iter->first.first > step && step + noteLength > iter->first.first)
-	noteLength = iter->first.first - step;
+  list<Note>::iterator next = iter;
+  for ( ; next != m_notes.end(); ++next) {
+    if (next->value == value) {
+      if (next->step > step && step + noteLength > next->step)
+	noteLength = next->step - step;
       break;
     }
   }
   
   // create the note, set up links for the sequencer list and put it in the
   // map
-  Note* note = new Note(p.first, p.second, noteLength);
-  note->previous = previous;
-  note->next = next;
-  if (next)
-    next->previous = note;
-  if (previous)
-    previous->next = note;
-  m_notes[p] = note;
+  Note note(p.first, p.second, noteLength);
+  m_notes.insert(iter, note);
   
   m_min_note = value < m_min_note ? value : m_min_note;
   m_max_note = value > m_max_note ? value : m_max_note;
@@ -118,26 +106,18 @@ void Pattern::add_note(int step, int value, int noteLength) {
 int Pattern::delete_note(int step, int value) {
   assert(step >= 0 && step < m_length * m_steps);
   assert(value >= 0 && value < 128);
-  for (NoteMap::iterator iter = m_notes.begin(); 
-       iter != m_notes.end() && iter->first.first <= step; ++iter) {
-    if (iter->first.second == value && iter->first.first <= step &&
-	iter->first.first + iter->second->length > step) {
-      int result = iter->first.first;
-      m_min_note = iter->first.second < m_min_note ? 
-	iter->first.second : m_min_note;
-      m_max_note = iter->first.second > m_max_note ? 
-	iter->first.second : m_max_note;
-      m_min_step = iter->first.first < m_min_step ? 
-	iter->first.first : m_min_step;
-      m_max_step = (iter->first.first + iter->second->length - 1 > m_max_step ?
-		    iter->first.first + iter->second->length - 1 : m_max_step);
-      if (iter->second->previous)
-	iter->second->previous->next = iter->second->next;
-      if (iter->second->next)
-	iter->second->next->previous = iter->second->previous;
-      delete iter->second;
-      int rStep = iter->first.first;
-      int rNote = iter->first.second;
+  for (list<Note>::iterator iter = m_notes.begin(); 
+       iter != m_notes.end() && iter->step <= step; ++iter) {
+    if (iter->value == value && iter->step <= step &&
+	iter->step + iter->length > step) {
+      int result = iter->step;
+      m_min_note = iter->value < m_min_note ? iter->value : m_min_note;
+      m_max_note = iter->value > m_max_note ? iter->value : m_max_note;
+      m_min_step = iter->step < m_min_step ? iter->step : m_min_step;
+      m_max_step = (iter->step + iter->length - 1 > m_max_step ?
+		    iter->step + iter->length - 1 : m_max_step);
+      int rStep = iter->step;
+      int rNote = iter->value;
       m_notes.erase(iter);
       signal_note_removed(rStep, rNote);
       return result;
@@ -178,12 +158,12 @@ int Pattern::delete_cc(int ccNumber, int step) {
 }
 
 
-Pattern::NoteMap& Pattern::get_notes() {
+list<Pattern::Note>& Pattern::get_notes() {
   return m_notes;
 }
 
 
-const Pattern::NoteMap& Pattern::get_notes() const {
+const list<Pattern::Note>& Pattern::get_notes() const {
   return m_notes;
 }
 
@@ -231,12 +211,12 @@ void Pattern::get_dirty_rect(int* minStep, int* minNote,
     it will return false. It <b>must be realtime safe</b> because it is 
     used by the sequencer thread. */
 bool Pattern::get_next_note(int& step, int& value,int& length, 
-			    int beforeStep) const {
+			    int beforeStep) const{
   // no notes left in the pattern
-  if (!m_next_note)
+  if (m_next_note == m_notes.end())
     return false;
   
-  // this is the first call since a find_next_note(), so use the current pointer
+  // this is the first call since a find_next_note(), so use the current note
   if (m_first_note && m_next_note->step < beforeStep) {
     m_first_note = false;
     step = m_next_note->step;
@@ -246,8 +226,10 @@ bool Pattern::get_next_note(int& step, int& value,int& length,
   }
   
   // this is not the first call, so go to next note and use that
-  if (!m_first_note && m_next_note->next && m_next_note->next->step < beforeStep) {
-    m_next_note = m_next_note->next;
+  list<Note>::const_iterator next = m_next_note;
+  ++next;
+  if (!m_first_note && next != m_notes.end() && next->step < beforeStep) {
+    m_next_note = next;
     step = m_next_note->step;
     value = m_next_note->value;
     length = m_next_note->length;
@@ -262,11 +244,9 @@ bool Pattern::get_next_note(int& step, int& value,int& length,
     step. It <b>must be realtime safe</b> for @c step == 0 because that is
     used by the sequencer thread. */
 void Pattern::find_next_note(int step) const {
-  NoteMap::const_iterator iter = m_notes.lower_bound(make_pair(step, 0));
-  if (iter == m_notes.end())
-    m_next_note = NULL;
-  else
-    m_next_note = iter->second;
+  list<Note>::const_iterator iter = m_notes.begin();
+  for ( ; iter != m_notes.end() && iter->step >= step; ++iter);
+  m_next_note = iter;
   m_first_note = true;
 }
 
@@ -290,14 +270,14 @@ bool Pattern::fill_xml_node(Element* elt) const {
   elt->set_attribute("steps", tmp_txt);
   sprintf(tmp_txt, "%d", get_cc_steps());
   elt->set_attribute("ccsteps", tmp_txt);
-  for (NoteMap::const_iterator iter = m_notes.begin(); iter != m_notes.end();
-       ++iter) {
+  for (list<Note>::const_iterator iter = m_notes.begin(); 
+       iter != m_notes.end(); ++iter) {
     Element* note_elt = elt->add_child("note");
-    sprintf(tmp_txt, "%d", iter->first.first);
+    sprintf(tmp_txt, "%d", iter->step);
     note_elt->set_attribute("step", tmp_txt);
-    sprintf(tmp_txt, "%d", iter->first.second);
+    sprintf(tmp_txt, "%d", iter->value);
     note_elt->set_attribute("value", tmp_txt);
-    sprintf(tmp_txt, "%d", iter->second->length);
+    sprintf(tmp_txt, "%d", iter->length);
     note_elt->set_attribute("length", tmp_txt);
   }
   return true;

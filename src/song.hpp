@@ -33,7 +33,7 @@ public:
   void set_title(const string& title);
   void set_author(const string& author);
   void set_info(const string& info);
-  int add_track();
+  int add_track(const string& name = "");
   bool remove_track(int id);
   
   // XML I/O

@@ -79,20 +79,20 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   for ( ; iter != m_track->get_sequence().end(); ++iter) {
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
-    int length = iter->second->length;
-    win->draw_rectangle(m_gc, true, iter->first * m_col_width, 0,
+    int length = iter->length;
+    win->draw_rectangle(m_gc, true, iter->start * m_col_width, 0,
 			length * m_col_width, height-1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, iter->first * m_col_width, 0,
+    win->draw_rectangle(m_gc, false, iter->start * m_col_width, 0,
 			length * m_col_width, height-1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
-    sprintf(tmp, "%03d", iter->second->pattern_id);
+    sprintf(tmp, "%03d", iter->pattern_id);
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Rectangle textBounds(iter->first * m_col_width, 0, 
+    Rectangle textBounds(iter->start * m_col_width, 0, 
 			 length * m_col_width, height - 1);
     m_gc->set_clip_rectangle(textBounds);
-    win->draw_layout(m_gc, iter->first * m_col_width + 2, (height - lHeight)/2, l);
+    win->draw_layout(m_gc, iter->start * m_col_width + 2, (height - lHeight)/2, l);
   }
   
   return true;

@@ -4,9 +4,9 @@
 #include "track.hpp"
 
 
-Track::Track(int length) 
+Track::Track(int length, const string& name) 
   : m_length(length), m_dirty(false), 
-    m_current_seq_entry(NULL), m_name("Untitled") {
+    m_current_seq_entry(NULL), m_name(name) {
 
 }
 
@@ -42,15 +42,21 @@ Track::Sequence& Track::get_sequence() {
 bool Track::get_sequence_entry(int at, int& beat, 
 			       int& pattern, int& length) const {
   for (Sequence::const_iterator iter = m_sequence.begin(); 
-       iter != m_sequence.end() && iter->first <= at; ++iter) {
-    if (iter->first + iter->second->length > at) {
-      beat = iter->first;
-      pattern = iter->second->pattern_id;
-      length = iter->second->length;
+       iter != m_sequence.end() && iter->start <= at; ++iter) {
+    if (iter->start + iter->length > at) {
+      beat = iter->start;
+      pattern = iter->pattern_id;
+      length = iter->length;
       return true;
     }
   }
   return false;
+}
+
+
+/** Returns the MIDI channel for this track. */
+int Track::get_channel() const {
+  return m_channel;
 }
 
 
@@ -83,69 +89,43 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
   else
     newLength = length;
   
-  SequenceEntry* previous = NULL;
-  SequenceEntry* next = NULL;
-  
   Sequence::iterator iter;
-  Sequence::iterator toUpdate = m_sequence.end();
-  bool isUpdate = false;
-  for (iter = m_sequence.begin(); iter != m_sequence.end(); ++iter) {
+  bool is_update = false;
+  for (iter = m_sequence.begin(); iter != m_sequence.end() && 
+	 iter->start <= beat; ++iter) {
     
     // if a pattern is playing at the given beat, shorten it so it stops just
     // before that beat
-    if (iter->first < beat) {
-      previous = iter->second;
-      if (iter->first + iter->second->length > beat)
-	iter->second->length = beat - iter->first;
-    }
+    if (iter->start < beat && iter->start + iter->length > beat)
+      iter->length = beat - iter->start;
+
     // if there already is a pattern starting at this beat, erase it unless 
     // it's the same pattern, in which case we just remember it for later
-    else if (iter->first == beat) {
-      isUpdate = true;
-      if (iter->second->pattern_id == pattern)
-	toUpdate = iter;
-      else
-	m_sequence.erase(iter);
-    }
-    
-    // we've found the next sequence entry - remember it as "next" and stop
-    // also make sure that the new sequence entry doesn't overlap with this one
-    else if (iter->first > beat) {
-      next = iter->second;
-      if (iter->first < beat + newLength)
-	newLength = iter->first - beat;
+    else if (iter->start == beat) {
+      if (iter->pattern_id == pattern)
+	is_update = true;
+      m_sequence.erase(++iter);
       break;
     }
   }
+  
+  // make sure that the new sequence entry doesn't overlap with this one
+  if (iter != m_sequence.end() && iter->start < beat + newLength)
+      newLength = iter->start - beat;
   
   // force the pattern to stop at the end of the song
   if (beat + newLength > m_length)
     newLength = m_length - beat;
   
-  // if the pattern was there already, just update the length
-  if (toUpdate != m_sequence.end()) {
-    toUpdate->second->length = newLength;
-    return;
-  }
+  // insert the new entry
+  SequenceEntry entry(pattern, &m_patterns.find(pattern)->second, 
+		      beat, newLength);
+  m_sequence.insert(iter, entry);
   
-  else {
-    // setup the linked list and add the new entry
-    SequenceEntry* entry = new SequenceEntry(pattern, 
-					     &m_patterns.find(pattern)->second, 
-					     beat, newLength);
-    entry->next = next;
-    entry->previous = previous;
-    if (next)
-      next->previous = entry;
-    if (previous)
-      previous->next = entry;
-    m_sequence[beat] = entry;
-    
-    if (isUpdate)
-      signal_sequence_entry_changed(beat, pattern, newLength);
-    else
-      signal_sequence_entry_added(beat, pattern, newLength);
-  }
+  if (is_update)
+    signal_sequence_entry_changed(beat, pattern, newLength);
+  else
+    signal_sequence_entry_added(beat, pattern, newLength);
 }
 
 
@@ -154,13 +134,8 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
 bool Track::remove_sequence_entry(int beat) {
   Sequence::iterator iter = m_sequence.begin();
   for ( ; iter != m_sequence.end(); ++iter) {
-    if (iter->first <= beat && iter->first + iter->second->length > beat) {
-      if (iter->second->previous)
-	iter->second->previous->next = iter->second->next;
-      if (iter->second->next)
-	iter->second->next->previous = iter->second->previous;
-      int r_beat = iter->second->start;
-      delete iter->second;
+    if (iter->start <= beat && iter->start + iter->length > beat) {
+      int r_beat = iter->start;
       m_sequence.erase(iter);
       signal_sequence_entry_removed(r_beat);
       return true;
@@ -176,6 +151,12 @@ void Track::set_length(int length) {
     m_length = length;
     signal_length_changed(m_length);
   }
+}
+
+
+/** Set the MIDI channel for this track. */
+void Track::set_channel(int channel) {
+  m_channel = channel;
 }
 
 
@@ -206,7 +187,7 @@ void Track::make_clean() const {
 bool Track::get_next_note(int& beat, int& tick, int& value, int& length,
 			  int beforeBeat, int beforeTick) const {
   // no patterns left to play
-  if (!m_current_seq_entry)
+  if (m_current_seq_entry == m_sequence.end())
     return false;
   
   // convert beats and ticks to steps
@@ -219,32 +200,35 @@ bool Track::get_next_note(int& beat, int& tick, int& value, int& length,
   
   // while loops are scary in SCHED_FIFO...
   int step;
-  while (m_current_seq_entry && 
-	 !m_current_seq_entry->pattern->get_next_note(step, value, length, bStep)) {
+  while (m_current_seq_entry != m_sequence.end() && 
+	 !m_current_seq_entry->pattern->
+	 get_next_note(step, value, length, bStep)) {
+
     // nothing found, and we don't want notes from next pattern
     if (m_current_seq_entry->start + m_current_seq_entry->length > beforeBeat)
       return false;
+    
     // we might want notes from next pattern, if it starts early enough
-    else if (m_current_seq_entry->next && 
-	     m_current_seq_entry->next->start <= beforeBeat) {
-      m_current_seq_entry = m_current_seq_entry->next;
-      if (m_current_seq_entry) {
-	m_current_seq_entry->pattern->find_next_note(0);
-	pat = m_current_seq_entry->pattern;
-	steps = pat->get_steps();
-	bStep = (beforeBeat - m_current_seq_entry->start) * steps + 
-	  int(beforeTick * steps / 10000.0);
-	totalLength = pat->get_steps() * m_current_seq_entry->length;
-	bStep = (bStep < totalLength ? bStep : totalLength);
-      }
+    Sequence::const_iterator next = m_current_seq_entry;
+    ++next;
+    if (next != m_sequence.end() && next->start <= beforeBeat) {
+      m_current_seq_entry = next;
+      m_current_seq_entry->pattern->find_next_note(0);
+      pat = m_current_seq_entry->pattern;
+      steps = pat->get_steps();
+      bStep = (beforeBeat - m_current_seq_entry->start) * steps + 
+	int(beforeTick * steps / 10000.0);
+      totalLength = pat->get_steps() * m_current_seq_entry->length;
+      bStep = (bStep < totalLength ? bStep : totalLength);
     }
+
     // it doesn't
     else
       return false;
   }
   
   // did we get anything?
-  if (m_current_seq_entry) {
+  if (m_current_seq_entry != m_sequence.end()) {
     int steps = m_current_seq_entry->pattern->get_steps();
     beat = m_current_seq_entry->start + step / steps;
     tick = int((step % steps) * 10000.0 / steps);
@@ -270,15 +254,13 @@ bool Track::get_next_cc_event(int& step, int& tick,
 void Track::find_next_note(int beat, int tick) const {
   Sequence::const_iterator iter;
   for (iter = m_sequence.begin(); iter != m_sequence.end(); ++iter) {
-    if (iter->first <= beat && iter->first + iter->second->length > beat)
+    if (iter->start <= beat && iter->start + iter->length > beat)
       break;
   }
-  if (iter == m_sequence.end())
-    m_current_seq_entry == NULL;
-  else {
-    m_current_seq_entry = iter->second;
+  m_current_seq_entry == iter;
+  if (m_current_seq_entry != m_sequence.end()) {
     int steps = m_current_seq_entry->pattern->get_steps();
-    int step = (beat - iter->first) * steps + int(tick * steps / 10000.0);
+    int step = (beat - iter->start) * steps + int(tick * steps / 10000.0);
     m_current_seq_entry->pattern->find_next_note(step);
   }
 }
@@ -287,9 +269,14 @@ void Track::find_next_note(int beat, int tick) const {
 /** Serialize this track to a XML node and return it. */
 bool Track::fill_xml_node(Element* elt) const {
   
+  // MIDI channel
+  char tmp_txt[10];
+  sprintf(tmp_txt, "%d", get_channel());
+  elt->set_attribute("channel", tmp_txt);
+ 
   // info 
   elt->add_child("name")->set_child_text(m_name);
- 
+
   // the patterns
   for (map<int, Pattern>::const_iterator iter = m_patterns.begin();
        iter != m_patterns.end(); ++iter) {
@@ -302,15 +289,14 @@ bool Track::fill_xml_node(Element* elt) const {
   
   // the sequence
   Element* seq_elt = elt->add_child("sequence");
-  char tmp_txt[10];
   for (Sequence::const_iterator iter = m_sequence.begin();
        iter != m_sequence.end(); ++iter) {
     Element* entry_elt = seq_elt->add_child("entry");
-    sprintf(tmp_txt, "%d", iter->first);
+    sprintf(tmp_txt, "%d", iter->start);
     entry_elt->set_attribute("beat", tmp_txt);
-    sprintf(tmp_txt, "%d", iter->second->pattern_id);
+    sprintf(tmp_txt, "%d", iter->pattern_id);
     entry_elt->set_attribute("pattern", tmp_txt);
-    sprintf(tmp_txt, "%d", iter->second->length);
+    sprintf(tmp_txt, "%d", iter->length);
     entry_elt->set_attribute("length", tmp_txt);
   }
   
@@ -321,6 +307,12 @@ bool Track::fill_xml_node(Element* elt) const {
 bool Track::parse_xml_node(const Element* elt) {
   Node::NodeList nodes;
   Node::NodeList::const_iterator iter;
+  
+  // MIDI channel
+  int channel;
+  sscanf(elt->get_attribute("channel")->get_value().c_str(), 
+	 "%d", &channel);
+  set_channel(channel);
   
   // parse info
   nodes = elt->get_children("name");

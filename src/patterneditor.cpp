@@ -174,17 +174,17 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
-  const Pattern::NoteMap& notes(m_pat->get_notes());
-  Pattern::NoteMap::const_iterator iter;
+  const list<Pattern::Note>& notes(m_pat->get_notes());
+  list<Pattern::Note>::const_iterator iter;
   for (iter = notes.begin(); iter != notes.end(); ++iter) {
     m_gc->set_foreground(m_fg_color);
-    win->draw_rectangle(m_gc, true, iter->first.first * m_col_width + 1, 
-			(m_max_note - iter->first.second - 1) * m_row_height + 1, 
-			iter->second->length * m_col_width - 1, m_row_height - 1);
+    win->draw_rectangle(m_gc, true, iter->step * m_col_width + 1, 
+			(m_max_note - iter->value - 1) * m_row_height + 1, 
+			iter->length * m_col_width - 1, m_row_height - 1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, iter->first.first * m_col_width, 
-			(m_max_note - iter->first.second - 1) * m_row_height, 
-			iter->second->length * m_col_width, m_row_height);
+    win->draw_rectangle(m_gc, false, iter->step * m_col_width, 
+			(m_max_note - iter->value - 1) * m_row_height, 
+			iter->length * m_col_width, m_row_height);
   }
   
   /*

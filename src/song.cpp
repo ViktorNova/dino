@@ -40,14 +40,14 @@ void Song::set_info(const string& info) {
 }
 
 
-int Song::add_track() {
+int Song::add_track(const string& name) {
   map<int, Track>::reverse_iterator iter = m_tracks.rbegin();
   int id;
   if (iter == m_tracks.rend())
     id = 1;
   else
     id = iter->first + 1;
-  m_tracks[id] = Track(m_length);
+  m_tracks[id] = Track(m_length, name);
   m_dirty = true;
   signal_track_added(id);
   return id;

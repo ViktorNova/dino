@@ -1,6 +1,7 @@
 #ifndef PATTERN_H
 #define PATTERN_H
 
+#include <list>
 #include <map>
 
 #include <sigc++/signal.h>
@@ -51,20 +52,14 @@ public:
   
   /** This struct contains information about a Note on / Note off pair. */
   struct Note {
-    Note(int stp, int val, int len) 
-      : step(stp), value(val), length(len), next(NULL), previous(NULL) { }
+    Note(int stp, int val, int len) : step(stp), value(val), length(len) { }
     int step, value, length;
-    Note* next;
-    Note* previous;
   };
-  
-  /** For convenience. */
-  typedef map<pair<int, int>, Note*, Compair> NoteMap;
   
   // accessors
   const string& get_name() const;
-  NoteMap& get_notes();
-  const NoteMap& get_notes() const;
+  list<Note>& get_notes();
+  const list<Note>& get_notes() const;
   CCData& get_cc(int cc_number);
   int get_steps() const;
   int get_cc_steps() const;
@@ -85,8 +80,7 @@ public:
   bool parse_xml_node(const Element* elt);
   
   // sequencing
-  bool get_next_note(int& step, int& value, 
-		     int& length, int before_step) const;
+  bool get_next_note(int& step, int& value, int& length,int before_step) const;
   void find_next_note(int step) const;
   
 public:
@@ -110,7 +104,7 @@ private:
   /** Number of steps per beat */
   int m_steps;
   /** The notes in the pattern */
-  NoteMap m_notes;
+  list<Note> m_notes;
   /** Number of CC steps per beat */
   int m_cc_steps;
   /** The MIDI control changes in the pattern */
@@ -121,8 +115,8 @@ private:
   // dirty rect
   int m_min_step, m_min_note, m_max_step, m_max_note;
   
-  mutable volatile Note* m_next_note;
-  mutable volatile bool m_first_note;
+  mutable list<Note>::const_iterator m_next_note;
+  mutable bool m_first_note;
 };
 
 

@@ -12,10 +12,11 @@
 #include "song.hpp"
 
 
-using namespace Gtk;
-using namespace std;
-using namespace Gnome::Glade;
 using namespace Glib;
+using namespace Gnome::Glade;
+using namespace Gtk;
+using namespace sigc;
+using namespace std;
 
 
 /** This is the main class. It connects our custom widgets to the rest of the
@@ -65,9 +66,10 @@ private:
   }
   
   void update_track_widgets();
-  void update_track_combo();
+  void update_track_combo(int activeTrack = -1);
   void update_pattern_combo(int activePattern = -1);
   void update_editor_widgets();
+  void active_track_changed();
   void init_pattern_editor();
   void init_sequence_editor();
   void init_menus();
@@ -85,8 +87,10 @@ private:
   
   SingleTextCombo m_cmb_track;
   SingleTextCombo m_cmb_pattern;
-  sigc::connection m_track_pattern_connection;
-  sigc::connection m_pattern_editor_connection;
+  connection m_track_pattern_connection;
+  connection m_pattern_editor_connection;
+  connection m_pattern_added_connection;
+  connection m_pattern_removed_connection;
   SpinButton* m_sb_cc_number;
   Label* m_lb_cc_description;
   SpinButton* m_sb_cc_editor_size;

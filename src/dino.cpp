@@ -12,6 +12,9 @@
 #include "trackwidget.hpp"
 
 
+using namespace sigc;
+
+
 Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) 
   : m_xml(xml), m_seq("Dino"), m_pattern_ruler_1(0, 1, 1, 20, 20) {
   
@@ -81,18 +84,13 @@ void Dino::slot_edit_delete() {
 
 void Dino::slot_edit_add_track() {
   m_song.add_track();
-  update_track_widgets();
-  update_track_combo();
 }
  
 
 void Dino::slot_edit_delete_track() {
   int trackID = m_cmb_track.get_active_id();
-  if (trackID >= 0) {
+  if (trackID >= 0)
     m_song.remove_track(trackID);
-    update_track_widgets();
-    update_track_combo();
-  }
 }
 
 
@@ -102,7 +100,6 @@ void Dino::slot_edit_add_pattern() {
     int patternID = m_song.get_tracks().find(trackID)->second.add_pattern(8,4, 4);
     Pattern* pat = &m_song.get_tracks().find(trackID)->
       second.get_patterns().find(patternID)->second;
-    update_pattern_combo(patternID);
   }
 }
  
@@ -145,18 +142,18 @@ void Dino::update_track_widgets() {
 }
 
 
-void Dino::update_track_combo() {
+void Dino::update_track_combo(int activeTrack) {
   m_track_pattern_connection.block();
   int oldActive = m_cmb_track.get_active_id();
   m_cmb_track.clear();
-  int newActive = -1;
+  int newActive = activeTrack;
   if (m_song.get_tracks().size() > 0) {
     char tmp[10];
     for (map<int, Track>::iterator iter = m_song.get_tracks().begin();
 	 iter != m_song.get_tracks().end(); ++iter) {
       sprintf(tmp, "%03d", iter->first);
       m_cmb_track.append_text(tmp, iter->first);
-      if (newActive == -1 || iter->first <= oldActive)
+      if (newActive == -1 || (activeTrack == -1 && iter->first <= oldActive))
 	newActive = iter->first;
     }
   }
@@ -166,7 +163,7 @@ void Dino::update_track_combo() {
   m_cmb_track.set_active_id(newActive);
   m_track_pattern_connection.unblock();
   if (oldActive == -1 || newActive != oldActive)
-    update_pattern_combo();
+    active_track_changed();
 }
 
 
@@ -227,6 +224,20 @@ void Dino::slot_cc_editor_size_changed() {
 }
 
 
+void Dino::active_track_changed() {
+  update_pattern_combo();
+  m_pattern_added_connection.disconnect();
+  m_pattern_removed_connection.disconnect();
+  int active_track = m_cmb_track.get_active_id();
+  if (active_track == -1)
+    return;
+  Track& t(m_song.get_tracks().find(active_track)->second);
+  slot<void, int> update_slot = mem_fun(*this, &Dino::update_pattern_combo);
+  m_pattern_added_connection = t.signal_pattern_added.connect(update_slot);
+  m_pattern_removed_connection = t.signal_pattern_removed.connect(update_slot);
+}
+
+
 void Dino::init_pattern_editor() {
   
   // get all the widgets from the glade file
@@ -245,9 +256,9 @@ void Dino::init_pattern_editor() {
   hbx_pattern_combo->pack_start(m_cmb_pattern);
   hbx_track_combo->pack_start(m_cmb_track);
   m_track_pattern_connection = m_cmb_track.signal_changed().
-    connect(bind(sigc::mem_fun(*this, &Dino::update_pattern_combo), -1));
+    connect(mem_fun(*this, &Dino::active_track_changed));
   m_pattern_editor_connection = m_cmb_pattern.signal_changed().
-    connect(sigc::mem_fun(*this, &Dino::update_editor_widgets));
+    connect(mem_fun(*this, &Dino::update_editor_widgets));
 
   // add the ruler
   EvilScrolledWindow* scwPatternRuler1 = 
@@ -279,7 +290,12 @@ void Dino::init_pattern_editor() {
   m_sb_cc_editor_size->signal_value_changed().
     connect(sigc::mem_fun(this, &Dino::slot_cc_editor_size_changed));
   m_sb_cc_editor_size->set_editable(false);
-
+  
+  // connect external signals
+  slot<void, int> update_combos =mem_fun(*this, &Dino::update_track_combo);
+  m_song.signal_track_added.connect(update_combos);
+  m_song.signal_track_removed.connect(hide(bind(update_combos, -1)));
+  
   update_track_combo();
 }
 
@@ -308,6 +324,13 @@ void Dino::init_sequence_editor() {
   scwSequenceRuler->set_hadjustment(scwArrangementEditor->get_hadjustment());
   scbHorizontal->set_adjustment(*scwArrangementEditor->get_hadjustment());
   scbVertical->set_adjustment(*scwArrangementEditor->get_vadjustment());
+  
+  // connect external signals
+  slot<void, int> update_track_view = 
+    hide(mem_fun(*this, &Dino::update_track_widgets));
+  m_song.signal_track_added.connect(update_track_view);
+  m_song.signal_track_removed.connect(update_track_view);
+  m_song.signal_length_changed.connect(update_track_view);
   
   update_track_widgets();
 }

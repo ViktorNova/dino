@@ -10,30 +10,43 @@ Song::Song() : m_dirty(false), m_length(32) {
 }
   
 void Song::set_title(const string& title) {
-  m_title = title;
-  m_dirty = true;
+  if (title != m_title) {
+    m_title = title;
+    m_dirty = true;
+    signal_title_changed(m_title);
+  }
 }
 
 
 void Song::set_author(const string& author) {
-  m_author = author;
-  m_dirty = true;
+  if (author != m_author) {
+    m_author = author;
+    m_dirty = true;
+    signal_author_changed(m_author);
+  }
 }
 
 
 void Song::set_info(const string& info) {
-  m_info = info;
-  m_dirty = true;
+  if (info != m_info) {
+    m_info = info;
+    m_dirty = true;
+    signal_info_changed(m_info);
+  }
 }
 
 
 int Song::add_track() {
   map<int, Track>::reverse_iterator iter = m_tracks.rbegin();
+  int id;
   if (iter == m_tracks.rend())
-    m_tracks[1] = Track(m_length);
+    id = 1;
   else
-    m_tracks[iter->first + 1] = Track(m_length);
+    id = iter->first + 1;
+  m_tracks[id] = Track(m_length);
   m_dirty = true;
+  signal_track_added(id);
+  return id;
 }
 
 
@@ -43,6 +56,7 @@ bool Song::remove_track(int id) {
     return false;
   m_tracks.erase(iter);
   m_dirty = true;
+  signal_track_removed(id);
   return true;
 }
 

@@ -31,6 +31,8 @@ void Pattern::add_note(int step, int value, int noteLength) {
   Note* next = NULL;
   NoteMap::iterator iter;
   
+  bool isUpdate = false;
+  
   for (iter = m_notes.begin(); iter != m_notes.end(); ++iter) {
     
     // we're looking at a note that's before the new one
@@ -48,6 +50,7 @@ void Pattern::add_note(int step, int value, int noteLength) {
     
     // we're looking at a note with the same pitch and start time - delete it
     else if (iter->first.first == step && iter->first.second == value) {
+      isUpdate = true;
       delete iter->second;
       m_max_step = (iter->first.first + iter->second->length > m_max_step ?
 		 iter->first.first + iter->second->length : m_max_step);
@@ -86,6 +89,11 @@ void Pattern::add_note(int step, int value, int noteLength) {
   m_max_note = value > m_max_note ? value : m_max_note;
   m_min_step = step < m_min_step ? step : m_min_step;
   m_max_step = step + noteLength - 1 > m_max_step ? step + noteLength - 1 : m_max_step;
+  
+  if (isUpdate)
+    signal_note_changed(p.first, p.second, noteLength);
+  else
+    signal_note_added(p.first, p.second, noteLength);
 }
 
 
@@ -97,17 +105,23 @@ int Pattern::delete_note(int step, int value) {
     if (iter->first.second == value && iter->first.first <= step &&
 	iter->first.first + iter->second->length > step) {
       int result = iter->first.first;
-      m_min_note = iter->first.second < m_min_note ? iter->first.second : m_min_note;
-      m_max_note = iter->first.second > m_max_note ? iter->first.second : m_max_note;
-      m_min_step = iter->first.first < m_min_step ? iter->first.first : m_min_step;
-      m_max_step = (iter->first.first + iter->second->length - 1 > m_max_step ? 
-		 iter->first.first + iter->second->length - 1 : m_max_step);
+      m_min_note = iter->first.second < m_min_note ? 
+	iter->first.second : m_min_note;
+      m_max_note = iter->first.second > m_max_note ? 
+	iter->first.second : m_max_note;
+      m_min_step = iter->first.first < m_min_step ? 
+	iter->first.first : m_min_step;
+      m_max_step = (iter->first.first + iter->second->length - 1 > m_max_step ?
+		    iter->first.first + iter->second->length - 1 : m_max_step);
       if (iter->second->previous)
 	iter->second->previous->next = iter->second->next;
       if (iter->second->next)
 	iter->second->next->previous = iter->second->previous;
       delete iter->second;
+      int rStep = iter->first.first;
+      int rNote = iter->first.second;
       m_notes.erase(iter);
+      signal_note_removed(rStep, rNote);
       return result;
     }
   }
@@ -119,7 +133,15 @@ void Pattern::add_cc(int ccNumber, int step, int value) {
   assert(ccNumber >= 0 && ccNumber < 128);
   assert(step >= 0 && step < m_length * m_cc_steps);
   assert(value >= 0 && value < 128);
+  bool isUpdate = false;
+  if (m_control_changes[ccNumber].changes.find(step) != 
+      m_control_changes[ccNumber].changes.end())
+    isUpdate = true;
   m_control_changes[ccNumber].changes[step] = new CCEvent(ccNumber, value);
+  if (isUpdate)
+    signal_cc_changed(ccNumber, step, value);
+  else
+    signal_cc_added(ccNumber, step, value);
 }
 
 
@@ -131,6 +153,8 @@ int Pattern::delete_cc(int ccNumber, int step) {
   if (iter != data.changes.end()) {
     delete iter->second;
     data.changes.erase(iter);
+    signal_cc_removed(ccNumber, step);
+    return step;
   }
   return -1;
 }

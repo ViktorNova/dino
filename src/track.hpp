@@ -87,7 +87,7 @@ public:
   
 public:
 
-  signal<void, string> signal_name_changed;
+  signal<void, const string&> signal_name_changed;
   signal<void, int> signal_pattern_added; 
   signal<void, int> signal_pattern_removed;
   signal<void, int, int, int> signal_sequence_entry_added;

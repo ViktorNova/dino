@@ -37,9 +37,9 @@ public:
   
 public:
   
-  signal<void, string> signal_title_changed;
-  signal<void, string> signal_author_changed;
-  signal<void, string> signal_info_changed;
+  signal<void, const string&> signal_title_changed;
+  signal<void, const string&> signal_author_changed;
+  signal<void, const string&> signal_info_changed;
   signal<void, int> signal_length_changed;
   signal<void, int> signal_track_added;
   signal<void, int> signal_track_removed;

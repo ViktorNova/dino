@@ -51,6 +51,7 @@ int Track::add_pattern(int length, int steps, int ccSteps) {
   else
     id = 1;
   m_patterns[id] = Pattern(length, steps, ccSteps);
+  signal_pattern_added(id);
   return id;
 }
 
@@ -75,6 +76,7 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
   
   Sequence::iterator iter;
   Sequence::iterator toUpdate = m_sequence.end();
+  bool isUpdate = false;
   for (iter = m_sequence.begin(); iter != m_sequence.end(); ++iter) {
     
     // if a pattern is playing at the given beat, shorten it so it stops just
@@ -87,6 +89,7 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
     // if there already is a pattern starting at this beat, erase it unless 
     // it's the same pattern, in which case we just remember it for later
     else if (iter->first == beat) {
+      isUpdate = true;
       if (iter->second->pattern_id == pattern)
 	toUpdate = iter;
       else
@@ -125,6 +128,11 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
     if (previous)
       previous->next = entry;
     m_sequence[beat] = entry;
+    
+    if (isUpdate)
+      signal_sequence_entry_changed(beat, pattern, newLength);
+    else
+      signal_sequence_entry_added(beat, pattern, newLength);
   }
 }
 
@@ -137,8 +145,10 @@ bool Track::remove_sequence_entry(int beat) {
 	iter->second->previous->next = iter->second->next;
       if (iter->second->next)
 	iter->second->next->previous = iter->second->previous;
+      int r_beat = iter->second->start;
       delete iter->second;
       m_sequence.erase(iter);
+      signal_sequence_entry_removed(r_beat);
       return true;
     }
   }
@@ -147,7 +157,10 @@ bool Track::remove_sequence_entry(int beat) {
 
 
 void Track::set_length(int length) {
-  m_length = length;
+  if (length != m_length) {
+    m_length = length;
+    signal_length_changed(m_length);
+  }
 }
 
 

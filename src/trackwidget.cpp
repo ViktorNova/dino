@@ -114,6 +114,10 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
 			    beat), iter->first));
       mPatternMenu.items().push_back(elem);
     }
+    if (mPatternMenu.items().size() == 0) {
+      Menu_Helpers::MenuElem elem("No patterns");
+      mPatternMenu.items().push_back(elem);
+    }
     mPatternMenu.popup(event->button, event->time);
     return true;
   }

@@ -6,6 +6,7 @@
 
 #include "cceditor.hpp"
 #include "patterneditor.hpp"
+#include "ruler.hpp"
 #include "sequencer.hpp"
 #include "singletextcombo.hpp"
 #include "song.hpp"
@@ -81,7 +82,7 @@ private:
   SpinButton* sbCCNumber;
   Label* lbCCDescription;
   SpinButton* sbCCEditorSize;
-  
+  ::Ruler mPatternRuler1;
   static char* mCCDescriptions[];
   
   Song mSong;

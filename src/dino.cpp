@@ -7,11 +7,13 @@
 
 #include "dino.hpp"
 #include "evilscrolledwindow.hpp"
+#include "ruler.hpp"
 #include "song.hpp"
 #include "trackwidget.hpp"
 
 
-Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) : mSeq("Dino") {
+Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) 
+  : mSeq("Dino"), mPatternRuler1(0, 1, 1, 20, 20) {
   
   mSeq.setSong(mSong);
   
@@ -25,7 +27,15 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) : mSeq("Dino") {
   w<HBox>(xml, "hbxPatternCombo")->pack_start(mCmbPattern);
   Scrollbar* scbHorizontal = w<Scrollbar>(xml, "scbPatternEditor");
   Scrollbar* scbVertical = w<Scrollbar>(xml, "scbNoteEditor");
+  Box* boxPatternRuler1 = w<Box>(xml, "boxPatternRuler1");
+  EvilScrolledWindow* scwPatternRuler1 = 
+    manage(new EvilScrolledWindow(true, false));
+  boxPatternRuler1->pack_start(*scwPatternRuler1);
+  VBox* vboxtmp = new VBox;
+  scwPatternRuler1->add(*vboxtmp);
+  vboxtmp->pack_start(mPatternRuler1);
   EvilScrolledWindow* scwNoteEditor = manage(new EvilScrolledWindow);
+  scwPatternRuler1->set_hadjustment(scwNoteEditor->get_hadjustment());
   EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
   Box* boxNoteEditor = w<Box>(xml, "boxNoteEditor");
   Box* boxCCEditor = w<Box>(xml, "boxCCEditor");
@@ -51,7 +61,15 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) : mSeq("Dino") {
   VBox* boxArrangementEditor = w<VBox>(xml, "boxArrangementEditor");
   scbHorizontal = w<Scrollbar>(xml, "scbHArrangementEditor");
   scbVertical = w<Scrollbar>(xml, "scbVArrangementEditor");
+  Box* boxSequenceRuler = w<Box>(xml, "boxSequenceRuler");
+  EvilScrolledWindow* scwSequenceRuler = 
+    manage(new EvilScrolledWindow(true, false));
+  boxSequenceRuler->pack_start(*scwSequenceRuler);
+  vboxtmp = new VBox;
+  scwSequenceRuler->add(*vboxtmp);
+  vboxtmp->pack_start(*manage(new ::Ruler(mSong.getLength(), 1, 4, 20, 20)));
   EvilScrolledWindow* scwArrangementEditor = manage(new EvilScrolledWindow);
+  scwSequenceRuler->set_hadjustment(scwArrangementEditor->get_hadjustment());
   scbHorizontal->set_adjustment(*scwArrangementEditor->get_hadjustment());
   scbVertical->set_adjustment(*scwArrangementEditor->get_vadjustment());
   boxArrangementEditor->pack_start(*scwArrangementEditor);
@@ -269,6 +287,14 @@ void Dino::updateEditorWidgets() {
   }
   pe.setPattern(pat);
   cce.setPattern(pat);
+  if (pat) {
+    mPatternRuler1.setLength(pat->getLength());
+    mPatternRuler1.setSubdivisions(pat->getSteps());
+    mPatternRuler1.setDivisionSize(8 * pat->getSteps());
+  }
+  else {
+    mPatternRuler1.setLength(0);
+  }
 }
 
 

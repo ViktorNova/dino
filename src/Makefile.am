@@ -10,6 +10,7 @@ dino_SOURCES = \
 	song.cpp song.hpp \
 	patterneditor.cpp patterneditor.hpp \
 	cceditor.cpp cceditor.hpp \
+	ruler.cpp ruler.hpp \
 	sequencer.cpp sequencer.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
 	trackwidget.cpp trackwidget.hpp \

@@ -378,6 +378,7 @@ void Dino::init_sequence_editor() {
   EvilScrolledWindow* scw_track_labels = manage(new EvilScrolledWindow(false));
   box_track_labels->pack_start(*scw_track_labels);
   m_vbx_track_labels = manage(new VBox(false, 2));
+  m_vbx_track_labels->set_border_width(2);
   scw_track_labels->add(*m_vbx_track_labels);
   Viewport* vp = dynamic_cast<Viewport*>(scw_track_labels->get_child());
   if (vp)

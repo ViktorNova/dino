@@ -104,7 +104,7 @@ void Track::set_sequence_entry(int beat, int pattern, int length) {
     else if (iter->start == beat) {
       if (iter->pattern_id == pattern)
 	is_update = true;
-      m_sequence.erase(++iter);
+      m_sequence.erase(iter++);
       break;
     }
   }

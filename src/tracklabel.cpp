@@ -12,7 +12,7 @@ TrackLabel::TrackLabel(const Song* song)
   : m_song(song), m_width(100), m_height(20) {
   assert(song);
   m_colormap  = Colormap::get_system();
-  m_bg_color.set_rgb(65535, 65535, 65535);
+  m_bg_color.set_rgb(20000, 20000, 50000);
   m_fg_color.set_rgb(0, 0, 0);
   m_colormap->alloc_color(m_bg_color);
   m_colormap->alloc_color(m_fg_color);
@@ -47,7 +47,10 @@ void TrackLabel::on_realize() {
 
 bool TrackLabel::on_expose_event(GdkEventExpose* event) {
   RefPtr<Gdk::Window> win = get_window();
-  win->clear();
+  //win->clear();
+  m_gc->set_foreground(m_bg_color);
+  win->draw_rectangle(m_gc, true, 0, 0, m_width, m_height);
+  m_gc->set_foreground(m_fg_color);
   int lHeight = m_layout->get_pixel_logical_extents().get_height();
   win->draw_layout(m_gc, 2, (m_height - lHeight)/2, m_layout);
   return true;

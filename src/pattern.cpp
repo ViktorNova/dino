@@ -269,7 +269,6 @@ bool Pattern::get_next_note(int& step, int& value,int& length,
     used by the sequencer thread. */
 void Pattern::find_next_note(int step) const {
   Mutex::Lock lock(m_lock);
-  cerr<<"find_next_note("<<step<<")"<<endl;
   const Note* iter = m_note_head;
   for ( ; iter->next != NULL && iter->next->step < step; iter = iter->next);
   m_next_note = const_cast<volatile Note*>(iter);

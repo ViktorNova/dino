@@ -1,12 +1,12 @@
 #include <iostream>
 
+#include "jackclient.hpp"
 #include "sequencer.hpp"
-
+#include "song.hpp"
 
 
 Sequencer::Sequencer(const string& client_name, Song& song) 
-  : m_client_name(client_name), m_song(song), m_valid(false), 
-    m_sync_state(Waiting) {
+  : m_client_name(client_name), m_song(song), m_valid(false) {
 
   if (!init_jack(m_client_name)) {
     cerr<<"Could not initialise JACK!"<<endl;
@@ -34,18 +34,19 @@ Sequencer::~Sequencer() {
     m_valid = false;
     m_seq_thread->join();
   }
+  delete m_jack_client;
 }
   
 
 void Sequencer::play() {
   if (m_valid)
-    jack_transport_start(m_jack_client);
+    m_jack_client->transport_start();
 }
 
 
 void Sequencer::stop() {
   if (m_valid)
-    jack_transport_stop(m_jack_client);
+    m_jack_client->transport_stop();
 }
  
 
@@ -53,7 +54,8 @@ void Sequencer::go_to_beat(double beat) {
   if (m_valid) {
     jack_position_t pos;
     memset(&pos, 0, sizeof(jack_position_t));
-    jack_transport_reposition(m_jack_client, &pos);
+    pos.valid = JackPositionBBT;
+    m_jack_client->transport_reposition(&pos);
   }
 }
   
@@ -101,26 +103,8 @@ void Sequencer::reset_ports() {
 
   
 bool Sequencer::init_jack(const string& client_name) {
-  m_jack_client = jack_client_new(client_name.c_str());
-  if (!m_jack_client)
-    return false;
-  int err;
-  if ((err = jack_set_sync_callback(m_jack_client, 
-				    &Sequencer::jack_sync_callback_,
-				    this)) != 0)
-    return false;
-  if ((err = jack_set_timebase_callback(m_jack_client, 1, 
-					&Sequencer::jack_timebase_callback_, 
-					this)) != 0)
-    return false;
-  if ((err = jack_activate(m_jack_client)) != 0)
-    return false;
-  
-  jack_position_t pos;
-  memset(&pos, 0, sizeof(pos));
-  jack_transport_stop(m_jack_client);
-  jack_transport_reposition(m_jack_client, &pos);
-  
+  try { m_jack_client = new JackClient(client_name); }
+  catch(...) { return false; }
   return true;
 }
 
@@ -168,61 +152,78 @@ void Sequencer::sequencing_loop() {
   cerr<<"sequencing_loop()"<<endl;
   while (m_valid) {
     jack_position_t pos;
-    jack_transport_state_t state = jack_transport_query(m_jack_client, &pos);
+    jack_transport_state_t state = m_jack_client->transport_query(&pos);
     
-    // need to sync
-    if (m_sync_state == Syncing) {
+    // need to sync?
+    if (m_jack_client->get_sync_state() == JackClient::Syncing) {
       Mutex::Lock lock(m_song.get_big_lock());
       map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
       for ( ; iter != m_song.get_tracks().end(); ++iter)
 	iter->second->find_next_note(pos.beat, pos.tick);
-      m_sync_state = SyncDone;
+      cerr<<"Syncing to "<<pos.beat<<", "<<pos.tick<<", "<<pos.frame<<endl;
+      // !!! Jack gives us a valid frame number to sync to, but the beat
+      // and tick may be incorrect - so we need to calculate them here!
+      // DO THAT!
+      m_jack_client->set_last_timebase(0, 0, 0);
+      m_song.reposition(0, 0);
+      m_jack_client->set_sync_state(JackClient::SyncDone);
     }
-
+    
     // is it over yet?
     if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length()) {
-      jack_transport_stop(m_jack_client);
-      jack_position_t beginning;
-      memset(&beginning, 0, sizeof(jack_position_t));
-      jack_transport_reposition(m_jack_client, &beginning);
-    }
-      
-    // record MIDI events
-    int npfd = snd_seq_poll_descriptors_count(m_alsa_client, POLLIN);
-    pollfd *pfd = (pollfd *)alloca(npfd* sizeof(pollfd));
-    snd_seq_poll_descriptors(m_alsa_client, pfd, npfd, POLLIN);
-    if (poll(pfd, npfd, 1) > 0) {
-      snd_seq_event_t *ev;
-      do {
-	snd_seq_event_input(m_alsa_client, &ev);
-	if (m_sync_state == InSync) {
-	  // insert events into song here
-	}
-	snd_seq_free_event(ev);
-      } while (snd_seq_event_input_pending(m_alsa_client, 0) > 0);
+      m_jack_client->transport_stop();
+      go_to_beat(0);
     }
     
-    // play MIDI events
-    else if ((state == JackTransportRolling) && m_sync_state == InSync){
-      Mutex::Lock lock(m_song.get_big_lock());
-      int beat, tick, value, length, client, port, channel;
-      int tick_ahead = 10000;
-      int tick_drop = 500;
-      int current_beat = int(pos.bar * pos.beats_per_bar) + pos.beat;
-      int before_beat = current_beat + (pos.tick + tick_ahead) / 10000;
-      int before_tick = (pos.tick + tick_ahead) % 10000;
-      map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
-      for ( ; iter != m_song.get_tracks().end(); ++iter) {
-	while(iter->second->get_next_note(beat, tick, value, length, 
-					  before_beat, before_tick))
-	  if ((current_beat - beat) * 10000 + pos.tick - tick <= tick_drop) {
-	    schedule_note(beat, tick, iter->first, iter->second->get_channel(),
-			  value, 64, length);
-	  }
+    record_midi();
+    play_midi();
+  }
+}
+
+
+void Sequencer::record_midi() {
+  int npfd = snd_seq_poll_descriptors_count(m_alsa_client, POLLIN);
+  pollfd *pfd = (pollfd *)alloca(npfd* sizeof(pollfd));
+  snd_seq_poll_descriptors(m_alsa_client, pfd, npfd, POLLIN);
+  if (poll(pfd, npfd, 1) > 0) {
+    snd_seq_event_t *ev;
+    do {
+      snd_seq_event_input(m_alsa_client, &ev);
+      if (m_jack_client->get_sync_state() ==JackClient::InSync) {
+	// insert events into song here
       }
-      snd_seq_drain_output(m_alsa_client);
+      snd_seq_free_event(ev);
+    } while (snd_seq_event_input_pending(m_alsa_client, 0) > 0);
+  }
+}
+
+
+void Sequencer::play_midi() {
+  jack_position_t pos;
+  jack_transport_state_t state = m_jack_client->transport_query(&pos);
+  int current_beat = int(pos.bar * pos.beats_per_bar) + pos.beat;
+  m_jack_client->set_bpm(m_song.get_current_tempo(current_beat, 
+						  pos.tick));
+
+  if ((state == JackTransportRolling) && 
+      m_jack_client->get_sync_state() == JackClient::InSync){
+    Mutex::Lock lock(m_song.get_big_lock());
+    int beat, tick, value, length, client, port, channel;
+    int tpb = m_jack_client->get_tpb();
+    int tick_ahead = tpb;
+    int tick_drop = 500;
+    int before_beat = current_beat + (pos.tick + tick_ahead) / tpb;
+    int before_tick = (pos.tick + tick_ahead) % tpb;
+    map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
+    for ( ; iter != m_song.get_tracks().end(); ++iter) {
+      while(iter->second->get_next_note(beat, tick, value, length, 
+					before_beat, before_tick))
+	if ((current_beat - beat) * tpb + pos.tick - tick <= tick_drop) {
+	  schedule_note(beat, tick, iter->first, iter->second->get_channel(),
+			value, 64, length);
+	}
     }
-    
+    snd_seq_drain_output(m_alsa_client);
   }
 }
 
@@ -233,9 +234,9 @@ void Sequencer::schedule_note(int beat, int tick, int port, int channel,
   //    <<value<<", "<<velocity<<", "<<length<<")"<<endl;
   // calculate note start time and length in milliseconds
   jack_position_t pos;
-  jack_transport_query(m_jack_client, &pos);
+  m_jack_client->transport_query(&pos);
   int frame_offset = 
-    jack_get_current_transport_frame(m_jack_client) - pos.frame;
+    m_jack_client->get_current_transport_frame() - pos.frame;
   int current_beat = int(pos.bar * pos.beats_per_bar + pos.beat);
   double ticks_left = 
     (beat-current_beat) * pos.ticks_per_beat + tick - pos.tick;
@@ -259,36 +260,4 @@ void Sequencer::schedule_note(int beat, int tick, int port, int channel,
   snd_seq_ev_schedule_real(&ev, m_alsa_queue, 1, &ssrt);
   if ((err = snd_seq_event_output(m_alsa_client, &ev)) < 0)
     cerr<<snd_strerror(err)<<endl;
-}
-
-
-int Sequencer::jack_sync_callback(jack_transport_state_t state, 
-				  jack_position_t* pos) {
-  if (m_sync_state == InSync || m_sync_state == Waiting) {
-    m_sync_state = Syncing;
-    return 0;
-  }
-  if (m_sync_state == SyncDone) {
-    m_sync_state = InSync;
-    return 1;
-  }
-  return 0;
-}
-
-
-void Sequencer::jack_timebase_callback(jack_transport_state_t state, 
-				       jack_nframes_t nframes, 
-				       jack_position_t* pos, 
-				       int new_pos) {
-  double bpm = 150;
-  int bpb = 4;
-  double fpb = pos->frame_rate * 60 / bpm;
-  double fpt = fpb / 10000;
-  pos->bar = int(pos->frame / (bpb * fpb));
-  pos->beat = int(pos->frame / fpb) % bpb;
-  pos->tick = int(pos->frame / fpt ) % 10000;
-  pos->beats_per_minute = bpm;
-  pos->beats_per_bar = bpb;
-  pos->ticks_per_beat = 10000;
-  pos->valid = JackPositionBBT;
 }

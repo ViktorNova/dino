@@ -192,7 +192,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   
   const Pattern::Note* notes(m_pat->get_notes());
   const Pattern::Note* iter;
-  for (iter = notes->next; iter != NULL; iter = iter->next) {
+  for (iter = notes; iter != NULL; iter = iter->next) {
     m_gc->set_foreground(m_fg_color);
     win->draw_rectangle(m_gc, true, iter->step * m_col_width + 1, 
 			(m_max_note - iter->value - 1) * m_row_height + 1, 

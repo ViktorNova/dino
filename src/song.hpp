@@ -18,6 +18,15 @@ using namespace std;
 class Song {
 public:
   
+  struct TempoChange {
+    TempoChange(double new_time, double new_bpm) 
+      : time(new_time), bpm(new_bpm), prev(NULL), next(NULL) { }
+    double time;
+    double bpm;
+    TempoChange* prev;
+    TempoChange* next;
+  };
+  
   Song();
   
   // accessors
@@ -35,6 +44,10 @@ public:
   void set_info(const string& info);
   int add_track(const string& name = "");
   bool remove_track(int id);
+  
+  // sequencing
+  double get_current_tempo(int beat, int tick);
+  void reposition(int beat, int tick);
   
   // XML I/O
   bool is_dirty() const;
@@ -61,7 +74,10 @@ private:
   string m_info;
   map<int, Track*> m_tracks;
   int m_length;
-
+  TempoChange* m_tempo_head;
+  
+  mutable const TempoChange* m_current_tempo;
+  
   mutable Mutex m_big_lock;
   
   mutable bool m_dirty;

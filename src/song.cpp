@@ -10,9 +10,17 @@ using namespace xmlpp;
 
 
 Song::Song() : m_dirty(false), m_length(32) {
-
-}
+  m_tempo_head = new TempoChange(0, 120);
+  m_current_tempo = m_tempo_head;
   
+  // debug
+  m_tempo_head->next = new TempoChange(8, 180);
+  m_tempo_head->next->prev = m_tempo_head;
+  m_tempo_head->next->next = new TempoChange(16, 90);
+  m_tempo_head->next->next->prev = m_tempo_head->next->next;
+}
+
+
 void Song::set_title(const string& title) {
   if (title != m_title) {
     m_title = title;
@@ -99,6 +107,25 @@ int Song::get_length() const {
 
 Mutex& Song::get_big_lock() const {
   return m_big_lock;
+}
+
+
+double Song::get_current_tempo(int beat, int tick) {
+  if (m_current_tempo->next &&
+      m_current_tempo->next->time <= beat + tick / 10000.0) {
+    m_current_tempo = m_current_tempo->next;
+    cerr<<"beat = "<<beat<<", tick = "<<tick<<endl;
+    cerr<<m_current_tempo->time<<" <= "<<(beat + tick / 10000.0)<<endl;
+  }
+  return m_current_tempo->bpm;
+}
+
+
+void Song::reposition(int beat, int tick) {
+  m_current_tempo = m_tempo_head;
+  while (m_current_tempo->next && 
+	 m_current_tempo->next->time <= beat + tick / 10000.0)
+    m_current_tempo = m_current_tempo->next;
 }
 
 

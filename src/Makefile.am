@@ -5,6 +5,7 @@ bin_PROGRAMS = dino
 dino_SOURCES = \
 	main.cpp \
 	dino.cpp dino.hpp \
+	jackclient.hpp jackclient.cpp \
 	pattern.cpp pattern.hpp \
 	track.cpp track.hpp \
 	song.cpp song.hpp \

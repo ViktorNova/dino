@@ -294,7 +294,6 @@ bool Track::get_next_cc_event(int& step, int& tick,
     function does not have to be realtime safe. */  
 void Track::find_next_note(int beat, int tick) const {
   Mutex::Lock lock(m_lock);
-  cerr<<"find_next_note("<<beat<<", "<<tick<<")"<<endl;
   SequenceEntry* iter;
   for (iter = m_seq_head; iter; iter = iter->next) {
     if (iter->start + iter->length > beat) {

@@ -16,6 +16,7 @@ PKG_CHECK_MODULES(GTHREAD, gthread-2.0, >= 2.4.6)
 PKG_CHECK_MODULES(LIBXMLPP, libxml++-2.6, >= 2.6.1)
 PKG_CHECK_MODULES(ALSA, alsa >= 1.0.6)
 PKG_CHECK_MODULES(JACK, jack >= 0.99.5)
+PKG_CHECK_MODULES(LADCCA, ladcca-1.0 >= 0.4.0)
 
 # Checks for header files.
 

@@ -3,6 +3,7 @@
 
 #include <gtkmm.h>
 #include <libglademm.h>
+#include <ladcca/ladcca.h>
 
 #include "cceditor.hpp"
 #include "patterneditor.hpp"
@@ -68,11 +69,12 @@ private:
   void init_sequence_editor();
   void init_info_editor();
   void init_menus();
+  bool init_lash(int argc, char** argv);
   
   // internal callbacks
   void slot_cc_number_changed();
   void slot_cc_editor_size_changed();
-  
+  bool slot_check_ladcca_events();
   
   RefPtr<Xml> m_xml;
   Gtk::Window* m_window;
@@ -103,6 +105,8 @@ private:
   Dialog* m_about_dialog;
   
   Sequencer m_seq;
+  
+  cca_client_t* m_lash_client;
 };
 
 

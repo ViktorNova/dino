@@ -137,6 +137,7 @@ bool Song::write_file(const string& filename) const {
 
 
 bool Song::load_file(const string& filename) {
+  clear();
   DomParser parser(filename);
   const Document* doc = parser.get_document();
   const Element* dino_elt = doc->get_root_node();
@@ -183,4 +184,15 @@ bool Song::load_file(const string& filename) {
     m_tracks[id].parse_xml_node(track_elt);
     signal_track_added(id);
   }
+}
+
+
+void Song::clear() {
+  set_title("");
+  set_author("");
+  set_info("");
+  signal_length_changed(m_length = 32);
+  std::map<int, Track>::const_iterator iter;
+  for (iter = m_tracks.begin(); iter != m_tracks.end(); )
+    remove_track((iter++)->first);
 }

@@ -38,6 +38,8 @@ public:
   /** Go to the given position. If we are playing, start playing again when 
       we get there. */
   void goto_beat(double beat);
+  bool isValid() const { return m_valid; };
+  unsigned char get_alsa_id() const;
   
 private:
   
@@ -49,6 +51,11 @@ private:
   /** This function checks if we are in sync with Jack Transport, if not it
       updates the sequencer to be in sync. */
   bool check_sync();
+  
+  /** A new track has been added - we need to create a new sequencer port. */
+  void track_added(int track);
+  /** A new track has been removed - we need to remove its sequencer port. */
+  void track_removed(int track);
   
   // ========== Jack callbacks ==========
   /** This function is called by libjack when Jack Transport wants to start 
@@ -67,7 +74,7 @@ private:
       tick so that we can use relative time scheduling. This function
       will schedule a note on and a note off. */
   void schedule_note(int beat, int tick, int value, int length, 
-		    int currentBeat, int currentTick);
+		     int currentBeat, int currentTick, int port);
   
   // static wrappers for Jack callbacks - because we can't register member
   // functions directly
@@ -91,9 +98,9 @@ private:
   
   jack_client_t* m_jack_client;
   snd_seq_t* m_alsa_client;
-  int m_alsa_port;
   int m_alsa_queue;
-
+  map<int, int> m_alsa_ports;
+  
   bool m_valid;
 
   volatile enum {

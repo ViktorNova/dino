@@ -40,15 +40,16 @@ public:
   bool is_dirty() const;
   bool write_file(const string& filename) const;
   bool load_file(const string& filename);
+  void clear();
   
 public:
   
-  signal<void, const string&> signal_title_changed;
-  signal<void, const string&> signal_author_changed;
-  signal<void, const string&> signal_info_changed;
-  signal<void, int> signal_length_changed;
-  signal<void, int> signal_track_added;
-  signal<void, int> signal_track_removed;
+  mutable signal<void, const string&> signal_title_changed;
+  mutable signal<void, const string&> signal_author_changed;
+  mutable signal<void, const string&> signal_info_changed;
+  mutable signal<void, int> signal_length_changed;
+  mutable signal<void, int> signal_track_added;
+  mutable signal<void, int> signal_track_removed;
   
 private:
   

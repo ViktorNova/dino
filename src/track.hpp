@@ -67,7 +67,6 @@ public:
   bool get_next_cc_event(int& beat, int& tick, int& number, int& value) const;
   void find_next_note(int beat, int tick) const;
   
-  
 public:
 
   signal<void, const string&> signal_name_changed;

@@ -5,6 +5,8 @@
 #include <sstream>
 #include <utility>
 
+#include <ladcca/ladcca.h>
+
 #include "dino.hpp"
 #include "evilscrolledwindow.hpp"
 #include "ruler.hpp"
@@ -19,8 +21,15 @@ using namespace sigc;
 Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) 
   : m_xml(xml), m_seq("Dino"), m_pattern_ruler_1(0, 1, 1, 20, 20),
     m_sequence_ruler(32, 1, 4, 20, 20) {
-
+  
   m_seq.set_song(m_song);
+  if (m_seq.isValid()) {
+    if (init_lash(argc, argv)) {
+      signal_timeout().
+	connect(mem_fun(*this, &Dino::slot_check_ladcca_events), 500);
+    }
+    cca_alsa_client_id(m_lash_client, m_seq.get_alsa_id());
+  }
   
   m_window = w<Gtk::Window>("main_window");
   m_about_dialog = w<Dialog>("dlg_about");
@@ -422,6 +431,44 @@ void Dino::init_info_editor() {
 				  mem_fun(m_ent_author, &Entry::get_text));
   m_ent_author->signal_changed().connect(set_author);
 }
+
+
+bool Dino::init_lash(int argc, char** argv) {
+  m_lash_client = cca_init(cca_extract_args(&argc, &argv), PACKAGE_NAME, 
+			   CCA_Config_File, CCA_PROTOCOL(2, 0));
+  return (m_lash_client != NULL);
+}
+
+
+bool Dino::slot_check_ladcca_events() {
+  cca_event_t* event;
+  while (event = cca_get_event(m_lash_client)) {
+    
+    // save
+    if (cca_event_get_type(event) == CCA_Save_File) {
+      if (m_song.write_file(string(cca_event_get_string(event)) + "/song")) {
+	cca_send_event(m_lash_client, cca_event_new_with_type(CCA_Save_File));
+      }
+    }
+    
+    // restore
+    else if (cca_event_get_type(event) == CCA_Restore_File) {
+      if (m_song.load_file(string(cca_event_get_string(event)) + "/song")) {
+	cca_send_event(m_lash_client, 
+		       cca_event_new_with_type(CCA_Restore_File));
+      }
+    }
+    
+    // quit
+    else if (cca_event_get_type(event) == CCA_Quit) {
+      Main::instance()->quit();
+    }
+    
+    cca_event_destroy(event);
+  }
+  return true;
+}
+
 
 
 char* Dino::cc_descriptions[] = { "Bank select MSB",

@@ -56,7 +56,7 @@ bool ::Ruler::on_expose_event(GdkEventExpose* event) {
   
   for (int i = 0; i <= mLength; ++i) {
     win->draw_line(gc, i * mDivSize, height - 4, i * mDivSize, height);
-    if (i % mInterval == 0) {
+    if (i % mInterval == 0 && i != 0) {
       Glib::RefPtr<Pango::Layout> l = 
 	Pango::Layout::create(get_pango_context());
       sprintf(tmp, "%d", i);

@@ -14,7 +14,7 @@ using namespace std;
 
 Sequencer::Sequencer(const string& clientName) 
   : m_valid(false), m_song(NULL), m_sync_state(Syncing) {
-
+  
   if (init_alsa(clientName) != 0)
     cerr<<"Could not initialise ALSA sequencer! "<<endl;
   else if (init_jack(clientName) != 0) 
@@ -30,7 +30,11 @@ Sequencer::Sequencer(const string& clientName)
 
 
 Sequencer::~Sequencer() {
-  
+  jack_transport_stop(m_jack_client);
+  jack_position_t pos;
+  memset(&pos, 0, sizeof(pos));
+  jack_transport_reposition(m_jack_client, &pos);
+  jack_client_close(m_jack_client);
 }
   
 
@@ -134,6 +138,7 @@ int Sequencer::jack_sync_callback(jack_transport_state_t state,
 
 
 int Sequencer::jack_process_callback(jack_nframes_t nframes) {
+
   // Nothing to sequence?
   if (!m_song)
     return 0;

@@ -1,3 +1,5 @@
+#include <iostream>
+using namespace std;
 #include "ruler.hpp"
 
 
@@ -39,6 +41,7 @@ void ::Ruler::on_realize() {
 
 
 bool ::Ruler::on_expose_event(GdkEventExpose* event) {
+
   Glib::RefPtr<Gdk::Window> win = get_window();
   win->clear();
   if (mLength <= 0)

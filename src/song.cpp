@@ -89,7 +89,7 @@ bool Song::is_dirty() const {
 }
 
 
-const bool Song::write_file(const string& filename) const {
+bool Song::write_file(const string& filename) const {
   xmlDocPtr doc = xmlNewDoc(xmlCharStrdup("1.0"));
   xmlNodePtr dino = xmlNewDocNode(doc, NULL, xmlCharStrdup("dinosong"), NULL);
   xmlDocSetRootElement(doc, dino);
@@ -112,4 +112,9 @@ const bool Song::write_file(const string& filename) const {
   
   xmlSaveFormatFile(filename.c_str(), doc, 1);
   m_dirty = false;
+}
+
+
+bool Song::load_file(const string& filename) {
+  
 }

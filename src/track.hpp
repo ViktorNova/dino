@@ -4,11 +4,13 @@
 #include <string>
 #include <vector>
 
+#include <sigc++/signal.h>
 #include <libxml/tree.h>
 
 #include "pattern.hpp"
 
 
+using namespace sigc;
 using namespace std;
 
 
@@ -82,6 +84,16 @@ public:
   
   /** Serialize this track to a XML node and return it. */
   xmlNodePtr get_xml_node(xmlDocPtr doc) const;
+  
+public:
+
+  signal<void, string> signal_name_changed;
+  signal<void, int> signal_pattern_added; 
+  signal<void, int> signal_pattern_removed;
+  signal<void, int, int, int> signal_sequence_entry_added;
+  signal<void, int, int, int> signal_sequence_entry_changed;
+  signal<void, int> signal_sequence_entry_removed;
+  signal<void, int> signal_length_changed;
   
 private:
   

@@ -58,15 +58,26 @@ private:
     return dynamic_cast<T*>(xml->get_widget(name));
   }
   
+  /** Even more convenient. */
+  template <class T>
+  inline T* w(const char* name) {
+    return dynamic_cast<T*>(m_xml->get_widget(name));
+  }
+  
   void update_track_widgets();
   void update_track_combo();
   void update_pattern_combo(int activePattern = -1);
   void update_editor_widgets();
+  void init_pattern_editor();
+  void init_sequence_editor();
+  void init_menus();
   
   // internal callbacks
   void slot_cc_number_changed();
   void slot_cc_editor_size_changed();
   
+  
+  RefPtr<Xml> m_xml;
   Gtk::Window* m_window;
   PatternEditor m_pe;
   CCEditor m_cce;

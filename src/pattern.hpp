@@ -3,9 +3,11 @@
 
 #include <map>
 
+#include <sigc++/signal.h>
 #include <libxml/tree.h>
 
 
+using namespace sigc;
 using namespace std;
 
 
@@ -94,6 +96,18 @@ public:
   void make_clean() const;
   
   xmlNodePtr get_xml_node(xmlDocPtr doc) const;
+
+public:
+  
+  signal<void, int> signal_length_changed;
+  signal<void, int> signal_steps_changed;
+  signal<void, int> signal_cc_steps_changed;
+  signal<void, int, int, int> signal_note_added;
+  signal<void, int, int, int> signal_note_changed;
+  signal<void, int, int> signal_note_removed;
+  signal<void, int, int, int> signal_cc_added;
+  signal<void, int, int, int> signal_cc_changed;
+  signal<void, int, int> signal_cc_removed;
 
 private:
   

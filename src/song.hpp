@@ -4,9 +4,12 @@
 #include <map>
 #include <string>
 
+#include <sigc++/signal.h>
+
 #include "track.hpp"
 
 
+using namespace sigc;
 using namespace std;
 
 
@@ -29,7 +32,17 @@ public:
   
   bool is_dirty() const;
   
-  const bool write_file(const string& filename) const;
+  bool write_file(const string& filename) const;
+  bool load_file(const string& filename);
+  
+public:
+  
+  signal<void, string> signal_title_changed;
+  signal<void, string> signal_author_changed;
+  signal<void, string> signal_info_changed;
+  signal<void, int> signal_length_changed;
+  signal<void, int> signal_track_added;
+  signal<void, int> signal_track_removed;
   
 private:
   

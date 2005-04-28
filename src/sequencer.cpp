@@ -54,6 +54,7 @@ void Sequencer::go_to_beat(double beat) {
   if (m_valid) {
     double second = m_song.get_second(int(beat), 
 				      int((beat - int(beat)) * 10000));
+    m_jack_client->set_timebase_enabled(false);
     m_jack_client->
       transport_locate(int(second * m_jack_client->get_sample_rate()));
   }
@@ -156,24 +157,26 @@ void Sequencer::sequencing_loop() {
     
     // need to sync?
     if (m_jack_client->get_sync_state() == JackClient::Syncing) {
+      int beat, tick;
+      m_song.locate(pos.frame / double(pos.frame_rate), beat, tick);
       Mutex::Lock lock(m_song.get_big_lock());
       map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
       for ( ; iter != m_song.get_tracks().end(); ++iter)
-	iter->second->find_next_note(pos.beat, pos.tick);
-      int beat, tick;
-      m_song.locate(pos.frame / double(pos.frame_rate), beat, tick);
+	iter->second->find_next_note(beat, tick);
       cerr<<"Syncing to "<<beat<<", "<<tick<<", "<<pos.frame<<endl;
       m_jack_client->set_last_timebase(beat, tick, pos.frame);
+      m_jack_client->set_bpm(m_song.get_current_tempo(beat, tick));
       m_jack_client->set_sync_state(JackClient::SyncDone);
+      m_jack_client->set_timebase_enabled(true);
     }
     
     // is it over yet?
-    if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length()
-	&& m_jack_client->transport_query(NULL) == JackTransportRolling) {
-      cerr<<"THE END!"<<endl;
+    /*
+    if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_lengt()) {
       m_jack_client->transport_stop();
       go_to_beat(0);
     }
+    */
     
     record_midi();
     play_midi();
@@ -202,11 +205,11 @@ void Sequencer::play_midi() {
   jack_position_t pos;
   jack_transport_state_t state = m_jack_client->transport_query(&pos);
   int current_beat = int(pos.bar * pos.beats_per_bar) + pos.beat;
-  m_jack_client->set_bpm(m_song.get_current_tempo(current_beat, 
-						  pos.tick));
-
+  
   if ((state == JackTransportRolling) && 
-      m_jack_client->get_sync_state() == JackClient::InSync){
+      (m_jack_client->get_sync_state() == JackClient::InSync) &&
+      (pos.valid & JackPositionBBT)){
+    m_jack_client->set_bpm(m_song.get_current_tempo(current_beat, pos.tick));
     Mutex::Lock lock(m_song.get_big_lock());
     int beat, tick, value, length, client, port, channel;
     int tpb = m_jack_client->get_tpb();
@@ -216,8 +219,8 @@ void Sequencer::play_midi() {
     int before_tick = (pos.tick + tick_ahead) % tpb;
     map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
     for ( ; iter != m_song.get_tracks().end(); ++iter) {
-      while(iter->second->get_next_note(beat, tick, value, length, 
-					before_beat, before_tick))
+      while (iter->second->get_next_note(beat, tick, value, length, 
+					 before_beat, before_tick))
 	if ((current_beat - beat) * tpb + pos.tick - tick <= tick_drop) {
 	  schedule_note(beat, tick, iter->first, iter->second->get_channel(),
 			value, 64, length);

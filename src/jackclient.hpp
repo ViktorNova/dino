@@ -52,6 +52,7 @@ public:
   SyncState get_sync_state() const;
   void set_last_timebase(int last_beat, int last_tick, 
 			 jack_nframes_t last_frame);
+  void set_timebase_enabled(bool timebase_enabled);
   
 private:
   
@@ -87,7 +88,7 @@ private:
   int m_last_beat;
   int m_last_tick;
   jack_nframes_t m_last_frame;
-
+  bool m_timebase_enabled;
 };
 
 

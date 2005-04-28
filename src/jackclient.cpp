@@ -1,8 +1,14 @@
+#include <iostream>
+
 #include "jackclient.hpp"
 
 
+using namespace std;
+
+
 JackClient::JackClient(string client_name) 
-  : m_last_beat(0), m_last_tick(0), m_last_frame(0), m_tpb(10000) {
+  : m_sync_state(Waiting), m_last_beat(0), m_last_tick(0), 
+    m_last_frame(0), m_tpb(10000), m_timebase_enabled(true) {
   int up = 0;
   
   m_jack_client = jack_client_new(client_name.c_str());
@@ -60,6 +66,8 @@ jack_nframes_t JackClient::get_current_transport_frame() {
 
   
 void JackClient::set_bpm(double bpm) {
+  if (m_bpm != bpm)
+    cerr<<"JC setting BPM to "<<bpm<<endl;
   m_bpm = bpm;
 }
 
@@ -112,6 +120,11 @@ void JackClient::set_last_timebase(int last_beat, int last_tick,
 }
 
 
+void JackClient::set_timebase_enabled(bool timebase_enabled) {
+  m_timebase_enabled = timebase_enabled;
+}
+
+
 int JackClient::jack_sync_callback(jack_transport_state_t state, 
 				   jack_position_t* pos) {
   if (m_sync_state == InSync || m_sync_state == Waiting) {
@@ -130,13 +143,15 @@ void JackClient::jack_timebase_callback(jack_transport_state_t state,
 					jack_nframes_t nframes, 
 					jack_position_t* pos, 
 					int new_pos) {
-  if (m_sync_state == InSync) {
+  if (m_sync_state == InSync && m_timebase_enabled) {
     double bpm = m_bpm;
     int bpb = 4;
     double fpb = pos->frame_rate * 60 / bpm;
     double fpt = fpb / m_tpb;
-    int d_beat = int((pos->frame - m_last_frame) / fpb);
-    int d_tick = int((pos->frame - m_last_frame) / fpt) % m_tpb;
+    int d_frame = int(pos->frame) - int(m_last_frame);
+    d_frame = d_frame > 0 ? d_frame : 0;
+    int d_beat = int(d_frame / fpb);
+    int d_tick = int(d_frame / fpt) % m_tpb;
     int current_beat = m_last_beat + d_beat + (m_last_tick + d_tick) / m_tpb;
     int current_tick = (m_last_tick + d_tick) % m_tpb;
     

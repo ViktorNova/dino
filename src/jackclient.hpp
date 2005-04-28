@@ -37,6 +37,7 @@ public:
   void transport_start();
   void transport_stop();
   void transport_reposition(jack_position_t* pos);
+  void transport_locate(jack_nframes_t frame);
   jack_transport_state_t transport_query(jack_position_t* pos);
   jack_nframes_t get_current_transport_frame();
   

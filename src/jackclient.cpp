@@ -43,6 +43,11 @@ void JackClient::transport_reposition(jack_position_t* pos) {
 }
 
 
+void JackClient::transport_locate(jack_nframes_t frame) {
+  jack_transport_locate(m_jack_client, frame);
+}
+
+
 jack_transport_state_t JackClient::transport_query(jack_position_t* pos) {
   return jack_transport_query(m_jack_client, pos);
 }
@@ -125,25 +130,27 @@ void JackClient::jack_timebase_callback(jack_transport_state_t state,
 					jack_nframes_t nframes, 
 					jack_position_t* pos, 
 					int new_pos) {
-  double bpm = m_bpm;
-  int bpb = 4;
-  double fpb = pos->frame_rate * 60 / bpm;
-  double fpt = fpb / m_tpb;
-  int d_beat = int((pos->frame - m_last_frame) / fpb);
-  int d_tick = int((pos->frame - m_last_frame) / fpt) % m_tpb;
-  int current_beat = m_last_beat + d_beat + (m_last_tick + d_tick) / m_tpb;
-  int current_tick = (m_last_tick + d_tick) % m_tpb;
-  
-  pos->bar = int(current_beat / bpb);
-  pos->beat = int(current_beat % bpb);
-  pos->tick = current_tick;
-  pos->beats_per_minute = bpm;
-  pos->beats_per_bar = bpb;
-  pos->ticks_per_beat = m_tpb;
-  pos->valid = JackPositionBBT;
-  
-  m_last_beat = current_beat;
-  m_last_tick = current_tick;
-  m_last_frame = pos->frame;  
+  if (m_sync_state == InSync) {
+    double bpm = m_bpm;
+    int bpb = 4;
+    double fpb = pos->frame_rate * 60 / bpm;
+    double fpt = fpb / m_tpb;
+    int d_beat = int((pos->frame - m_last_frame) / fpb);
+    int d_tick = int((pos->frame - m_last_frame) / fpt) % m_tpb;
+    int current_beat = m_last_beat + d_beat + (m_last_tick + d_tick) / m_tpb;
+    int current_tick = (m_last_tick + d_tick) % m_tpb;
+    
+    pos->bar = int(current_beat / bpb);
+    pos->beat = int(current_beat % bpb);
+    pos->tick = current_tick;
+    pos->beats_per_minute = bpm;
+    pos->beats_per_bar = bpb;
+    pos->ticks_per_beat = m_tpb;
+    pos->valid = JackPositionBBT;
+    
+    m_last_beat = current_beat;
+    m_last_tick = current_tick;
+    m_last_frame = pos->frame;  
+  }
 }
 

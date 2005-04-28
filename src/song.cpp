@@ -121,11 +121,34 @@ double Song::get_current_tempo(int beat, int tick) {
 }
 
 
-void Song::reposition(int beat, int tick) {
+void Song::locate(double second, int& beat, int& tick) {
+  double seconds_left = second;
   m_current_tempo = m_tempo_head;
   while (m_current_tempo->next && 
-	 m_current_tempo->next->time <= beat + tick / 10000.0)
+	 (m_current_tempo->next->time - m_current_tempo->time) * 
+	 60 / m_current_tempo->bpm <= seconds_left) {
+    seconds_left -= (m_current_tempo->next->time - m_current_tempo->time) *
+      60 / m_current_tempo->bpm;
     m_current_tempo = m_current_tempo->next;
+  }
+  double dbeat = m_current_tempo->time + 
+    seconds_left * m_current_tempo->bpm / 60;
+  beat = int(dbeat);
+  tick = int((dbeat - int(dbeat)) * 10000);
+  cerr<<"second "<<second<<" -> beat "<<beat<<", tick "<<tick<<endl;
+}
+
+
+double Song::get_second(int beat, int tick) {
+  double seconds = 0;
+  TempoChange* tempo = m_tempo_head;
+  while (tempo->next && tempo->next->time <= beat + tick / 10000.0) {
+    seconds += (tempo->next->time - tempo->time) * 60 / tempo->bpm;
+    tempo = tempo->next;
+  }
+  seconds += (beat + tick / 10000.0 - tempo->time) * 60 / tempo->bpm;
+  cerr<<"beat "<<beat<<", tick "<<tick<<" -> second "<<seconds<<endl;
+  return seconds;
 }
 
 

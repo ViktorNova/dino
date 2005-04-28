@@ -52,10 +52,10 @@ void Sequencer::stop() {
 
 void Sequencer::go_to_beat(double beat) {
   if (m_valid) {
-    jack_position_t pos;
-    memset(&pos, 0, sizeof(jack_position_t));
-    pos.valid = JackPositionBBT;
-    m_jack_client->transport_reposition(&pos);
+    double second = m_song.get_second(int(beat), 
+				      int((beat - int(beat)) * 10000));
+    m_jack_client->
+      transport_locate(int(second * m_jack_client->get_sample_rate()));
   }
 }
   
@@ -160,17 +160,17 @@ void Sequencer::sequencing_loop() {
       map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
       for ( ; iter != m_song.get_tracks().end(); ++iter)
 	iter->second->find_next_note(pos.beat, pos.tick);
-      cerr<<"Syncing to "<<pos.beat<<", "<<pos.tick<<", "<<pos.frame<<endl;
-      // !!! Jack gives us a valid frame number to sync to, but the beat
-      // and tick may be incorrect - so we need to calculate them here!
-      // DO THAT!
-      m_jack_client->set_last_timebase(0, 0, 0);
-      m_song.reposition(0, 0);
+      int beat, tick;
+      m_song.locate(pos.frame / double(pos.frame_rate), beat, tick);
+      cerr<<"Syncing to "<<beat<<", "<<tick<<", "<<pos.frame<<endl;
+      m_jack_client->set_last_timebase(beat, tick, pos.frame);
       m_jack_client->set_sync_state(JackClient::SyncDone);
     }
     
     // is it over yet?
-    if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length()) {
+    if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length()
+	&& m_jack_client->transport_query(NULL) == JackTransportRolling) {
+      cerr<<"THE END!"<<endl;
       m_jack_client->transport_stop();
       go_to_beat(0);
     }

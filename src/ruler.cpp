@@ -50,7 +50,7 @@ bool ::Ruler::on_expose_event(GdkEventExpose* event) {
   
   int width = m_length * m_div_size + 1, height = m_height;
 
-  Pango::FontDescription fd("helvetica bold 12");
+  Pango::FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
   char tmp[10];
   

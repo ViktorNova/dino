@@ -40,7 +40,7 @@ void TrackLabel::on_realize() {
   m_gc = GC::create(win);
   m_gc->set_background(m_bg_color);
   m_gc->set_foreground(m_fg_color);
-  FontDescription fd("helvetica bold 12");
+  FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
   win->clear();
 }

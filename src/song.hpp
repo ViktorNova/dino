@@ -47,7 +47,8 @@ public:
   
   // sequencing
   double get_current_tempo(int beat, int tick);
-  void reposition(int beat, int tick);
+  void locate(double second, int& beat, int& tick);
+  double get_second(int beat, int tick);
   
   // XML I/O
   bool is_dirty() const;

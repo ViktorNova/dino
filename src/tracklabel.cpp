@@ -61,6 +61,7 @@ bool TrackLabel::on_expose_event(GdkEventExpose* event) {
 
 
 bool TrackLabel::on_button_press_event(GdkEventButton* event) {
+  signal_clicked(event->button);
   return true;
 }
 

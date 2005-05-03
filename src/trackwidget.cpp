@@ -101,6 +101,8 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
 
 
 bool TrackWidget::on_button_press_event(GdkEventButton* event) {
+  signal_clicked(event->button);
+  
   int beat = int(event->x) / m_col_width;
 
   switch (event->button) {

@@ -171,13 +171,12 @@ void Sequencer::sequencing_loop() {
     }
     
     // is it over yet?
-    /*
-    if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_lengt()) {
+    if ((pos.valid & JackTransportBBT) &&
+	(pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length())) {
       m_jack_client->transport_stop();
       go_to_beat(0);
     }
-    */
-    
+     
     record_midi();
     play_midi();
   }

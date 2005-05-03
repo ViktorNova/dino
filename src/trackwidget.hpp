@@ -29,6 +29,8 @@ public:
   
   void update();
   
+  signal<void, int> signal_clicked;
+  
 private:
   
   const Song* m_song;

@@ -29,6 +29,8 @@ public:
   void update();
   void set_active_track(int id);
   
+  signal<void, int> signal_clicked;
+  
 private:
   
   void slot_name_changed(const string& name);

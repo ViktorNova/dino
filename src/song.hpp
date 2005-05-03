@@ -37,6 +37,7 @@ public:
   map<int, Track*>& get_tracks();
   int get_length() const;
   Mutex& get_big_lock() const;
+  const TempoChange* get_tempo_changes() const;
   
   // mutators
   void set_title(const string& title);

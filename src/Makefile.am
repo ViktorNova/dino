@@ -15,6 +15,8 @@ dino_SOURCES = \
 	ruler.cpp ruler.hpp \
 	sequencer.cpp sequencer.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
+	tempolabel.cpp tempolabel.hpp \
+	tempowidget.cpp tempowidget.hpp \
 	tracklabel.hpp tracklabel.cpp \
 	trackwidget.cpp trackwidget.hpp \
 	evilscrolledwindow.hpp

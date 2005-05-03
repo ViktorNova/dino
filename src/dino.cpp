@@ -11,6 +11,8 @@
 #include "evilscrolledwindow.hpp"
 #include "ruler.hpp"
 #include "song.hpp"
+#include "tempolabel.hpp"
+#include "tempowidget.hpp"
 #include "tracklabel.hpp"
 #include "trackwidget.hpp"
 
@@ -216,13 +218,21 @@ void Dino::reset_gui() {
 void Dino::update_track_widgets() {
   m_vbx_track_editor->children().clear();
   m_vbx_track_labels->children().clear();
+  TempoWidget* tmpw = manage(new TempoWidget(&m_song));
+  m_vbx_track_editor->pack_start(*tmpw, PACK_SHRINK);
+  TempoLabel* tmpl = manage(new TempoLabel(&m_song));
+  m_vbx_track_labels->pack_start(*tmpl, PACK_SHRINK);
   for (map<int, Track*>::iterator iter = m_song.get_tracks().begin();
        iter != m_song.get_tracks().end(); ++iter) {
     TrackWidget* tw = manage(new TrackWidget(&m_song));
     tw->set_track(iter->second);
+    tw->signal_clicked.
+      connect(hide(bind(mem_fun(*this, &Dino::set_active_track), iter->first)));
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
     TrackLabel* tl = manage(new TrackLabel(&m_song));
     tl->set_track(iter->first, iter->second);
+    tl->signal_clicked.
+      connect(hide(bind(mem_fun(*this, &Dino::set_active_track), iter->first)));
     m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
     signal_active_track_changed.
       connect(mem_fun(*tl, &TrackLabel::set_active_track));

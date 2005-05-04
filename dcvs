@@ -17,13 +17,22 @@ open CONFIGURE_AC_BAK, "<configure.ac.bak";
 open CONFIGURE_AC, ">configure.ac";
 while (<CONFIGURE_AC_BAK>) {
   if (/AC_INIT\(dino, ([0-9]+)\.([0-9]+)\.([0-9]+)\)/) {
-    print CONFIGURE_AC "AC_INIT(dino, $1.$2." . ($3 + 1) . ")\n";
-    print "Updating version to $1.$2." . ($3 + 1) . "\n";
+    $new_version = "$1.$2." . ($3 + 1);
+    print CONFIGURE_AC "AC_INIT(dino, $new_version)\n";
+    print "Updating version to $new_version\n";
   }
   else {
     print CONFIGURE_AC $_;
   }
 }
+close CONFIGURE_AC_BAK;
+close CONFIGURE_AC;
 
-exec 'cvs', @ARGV;
+if (system('cvs', @ARGV) != 0) {
+  system 'cp configure.ac.bak configure.ac';
+}
+else {
+  system 'ssh larsl@shell1.sourceforge.net "echo ' . $new_version .
+    ' > /home/groups/d/di/dinoseq/htdocs/development_version"';
+}
 

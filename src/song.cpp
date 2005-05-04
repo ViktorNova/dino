@@ -13,6 +13,7 @@ Song::Song() : m_dirty(false), m_length(32) {
   m_tempo_head = new TempoChange(0, 120);
   m_current_tempo = m_tempo_head;
   
+  /*
   // debug
   m_tempo_head->next = new TempoChange(8, 180);
   m_tempo_head->next->prev = m_tempo_head;
@@ -22,6 +23,7 @@ Song::Song() : m_dirty(false), m_length(32) {
   m_tempo_head->next->next->next->prev = m_tempo_head->next->next;
   m_tempo_head->next->next->next->next = new TempoChange(16, 90);
   m_tempo_head->next->next->next->next->prev = m_tempo_head->next->next->next;
+  */
 }
 
 
@@ -114,7 +116,7 @@ Mutex& Song::get_big_lock() const {
 }
 
 
-const Song::TempoChange* Song::get_tempo_changes() const {
+Song::TempoChange* Song::get_tempo_changes() {
   return m_tempo_head;
 }
 

@@ -14,7 +14,7 @@ using namespace Gtk;
 class TempoWidget : public DrawingArea {
 public:
   
-  TempoWidget(const Song* song = NULL);
+  TempoWidget(Song* song = NULL);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -26,15 +26,18 @@ public:
   
 private:
   
-  const Song* m_song;
+  Song* m_song;
   int m_col_width;
 
   RefPtr<GC> m_gc;
   RefPtr<Colormap> m_colormap;
-  Gdk::Color m_bg_color, m_bg_color2, m_fg_color, m_grid_color, m_edge_color, 
-    m_hl_color;
+  Gdk::Color m_bg_color, m_bg_color2, m_fg_color, 
+    m_grid_color, m_edge_color, m_hl_color;
   
   int m_drag_beat;
+  int m_drag_start_y;
+  int m_editing_bpm;
+  Song::TempoChange* m_active_tempo;
 };
 
 

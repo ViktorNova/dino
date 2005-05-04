@@ -32,7 +32,9 @@ if (system('cvs', @ARGV) != 0) {
   system 'cp configure.ac.bak configure.ac';
 }
 else {
-  system 'ssh larsl@shell1.sourceforge.net "echo ' . $new_version .
-    ' > /home/groups/d/di/dinoseq/htdocs/development_version"';
+  if ((system 'ssh larsl@shell1.sourceforge.net "echo ' . $new_version .
+       ' > /home/groups/d/di/dinoseq/htdocs/development_version"') != 0) {
+    printf "Could not update the development version on the webpage!\n";
+  }
 }
 

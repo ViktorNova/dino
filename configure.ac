@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(dino, 0.1.15)
+AC_INIT(dino, 0.1.16)
 AC_CONFIG_SRCDIR([src/main.cpp])
 AM_INIT_AUTOMAKE
 

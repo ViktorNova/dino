@@ -1,7 +1,7 @@
 Planned features for Dino:
 
-[ ] Editing, saving, loading patterns, arrangements, and info
-[ ] Connecting instruments to MIDI ports, sequence MIDI
-[ ] Synchronize with Jack transport
+[/] Editing, saving, loading patterns, arrangements, and info
+[/] Connecting instruments to MIDI ports, sequence MIDI
+[/] Synchronize with Jack transport
 [X] Support LASH
 [ ] Record MIDI

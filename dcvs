@@ -1,0 +1,29 @@
+#!/usr/bin/perl
+
+$is_commit = 0;
+foreach (@ARGV) {
+  if ($_ eq 'ci' || $_ eq 'commit') {
+    $is_commit = 1;
+    last;
+  }
+}
+if ($is_commit == 0) {
+  print "This is not a CVS commit!\n";
+  exit;
+}
+
+system 'cp configure.ac configure.ac.bak';
+open CONFIGURE_AC_BAK, "<configure.ac.bak";
+open CONFIGURE_AC, ">configure.ac";
+while (<CONFIGURE_AC_BAK>) {
+  if (/AC_INIT\(dino, ([0-9]+)\.([0-9]+)\.([0-9]+)\)/) {
+    print CONFIGURE_AC "AC_INIT(dino, $1.$2." . ($3 + 1) . ")\n";
+    print "Updating version to $1.$2." . ($3 + 1) . "\n";
+  }
+  else {
+    print CONFIGURE_AC $_;
+  }
+}
+
+exec 'cvs', @ARGV;
+

@@ -2,9 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(dino, 0.1.9)
+AC_INIT(dino, 0.1.10)
 AC_CONFIG_SRCDIR([src/main.cpp])
-# AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
 # Checks for programs.
@@ -20,7 +19,6 @@ PKG_CHECK_MODULES(LADCCA, ladcca-1.0 >= 0.4.0)
 
 DEBUG_CFLAGS=-fno-default-inline
 AC_SUBST(DEBUG_CFLAGS)
-# Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL

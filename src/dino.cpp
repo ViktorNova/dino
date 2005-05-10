@@ -569,8 +569,8 @@ bool Dino::slot_check_ladcca_events() {
     // restore
     else if (cca_event_get_type(event) == CCA_Restore_File) {
       if (m_song.load_file(string(cca_event_get_string(event)) + "/song")) {
-	cca_send_event(m_lash_client, 
-		       cca_event_new_with_type(CCA_Restore_File));
+	reset_gui();
+	cca_send_event(m_lash_client,cca_event_new_with_type(CCA_Restore_File));
       }
     }
     

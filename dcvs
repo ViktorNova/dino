@@ -17,6 +17,7 @@ open CONFIGURE_AC_BAK, "<configure.ac.bak";
 open CONFIGURE_AC, ">configure.ac";
 while (<CONFIGURE_AC_BAK>) {
   if (/AC_INIT\(dino, ([0-9]+)\.([0-9]+)\.([0-9]+)\)/) {
+    $old_version = "$1.$2.$3";
     $new_version = "$1.$2." . ($3 + 1);
     print CONFIGURE_AC "AC_INIT(dino, $new_version)\n";
     print "Updating version to $new_version\n";
@@ -35,6 +36,21 @@ else {
   if ((system 'ssh larsl@shell1.sourceforge.net "echo ' . $new_version .
        ' > /home/groups/d/di/dinoseq/htdocs/development_version"') != 0) {
     printf "Could not update the development version on the webpage!\n";
+  }
+  else {
+    if ((system 'make dist > /dev/null && echo put dino-' . $new_version .
+	 '.tar.gz | ' .
+	 'sftp larsl@shell1.sf.net:/home/groups/d/di/dinoseq/htdocs/snapshot/' .
+	 ' > /dev/null') != 0) {
+      printf "Could not upload snapshot!\n";
+    }
+    else {
+      if ((system 'ssh larsl@shell1.sf.net rm -f ' .
+	   '/home/groups/d/di/dinoseq/htdocs/snapshot/dino-' . $old_version .
+	   '.tar.gz') != 0) {
+	printf "Could not remove old snapshot!\n";
+      }
+    }
   }
 }
 

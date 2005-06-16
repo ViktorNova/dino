@@ -40,6 +40,10 @@ void PatternEditor::set_pattern(int track, int pattern) {
 	m_col_width = 8;
       else
 	m_col_width = 4 * cc / s;
+      m_pat->signal_note_added.
+	connect(sigc::hide(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)))));
+      m_pat->signal_note_removed.
+	connect(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw))));
       set_size_request(m_pat->get_length() * s * m_col_width + 1, 
 		       m_max_note * m_row_height + 1);
     }
@@ -190,17 +194,24 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
-  const Pattern::Note* notes(m_pat->get_notes());
-  const Pattern::Note* iter;
-  for (iter = notes; iter != NULL; iter = iter->next) {
-    m_gc->set_foreground(m_fg_color);
-    win->draw_rectangle(m_gc, true, iter->step * m_col_width + 1, 
-			(m_max_note - iter->value - 1) * m_row_height + 1, 
-			iter->length * m_col_width - 1, m_row_height - 1);
-    m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, iter->step * m_col_width, 
-			(m_max_note - iter->value - 1) * m_row_height, 
-			iter->length * m_col_width, m_row_height);
+  const vector<Pattern::NoteEvent*>& notes(m_pat->get_notes());
+  for (unsigned int i = 0; i < notes.size(); ++i) {
+    Pattern::NoteEvent* ne = notes[i];
+    while (ne) {
+      if (ne->note_on) {
+	m_gc->set_foreground(m_fg_color);
+	win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
+			    (m_max_note - ne->value - 1) * m_row_height + 1, 
+			    ne->length * m_col_width, m_row_height - 1);
+	m_gc->set_foreground(m_edge_color);
+	win->draw_rectangle(m_gc, false, i * m_col_width, 
+			    (m_max_note - ne->value - 1) * m_row_height, 
+			    ne->length * m_col_width, m_row_height);
+      }
+      ne = ne->next;
+    }
+    if (ne && ne->note_on) {
+    }
   }
   
   /*
@@ -216,8 +227,6 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
 void PatternEditor::update() {
   m_pat->get_dirty_rect(&m_d_min_step, &m_d_min_note, &m_d_max_step, &m_d_max_note);
   RefPtr<Gdk::Window> win = get_window();
-  int width = m_pat->get_length() * m_pat->get_steps() * m_col_width+ 1;
-  int height = m_max_note * m_row_height + 1;
   win->invalidate_rect(Rectangle(m_d_min_step * m_col_width, 
 				 (m_max_note - m_d_max_note - 1) * m_row_height, 
 				 (m_d_max_step - m_d_min_step + 1) * m_col_width + 1,

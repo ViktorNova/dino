@@ -2,19 +2,18 @@
 #include <cassert>
 #include <iostream>
 
+#include "deleter.hpp"
 #include "pattern.hpp"
 
 
-Pattern::Pattern() : m_dirty(false), m_next_note(NULL), m_name("Untitled") {
+Pattern::Pattern() : m_name("Untitled"), m_dirty(false) {
   
 }
 
 
 Pattern::Pattern(const string& name, int length, int steps, int cc_steps) 
-  : m_dirty(false), m_next_note(NULL), m_name(name), m_length(length),
-    m_steps(steps), m_cc_steps(cc_steps) {
-  m_note_head = new Note(-1, 0, 0);
-  m_next_note = m_note_head;
+  : m_name(name), m_length(length), m_steps(steps), 
+    m_cc_steps(cc_steps), m_dirty(false) {
   assert(m_steps > 0);
   assert(m_cc_steps > 0);
   assert(m_cc_steps % m_steps == 0);
@@ -22,6 +21,8 @@ Pattern::Pattern(const string& name, int length, int steps, int cc_steps)
   m_max_step = -1;
   m_min_note = 128;
   m_max_note = -1;
+  for (int i = 0; i < m_length * m_steps; ++i)
+    m_notes.push_back(NULL);
 }
 
 
@@ -46,80 +47,63 @@ void Pattern::set_name(const string& name) {
     @c next pointers in the Note, so the doubly linked list will stay
     consistent with the note map. */
 void Pattern::add_note(int step, int value, int noteLength) {
-  cerr<<"add_note("<<step<<", "<<value<<", "<<noteLength<<")"<<endl;
-  assert(step >= 0 && step < m_length * m_steps);
-  assert(value >= 0 && value < 128);
-  assert(noteLength > 0);
-  assert(step + noteLength <= m_length * m_steps);
-  Note* position = m_note_head;
-  bool isUpdate = false;
+  assert(step >= 0);
+  assert(step < m_length * m_steps);
+  assert(value >= 0);
+  assert(value < 128);
   
-  for (Note* iter = m_note_head; iter != NULL; iter = iter->next) {
-    position = iter;
+  NoteEvent* note_on;
+  NoteEvent* note_off;
+  
+  
+  // if a note with this value is playing at this step, stop it
+  NoteEvent* playing_note;
+  for (int i = step - 1; i >= 0; --i) {
+    if (find_note_event(i, value, false, playing_note))
+      break;
+    if (find_note_event(i, value, true, playing_note)) {
+      playing_note->length = step - i;
+      note_off = new NoteEvent(false, step - 1, value, 0, 0, playing_note);
+      add_note_event(step - 1, note_off);
+      NoteEvent* tmp = playing_note->assoc;
+      playing_note->assoc = note_off;
+      if (tmp)
+	delete_note_event(tmp->step, tmp);
+      break;
+    }
+  }
 
-    // we're looking at a note that's before the new one
-    if (iter->step < step && iter->value == value &&
-	iter->step + iter->length > step) {
-      m_max_step = (iter->step + iter->length > m_max_step ? 
-		    iter->step + iter->length : m_max_step);
-      iter->length = step - iter->step;
+  // if a note with this value is starting at this step, delete it 
+  // (unless the length is the same as for the new note)
+  if (find_note_event(step, value, true, playing_note)) {
+    if (playing_note->length == noteLength)
+      return;
+    delete_note_event(step, playing_note);
+    for (int j = step; j < m_length * m_steps; ++j) {
+      if (find_note_event(j, value, false, playing_note)) {
+	delete_note_event(j, playing_note);
+	break;
+      }
     }
-    
-    // we're looking at a note with the same pitch and start time - remove it
-    else if (iter->step == step && iter->value == value) {
-      isUpdate = true;
-      m_max_step = (iter->step + iter->length > m_max_step ?
-		    iter->step + iter->length : m_max_step);
-      Note* to_be_deleted = iter;
-      iter = iter->prev;
-      position = iter;
-      iter->next = to_be_deleted->next;
-      if (iter->next)
-	iter->next->prev = iter;
-      Mutex::Lock lock(m_lock);
-      if (m_next_note == to_be_deleted)
-	m_next_note = to_be_deleted->prev;
-      lock.release();
-      delete to_be_deleted;
-    }
-    
-    // we're looking at a node after the new one - exit the loop
-    else if (iter->step > step || (iter->step ==step && iter->value > value)) {
-      position = position->prev;
+  }
+  
+  // make sure that the new note fits
+  int newLength = noteLength;
+  for (int i = step + 1; i < step + noteLength; ++i) {
+    if (find_note_event(i, value, true, playing_note)) {
+      newLength = i - step;
       break;
     }
   }
   
-  // check if there is a note that begins before the end of the new note,
-  // if so shorten the new note
-  for (Note* next = position; next != NULL; next = next->next) {
-    if (next->value == value) {
-      if (next->step > step && step + noteLength > next->step)
-	noteLength = next->step - step;
-      break;
-    }
-  }
+  // add the note events
+  note_off = new NoteEvent(false, step + newLength, value, 0, 0);
+  add_note_event(step + newLength - 1, note_off);
+  note_on = new NoteEvent(true, step, value, 0, newLength, note_off);
+  note_off->assoc = note_on;
+  add_note_event(step, note_on);
   
-  // create the note, set up links for the sequencer list
-  Note* note = new Note(step, value, noteLength);
-  note->prev = position;
-  note->next = position->next;
-  
-  Mutex::Lock lock(m_lock);
-  if (note->next)
-    note->next->prev = note;
-  position->next = note;
-  lock.release();
-
-  m_min_note = value < m_min_note ? value : m_min_note;
-  m_max_note = value > m_max_note ? value : m_max_note;
-  m_min_step = step < m_min_step ? step : m_min_step;
-  m_max_step = step + noteLength - 1 > m_max_step ? step + noteLength - 1 : m_max_step;
-  
-  if (isUpdate)
-    signal_note_changed(step, value, noteLength);
-  else
-    signal_note_added(step, value, noteLength);
+  signal_note_added(step, value, newLength);
 }
 
 
@@ -129,33 +113,37 @@ void Pattern::add_note(int step, int value, int noteLength) {
     note map. It will return the step that the deleted note started on,
     or -1 if no note was deleted. */
 int Pattern::delete_note(int step, int value) {
-  cerr<<"delete_note("<<step<<", "<<value<<")"<<endl;
-  assert(step >= 0 && step < m_length * m_steps);
-  assert(value >= 0 && value < 128);
-  for (Note* iter = m_note_head; iter != NULL && iter->step <= step; 
-       iter = iter->next) {
-    if (iter->value == value && iter->step <= step &&
-	iter->step + iter->length > step) {
-      int result = iter->step;
-      m_min_note = iter->value < m_min_note ? iter->value : m_min_note;
-      m_max_note = iter->value > m_max_note ? iter->value : m_max_note;
-      m_min_step = iter->step < m_min_step ? iter->step : m_min_step;
-      m_max_step = (iter->step + iter->length - 1 > m_max_step ?
-		    iter->step + iter->length - 1 : m_max_step);
-      int rStep = iter->step;
-      int rNote = iter->value;
-      iter->prev->next = iter->next;
-      if (iter->next)
-	iter->next->prev = iter->prev;
-      Mutex::Lock lock(m_lock);
-      if (iter == m_next_note)
-	m_next_note = iter->prev;
-      lock.release();
-      delete iter;
-      signal_note_removed(rStep, rNote);
-      return result;
+  NoteEvent* event;
+  
+  // look at the current step
+  if (find_note_event(step, value, true, event)) {
+    delete_note_event(step, event);
+    for (int i = step; i < m_length * m_steps; ++i) {
+      if (find_note_event(i, value, false, event)) {
+	delete_note_event(i, event);
+	signal_note_removed(step, value);
+	return step;
+      }
     }
   }
+  
+  // look at earlier steps
+  for (int i = step - 1; i >= 0; --i) {
+    if (find_note_event(i, value, false, event))
+      return -1;
+    if (find_note_event(i, value, true, event)) {
+      delete_note_event(i, event);
+      for (int j = step; j < m_length * m_steps; ++j) {
+	if (find_note_event(j, value, false, event)) {
+	  delete_note_event(j, event);
+	  break;
+	}
+      }
+      signal_note_removed(i, value);
+      return i;
+    }
+  }
+    
   return -1;
 }
 
@@ -191,13 +179,8 @@ int Pattern::delete_cc(int ccNumber, int step) {
 }
 
 
-Pattern::Note* Pattern::get_notes() {
-  return m_note_head->next;
-}
-
-
-const Pattern::Note* Pattern::get_notes() const {
-  return m_note_head->next;
+const vector<Pattern::NoteEvent*>& Pattern::get_notes() const {
+  return m_notes;
 }
 
 
@@ -245,33 +228,7 @@ void Pattern::get_dirty_rect(int* minStep, int* minNote,
     used by the sequencer thread. */
 bool Pattern::get_next_note(int& step, int& value,int& length, 
 			    int beforeStep) const{
-  Mutex::Lock lock(m_lock);
-  // no notes left in the pattern
-  if (m_next_note == NULL)
-    return false;
-  
-  // go to next note and use that
-  const Note* next = m_next_note->next;
-  if (next != NULL && next->step < beforeStep) {
-    m_next_note = const_cast<volatile Note*>(next);
-    step = m_next_note->step;
-    value = m_next_note->value;
-    length = m_next_note->length;
-    return true;
-  }
-  
   return false;
-}
-
-
-/** This function sets "next note" to the first note at or after the given
-    step. It <b>must be realtime safe</b> for @c step == 0 because that is
-    used by the sequencer thread. */
-void Pattern::find_next_note(int step) const {
-  Mutex::Lock lock(m_lock);
-  const Note* iter = m_note_head;
-  for ( ; iter->next != NULL && iter->next->step < step; iter = iter->next);
-  m_next_note = const_cast<volatile Note*>(iter);
 }
 
 
@@ -294,14 +251,17 @@ bool Pattern::fill_xml_node(Element* elt) const {
   elt->set_attribute("steps", tmp_txt);
   sprintf(tmp_txt, "%d", get_cc_steps());
   elt->set_attribute("ccsteps", tmp_txt);
-  for (const Note* iter = m_note_head->next; iter != NULL; iter = iter->next) {
-    Element* note_elt = elt->add_child("note");
-    sprintf(tmp_txt, "%d", iter->step);
-    note_elt->set_attribute("step", tmp_txt);
-    sprintf(tmp_txt, "%d", iter->value);
-    note_elt->set_attribute("value", tmp_txt);
-    sprintf(tmp_txt, "%d", iter->length);
-    note_elt->set_attribute("length", tmp_txt);
+  for (unsigned int i = 0; i < m_notes.size(); ++i) {
+    NoteEvent* ne = m_notes[i];
+    if (ne && ne->note_on) {
+      Element* note_elt = elt->add_child("note");
+      sprintf(tmp_txt, "%d", ne->step);
+      note_elt->set_attribute("step", tmp_txt);
+      sprintf(tmp_txt, "%d", ne->value);
+      note_elt->set_attribute("value", tmp_txt);
+      sprintf(tmp_txt, "%d", ne->length);
+      note_elt->set_attribute("length", tmp_txt);
+    }
   }
   return true;
 }
@@ -318,7 +278,6 @@ bool Pattern::parse_xml_node(const Element* elt) {
     }
   }
 
-  char tmp_txt[10];
   nodes = elt->get_children("note");
   Node::NodeList::const_iterator iter;
   for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
@@ -334,4 +293,32 @@ bool Pattern::parse_xml_node(const Element* elt) {
     add_note(step, value, length);
   }
   return true;
+}
+
+
+bool Pattern::find_note_event(int step, int value, bool note_on, 
+			      NoteEvent*& event) {
+  event = m_notes[step];
+  while (event) {
+    if (event->value == value && event->note_on == note_on)
+      return true;
+    event = event->next;
+  }
+  return false;
+}
+
+
+void Pattern::delete_note_event(int step, NoteEvent* event) {
+  if (!event->previous)
+    m_notes[step] = event->next;
+  else
+    event->previous->next = event->next;
+  queue_deletion(event);
+}
+  
+
+void Pattern::add_note_event(int step, NoteEvent* event) {
+  event->previous = NULL;
+  event->next = m_notes[step];
+  m_notes[step] = event;
 }

@@ -7,6 +7,7 @@
 
 #include <ladcca/ladcca.h>
 
+#include "deleter.hpp"
 #include "dino.hpp"
 #include "evilscrolledwindow.hpp"
 #include "ruler.hpp"
@@ -21,15 +22,17 @@ using namespace sigc;
 
 
 Dino::Dino(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_xml(xml), m_active_track(-1), m_active_pattern(-1), 
-    m_pe(m_song), m_cce(m_song), m_seq("Dino", m_song), 
-    m_pattern_ruler_1(m_song), m_octave_label(20, 8), 
-    m_sequence_ruler(32, 1, 4, 20, 20) {
+  : m_active_track(-1), m_active_pattern(-1), m_xml(xml), 
+    m_pe(m_song), m_cce(m_song), m_sequence_ruler(32, 1, 4, 20, 20), 
+    m_pattern_ruler_1(m_song), m_octave_label(20, 8),
+    m_seq("Dino", m_song) {
   
   if (!m_seq.is_valid())
     cerr<<"You will not be able to play any songs."<<endl;
   
   init_lash(argc, argv);
+  
+  signal_timeout().connect(bind_return(&do_delete, true), 100);
   
   m_window = w<Gtk::Window>("main_window");
   m_about_dialog = w<Dialog>("dlg_about");
@@ -162,7 +165,7 @@ void Dino::slot_edit_add_pattern() {
     if (m_dlg_pattern_properties->run() == RESPONSE_OK) {
       Mutex::Lock(m_song.get_big_lock());
       
-      int patternID = m_song.get_tracks().find(m_active_track)->
+      m_song.get_tracks().find(m_active_track)->
 	second->add_pattern(m_dlgpat_ent_name->get_text(),
 			    m_dlgpat_sbn_length->get_value_as_int(),
 			    m_dlgpat_sbn_steps->get_value_as_int(),
@@ -547,9 +550,6 @@ bool Dino::init_lash(int argc, char** argv) {
   if (m_lash_client) {
     signal_timeout().
       connect(mem_fun(*this, &Dino::slot_check_ladcca_events), 500);
-    int id;
-    if ((id = m_seq.get_alsa_id()) != -1)
-      cca_alsa_client_id(m_lash_client, id);
   }
   return (m_lash_client != NULL);
 }

@@ -9,7 +9,7 @@
 using namespace xmlpp;
 
 
-Song::Song() : m_dirty(false), m_length(32) {
+Song::Song() : m_length(32), m_dirty(false) {
   m_tempo_head = new TempoChange(0, 120);
   m_current_tempo = m_tempo_head;
   
@@ -62,7 +62,6 @@ int Song::add_track(const string& name) {
   else
     id = iter->first + 1;
   m_tracks[id] = new Track(m_length, name);
-  m_tracks[id]->find_next_note(0, 0);
   m_dirty = true;
   signal_track_added(id);
   return id;
@@ -146,6 +145,11 @@ void Song::locate(double second, int& beat, int& tick) {
     seconds_left * m_current_tempo->bpm / 60;
   beat = int(dbeat);
   tick = int((dbeat - int(dbeat)) * 10000);
+  {
+    Mutex::Lock lock(get_big_lock());
+    map<int, Track*>::const_iterator iter = get_tracks().begin();
+  }
+  
   cerr<<"second "<<second<<" -> beat "<<beat<<", tick "<<tick<<endl;
 }
 
@@ -196,6 +200,7 @@ bool Song::write_file(const string& filename) const {
   
   doc.write_to_file_formatted(filename);
   m_dirty = false;
+  return true;
 }
 
 
@@ -230,6 +235,8 @@ bool Song::load_file(const string& filename) {
     m_tracks[id] = new Track(m_length);
     m_tracks[id]->parse_xml_node(track_elt);
   }
+  
+  return true;
 }
 
 
@@ -239,4 +246,14 @@ void Song::clear() {
   m_info = "";
   m_length = 0;
   m_tracks.clear();
+}
+
+
+unsigned long Song::bt2frame(int beat, int tick) {
+  return 0;
+}
+
+
+pair<int, int> Song::frame2bt(unsigned long frame) {
+  return make_pair(0, 0);
 }

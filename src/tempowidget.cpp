@@ -144,7 +144,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     m_active_tempo = tempo;
     if (m_active_tempo) {
       m_drag_start_y = int(event->y);
-      m_editing_bpm = m_active_tempo->bpm;
+      m_editing_bpm = int(m_active_tempo->bpm);
       lock.release();
       update();
     }
@@ -171,7 +171,7 @@ bool TempoWidget::on_button_release_event(GdkEventButton* event) {
 
 bool TempoWidget::on_motion_notify_event(GdkEventMotion* event) {
   if (m_active_tempo) {
-    int new_bpm = m_active_tempo->bpm + (m_drag_start_y - event->y) / 2;
+    int new_bpm = int(m_active_tempo->bpm + (m_drag_start_y - event->y) / 2);
     new_bpm = new_bpm < 1 ? 1 : new_bpm;
     if (new_bpm != m_editing_bpm) {
       m_editing_bpm = new_bpm;

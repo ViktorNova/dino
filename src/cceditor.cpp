@@ -7,8 +7,9 @@
 
 
 CCEditor::CCEditor(Song& song) 
-  : m_song(song), m_height(64 + 3), m_col_width(8), m_pat(NULL), 
-    m_line_step(-1), m_v_scale((m_height - 3) / 128.0), m_cc_number(0) {
+  : m_song(song), m_col_width(8), m_height(64 + 3), 
+    m_v_scale((m_height - 3) / 128.0), m_pat(NULL), 
+    m_cc_number(0), m_line_step(-1) {
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
   m_bg_color2.set_rgb(60000, 60000, 65535);
@@ -198,7 +199,6 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
   if (!m_pat)
     return true;
   
-  int width = m_pat->get_length() * m_pat->get_cc_steps() * m_col_width;
   int height = m_height;
   
   // draw background

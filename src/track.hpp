@@ -27,19 +27,14 @@ public:
   /** This struct contains information about a sequence entry, i.e. a
       scheduled start and length for a pattern. */
   struct SequenceEntry {
-    SequenceEntry(int patID, Pattern* patPtr, int st, int len) 
-      : pattern_id(patID), pattern(patPtr), start(st), length(len), 
-	prev(NULL), next(NULL) { }
+    SequenceEntry(int patID, Pattern* patPtr, 
+		  unsigned int st, unsigned int len) 
+      : pattern_id(patID), pattern(patPtr), start(st), length(len) { }
     int pattern_id;
     Pattern* pattern;
-    int start;
-    int length;
-    SequenceEntry* prev;
-    SequenceEntry* next;
+    unsigned int start;
+    unsigned int length;
   };
-  
-  /** For convenience. */
-  typedef SequenceEntry* Sequence;
   
   
   Track(int length = 0, const string& name = "Untitled");
@@ -48,14 +43,16 @@ public:
   const string& get_name() const;
   map<int, Pattern*>& get_patterns();
   const map<int, Pattern*>& get_patterns() const;
-  SequenceEntry* get_sequence();
-  bool get_sequence_entry(int at, int& beat, int& pattern, int& length) const;
+  //const vector<SequenceEntry*>& get_sequence() const;
+  const SequenceEntry* get_seq_entry(unsigned int beat);
   int get_channel() const;
+  unsigned int get_length() const;
   
   // mutators
   void set_name(const string& name);
   int add_pattern(const string& name, int length, int steps, int ccSteps);
   void set_sequence_entry(int beat, int pattern, int length = -1);
+  void set_seq_entry_length(unsigned int beat, unsigned int length);
   bool remove_sequence_entry(int beat);
   void set_length(int length);
   void set_channel(int channel);
@@ -70,7 +67,6 @@ public:
   bool get_next_note(int& beat, int& tick, int& value, int& length, 
 		     int beforeBeat, int beforeTick) const;
   bool get_next_cc_event(int& beat, int& tick, int& number, int& value) const;
-  void find_next_note(int beat, int tick) const;
   
 public:
 
@@ -86,15 +82,13 @@ private:
   
   string m_name;
   map<int, Pattern*> m_patterns;
-  SequenceEntry* m_seq_head;
   int m_length;
   int m_channel;
+  vector<SequenceEntry*> m_sequence;
   
   mutable bool m_dirty;
   
   mutable Mutex m_lock;
-  
-  mutable SequenceEntry* m_current_seq_entry;
   
 };
 

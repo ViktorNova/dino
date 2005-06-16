@@ -48,14 +48,13 @@ bool ::Ruler::on_expose_event(GdkEventExpose* event) {
   if (m_length <= 0)
     return true;
   
-  int width = m_length * m_div_size + 1, height = m_height;
-
   Pango::FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
   char tmp[10];
   
   for (int i = 0; i <= m_length; ++i) {
-    win->draw_line(m_gc, i * m_div_size, height - 4, i * m_div_size, height);
+    win->draw_line(m_gc, i * m_div_size, m_height - 4, 
+		   i * m_div_size, m_height);
     if (i % m_interval == 0 && i != 0) {
       Glib::RefPtr<Pango::Layout> l = 
 	Pango::Layout::create(get_pango_context());
@@ -63,13 +62,14 @@ bool ::Ruler::on_expose_event(GdkEventExpose* event) {
       l->set_text(tmp);
       Pango::Rectangle rect = l->get_pixel_logical_extents();
       win->draw_layout(m_gc, i * m_div_size - rect.get_width() / 2, 
-		       (height - 4 - rect.get_height()) / 2, l);
+		       (m_height - 4 - rect.get_height()) / 2, l);
     }
     if (i == m_length)
       break;
     for (int j = 1; j < m_subs; ++j) {
-      win->draw_line(m_gc, i * m_div_size + j * m_div_size / m_subs, height- 2,
-		     i * m_div_size + j * m_div_size / m_subs, height);
+      win->draw_line(m_gc, i * m_div_size + j * m_div_size / m_subs, 
+		     m_height- 2, i * m_div_size + j * m_div_size / m_subs, 
+		     m_height);
     }
   }
   return true;
@@ -79,4 +79,5 @@ bool ::Ruler::on_expose_event(GdkEventExpose* event) {
 bool ::Ruler::on_button_press_event(GdkEventButton* event) {
   double pos = event->x / m_div_size;
   signal_clicked(pos, event->button);
+  return true;
 }

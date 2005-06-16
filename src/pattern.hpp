@@ -3,6 +3,8 @@
 
 #include <list>
 #include <map>
+#include <vector>
+
 
 #include <glibmm/thread.h>
 #include <sigc++/signal.h>
@@ -52,19 +54,22 @@ public:
     }
   };
   
-  /** This struct contains information about a Note on / Note off pair. */
-  struct Note {
-    Note(int stp, int val, int len) 
-      : step(stp), value(val), length(len), prev(NULL), next(NULL) { }
-    int step, value, length;
-    Note* prev;
-    Note* next;
+  /** This struct contains information about a Note on or Note off event. */
+  struct NoteEvent {
+    NoteEvent(bool on, int stp, int val, int vel, int len, 
+	      NoteEvent* ass = NULL) 
+      : note_on(on), step(stp), value(val), length(len), 
+	velocity(vel), assoc(ass), previous(NULL), next(NULL) { }
+    bool note_on;
+    int step, value, length, velocity;
+    NoteEvent* assoc;
+    NoteEvent* previous;
+    NoteEvent* next;
   };
   
   // accessors
   const string& get_name() const;
-  Note* get_notes();
-  const Note* get_notes() const;
+  const vector<NoteEvent*>& get_notes() const;
   CCData& get_cc(int cc_number);
   int get_steps() const;
   int get_cc_steps() const;
@@ -87,7 +92,6 @@ public:
   
   // sequencing
   bool get_next_note(int& step, int& value, int& length,int before_step) const;
-  void find_next_note(int step) const;
   
 public:
   
@@ -104,13 +108,17 @@ public:
 
 private:
   
+  bool find_note_event(int step, int value, bool note_on, NoteEvent*& event);
+  void delete_note_event(int step, NoteEvent* event);
+  void add_note_event(int step, NoteEvent* event);
+  
   string m_name;
   /** Pattern length in beats */
   int m_length;
   /** Number of steps per beat */
   int m_steps;
   /** The notes in the pattern */
-  Note*  m_note_head;
+  vector<NoteEvent*> m_notes;
   /** Number of CC steps per beat */
   int m_cc_steps;
   /** The MIDI control changes in the pattern */
@@ -123,7 +131,6 @@ private:
   // dirty rect
   int m_min_step, m_min_note, m_max_step, m_max_note;
   
-  mutable volatile Note* m_next_note;
 };
 
 

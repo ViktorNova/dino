@@ -75,25 +75,27 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   // draw patterns
   Pango::FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
-  const Track::SequenceEntry* iter = m_track->get_sequence();
   char tmp[10];
-  for ( ; iter; iter = iter->next) {
+  for (unsigned int i = 0; i < m_track->get_length(); ++i) {
+    const Track::SequenceEntry* se = m_track->get_seq_entry(i);
+    if (!se || se->start != i)
+      continue;
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
-    int length = iter->length;
-    win->draw_rectangle(m_gc, true, iter->start * m_col_width, 0,
-			length * m_col_width, height-1);
+    int length = se->length;
+    win->draw_rectangle(m_gc, true, i * m_col_width, 0, 
+			length * m_col_width, height - 1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, iter->start * m_col_width, 0,
-			length * m_col_width, height-1);
+    win->draw_rectangle(m_gc, false, i * m_col_width, 0,
+			length * m_col_width, height - 1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
-    sprintf(tmp, "%03d", iter->pattern_id);
+    sprintf(tmp, "%03d", se->pattern_id);
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Rectangle textBounds(iter->start * m_col_width, 0, 
+    Rectangle textBounds(i * m_col_width, 0, 
 			 length * m_col_width, height - 1);
     m_gc->set_clip_rectangle(textBounds);
-    win->draw_layout(m_gc, iter->start * m_col_width + 2, (height - lHeight)/2, l);
+    win->draw_layout(m_gc, i * m_col_width + 2, (height - lHeight)/2, l);
   }
   
   return true;
@@ -127,12 +129,11 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 2: {
-    int bBeat, pattern, length;
-    if (m_track->get_sequence_entry(beat, bBeat, pattern, length)) {
-      m_drag_beat = bBeat;
-      m_drag_pattern = pattern;
-      Mutex::Lock(m_song->get_big_lock());
-      m_track->set_sequence_entry(bBeat, pattern, beat - bBeat + 1);
+    const Track::SequenceEntry* se;
+    if (se = m_track->get_seq_entry(beat)) {
+      m_drag_beat = se->start;
+      m_drag_pattern = se->pattern_id;
+      m_track->set_seq_entry_length(beat, beat - se->start);
       update();
     }
     return true;
@@ -152,6 +153,7 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
 bool TrackWidget::on_button_release_event(GdkEventButton* event) {
   if (event->button == 2)
     m_drag_beat = -1;
+  return true;
 }
 
 

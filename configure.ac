@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 
 # Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.1.21)
+AC_INIT(dino, 0.1.22)
 
 AC_CONFIG_SRCDIR([src/main.cpp])
 AM_INIT_AUTOMAKE
@@ -16,11 +16,10 @@ AC_PROG_CXX
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4 >= 2.4.1)
 PKG_CHECK_MODULES(GTHREAD, gthread-2.0 >= 2.4.6)
 PKG_CHECK_MODULES(LIBXMLPP, libxml++-2.6 >= 2.6.1)
-PKG_CHECK_MODULES(ALSA, alsa >= 1.0.6)
 PKG_CHECK_MODULES(JACK, jack >= 0.99.0)
 PKG_CHECK_MODULES(LADCCA, ladcca-1.0 >= 0.4.0)
 
-DEBUG_CFLAGS=-fno-default-inline
+DEBUG_CFLAGS='-fno-default-inline -ansi -pedantic -Wall -Werror'
 AC_SUBST(DEBUG_CFLAGS)
 
 # Checks for typedefs, structures, and compiler characteristics.

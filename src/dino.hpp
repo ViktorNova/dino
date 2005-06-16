@@ -8,6 +8,7 @@
 #include "cceditor.hpp"
 #include "octavelabel.hpp"
 #include "patterneditor.hpp"
+#include "ringbuffer.hpp"
 #include "ruler.hpp"
 #include "sequencer.hpp"
 #include "singletextcombo.hpp"

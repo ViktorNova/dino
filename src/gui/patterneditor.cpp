@@ -194,23 +194,23 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
-  const vector<Pattern::NoteEvent*>& notes(m_pat->get_notes());
+  const vector<MIDIEvent*>& notes(m_pat->get_notes());
   for (unsigned int i = 0; i < notes.size(); ++i) {
-    Pattern::NoteEvent* ne = notes[i];
+    MIDIEvent* ne = notes[i];
     while (ne) {
-      if (ne->note_on) {
+      if (ne->get_type() == 1) {
 	m_gc->set_foreground(m_fg_color);
 	win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
-			    (m_max_note - ne->value - 1) * m_row_height + 1, 
-			    ne->length * m_col_width, m_row_height - 1);
+			    (m_max_note - ne->get_note()- 1) * m_row_height + 1, 
+			    ne->get_length() * m_col_width, m_row_height - 1);
 	m_gc->set_foreground(m_edge_color);
 	win->draw_rectangle(m_gc, false, i * m_col_width, 
-			    (m_max_note - ne->value - 1) * m_row_height, 
-			    ne->length * m_col_width, m_row_height);
+			    (m_max_note - ne->get_note() - 1) * m_row_height, 
+			    ne->get_length() * m_col_width, m_row_height);
       }
-      ne = ne->next;
+      ne = ne->get_next();
     }
-    if (ne && ne->note_on) {
+    if (ne && ne->get_type() == 1) {
     }
   }
   

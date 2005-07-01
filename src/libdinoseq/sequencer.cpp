@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include <glibmm.h>
 extern "C" {
 #include <jack/midiport.h>
 }
@@ -186,7 +185,7 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   jack_transport_state_t state = jack_transport_query(m_jack_client, &pos);
   
   // first, tell the GUI thread that it's OK to delete unused objects
-  Pattern::NoteEvent* event;
+  MIDIEvent* event;
   for (int i = 0; i < 100 && g_notes_not_used.pop(event); ++i) 
     g_notes_to_delete.push(event);
   
@@ -245,10 +244,10 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
     
     // add events
     const Track* trk = iter->second;
-    Pattern::NoteEvent* event;
+    MIDIEvent* event;
     while (event = trk->get_events(beat, tick, last_beat, last_tick, 10000)) {
-      bool note_on = event->note_on;
-      for ( ; event && event->note_on == note_on; event = event->next)
+      bool note_on = event->get_type() == 1;
+      for ( ; event && event->get_type() == note_on; event = event->get_next())
 	add_event_to_buffer(event);
     }
   }
@@ -257,6 +256,6 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
 }
 
 
-void Sequencer::add_event_to_buffer(Pattern::NoteEvent* event) {
+void Sequencer::add_event_to_buffer(MIDIEvent* event) {
   
 }

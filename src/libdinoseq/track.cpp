@@ -293,20 +293,17 @@ bool Track::parse_xml_node(const Element* elt) {
 }
 
 
-Pattern::NoteEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
-				      unsigned int before_beat, 
-				      unsigned int before_tick, 
-				      unsigned int ticks_per_beat) const {
+MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
+			 unsigned int before_beat, unsigned int before_tick, 
+			 unsigned int ticks_per_beat) const {
   SequenceEntry* se = m_sequence[beat];
   
   if (!se)
     return NULL;
   
   beat -= se->start;
-  Pattern::NoteEvent* event = se->pattern->get_events(beat, tick, 
-						      before_beat - se->start, 
-						      before_tick, 
-						      ticks_per_beat);
+  MIDIEvent* event = se->pattern->get_events(beat, tick, before_beat - se->start, 
+					 before_tick, ticks_per_beat);
   beat += se->start;
   return event;
 }

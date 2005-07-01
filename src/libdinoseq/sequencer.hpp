@@ -6,17 +6,14 @@
 
 #include <jack/jack.h>
 
-#include <glibmm/thread.h>
-
 
 using namespace std;
-using namespace Glib;
 
 
 class Song;
 
 
-class Sequencer : public GObject {
+class Sequencer {
 public:
   
   /** This struct contains information about a writable MIDI port. */
@@ -97,7 +94,7 @@ private:
   void sequencing_loop();
   void sequence_midi(jack_transport_state_t state,
 		     const jack_position_t& pos, jack_nframes_t nframes);
-  void add_event_to_buffer(Pattern::NoteEvent* event);
+  void add_event_to_buffer(MIDIEvent* event);
   //void play_midi();
   //void schedule_note(int beat, int tick, int port, int channel, 
   //		     int value, int velocity, int length);

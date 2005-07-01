@@ -1,6 +1,6 @@
 /****************************************************************************
     
-    event.hpp - A MIDI event implementation for the Dino sequencer
+    midievent.hpp - A MIDI event implementation for the Dino sequencer
     
     Copyright (C) 2005  Lars Luthman <larsl@users.sourceforge.net>
     
@@ -20,25 +20,48 @@
 
 ****************************************************************************/
 
-#ifndef EVENT_HPP
-#define EVENT_HPP
+#ifndef MIDIEVENT_HPP
+#define MIDIEVENT_HPP
+
+#ifndef NULL
+#define NULL 0
+#endif
 
 
-class Event {
+class MIDIEvent {
 public:
   
+  MIDIEvent(bool on, int stp, int val, int vel, int len, MIDIEvent* ass = NULL) 
+    : m_step(stp), m_length(len), m_assoc(ass) {
+    m_data[0] = (on ? 1 : 0);
+    m_data[1] = val;
+    m_data[2] = vel;
+  }
+  
+  unsigned int get_length() const;
+  unsigned int get_step() const;
   unsigned char get_type() const;
   unsigned char get_note() const;
   unsigned char get_velocity() const;
-  Event* get_next() const;
-  Event* get_previous() const;
-  Event* get_assoc() const;
+  MIDIEvent* get_next() const;
+  MIDIEvent* get_previous() const;
+  MIDIEvent* get_assoc() const;
+
+  void set_length(unsigned int length);
+  void set_step(unsigned int step);
+  void set_type(unsigned char type);
+  void set_note(unsigned char note);
+  void set_velocity(unsigned char vel);
+  void set_next(MIDIEvent* event);
+  void set_previous(MIDIEvent* event);
+  void set_assoc(MIDIEvent* event);
   
 protected:
   unsigned int m_step;
-  Event* m_next;
-  Event* m_previous;
-  Event* m_assoc;
+  unsigned int m_length;
+  MIDIEvent* m_next;
+  MIDIEvent* m_previous;
+  MIDIEvent* m_assoc;
   unsigned char m_data[4];
 };
 

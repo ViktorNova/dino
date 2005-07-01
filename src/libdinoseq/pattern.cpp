@@ -52,23 +52,23 @@ void Pattern::add_note(int step, int value, int noteLength) {
   assert(value >= 0);
   assert(value < 128);
   
-  NoteEvent* note_on;
-  NoteEvent* note_off;
+  MIDIEvent* note_on;
+  MIDIEvent* note_off;
   
   
   // if a note with this value is playing at this step, stop it
-  NoteEvent* playing_note;
+  MIDIEvent* playing_note;
   for (int i = step - 1; i >= 0; --i) {
     if (find_note_event(i, value, false, playing_note))
       break;
     if (find_note_event(i, value, true, playing_note)) {
-      playing_note->length = step - i;
-      note_off = new NoteEvent(false, step - 1, value, 0, 0, playing_note);
+      playing_note->set_length(step - i);
+      note_off = new MIDIEvent(false, step - 1, value, 0, 0, playing_note);
       add_note_event(step - 1, note_off);
-      NoteEvent* tmp = playing_note->assoc;
-      playing_note->assoc = note_off;
+      MIDIEvent* tmp = playing_note->get_assoc();
+      playing_note->set_assoc(note_off);
       if (tmp)
-	delete_note_event(tmp->step, tmp);
+	delete_note_event(tmp->get_step(), tmp);
       break;
     }
   }
@@ -76,7 +76,7 @@ void Pattern::add_note(int step, int value, int noteLength) {
   // if a note with this value is starting at this step, delete it 
   // (unless the length is the same as for the new note)
   if (find_note_event(step, value, true, playing_note)) {
-    if (playing_note->length == noteLength)
+    if (playing_note->get_length() == (unsigned int)noteLength)
       return;
     delete_note_event(step, playing_note);
     for (int j = step; j < m_length * m_steps; ++j) {
@@ -97,10 +97,10 @@ void Pattern::add_note(int step, int value, int noteLength) {
   }
   
   // add the note events
-  note_off = new NoteEvent(false, step + newLength, value, 0, 0);
+  note_off = new MIDIEvent(false, step + newLength, value, 0, 0);
   add_note_event(step + newLength - 1, note_off);
-  note_on = new NoteEvent(true, step, value, 0, newLength, note_off);
-  note_off->assoc = note_on;
+  note_on = new MIDIEvent(true, step, value, 0, newLength, note_off);
+  note_off->set_assoc(note_on);
   add_note_event(step, note_on);
   
   signal_note_added(step, value, newLength);
@@ -113,7 +113,7 @@ void Pattern::add_note(int step, int value, int noteLength) {
     note map. It will return the step that the deleted note started on,
     or -1 if no note was deleted. */
 int Pattern::delete_note(int step, int value) {
-  NoteEvent* event;
+  MIDIEvent* event;
   
   // look at the current step
   if (find_note_event(step, value, true, event)) {
@@ -179,7 +179,7 @@ int Pattern::delete_cc(int ccNumber, int step) {
 }
 
 
-const vector<Pattern::NoteEvent*>& Pattern::get_notes() const {
+const vector<MIDIEvent*>& Pattern::get_notes() const {
   return m_notes;
 }
 
@@ -242,14 +242,14 @@ bool Pattern::fill_xml_node(Element* elt) const {
   sprintf(tmp_txt, "%d", get_cc_steps());
   elt->set_attribute("ccsteps", tmp_txt);
   for (unsigned int i = 0; i < m_notes.size(); ++i) {
-    NoteEvent* ne = m_notes[i];
-    if (ne && ne->note_on) {
+    MIDIEvent* ne = m_notes[i];
+    if (ne && ne->get_type() == 1) {
       Element* note_elt = elt->add_child("note");
-      sprintf(tmp_txt, "%d", ne->step);
+      sprintf(tmp_txt, "%d", ne->get_step());
       note_elt->set_attribute("step", tmp_txt);
-      sprintf(tmp_txt, "%d", ne->value);
+      sprintf(tmp_txt, "%d", ne->get_note());
       note_elt->set_attribute("value", tmp_txt);
-      sprintf(tmp_txt, "%d", ne->length);
+      sprintf(tmp_txt, "%d", ne->get_length());
       note_elt->set_attribute("length", tmp_txt);
     }
   }
@@ -286,56 +286,56 @@ bool Pattern::parse_xml_node(const Element* elt) {
 }
 
 
-Pattern::NoteEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
-					unsigned int before_beat, 
-					unsigned int before_tick,
-					unsigned int ticks_per_beat) const {
+MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
+			   unsigned int before_beat, 
+			   unsigned int before_tick,
+			   unsigned int ticks_per_beat) const {
   return NULL;
 }
 
 
 bool Pattern::find_note_event(int step, int value, bool note_on, 
-			      NoteEvent*& event) {
+			      MIDIEvent*& event) {
   event = m_notes[step];
   while (event) {
-    if (event->value == value && event->note_on == note_on)
+    if (event->get_note() == value && event->get_type() == 1)
       return true;
-    event = event->next;
+    event = event->get_next();
   }
   return false;
 }
 
 
-void Pattern::delete_note_event(int step, NoteEvent* event) {
-  if (!event->previous)
-    m_notes[step] = event->next;
+void Pattern::delete_note_event(int step, MIDIEvent* event) {
+  if (!event->get_previous())
+    m_notes[step] = event->get_next();
   else
-    event->previous->next = event->next;
+    event->get_previous()->set_next(event->get_next());
   queue_deletion(event);
 }
   
 
-void Pattern::add_note_event(int step, NoteEvent* event) {
+void Pattern::add_note_event(int step, MIDIEvent* event) {
   // note on events are added at the beginning of the list
-  if (event->note_on) {
-    event->previous = NULL;
-    event->next = m_notes[step];
+  if (event->get_type() == 1) {
+    event->set_previous(NULL);
+    event->set_next(m_notes[step]);
     m_notes[step] = event;
   }
   
   // note off events are added at the end of the list
   else {
-    event->next = NULL;
+    event->set_next(NULL);
     if (!m_notes[step]) {
-      event->previous = NULL;
+      event->set_previous(NULL);
       m_notes[step] = event;
     }
     else {
-      NoteEvent* previous = m_notes[step];
-      while (previous->next)
-	previous = previous->next;
-      event->previous = previous;
-      previous->next = event;
+      MIDIEvent* previous = m_notes[step];
+      while (previous->get_next())
+	previous = previous->get_next();
+      event->set_previous(previous);
+      previous->set_next(event);
     }
   }
 }

@@ -10,6 +10,8 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
+#include "midievent.hpp"
+
 
 using namespace Glib;
 using namespace sigc;
@@ -54,22 +56,10 @@ public:
     }
   };
   
-  /** This struct contains information about a Note on or Note off event. */
-  struct NoteEvent {
-    NoteEvent(bool on, int stp, int val, int vel, int len, 
-	      NoteEvent* ass = NULL) 
-      : note_on(on), step(stp), value(val), length(len), 
-	velocity(vel), assoc(ass), previous(NULL), next(NULL) { }
-    bool note_on;
-    int step, value, length, velocity;
-    NoteEvent* assoc;
-    NoteEvent* previous;
-    NoteEvent* next;
-  };
   
   // accessors
   const string& get_name() const;
-  const vector<NoteEvent*>& get_notes() const;
+  const vector<MIDIEvent*>& get_notes() const;
   CCData& get_cc(int cc_number);
   int get_steps() const;
   int get_cc_steps() const;
@@ -90,9 +80,9 @@ public:
   bool fill_xml_node(Element* elt) const;
   bool parse_xml_node(const Element* elt);
   
-  NoteEvent* get_events(unsigned int& beat, unsigned int& tick, 
-			unsigned int before_beat, unsigned int before_tick,
-			unsigned int ticks_per_beat) const;
+  MIDIEvent* get_events(unsigned int& beat, unsigned int& tick, 
+		    unsigned int before_beat, unsigned int before_tick,
+		    unsigned int ticks_per_beat) const;
   
 public:
   
@@ -109,9 +99,9 @@ public:
 
 private:
   
-  bool find_note_event(int step, int value, bool note_on, NoteEvent*& event);
-  void delete_note_event(int step, NoteEvent* event);
-  void add_note_event(int step, NoteEvent* event);
+  bool find_note_event(int step, int value, bool note_on, MIDIEvent*& event);
+  void delete_note_event(int step, MIDIEvent* event);
+  void add_note_event(int step, MIDIEvent* event);
   
   string m_name;
   /** Pattern length in beats */
@@ -119,7 +109,7 @@ private:
   /** Number of steps per beat */
   int m_steps;
   /** The notes in the pattern */
-  vector<NoteEvent*> m_notes;
+  vector<MIDIEvent*> m_notes;
   /** Number of CC steps per beat */
   int m_cc_steps;
   /** The MIDI control changes in the pattern */

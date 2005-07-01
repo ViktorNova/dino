@@ -5,10 +5,10 @@
 #include "ringbuffer.hpp"
 
 
-extern Ringbuffer<Pattern::NoteEvent*> g_notes_not_used;
-extern Ringbuffer<Pattern::NoteEvent*> g_notes_to_delete;
+extern Ringbuffer<MIDIEvent*> g_notes_not_used;
+extern Ringbuffer<MIDIEvent*> g_notes_to_delete;
 
-bool queue_deletion(Pattern::NoteEvent* event);
+bool queue_deletion(MIDIEvent* event);
 void do_delete();
 
 

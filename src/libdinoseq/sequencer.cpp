@@ -208,5 +208,30 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
     return;
   }
   
+  // if we are rolling, sequence MIDI
+  int32_t beat = 0, tick = 0, last_beat = 0, last_tick = 0;
+  map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
+  if (iter != m_song.get_tracks().end()) {
+    
+    // clear the MIDI buffer
+    jack_port_t* port = m_output_ports[iter->first];
+    void* port_buf = jack_port_get_buffer(port, nframes);
+    jack_midi_clear_buffer(port_buf, nframes);
+    
+    // add events
+    const Track* trk = iter->second;
+    Pattern::NoteEvent* event;
+    while (event = trk->get_events(beat, tick, last_beat, last_tick, 10000)) {
+      bool note_on = event->note_on;
+      for ( ; event && event->note_on == note_on; event = event->next)
+	add_event_to_buffer(event);
+    }
+  }
+  
+  
+}
+
+
+void Sequencer::add_event_to_buffer(Pattern::NoteEvent* event) {
   
 }

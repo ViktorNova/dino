@@ -222,16 +222,6 @@ void Pattern::get_dirty_rect(int* minStep, int* minNote,
 }
 
 
-/** This function will fill in the step, value, and length of the next note
-    event that occurs before @c beforeStep, if there is one. If there isn't
-    it will return false. It <b>must be realtime safe</b> because it is 
-    used by the sequencer thread. */
-bool Pattern::get_next_note(int& step, int& value,int& length, 
-			    int beforeStep) const{
-  return false;
-}
-
-
 bool Pattern::is_dirty() const {
   return m_dirty;
 }
@@ -296,6 +286,13 @@ bool Pattern::parse_xml_node(const Element* elt) {
 }
 
 
+Pattern::NoteEvent* Pattern::get_events(int beat, int tick, 
+					int before_beat, int before_tick,
+					int ticks_per_beat) const {
+  return NULL;
+}
+
+
 bool Pattern::find_note_event(int step, int value, bool note_on, 
 			      NoteEvent*& event) {
   event = m_notes[step];
@@ -318,14 +315,14 @@ void Pattern::delete_note_event(int step, NoteEvent* event) {
   
 
 void Pattern::add_note_event(int step, NoteEvent* event) {
-  // note on events are added in the beginning of the list
+  // note on events are added at the beginning of the list
   if (event->note_on) {
     event->previous = NULL;
     event->next = m_notes[step];
     m_notes[step] = event;
   }
   
-  // note off events are added in the end of the list
+  // note off events are added at the end of the list
   else {
     event->next = NULL;
     if (!m_notes[step]) {

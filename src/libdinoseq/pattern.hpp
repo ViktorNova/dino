@@ -90,8 +90,8 @@ public:
   bool fill_xml_node(Element* elt) const;
   bool parse_xml_node(const Element* elt);
   
-  // sequencing
-  bool get_next_note(int& step, int& value, int& length,int before_step) const;
+  NoteEvent* get_events(int beat, int tick, int before_beat, int before_tick,
+			int ticks_per_beat) const;
   
 public:
   

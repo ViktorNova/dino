@@ -64,9 +64,8 @@ public:
   bool parse_xml_node(const Element* elt);
   
   // sequencing
-  bool get_next_note(int& beat, int& tick, int& value, int& length, 
-		     int beforeBeat, int beforeTick) const;
-  bool get_next_cc_event(int& beat, int& tick, int& number, int& value) const;
+  Pattern::NoteEvent* get_events(int beat, int tick, int before_beat, 
+				 int before_tick, int ticks_per_beat) const;
   
 public:
 

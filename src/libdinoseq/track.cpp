@@ -200,24 +200,6 @@ void Track::make_clean() const {
 }
 
 
-/** Get the next note event that occurs before the given time, or return 
-    false if there isn't one. This function <b>must be realtime safe</b>
-    because it is used by the sequencer thread. */
-bool Track::get_next_note(int& beat, int& tick, int& value, int& length,
-			  int beforeBeat, int beforeTick) const {
-  return false;
-}
-
-
-/** Get the next CC event, or return false if there isn't one. This 
-    function <b>must be realtime safe</b> because it is used by the 
-    sequencer thread. */
-bool Track::get_next_cc_event(int& step, int& tick, 
-			   int& number, int& value) const {
-  return false;
-}
-
-
 /** Serialize this track to a XML node and return it. */
 bool Track::fill_xml_node(Element* elt) const {
   
@@ -311,3 +293,15 @@ bool Track::parse_xml_node(const Element* elt) {
 }
 
 
+Pattern::NoteEvent* Track::get_events(int beat, int tick, 
+				      int before_beat, int before_tick, 
+				      int ticks_per_beat) const {
+  SequenceEntry* se = m_sequence[beat];
+  
+  if (!se)
+    return NULL;
+
+  return se->pattern->get_events(beat - se->start, tick, 
+				 before_beat - se->start, before_tick,
+				 ticks_per_beat);
+}

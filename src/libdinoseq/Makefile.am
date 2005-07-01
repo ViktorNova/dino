@@ -1,4 +1,4 @@
-AM_CPPFLAGS = @LIBXMLPP_CFLAGS@ @JACK_CFLAGS@ @LADCCA_CFLAGS@ @DEBUG_CFLAGS@
+AM_CPPFLAGS = @LIBXMLPP_CFLAGS@ @JACK_CFLAGS@ @DEBUG_CFLAGS@
 
 noinst_LTLIBRARIES = libdinoseq.la
 
@@ -11,4 +11,4 @@ libdinoseq_la_SOURCES = \
 	sequencer.cpp sequencer.hpp \
 	tempomap.cpp tempomap.hpp
 
-libdinoseq_la_LIBADD = @LIBXMLPP_LIBS@ @JACK_LIBS@ @LADCCA_LIBS@
+libdinoseq_la_LIBADD = @LIBXMLPP_LIBS@ @JACK_LIBS@

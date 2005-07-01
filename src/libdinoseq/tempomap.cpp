@@ -40,7 +40,7 @@ void TempoMap::remove_tempo_change(unsigned long beat) {
 
 void TempoMap::get_bbt(unsigned long frame, unsigned long framerate,
 		       double& bpm, int32_t& beat, int32_t& tick) const {
-  bpm = 400.0;
+  bpm = 100.0;
   double beat_d = bpm * double(frame) / (60.0 * framerate);
   beat = int32_t(beat_d);
   tick = int32_t((beat_d - int(beat_d)) * 10000);

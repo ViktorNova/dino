@@ -3,6 +3,7 @@
 
 #include <gtkmm.h>
 
+#include "pattern.hpp"
 #include "song.hpp"
 
 

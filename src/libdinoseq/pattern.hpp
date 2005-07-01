@@ -116,8 +116,11 @@ private:
   map<int, CCData> m_control_changes;
   
   mutable Mutex m_lock;
-  
   mutable bool m_dirty;
+  
+  mutable unsigned long m_last_beat;
+  mutable unsigned long m_last_tick;
+  mutable bool m_already_returned;
   
   // dirty rect
   int m_min_step, m_min_note, m_max_step, m_max_note;

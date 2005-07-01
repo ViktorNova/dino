@@ -3,13 +3,15 @@
 
 #include <gtkmm.h>
 
-#include "song.hpp"
-#include "track.hpp"
-
 
 using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
+using namespace sigc;
+
+
+class Song;
+class Track;
 
 
 class TrackWidget : public DrawingArea {

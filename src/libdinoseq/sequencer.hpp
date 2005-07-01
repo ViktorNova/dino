@@ -94,7 +94,9 @@ private:
   void sequencing_loop();
   void sequence_midi(jack_transport_state_t state,
 		     const jack_position_t& pos, jack_nframes_t nframes);
-  void add_event_to_buffer(MIDIEvent* event);
+  void add_event_to_buffer(MIDIEvent* event, void* port_buf,
+			   unsigned int beat, unsigned int tick,
+			   const jack_position_t& pos, jack_nframes_t nframes);
   //void play_midi();
   //void schedule_note(int beat, int tick, int port, int channel, 
   //		     int value, int velocity, int length);

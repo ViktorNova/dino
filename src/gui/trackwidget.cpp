@@ -3,6 +3,8 @@
 #include <map>
 
 #include "trackwidget.hpp"
+#include "pattern.hpp"
+#include "song.hpp"
 
 
 using namespace std;

@@ -56,6 +56,11 @@ public:
   void set_previous(MIDIEvent* event);
   void set_assoc(MIDIEvent* event);
   
+  static const unsigned char NoteOn = 0x90;
+  static const unsigned char NoteOff = 0x80;
+  static const unsigned char Controller = 0xB0;
+  static const unsigned char PitchWheel = 0xE0;
+  
 protected:
   unsigned int m_step;
   unsigned int m_length;

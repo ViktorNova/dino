@@ -8,7 +8,9 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
-#include "pattern.hpp"
+
+class MIDIEvent;
+class Pattern;
 
 
 using namespace Glib;

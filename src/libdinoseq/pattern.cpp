@@ -1,12 +1,14 @@
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 
 #include "deleter.hpp"
 #include "pattern.hpp"
 
 
-Pattern::Pattern() : m_name("Untitled"), m_dirty(false) {
+Pattern::Pattern() : m_name("Untitled"), m_dirty(false), 
+		     m_already_returned(false) {
   
 }
 
@@ -287,9 +289,42 @@ bool Pattern::parse_xml_node(const Element* elt) {
 
 
 MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
-			   unsigned int before_beat, 
-			   unsigned int before_tick,
-			   unsigned int ticks_per_beat) const {
+			       unsigned int before_beat, 
+			       unsigned int before_tick,
+			       unsigned int ticks_per_beat) const {
+  
+  // convert beats and ticks to pattern steps
+  double beat_d = tick / double(ticks_per_beat);
+  unsigned int step = (unsigned int)ceil((beat + beat_d) * m_steps);
+  double b_beat_d = before_tick / double(ticks_per_beat);
+  unsigned int b_step = (unsigned int)ceil((before_beat + b_beat_d) * m_steps);
+  unsigned int i = step;
+  
+  // have we already returned events for this beat and tick?
+  if (m_already_returned && m_last_beat == beat && m_last_tick == tick) {
+    m_already_returned = false;
+    ++i;
+  }
+  
+  for ( ; i < b_step && i < (unsigned long)(m_length * m_steps); ++i) {
+    if (m_notes[i] && m_notes[i]->get_type() == 1) {
+      beat = i / m_steps;
+      tick = (unsigned int)((i % m_steps) * ticks_per_beat / double(m_steps));
+      m_already_returned = true;
+      m_last_beat = beat;
+      m_last_tick = tick;
+      return m_notes[i];
+    }
+  }
+  
+  beat = (i - 1) / m_steps;
+  tick = (unsigned int)(((i - 1) % m_steps) * ticks_per_beat / double(m_steps));
+  ++tick;
+  if (tick == ticks_per_beat) {
+    tick = 0;
+    ++beat;
+  }
+  
   return NULL;
 }
 

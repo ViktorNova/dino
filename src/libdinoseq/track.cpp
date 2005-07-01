@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "track.hpp"
+#include "pattern.hpp"
 
 
 Track::Track(int length, const string& name) 
@@ -294,16 +295,29 @@ bool Track::parse_xml_node(const Element* elt) {
 
 
 MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
-			 unsigned int before_beat, unsigned int before_tick, 
-			 unsigned int ticks_per_beat) const {
-  SequenceEntry* se = m_sequence[beat];
+			     unsigned int before_beat, unsigned int before_tick,
+			     unsigned int ticks_per_beat) const {
   
-  if (!se)
+  // if we have reached the end of the wanted period, return NULL so the
+  // sequencer will stop looking for events in this track
+  if (beat >= before_beat && tick >= before_tick)
     return NULL;
   
-  beat -= se->start;
-  MIDIEvent* event = se->pattern->get_events(beat, tick, before_beat - se->start, 
-					 before_tick, ticks_per_beat);
-  beat += se->start;
-  return event;
+  // look in all beats inside this period
+  for (unsigned int i = beat; i <= before_beat; ++i) {
+    if (i == before_beat && before_tick == 0)
+      break;
+    SequenceEntry* se = m_sequence[i];
+    if (se) {
+      beat -= se->start;
+      MIDIEvent* event = se->pattern->get_events(beat, tick, 
+						 before_beat- se->start,
+						 before_tick, ticks_per_beat);
+      beat += se->start;
+      if (event)
+	return event;
+    }
+  }
+  
+  return NULL;
 }

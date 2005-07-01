@@ -318,7 +318,26 @@ void Pattern::delete_note_event(int step, NoteEvent* event) {
   
 
 void Pattern::add_note_event(int step, NoteEvent* event) {
-  event->previous = NULL;
-  event->next = m_notes[step];
-  m_notes[step] = event;
+  // note on events are added in the beginning of the list
+  if (event->note_on) {
+    event->previous = NULL;
+    event->next = m_notes[step];
+    m_notes[step] = event;
+  }
+  
+  // note off events are added in the end of the list
+  else {
+    event->next = NULL;
+    if (!m_notes[step]) {
+      event->previous = NULL;
+      m_notes[step] = event;
+    }
+    else {
+      NoteEvent* previous = m_notes[step];
+      while (previous->next)
+	previous = previous->next;
+      event->previous = previous;
+      previous->next = event;
+    }
+  }
 }

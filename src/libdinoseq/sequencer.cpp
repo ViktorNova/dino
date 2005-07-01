@@ -249,11 +249,13 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
     // add events
     const Track* trk = iter->second;
     MIDIEvent* event;
-    while (event = trk->get_events(beat, tick, last_beat, last_tick, 
-				   (unsigned int)(pos.ticks_per_beat))) {
+    bool full = false;
+    while (!full &&
+	   (event = trk->get_events(beat, tick, last_beat, last_tick, 
+				    (unsigned int)(pos.ticks_per_beat)))) {
       bool note_on = (event->get_type() == 1);
       for ( ; event && event->get_type() == note_on; event = event->get_next())
-	add_event_to_buffer(event, port_buf, beat, tick, pos, nframes);
+	full = !add_event_to_buffer(event, port_buf, beat, tick, pos, nframes);
     }
 
   }
@@ -263,7 +265,7 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
 }
 
 
-void Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
+bool Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
 				    unsigned int beat, unsigned int tick,
 				    const jack_position_t& pos, 
 				    jack_nframes_t nframes) {
@@ -280,6 +282,8 @@ void Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
     p[0] = MIDIEvent::NoteOn;
     p[1] = event->get_note();
     p[2] = event->get_velocity();
+    return true;
   }
-
+  else
+    return false;
 }

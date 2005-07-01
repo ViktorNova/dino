@@ -116,9 +116,11 @@ bool Sequencer::init_jack(const string& client_name) {
   memset(&pos, 0, sizeof(pos));
   jack_transport_stop(m_jack_client);
   jack_transport_reposition(m_jack_client, &pos);
+  /*
   m_input_port = jack_port_register(m_jack_client, "MIDI input", 
 				    JACK_DEFAULT_MIDI_TYPE, 
 				    JackPortIsInput, 0);
+  */
   return true;
 }
 
@@ -246,7 +248,7 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
     void* port_buf = jack_port_get_buffer(port, nframes);
     jack_midi_clear_buffer(port_buf, nframes);
     
-    // add events
+    // add events in buffer
     const Track* trk = iter->second;
     MIDIEvent* event;
     bool full = false;

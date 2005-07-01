@@ -4,6 +4,7 @@ noinst_LTLIBRARIES = libdinoseq.la
 
 libdinoseq_la_SOURCES = \
 	deleter.cpp deleter.hpp \
+	event.cpp event.hpp \
 	pattern.cpp pattern.hpp \
 	track.cpp track.hpp \
 	song.cpp song.hpp \

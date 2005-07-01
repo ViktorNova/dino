@@ -24,7 +24,6 @@ Sequencer::Sequencer(const string& client_name, Song& song)
   m_song.signal_track_added.connect(mem_fun(*this, &Sequencer::track_added));
   m_song.signal_track_removed.
     connect(mem_fun(*this, &Sequencer::track_removed));
-  
 }
 
 
@@ -108,6 +107,9 @@ bool Sequencer::init_jack(const string& client_name) {
 				       &Sequencer::jack_process_callback_,
 				       this)) != 0)
     return false;
+
+  jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
+  
   if ((err = jack_activate(m_jack_client)) != 0)
     return false;
   
@@ -202,6 +204,11 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   sequence_midi(state, pos, nframes);
   
   return 0;
+}
+
+
+void Sequencer::jack_shutdown_handler() {
+  cerr<<"JACK SHUT DOWN!"<<endl;
 }
 
 

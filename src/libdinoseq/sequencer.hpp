@@ -69,6 +69,7 @@ private:
 			      jack_nframes_t nframes, jack_position_t* pos, 
 			      int new_pos);
   int jack_process_callback(jack_nframes_t nframes);
+  void jack_shutdown_handler();
   
   // JACK callback wrappers
   static int jack_sync_callback_(jack_transport_state_t state, 
@@ -84,6 +85,9 @@ private:
   }
   static int jack_process_callback_(jack_nframes_t nframes, void* arg) {
     return static_cast<Sequencer*>(arg)->jack_process_callback(nframes);
+  }
+  static void jack_shutdown_handler_(void* arg) {
+    static_cast<Sequencer*>(arg)->jack_shutdown_handler();
   }
   
   void track_added(int track);

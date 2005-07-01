@@ -1,0 +1,1 @@
+SUBDIRS = libdinoseq gui

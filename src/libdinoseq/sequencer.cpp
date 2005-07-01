@@ -156,6 +156,7 @@ void Sequencer::jack_timebase_callback(jack_transport_state_t state,
 			   pos->beat, pos->tick);
   pos->beats_per_bar = 4;
   pos->ticks_per_beat = 10000;
+  pos->bar = int32_t(pos->beat / pos->beats_per_bar);
   pos->valid = JackPositionBBT;
 }
 

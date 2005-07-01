@@ -152,44 +152,10 @@ void Sequencer::jack_timebase_callback(jack_transport_state_t state,
 					jack_nframes_t nframes, 
 					jack_position_t* pos, 
 					int new_pos) {
-  // XXX Horrible, horrible!
-  // Need complete rewrite
-  /*
-  if (m_sync_state == InSync) {
-    double bpm = m_bpm;
-    int bpb = 4;
-    double fpb = pos->frame_rate * 60 / bpm;
-    double fpt = fpb / m_tpb;
-    int d_frame = int(pos->frame) - int(m_last_frame);
-    d_frame = d_frame > 0 ? d_frame : 0;
-    int d_beat = int(d_frame / fpb);
-    int d_tick = int(d_frame / fpt) % m_tpb;
-    int current_beat = m_last_beat + d_beat + (m_last_tick + d_tick) / m_tpb;
-    int current_tick = (m_last_tick + d_tick) % m_tpb;
-    
-    pos->bar = int(current_beat / bpb);
-    pos->beat = int(current_beat % bpb);
-    pos->tick = current_tick;
-    pos->beats_per_minute = bpm;
-    pos->beats_per_bar = bpb;
-    pos->ticks_per_beat = m_tpb;
-    pos->valid = JackPositionBBT;
-    
-    m_last_beat = current_beat;
-    m_last_tick = current_tick;
-    m_last_frame = pos->frame;  
-  }
-  */
-  double bpm = 100;
-  int ticks_per_beat = 10000;
-  int beats_per_bar = 4;
-  double beat = 100 * pos->frame / (pos->frame_rate * 60);
-  pos->beats_per_bar = beats_per_bar;
-  pos->beats_per_minute = bpm;
-  pos->ticks_per_beat = ticks_per_beat;
-  pos->bar = int(beat) / beats_per_bar;
-  pos->beat = int(beat) % beats_per_bar;
-  pos->tick = int(10000 * (beat - int(beat)));
+  m_song.get_timebase_info(pos->frame, pos->frame_rate, pos->beats_per_minute, 
+			   pos->beat, pos->tick);
+  pos->beats_per_bar = 4;
+  pos->ticks_per_beat = 10000;
   pos->valid = JackPositionBBT;
 }
 

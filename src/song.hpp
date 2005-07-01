@@ -7,6 +7,7 @@
 #include <glibmm/thread.h>
 #include <sigc++/signal.h>
 
+#include "tempomap.hpp"
 #include "track.hpp"
 
 
@@ -47,6 +48,8 @@ public:
   bool remove_track(int id);
   
   // sequencing
+  void get_timebase_info(unsigned long frame, unsigned long framerate,
+			 double& bpm, int32_t& beat, int32_t& tick) const;
   double get_current_tempo(int beat, int tick);
   void locate(double second, int& beat, int& tick);
   double get_second(int beat, int tick);
@@ -81,6 +84,8 @@ private:
   TempoChange* m_tempo_head;
   
   mutable const TempoChange* m_current_tempo;
+  
+  TempoMap m_tempo_map;
   
   mutable Mutex m_big_lock;
   

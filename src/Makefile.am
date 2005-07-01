@@ -17,6 +17,7 @@ dino_SOURCES = \
 	sequencer.cpp sequencer.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
 	tempolabel.cpp tempolabel.hpp \
+	tempomap.cpp tempomap.hpp \
 	tempowidget.cpp tempowidget.hpp \
 	tracklabel.hpp tracklabel.cpp \
 	trackwidget.cpp trackwidget.hpp \

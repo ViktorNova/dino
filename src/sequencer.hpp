@@ -105,7 +105,7 @@ private:
   /** This is @c true if JACK and ALSA has been initialised succesfully. */
   bool m_valid;
   
-  Thread* m_seq_thread;
+  //Thread* m_seq_thread;
   jack_client_t* m_jack_client;
   SyncState m_sync_state;
   map<int, jack_port_t*> m_output_ports;

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <iostream>
+#include <inttypes.h>
 
 #include <libxml++/libxml++.h>
 
@@ -256,4 +257,10 @@ unsigned long Song::bt2frame(int beat, int tick) {
 
 pair<int, int> Song::frame2bt(unsigned long frame) {
   return make_pair(0, 0);
+}
+
+
+void Song::get_timebase_info(unsigned long frame, unsigned long framerate,
+			     double& bpm, int32_t& beat, int32_t& tick) const {
+  m_tempo_map.get_bbt(frame, framerate, bpm, beat, tick);
 }

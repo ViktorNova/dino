@@ -149,13 +149,31 @@ int Sequencer::jack_sync_callback(jack_transport_state_t state,
 
 
 void Sequencer::jack_timebase_callback(jack_transport_state_t state, 
-					jack_nframes_t nframes, 
-					jack_position_t* pos, 
-					int new_pos) {
+				       jack_nframes_t nframes, 
+				       jack_position_t* pos, 
+				       int new_pos) {
+  int32_t beat, tick;
   m_song.get_timebase_info(pos->frame, pos->frame_rate, pos->beats_per_minute, 
-			   pos->beat, pos->tick);
+			   beat, tick);
+
   pos->beats_per_bar = 4;
   pos->ticks_per_beat = 10000;
+  
+  if (new_pos || state != JackTransportRolling) {
+    pos->beat = beat;
+    pos->tick = tick;
+    cerr<<"New position!"<<endl;
+  }
+  else {
+    double db = nframes * pos->beats_per_minute / (pos->frame_rate * 60.0);
+    pos->beat += int32_t(db);
+    pos->tick += int32_t((db - int(db)) * pos->ticks_per_beat);
+    if (pos->tick >= pos->ticks_per_beat) {
+      pos->tick -= int32_t(pos->ticks_per_beat);
+      ++pos->beat;
+    }
+  }
+  
   pos->bar = int32_t(pos->beat / pos->beats_per_bar);
   pos->valid = JackPositionBBT;
 }

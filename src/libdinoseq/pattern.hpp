@@ -90,8 +90,9 @@ public:
   bool fill_xml_node(Element* elt) const;
   bool parse_xml_node(const Element* elt);
   
-  NoteEvent* get_events(int beat, int tick, int before_beat, int before_tick,
-			int ticks_per_beat) const;
+  NoteEvent* get_events(unsigned int& beat, unsigned int& tick, 
+			unsigned int before_beat, unsigned int before_tick,
+			unsigned int ticks_per_beat) const;
   
 public:
   

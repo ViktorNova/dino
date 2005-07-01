@@ -209,7 +209,7 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
   }
   
   // if we are rolling, sequence MIDI
-  int32_t beat = 0, tick = 0, last_beat = 0, last_tick = 0;
+  unsigned int beat = 0, tick = 0, last_beat = 0, last_tick = 0;
   map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
   if (iter != m_song.get_tracks().end()) {
     

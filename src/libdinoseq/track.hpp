@@ -64,8 +64,10 @@ public:
   bool parse_xml_node(const Element* elt);
   
   // sequencing
-  Pattern::NoteEvent* get_events(int beat, int tick, int before_beat, 
-				 int before_tick, int ticks_per_beat) const;
+  Pattern::NoteEvent* get_events(unsigned int& beat, unsigned int& tick, 
+				 unsigned int before_beat, 
+				 unsigned int before_tick, 
+				 unsigned int ticks_per_beat) const;
   
 public:
 

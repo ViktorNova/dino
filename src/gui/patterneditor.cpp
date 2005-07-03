@@ -196,7 +196,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   for (unsigned int i = 0; i < notes.size(); ++i) {
     MIDIEvent* ne = notes[i];
     while (ne) {
-      if (ne->get_type() == 1) {
+      if (ne->get_type() == MIDIEvent::NoteOn) {
 	m_gc->set_foreground(m_fg_color);
 	win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
 			    (m_max_note - ne->get_note()- 1) * m_row_height + 1, 
@@ -208,7 +208,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
       }
       ne = ne->get_next();
     }
-    if (ne && ne->get_type() == 1) {
+    if (ne && ne->get_type() == MIDIEvent::NoteOn) {
     }
   }
   

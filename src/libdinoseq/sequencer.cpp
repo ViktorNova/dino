@@ -238,6 +238,7 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
   unsigned int ticks = (unsigned int)
     (nframes * pos.beats_per_minute * pos.ticks_per_beat / 
      (pos.frame_rate * 60.0));
+  unsigned int list;
   unsigned int last_tick = (tick + ticks) % int(pos.ticks_per_beat);
   unsigned int last_beat = beat + (tick + ticks) / int(pos.ticks_per_beat);
   map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
@@ -252,11 +253,12 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
     const Track* trk = iter->second;
     MIDIEvent* event;
     bool full = false;
+    list = 0;
     while (!full &&
 	   (event = trk->get_events(beat, tick, last_beat, last_tick, 
-				    (unsigned int)(pos.ticks_per_beat)))) {
-      bool note_on = (event->get_type() == 1);
-      for ( ; event && event->get_type() == note_on; event = event->get_next())
+				    (unsigned int)(pos.ticks_per_beat),
+				    list))) {
+      for ( ; event; event = event->get_next())
 	full = !add_event_to_buffer(event, port_buf, beat, tick, pos, nframes);
     }
 
@@ -271,7 +273,8 @@ bool Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
 				    unsigned int beat, unsigned int tick,
 				    const jack_position_t& pos, 
 				    jack_nframes_t nframes) {
-  cerr<<"NOTE ON at "<<beat<<", "<<tick<<":"
+  cerr<<"NOTE "<<(event->get_type() == MIDIEvent::NoteOn ? "ON" : "OFF")
+      <<" at "<<beat<<", "<<tick<<":"
       <<"\t"<<int(event->get_note())
       <<"\t"<<int(event->get_velocity())
       <<endl;
@@ -281,7 +284,7 @@ bool Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
 		   (pos.ticks_per_beat * pos.beats_per_minute));
   unsigned char* p = jack_midi_write_next_event(port_buf, frame, 3, nframes);
   if (p) {
-    p[0] = MIDIEvent::NoteOn;
+    p[0] = event->get_type();
     p[1] = event->get_note();
     p[2] = event->get_velocity();
     return true;

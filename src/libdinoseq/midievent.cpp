@@ -1,4 +1,9 @@
+#include <iostream>
+
 #include "midievent.hpp"
+
+
+using namespace std;
 
   
 unsigned int MIDIEvent::get_length() const {

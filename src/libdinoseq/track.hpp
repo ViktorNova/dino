@@ -67,8 +67,9 @@ public:
   
   // sequencing
   MIDIEvent* get_events(unsigned int& beat, unsigned int& tick, 
-		    unsigned int before_beat, unsigned int before_tick, 
-		    unsigned int ticks_per_beat) const;
+			unsigned int before_beat, unsigned int before_tick, 
+			unsigned int ticks_per_beat,
+			unsigned int& list) const;
   
 public:
 

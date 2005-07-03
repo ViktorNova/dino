@@ -44,6 +44,8 @@ void PatternEditor::set_pattern(int track, int pattern) {
 	connect(sigc::hide(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)))));
       m_pat->signal_note_removed.
 	connect(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw))));
+      m_pat->signal_note_changed.
+	connect(sigc::hide(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)))));
       set_size_request(m_pat->get_length() * s * m_col_width + 1, 
 		       m_max_note * m_row_height + 1);
     }
@@ -64,29 +66,26 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
 
     // button one adds notes
     if (event->button == 1) {
+      m_pat->add_note(step, note, 1);
       m_added_note = make_pair(step, note);
-      Mutex::Lock(m_song.get_big_lock());
-      m_pat->add_note(m_added_note.first, m_added_note.second, 1);
-      update();
     }
     
     // button 2 changes the length
     else if (event->button == 2) {
-      int start = m_pat->delete_note(step, note);
-      if (start != -1) {
-	m_added_note = make_pair(start, note);
-	Mutex::Lock(m_song.get_big_lock());
-	m_pat->add_note(m_added_note.first, m_added_note.second, step - start + 1);
-	update();
+      MIDIEvent* note_on = m_pat->find_note(step, note);
+      if (note_on) {
+	m_pat->resize_note(note_on, step - note_on->get_step() + 1);
+	m_added_note = make_pair(note_on->get_step(), note);
       }
     }
     
     // button 3 deletes
     else if (event->button == 3) {
       Mutex::Lock(m_song.get_big_lock());
-      m_pat->delete_note(int(event->x) / m_col_width, 
-		      m_max_note - int(event->y) / m_row_height - 1);
-      update();
+      MIDIEvent* note_on = 
+	m_pat->find_note(int(event->x) / m_col_width, 
+			 m_max_note - int(event->y) / m_row_height - 1);
+      m_pat->delete_note(note_on);
     }
 
     m_drag_step = step;
@@ -106,10 +105,10 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
       step = m_added_note.first;
     else if (step >= m_pat->get_length() * m_pat->get_steps())
       step = m_pat->get_length() * m_pat->get_steps() - 1;
-    Mutex::Lock(m_song.get_big_lock());
-    m_pat->add_note(m_added_note.first, m_added_note.second, step - m_added_note.first +1);
+    MIDIEvent* note_on = 
+      m_pat->find_note(m_added_note.first, m_added_note.second);
+    m_pat->resize_note(note_on, step - m_added_note.first + 1);
     m_added_note = make_pair(-1, -1);
-    update();
   }
   return true;
 }
@@ -129,9 +128,9 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       step = m_added_note.first;
     else if (step >= m_pat->get_length() * m_pat->get_steps())
       step = m_pat->get_length() * m_pat->get_steps() - 1;
-    Mutex::Lock(m_song.get_big_lock());
-    m_pat->add_note(m_added_note.first, m_added_note.second, step - m_added_note.first +1);
-    update();
+    MIDIEvent* note_on = 
+      m_pat->find_note(m_added_note.first, m_added_note.second);
+    m_pat->resize_note(note_on, step - m_added_note.first + 1);
     m_drag_step = step;
     m_drag_note = note;
   }
@@ -143,8 +142,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
     if (step >= 0 && step < m_pat->get_length() * m_pat->get_steps() &&
 	note >= 0 && note < m_max_note) {
       Mutex::Lock(m_song.get_big_lock());
-      m_pat->delete_note(step, note);
-      update();
+      m_pat->delete_note(m_pat->find_note(step, note));
       m_drag_step = step;
       m_drag_note = note;
     }
@@ -194,7 +192,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
-  const vector<MIDIEvent*>& notes(m_pat->get_notes());
+  const Pattern::EventList& notes(m_pat->get_notes());
   for (unsigned int i = 0; i < notes.size(); ++i) {
     MIDIEvent* ne = notes[i];
     while (ne) {

@@ -1,7 +1,10 @@
+#include <sys/types.h>
+#include <signal.h>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <set>
 
 #include "deleter.hpp"
 #include "pattern.hpp"
@@ -23,8 +26,10 @@ Pattern::Pattern(const string& name, int length, int steps, int cc_steps)
   m_max_step = -1;
   m_min_note = 128;
   m_max_note = -1;
-  for (int i = 0; i < m_length * m_steps; ++i)
-    m_notes.push_back(NULL);
+  for (int i = 0; i < m_length * m_steps; ++i) {
+    m_note_ons.push_back(NULL);
+    m_note_offs.push_back(NULL);
+  }
 }
 
 
@@ -57,35 +62,25 @@ void Pattern::add_note(int step, int value, int noteLength) {
   MIDIEvent* note_on;
   MIDIEvent* note_off;
   
-  
   // if a note with this value is playing at this step, stop it
-  MIDIEvent* playing_note;
-  for (int i = step - 1; i >= 0; --i) {
-    if (find_note_event(i, value, false, playing_note))
-      break;
-    if (find_note_event(i, value, true, playing_note)) {
-      playing_note->set_length(step - i);
-      note_off = new MIDIEvent(false, step - 1, value, 0, 0, playing_note);
-      add_note_event(step - 1, note_off);
-      MIDIEvent* tmp = playing_note->get_assoc();
-      playing_note->set_assoc(note_off);
-      if (tmp)
-	delete_note_event(tmp->get_step(), tmp);
-      break;
+  MIDIEvent* playing_note = find_note(step, value);
+  if (playing_note) {
+    if (playing_note->get_step() == (unsigned int)step) {
+      MIDIEvent* assoc = playing_note->get_assoc();
+      delete_note_event(playing_note);
+      delete_note_event(assoc);
+      signal_note_removed(step, value);
     }
-  }
-
-  // if a note with this value is starting at this step, delete it 
-  // (unless the length is the same as for the new note)
-  if (find_note_event(step, value, true, playing_note)) {
-    if (playing_note->get_length() == (unsigned int)noteLength)
-      return;
-    delete_note_event(step, playing_note);
-    for (int j = step; j < m_length * m_steps; ++j) {
-      if (find_note_event(j, value, false, playing_note)) {
-	delete_note_event(j, playing_note);
-	break;
-      }
+    else {
+      MIDIEvent* old_off = playing_note->get_assoc();
+      MIDIEvent* new_off = new MIDIEvent(MIDIEvent::NoteOff, step - 1, 
+					 value, 64, 0, playing_note);
+      add_note_event(new_off);
+      playing_note->set_assoc(new_off);
+      playing_note->set_length(step - playing_note->get_step());
+      delete_note_event(old_off);
+      signal_note_changed(playing_note->get_step(), value, 
+			  playing_note->get_length());
     }
   }
   
@@ -99,11 +94,13 @@ void Pattern::add_note(int step, int value, int noteLength) {
   }
   
   // add the note events
-  note_off = new MIDIEvent(false, step + newLength, value, 0, 0);
-  add_note_event(step + newLength - 1, note_off);
-  note_on = new MIDIEvent(true, step, value, 0, newLength, note_off);
+  note_off = 
+    new MIDIEvent(MIDIEvent::NoteOff, step + newLength - 1, value, 0, 0);
+  add_note_event(note_off);
+  note_on = 
+    new MIDIEvent(MIDIEvent::NoteOn, step, value, 0, newLength, note_off);
   note_off->set_assoc(note_on);
-  add_note_event(step, note_on);
+  add_note_event(note_on);
   
   signal_note_added(step, value, newLength);
 }
@@ -114,39 +111,52 @@ void Pattern::add_note(int step, int value, int noteLength) {
     @c next pointers so the doubly linked list will stay consistent with the
     note map. It will return the step that the deleted note started on,
     or -1 if no note was deleted. */
-int Pattern::delete_note(int step, int value) {
-  MIDIEvent* event;
-  
-  // look at the current step
-  if (find_note_event(step, value, true, event)) {
-    delete_note_event(step, event);
-    for (int i = step; i < m_length * m_steps; ++i) {
-      if (find_note_event(i, value, false, event)) {
-	delete_note_event(i, event);
-	signal_note_removed(step, value);
-	return step;
-      }
-    }
-  }
-  
-  // look at earlier steps
-  for (int i = step - 1; i >= 0; --i) {
-    if (find_note_event(i, value, false, event))
-      return -1;
-    if (find_note_event(i, value, true, event)) {
-      delete_note_event(i, event);
-      for (int j = step; j < m_length * m_steps; ++j) {
-	if (find_note_event(j, value, false, event)) {
-	  delete_note_event(j, event);
-	  break;
-	}
-      }
-      signal_note_removed(i, value);
-      return i;
-    }
+int Pattern::delete_note(MIDIEvent* note_on) {
+  if (note_on) {
+    MIDIEvent* off = note_on->get_assoc();
+    int on_step = note_on->get_step();
+    unsigned char value = note_on->get_note();
+    delete_note_event(note_on);
+    delete_note_event(off);
+    signal_note_removed(on_step, value);
+    return on_step;
   }
     
   return -1;
+}
+
+
+int Pattern::resize_note(MIDIEvent* note_on, int length) {
+  assert(note_on);
+  
+  unsigned int step = note_on->get_step();
+  
+  if (length < 1)
+    length = 1;
+  if (note_on->get_step() + length >= (unsigned int)(m_length * m_steps))
+    length = m_length * m_steps - note_on->get_step();
+  
+  // check that the note will not overlap with another note
+  for (unsigned int i = step + 1; i < step + length; ++i) {
+    MIDIEvent* event;
+    if (find_note_event(i, note_on->get_note(), true, event)) {
+      length = i - step;
+      break;
+    }
+  }
+  
+  // resize the note
+  if ((unsigned int)length != note_on->get_length()) {
+    MIDIEvent* new_off = new MIDIEvent(MIDIEvent::NoteOff, step + length - 1, 
+				       note_on->get_note(), 64, 0, note_on);
+    MIDIEvent* old_off = note_on->get_assoc();
+    add_note_event(new_off);
+    note_on->set_assoc(new_off);
+    note_on->set_length(length);
+    delete_note_event(old_off);
+    signal_note_changed(step, note_on->get_note(), length);
+  }
+  return length;
 }
 
 
@@ -181,8 +191,8 @@ int Pattern::delete_cc(int ccNumber, int step) {
 }
 
 
-const vector<MIDIEvent*>& Pattern::get_notes() const {
-  return m_notes;
+const Pattern::EventList& Pattern::get_notes() const {
+  return m_note_ons;
 }
 
 
@@ -243,9 +253,9 @@ bool Pattern::fill_xml_node(Element* elt) const {
   elt->set_attribute("steps", tmp_txt);
   sprintf(tmp_txt, "%d", get_cc_steps());
   elt->set_attribute("ccsteps", tmp_txt);
-  for (unsigned int i = 0; i < m_notes.size(); ++i) {
-    MIDIEvent* ne = m_notes[i];
-    if (ne && ne->get_type() == 1) {
+  for (unsigned int i = 0; i < m_note_ons.size(); ++i) {
+    MIDIEvent* ne = m_note_ons[i];
+    if (ne && ne->get_type() == MIDIEvent::NoteOn) {
       Element* note_elt = elt->add_child("note");
       sprintf(tmp_txt, "%d", ne->get_step());
       note_elt->set_attribute("step", tmp_txt);
@@ -291,7 +301,8 @@ bool Pattern::parse_xml_node(const Element* elt) {
 MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
 			       unsigned int before_beat, 
 			       unsigned int before_tick,
-			       unsigned int ticks_per_beat) const {
+			       unsigned int ticks_per_beat,
+			       unsigned int& list) const {
   
   // convert beats and ticks to pattern steps
   double beat_d = tick / double(ticks_per_beat);
@@ -300,21 +311,35 @@ MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick,
   unsigned int b_step = (unsigned int)ceil((before_beat + b_beat_d) * m_steps);
   unsigned int i = step;
   
-  // have we already returned events for this beat and tick?
-  if (m_already_returned && m_last_beat == beat && m_last_tick == tick) {
-    m_already_returned = false;
-    ++i;
-  }
-  
   for ( ; i < b_step && i < (unsigned long)(m_length * m_steps); ++i) {
-    if (m_notes[i] && m_notes[i]->get_type() == 1) {
-      beat = i / m_steps;
-      tick = (unsigned int)((i % m_steps) * ticks_per_beat / double(m_steps));
-      m_already_returned = true;
-      m_last_beat = beat;
-      m_last_tick = tick;
-      return m_notes[i];
+    
+    cerr<<"list = "<<list<<", i = "<<i<<endl;
+    
+    if (list == 0) {
+      list = 1;
+      if (m_note_ons[i]) {
+	beat = i / m_steps;
+	tick = (unsigned int)((i % m_steps) * ticks_per_beat / double(m_steps));
+	m_already_returned = true;
+	m_last_beat = beat;
+	m_last_tick = tick;
+	return m_note_ons[i];
+      }
     }
+    
+    if (list == 1) {
+      list = 2;
+      if (m_note_offs[i]) {
+	beat = i / m_steps;
+	tick = (unsigned int)((i % m_steps) * ticks_per_beat / double(m_steps));
+	m_already_returned = true;
+	m_last_beat = beat;
+	m_last_tick = tick;
+	return m_note_offs[i];
+      }
+    }
+    
+    list = 0;
   }
   
   beat = (i - 1) / m_steps;
@@ -329,11 +354,40 @@ MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick,
 }
 
 
+MIDIEvent* Pattern::find_note(int step, int value) {
+  MIDIEvent* event;
+  
+  for (int i = step; i >= 0; --i) {
+
+    if (i < step) {
+      event = m_note_offs[i];
+      while (event) {
+	if (event->get_note() == value)
+	  return NULL;
+	event = event->get_next();
+      }
+    }
+    
+    event = m_note_ons[i];
+    while (event) {
+      if (event->get_note() == value)
+	return event;
+      event = event->get_next();
+    }
+  }
+  
+  return NULL;
+}
+
+
 bool Pattern::find_note_event(int step, int value, bool note_on, 
 			      MIDIEvent*& event) {
-  event = m_notes[step];
+  if (note_on)
+    event = m_note_ons[step];
+  else
+    event = m_note_offs[step];
   while (event) {
-    if (event->get_note() == value && event->get_type() == 1)
+    if (event->get_note() == value && event->get_type() == MIDIEvent::NoteOn)
       return true;
     event = event->get_next();
   }
@@ -341,36 +395,36 @@ bool Pattern::find_note_event(int step, int value, bool note_on,
 }
 
 
-void Pattern::delete_note_event(int step, MIDIEvent* event) {
+void Pattern::delete_note_event(MIDIEvent* event) {
+  EventList* notes;
+  if (event->get_type() == MIDIEvent::NoteOn)
+    notes = &m_note_ons;
+  else
+    notes = &m_note_offs;
+  
+  unsigned int step = event->get_step();
   if (!event->get_previous())
-    m_notes[step] = event->get_next();
+    (*notes)[step] = event->get_next();
   else
     event->get_previous()->set_next(event->get_next());
+  if (event->get_next())
+    event->get_next()->set_previous(event->get_previous());
   queue_deletion(event);
 }
   
 
-void Pattern::add_note_event(int step, MIDIEvent* event) {
-  // note on events are added at the beginning of the list
-  if (event->get_type() == 1) {
-    event->set_previous(NULL);
-    event->set_next(m_notes[step]);
-    m_notes[step] = event;
-  }
+void Pattern::add_note_event(MIDIEvent* event) {
   
-  // note off events are added at the end of the list
-  else {
-    event->set_next(NULL);
-    if (!m_notes[step]) {
-      event->set_previous(NULL);
-      m_notes[step] = event;
-    }
-    else {
-      MIDIEvent* previous = m_notes[step];
-      while (previous->get_next())
-	previous = previous->get_next();
-      event->set_previous(previous);
-      previous->set_next(event);
-    }
-  }
+  EventList* notes;
+  if (event->get_type() == MIDIEvent::NoteOn)
+    notes = &m_note_ons;
+  else
+    notes = &m_note_offs;
+  
+  unsigned int step = event->get_step();
+  event->set_previous(NULL);
+  event->set_next((*notes)[step]);
+  if ((*notes)[step])
+    (*notes)[step]->set_previous(event);
+  (*notes)[step] = event;
 }

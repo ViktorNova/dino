@@ -296,7 +296,8 @@ bool Track::parse_xml_node(const Element* elt) {
 
 MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
 			     unsigned int before_beat, unsigned int before_tick,
-			     unsigned int ticks_per_beat) const {
+			     unsigned int ticks_per_beat,
+			     unsigned int& list) const {
   
   // if we have reached the end of the wanted period, return NULL so the
   // sequencer will stop looking for events in this track
@@ -312,7 +313,8 @@ MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick,
       beat -= se->start;
       MIDIEvent* event = se->pattern->get_events(beat, tick, 
 						 before_beat- se->start,
-						 before_tick, ticks_per_beat);
+						 before_tick, ticks_per_beat,
+						 list);
       beat += se->start;
       if (event)
 	return event;

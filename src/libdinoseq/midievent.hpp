@@ -31,9 +31,10 @@
 class MIDIEvent {
 public:
   
-  MIDIEvent(bool on, int stp, int val, int vel, int len, MIDIEvent* ass = NULL) 
-    : m_step(stp), m_length(len), m_assoc(ass) {
-    m_data[0] = (on ? 1 : 0);
+  MIDIEvent(unsigned char type, int stp, int val, 
+	    int vel, int len, MIDIEvent* ass = NULL) 
+    : m_step(stp), m_length(len), m_next(NULL), m_previous(NULL), m_assoc(ass) {
+    m_data[0] = type;
     m_data[1] = val;
     m_data[2] = vel;
   }

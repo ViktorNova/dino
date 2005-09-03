@@ -64,15 +64,29 @@ bool Sequencer::is_valid() const {
 }
 
 
-vector<Sequencer::InstrumentInfo> Sequencer::get_instruments() const {
+vector<Sequencer::InstrumentInfo> Sequencer::get_instruments(int track) const {
   vector<InstrumentInfo> instruments;
   if (m_jack_client) {
+    
+    // check if the given track is connected to a port
+    string connected_instrument;
+    if (track != -1) {
+      map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
+      assert(iter != m_output_ports.end());
+      const char** connected = jack_port_get_connections(iter->second);
+      if (connected && connected[0])
+	connected_instrument = connected[0];
+      free(connected);
+    }
+    
     const char** ports = jack_get_ports(m_jack_client, NULL, 
 					JACK_DEFAULT_MIDI_TYPE, 
 					JackPortIsInput);
     if (ports) {
       for (size_t i = 0; ports[i]; ++i) {
-	InstrumentInfo ii = { ports[i], 0, 0 };
+	InstrumentInfo ii = ports[i];
+	if (connected_instrument == ports[i])
+	  ii.connected = true;
 	instruments.push_back(ii);
       }
       free(ports);

@@ -137,7 +137,6 @@ void Dino::slot_edit_edit_track_properties() {
     Track* t(m_song.get_tracks()[m_active_track]);
     m_dlgtrack_ent_name->set_text(t->get_name());
     update_port_combo();
-    m_dlgtrack_cmb_port.set_active_id(-1);
     m_dlgtrack_sbn_channel->set_value(t->get_channel() + 1);
     m_dlg_track_properties->show_all();
     if (m_dlg_track_properties->run() == RESPONSE_OK) {
@@ -305,11 +304,15 @@ void Dino::update_editor_widgets() {
 void Dino::update_port_combo() {
   m_dlgtrack_cmb_port.clear();
   m_dlgtrack_cmb_port.append_text("None", -1);
-  vector<Sequencer::InstrumentInfo> instruments = m_seq.get_instruments();
-  for (size_t i = 0; i < instruments.size(); ++i)
-    m_dlgtrack_cmb_port.append_text(instruments[i].name, 
-				    instruments[i].client * 255 + 
-				    instruments[i].port);
+  vector<Sequencer::InstrumentInfo> instruments = 
+    m_seq.get_instruments(m_active_track);
+  int connected = -1;
+  for (size_t i = 0; i < instruments.size(); ++i) {
+    m_dlgtrack_cmb_port.append_text(instruments[i].name, i);
+    if (instruments[i].connected)
+      connected = i;
+  }
+  m_dlgtrack_cmb_port.set_active_id(connected);
 }
 
 

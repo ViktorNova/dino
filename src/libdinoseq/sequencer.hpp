@@ -18,9 +18,10 @@ public:
   
   /** This struct contains information about a writable MIDI port. */
   struct InstrumentInfo {
+    InstrumentInfo(const string& str) : name(str), connected(false) { }
+    InstrumentInfo(const char* str) : name(str), connected(false) { }
     string name;
-    int client;
-    int port;
+    bool connected;
   };
   
   /** This enum defines the different sync states the sequencer may be in.
@@ -51,7 +52,7 @@ public:
   void go_to_beat(double beat);
   
   bool is_valid() const;
-  vector<InstrumentInfo> get_instruments() const;
+  vector<InstrumentInfo> get_instruments(int track = -1) const;
   void set_instrument(int track, const string& instrument);
   void reset_ports();
   

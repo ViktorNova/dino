@@ -51,7 +51,6 @@ void Sequencer::go_to_beat(double beat) {
   if (m_valid) {
     double second = m_song.get_second(int(beat), 
 				      int((beat - int(beat)) * 10000));
-    //m_jack_client->set_timebase_enabled(false);
     jack_transport_locate(m_jack_client,
 			  int(second * jack_get_sample_rate(m_jack_client)));
   }

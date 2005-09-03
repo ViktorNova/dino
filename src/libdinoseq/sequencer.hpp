@@ -29,28 +29,43 @@ public:
     bool connected;
   };
   
+  /** This will create a new Sequencer object with the JACK client name 
+      @c client_name and the Song object @c song. */
   Sequencer(const string& client_name, Song& song);
   ~Sequencer();
   
   // transport functions
+  /** This starts the MIDI playback. */
   void play();
+  /** This stops the MIDI playback. */
   void stop();
+  /** This seeks to the given beat in the song. */
   void go_to_beat(double beat);
   
+  /** Returns @c true if this Sequencer object is valid. */
   bool is_valid() const;
+  /** This returns a vector of all instruments that are available for
+      the sequencer to play. */
   vector<InstrumentInfo> get_instruments(int track = -1) const;
+  /** This assigns the given instrument to the given track. */
   void set_instrument(int track, const string& instrument);
+  /** This creates new MIDI output ports for all tracks. */
   void reset_ports();
   
 private:
   
+  /** This initialises the internal JACK client object. */
   bool init_jack(const string& client_name);
   
   // JACK callbacks
+  /** This function is called whenever the JACK daemon wants to know the
+      beat and tick for a given frame position. */
   void jack_timebase_callback(jack_transport_state_t state, 
 			      jack_nframes_t nframes, jack_position_t* pos, 
 			      int new_pos);
+  /** This is called once for each JACK cycle. MIDI is sequenced from here. */
   int jack_process_callback(jack_nframes_t nframes);
+  /** This is called when the JACK daemon is being shut down. */
   void jack_shutdown_handler();
   
   // JACK callback wrappers
@@ -68,19 +83,22 @@ private:
     static_cast<Sequencer*>(arg)->jack_shutdown_handler();
   }
   
+  /** This function should be called when a new track has been added to the
+      song. */
   void track_added(int track);
+  /** This function should be called when a track has been removed from the
+      song. */
   void track_removed(int track);
   
-  /** @xmlonly _realtime_safe */
-  void sequencing_loop();
+  /** This function does the actual MIDI playback (i.e. it puts the MIDI
+      events on the JACK MIDI output buffers). */
   void sequence_midi(jack_transport_state_t state,
 		     const jack_position_t& pos, jack_nframes_t nframes);
+  /** This function adds a MIDI event to a JACK MIDI output buffer. It is
+      used by sequence_midi(). */
   bool add_event_to_buffer(MIDIEvent* event, void* port_buf,
 			   unsigned int beat, unsigned int tick,
 			   const jack_position_t& pos, jack_nframes_t nframes);
-  //void play_midi();
-  //void schedule_note(int beat, int tick, int port, int channel, 
-  //		     int value, int velocity, int length);
   
   string m_client_name;
   /** No one is allowed to read or write anything in this variable without
@@ -90,7 +108,6 @@ private:
   /** This is @c true if JACK and ALSA has been initialised succesfully. */
   bool m_valid;
   
-  //Thread* m_seq_thread;
   jack_client_t* m_jack_client;
   map<int, jack_port_t*> m_output_ports;
   jack_port_t* m_input_port;

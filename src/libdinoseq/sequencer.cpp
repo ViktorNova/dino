@@ -64,20 +64,46 @@ bool Sequencer::is_valid() const {
 }
 
 
-Sequencer::InstrumentInfo Sequencer::get_first_instrument() {
-  InstrumentInfo info = { "", -1, -1 };
-  return info;
+vector<Sequencer::InstrumentInfo> Sequencer::get_instruments() const {
+  vector<InstrumentInfo> instruments;
+  if (m_jack_client) {
+    const char** ports = jack_get_ports(m_jack_client, NULL, 
+					JACK_DEFAULT_MIDI_TYPE, 
+					JackPortIsInput);
+    if (ports) {
+      for (size_t i = 0; ports[i]; ++i) {
+	InstrumentInfo ii = { ports[i], 0, 0 };
+	instruments.push_back(ii);
+      }
+      free(ports);
+    }
+  }
+  return instruments;
 }
  
 
-Sequencer::InstrumentInfo Sequencer::get_next_instrument() {
-  InstrumentInfo info = { "", -1, -1 };
-  return info;
-}
+void Sequencer::set_instrument(int track, const string& instrument) {
+  if (m_jack_client) {
+    
+    map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
+    if (iter == m_output_ports.end()) {
+      cerr<<"Trying to connect nonexistant output port "<<track
+	  <<" to instrument "<<instrument<<endl;
+      return;
+    }
 
-
-void Sequencer::set_instrument(int track, int client, int port) {
-
+    // remove old connections from this port
+    const char** ports = jack_port_get_connections(iter->second);
+    if (ports) {
+      for (size_t i = 0; ports[i]; ++i)
+	jack_disconnect(m_jack_client, jack_port_name(iter->second), ports[i]);
+      free(ports);
+    }
+    
+    // connect the new instrument
+    jack_connect(m_jack_client, 
+		 jack_port_name(iter->second), instrument.c_str());
+  }
 }
 
 

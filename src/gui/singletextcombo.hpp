@@ -1,11 +1,13 @@
 #ifndef SINGLETEXTCOMBO_HPP
 #define SINGLETEXTCOMBO_HPP
 
-#include <gtkmm.h>
+#include <string>
 
+#include <gtkmm.h>
 
 using namespace Glib;
 using namespace Gtk;
+using namespace std;
 
 
 /** This class is needed because @c ComboBoxText in gtkmm does not provide a
@@ -30,6 +32,8 @@ public:
   /** Set the active entry to the one with ID number @c id. If there is no
       such entry, return @c false. */
   bool set_active_id(int id);
+  /** Returns the text for the active entry. */
+  string get_active_text() const;
   
   /** Remove all entries. */
   void clear();

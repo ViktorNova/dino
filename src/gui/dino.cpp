@@ -114,9 +114,9 @@ void Dino::slot_edit_add_track() {
       set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
     int instrument = m_dlgtrack_cmb_port.get_active_id();
     if (instrument == -1)
-      m_seq.set_instrument(id, -1, -1);
+      m_seq.set_instrument(id, "None");
     else
-      m_seq.set_instrument(id, instrument / 255, instrument % 255);
+      m_seq.set_instrument(id, m_dlgtrack_cmb_port.get_active_text());
     set_active_track(id);
   }
   m_dlg_track_properties->hide();
@@ -145,10 +145,10 @@ void Dino::slot_edit_edit_track_properties() {
       t->set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
       int instrument = m_dlgtrack_cmb_port.get_active_id();
       if (instrument == -1)
-	m_seq.set_instrument(m_active_track, -1, -1);
+	m_seq.set_instrument(m_active_track, "None");
       else
-	m_seq.set_instrument(m_active_track, instrument / 255, 
-			     instrument % 255);
+	m_seq.set_instrument(m_active_track, 
+			     m_dlgtrack_cmb_port.get_active_text());
     }
   }
   m_dlg_track_properties->hide();
@@ -305,9 +305,11 @@ void Dino::update_editor_widgets() {
 void Dino::update_port_combo() {
   m_dlgtrack_cmb_port.clear();
   m_dlgtrack_cmb_port.append_text("None", -1);
-  Sequencer::InstrumentInfo i = m_seq.get_first_instrument();
-  for ( ; i.client >= 0; i = m_seq.get_next_instrument())
-    m_dlgtrack_cmb_port.append_text(i.name, i.client * 255 + i.port);
+  vector<Sequencer::InstrumentInfo> instruments = m_seq.get_instruments();
+  for (size_t i = 0; i < instruments.size(); ++i)
+    m_dlgtrack_cmb_port.append_text(instruments[i].name, 
+				    instruments[i].client * 255 + 
+				    instruments[i].port);
 }
 
 

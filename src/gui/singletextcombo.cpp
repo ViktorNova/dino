@@ -61,3 +61,14 @@ bool SingleTextCombo::set_active_id(int ID) {
   unset_active();
   return false;
 }
+
+
+string SingleTextCombo::get_active_text() const {
+  TreeModel::iterator activeRow = get_active();
+  ustring str;
+  if(activeRow) {
+    TreeModel::Row row = *activeRow;
+    str = row[m_text_columns.m_text];
+  }
+  return str;
+}

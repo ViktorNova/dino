@@ -51,9 +51,8 @@ public:
   void go_to_beat(double beat);
   
   bool is_valid() const;
-  InstrumentInfo get_first_instrument();
-  InstrumentInfo get_next_instrument();
-  void set_instrument(int track, int client, int port);
+  vector<InstrumentInfo> get_instruments() const;
+  void set_instrument(int track, const string& instrument);
   void reset_ports();
   
 private:

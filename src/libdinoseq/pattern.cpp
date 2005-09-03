@@ -95,10 +95,10 @@ void Pattern::add_note(int step, int value, int noteLength) {
   
   // add the note events
   note_off = 
-    new MIDIEvent(MIDIEvent::NoteOff, step + newLength - 1, value, 0, 0);
+    new MIDIEvent(MIDIEvent::NoteOff, step + newLength - 1, value, 64, 0);
   add_note_event(note_off);
   note_on = 
-    new MIDIEvent(MIDIEvent::NoteOn, step, value, 0, newLength, note_off);
+    new MIDIEvent(MIDIEvent::NoteOn, step, value, 64, newLength, note_off);
   note_off->set_assoc(note_on);
   add_note_event(note_on);
   

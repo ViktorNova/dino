@@ -13,6 +13,11 @@ using namespace std;
 class Song;
 
 
+/** This class sequences a Song to a string of MIDI events that are
+    sent to JACK MIDI ports. It has functions for starting and stopping
+    playback, changing the song position, and also for checking which
+    instruments are available and for connecting a Track in the Song
+    to one of those instruments. */
 class Sequencer {
 public:
   
@@ -23,25 +28,6 @@ public:
     string name;
     bool connected;
   };
-  
-  /** This enum defines the different sync states the sequencer may be in.
-      When the sequencer has been created and the JACK sync callback hasn't
-      been called yet, it will be @c Waiting. When the sync callback is called
-      it will change the value to @c Syncing, and next time the SEQ thread
-      wakes up it will do the sync and change the value to @c SyncDone.
-      When the JACK sync callback runs next time it will see this, change the
-      value to @c InSync, and tell JACK that we're ready to go. */
-  enum SyncState {
-    /** The initial value - we haven't heard anything from JACK yet */
-    Waiting,
-    /** Set by the JACK thread when it's time to sync */
-    Syncing,
-    /** Set by the SEQ thread when the sync is done */
-    SyncDone,
-    /** Set by the JACK thread to acknowledge that the sync is done */
-    InSync
-  };
-
   
   Sequencer(const string& client_name, Song& song);
   ~Sequencer();
@@ -61,7 +47,6 @@ private:
   bool init_jack(const string& client_name);
   
   // JACK callbacks
-  int jack_sync_callback(jack_transport_state_t state, jack_position_t* pos);
   void jack_timebase_callback(jack_transport_state_t state, 
 			      jack_nframes_t nframes, jack_position_t* pos, 
 			      int new_pos);
@@ -69,10 +54,6 @@ private:
   void jack_shutdown_handler();
   
   // JACK callback wrappers
-  static int jack_sync_callback_(jack_transport_state_t state, 
-				 jack_position_t* pos, void* arg) {
-    return static_cast<Sequencer*>(arg)->jack_sync_callback(state, pos);
-  }
   static void jack_timebase_callback_(jack_transport_state_t state,
 				      jack_nframes_t nframes,
 				      jack_position_t* pos, int new_pos,
@@ -111,7 +92,6 @@ private:
   
   //Thread* m_seq_thread;
   jack_client_t* m_jack_client;
-  SyncState m_sync_state;
   map<int, jack_port_t*> m_output_ports;
   jack_port_t* m_input_port;
 };

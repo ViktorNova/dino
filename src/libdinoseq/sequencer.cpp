@@ -10,8 +10,7 @@ extern "C" {
 
 
 Sequencer::Sequencer(const string& client_name, Song& song) 
-  : m_client_name(client_name), m_song(song), m_valid(false), 
-    m_sync_state(Waiting) {
+  : m_client_name(client_name), m_song(song), m_valid(false) {
   
   if (!init_jack(m_client_name)) {
     cerr<<"Could not initialise JACK!"<<endl;
@@ -134,10 +133,6 @@ bool Sequencer::init_jack(const string& client_name) {
   if (!m_jack_client)
     return false;
   int err;
-  if ((err = jack_set_sync_callback(m_jack_client, 
-				    &Sequencer::jack_sync_callback_,
-				    this)) != 0)
-    return false;
   if ((err = jack_set_timebase_callback(m_jack_client, 1, 
 					&Sequencer::jack_timebase_callback_,
 					this)) != 0)
@@ -182,12 +177,6 @@ void Sequencer::track_removed(int track) {
     jack_port_unregister(m_jack_client, m_output_ports[track]);
     m_output_ports.erase(track);
   }
-}
-
-
-int Sequencer::jack_sync_callback(jack_transport_state_t state, 
-				   jack_position_t* pos) {
-  return 1;
 }
 
 

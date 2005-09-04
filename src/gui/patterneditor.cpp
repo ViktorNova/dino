@@ -81,7 +81,6 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
     // button 3 deletes
     else if (event->button == 3) {
-      Mutex::Lock(m_song.get_big_lock());
       MIDIEvent* note_on = 
 	m_pat->find_note(int(event->x) / m_col_width, 
 			 m_max_note - int(event->y) / m_row_height - 1);
@@ -141,7 +140,6 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       return true;
     if (step >= 0 && step < m_pat->get_length() * m_pat->get_steps() &&
 	note >= 0 && note < m_max_note) {
-      Mutex::Lock(m_song.get_big_lock());
       m_pat->delete_note(m_pat->find_note(step, note));
       m_drag_step = step;
       m_drag_note = note;

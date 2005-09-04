@@ -108,7 +108,6 @@ void Dino::slot_edit_add_track() {
   m_dlgtrack_cmb_port.set_active_id(-1);
   m_dlg_track_properties->show_all();
   if (m_dlg_track_properties->run() == RESPONSE_OK) {
-    Mutex::Lock(m_song.get_big_lock());
     int id = m_song.add_track(m_dlgtrack_ent_name->get_text());
     m_song.get_tracks()[id]->
       set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
@@ -125,7 +124,6 @@ void Dino::slot_edit_add_track() {
 
 void Dino::slot_edit_delete_track() {
   if (m_active_track >= 0) {
-    Mutex::Lock(m_song.get_big_lock());
     m_song.remove_track(m_active_track);
   }
 }
@@ -133,7 +131,6 @@ void Dino::slot_edit_delete_track() {
 
 void Dino::slot_edit_edit_track_properties() {
   if (m_active_track >= 0) {
-    Mutex::Lock(m_song.get_big_lock());
     Track* t(m_song.get_tracks()[m_active_track]);
     m_dlgtrack_ent_name->set_text(t->get_name());
     update_port_combo();
@@ -162,8 +159,6 @@ void Dino::slot_edit_add_pattern() {
     m_dlgpat_sbn_cc_steps->set_value(1);
     m_dlg_pattern_properties->show_all();
     if (m_dlg_pattern_properties->run() == RESPONSE_OK) {
-      Mutex::Lock(m_song.get_big_lock());
-      
       m_song.get_tracks().find(m_active_track)->
 	second->add_pattern(m_dlgpat_ent_name->get_text(),
 			    m_dlgpat_sbn_length->get_value_as_int(),

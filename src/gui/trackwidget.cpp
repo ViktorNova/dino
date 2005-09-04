@@ -142,7 +142,6 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 3:
-    Mutex::Lock(m_song->get_big_lock());
     m_track->remove_sequence_entry(beat);
     update();
     return true;

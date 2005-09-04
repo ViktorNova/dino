@@ -73,7 +73,6 @@ bool TempoWidget::on_expose_event(GdkEventExpose* event) {
   Pango::FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
   char tmp[10];
-  Mutex::Lock lock(m_song->get_big_lock());
   const Song::TempoChange* tempo = m_song->get_tempo_changes();
   for ( ; tempo; tempo = tempo->next) {
     if (tempo == m_active_tempo)
@@ -135,7 +134,6 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 2: {
-    Mutex::Lock lock(m_song->get_big_lock());
     Song::TempoChange* tempo = m_song->get_tempo_changes();
     for ( ; tempo; tempo = tempo->next) {
       if (tempo->time == beat)
@@ -145,7 +143,6 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     if (m_active_tempo) {
       m_drag_start_y = int(event->y);
       m_editing_bpm = int(m_active_tempo->bpm);
-      lock.release();
       update();
     }
     return true;

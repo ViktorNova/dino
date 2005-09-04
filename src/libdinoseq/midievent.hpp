@@ -28,6 +28,10 @@
 #endif
 
 
+/** This class represents a MIDI events in a Pattern. It contains
+    information about the type of event and the data assiciated
+    with the event, as well as where in the Pattern the event appears
+    and other related information. */
 class MIDIEvent {
 public:
   

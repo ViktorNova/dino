@@ -2,12 +2,20 @@
 #define RINGBUFFER_HPP
 
 
+/** This template class is an implementation of a ringbuffer (or rather
+    a circular queue). It can be used to send objects between threads
+    in a realtime safe way. */
 template <class T> class Ringbuffer {
 public:
+  
+  /** This creates a new Ringbuffer object with room for @c size objects. */
   Ringbuffer(int size);
   ~Ringbuffer();
   
+  /** This pushes another object onto the queue. */
   bool push(const T& atom);
+  /** This removes the last object from the queue and copies it to 
+      @c atom. */
   bool pop(T& atom);
   
 protected:

@@ -111,11 +111,6 @@ int Song::get_length() const {
 }
 
 
-Mutex& Song::get_big_lock() const {
-  return m_big_lock;
-}
-
-
 Song::TempoChange* Song::get_tempo_changes() {
   return m_tempo_head;
 }
@@ -129,29 +124,6 @@ double Song::get_current_tempo(int beat, int tick) {
     cerr<<m_current_tempo->time<<" <= "<<(beat + tick / 10000.0)<<endl;
   }
   return m_current_tempo->bpm;
-}
-
-
-void Song::locate(double second, int& beat, int& tick) {
-  double seconds_left = second;
-  m_current_tempo = m_tempo_head;
-  while (m_current_tempo->next && 
-	 (m_current_tempo->next->time - m_current_tempo->time) * 
-	 60 / m_current_tempo->bpm <= seconds_left) {
-    seconds_left -= (m_current_tempo->next->time - m_current_tempo->time) *
-      60 / m_current_tempo->bpm;
-    m_current_tempo = m_current_tempo->next;
-  }
-  double dbeat = m_current_tempo->time + 
-    seconds_left * m_current_tempo->bpm / 60;
-  beat = int(dbeat);
-  tick = int((dbeat - int(dbeat)) * 10000);
-  {
-    Mutex::Lock lock(get_big_lock());
-    map<int, Track*>::const_iterator iter = get_tracks().begin();
-  }
-  
-  cerr<<"second "<<second<<" -> beat "<<beat<<", tick "<<tick<<endl;
 }
 
 

@@ -16,9 +16,12 @@ using namespace sigc;
 using namespace std;
 
 
+/** This class contains information about tracks and tempo changes in 
+    a song, and some metadata like title, author, and comments. */
 class Song {
 public:
   
+  /** This struct contains information about a tempo change in the song. */
   struct TempoChange {
     TempoChange(double new_time, double new_bpm) 
       : time(new_time), bpm(new_bpm), prev(NULL), next(NULL) { }
@@ -37,7 +40,6 @@ public:
   const map<int, Track*>& get_tracks() const;
   map<int, Track*>& get_tracks();
   int get_length() const;
-  Mutex& get_big_lock() const;
   TempoChange* get_tempo_changes();
   
   // mutators
@@ -51,7 +53,7 @@ public:
   void get_timebase_info(unsigned long frame, unsigned long framerate,
 			 double& bpm, int32_t& beat, int32_t& tick) const;
   double get_current_tempo(int beat, int tick);
-  void locate(double second, int& beat, int& tick);
+  //void locate(double second, int& beat, int& tick);
   double get_second(int beat, int tick);
   unsigned long bt2frame(int beat, int tick);
   pair<int, int> frame2bt(unsigned long frame);
@@ -86,8 +88,6 @@ private:
   mutable const TempoChange* m_current_tempo;
   
   TempoMap m_tempo_map;
-  
-  mutable Mutex m_big_lock;
   
   mutable bool m_dirty;
 };

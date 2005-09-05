@@ -55,7 +55,6 @@ int main(int argc, char** argv) {
   // load the GUI
   Main kit(argc, argv);
   RefPtr<Xml> refXml = Xml::create("dino.glade");
-  thread_init(); 
   Dino dino(argc, argv, refXml);
   
   // run

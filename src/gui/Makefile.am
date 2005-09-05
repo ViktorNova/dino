@@ -1,4 +1,4 @@
-AM_CPPFLAGS = @LIBGLADEMM_CFLAGS@ @GTHREAD_CFLAGS@ @LIBXMLPP_CFLAGS@ @JACK_CFLAGS@ @LADCCA_CFLAGS@ @DEBUG_CFLAGS@ -I../libdinoseq
+AM_CPPFLAGS = @LIBGLADEMM_CFLAGS@ @LIBXMLPP_CFLAGS@ @JACK_CFLAGS@ @LADCCA_CFLAGS@ @DEBUG_CFLAGS@ -I../libdinoseq
 
 bin_PROGRAMS = dino
 
@@ -16,4 +16,4 @@ dino_SOURCES = \
 	trackwidget.cpp trackwidget.hpp \
 	evilscrolledwindow.hpp
 
-dino_LDADD = @LIBGLADEMM_LIBS@ @GTHREAD_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LADCCA_LIBS@ ../libdinoseq/libdinoseq.la
+dino_LDADD = @LIBGLADEMM_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LADCCA_LIBS@ ../libdinoseq/libdinoseq.la

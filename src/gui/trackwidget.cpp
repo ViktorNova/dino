@@ -132,7 +132,7 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
     
   case 2: {
     const Track::SequenceEntry* se;
-    if (se = m_track->get_seq_entry(beat)) {
+    if ((se = m_track->get_seq_entry(beat))) {
       m_drag_beat = se->start;
       m_drag_pattern = se->pattern_id;
       m_track->set_seq_entry_length(beat, beat - se->start);

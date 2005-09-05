@@ -557,7 +557,7 @@ bool Dino::init_lash(int argc, char** argv) {
 
 bool Dino::slot_check_ladcca_events() {
   cca_event_t* event;
-  while (event = cca_get_event(m_lash_client)) {
+  while ((event = cca_get_event(m_lash_client))) {
     
     // save
     if (cca_event_get_type(event) == CCA_Save_File) {

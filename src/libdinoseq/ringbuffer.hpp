@@ -29,7 +29,7 @@ protected:
 };
 
 
-template <class T> Ringbuffer<T>::Ringbuffer<T>(int size) {
+template <class T> Ringbuffer<T>::Ringbuffer(int size) {
   m_data = new T[size];
   m_read_pos = 0;
   m_write_pos = 0;

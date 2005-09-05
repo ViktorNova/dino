@@ -26,20 +26,24 @@
 #include <sys/types.h>
 
 
+/** This class maps frame numbers to beats and ticks, and beats and ticks
+    to frame numbers. It has functions for removing and adding tempo 
+    changes on whole beats. */
 class TempoMap {
 public:
   
+  TempoMap(unsigned long frame_rate = 48000); 
+
   void add_tempo_change(unsigned long beat, unsigned int bpm);
   void remove_tempo_change(unsigned long beat);
   
-  void get_bbt(unsigned long frame, unsigned long framerate,
+  void get_bbt(unsigned long frame, unsigned long ticks_per_beat,
 	       double& bpm, int32_t& beat, int32_t& tick) const;
   unsigned long get_frame(int32_t beat, int32_t tick,
-			  unsigned long framerate) const;
-  
+			  unsigned long ticks_per_beat) const;
   
 protected:
-
+  
 };
 
 

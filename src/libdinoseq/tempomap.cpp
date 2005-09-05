@@ -22,10 +22,27 @@
 
 #include <iostream>
 
+#include "cdtree.hpp"
 #include "tempomap.hpp"
 
 
 using namespace std;
+
+
+TempoMap::TempoMap(unsigned long frame_rate) {
+  
+  CDTree<int> cdtree(100000000);
+  
+  cerr<<"[";
+  for (int i = 0; i < 20; ++i)
+    cerr<<" "<<cdtree.get(i);
+  cerr<<" ]"<<endl;
+  
+  cdtree.fill(4, 5);
+  
+  cerr<<cdtree.get(9457982)<<" "<<cdtree.get(218347)<<endl;
+
+}
 
 
 void TempoMap::add_tempo_change(unsigned long beat, unsigned int bpm) {
@@ -38,17 +55,17 @@ void TempoMap::remove_tempo_change(unsigned long beat) {
 }
 
 
-void TempoMap::get_bbt(unsigned long frame, unsigned long framerate,
+void TempoMap::get_bbt(unsigned long frame, unsigned long ticks_per_beat,
 		       double& bpm, int32_t& beat, int32_t& tick) const {
   bpm = 100.0;
-  double beat_d = bpm * double(frame) / (60.0 * framerate);
+  double beat_d = bpm * double(frame) / (60.0 * ticks_per_beat);
   beat = int32_t(beat_d);
   tick = int32_t((beat_d - int(beat_d)) * 10000);
 }
  
 
 unsigned long TempoMap::get_frame(int32_t beat, int32_t tick,
-				  unsigned long framerate) const {
-  return (unsigned long)(beat * 60 * framerate / 100.0);
+				  unsigned long ticks_per_beat) const {
+  return (unsigned long)(beat * 60 * ticks_per_beat / 100.0);
 }
 

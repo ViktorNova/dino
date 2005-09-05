@@ -31,17 +31,6 @@ using namespace std;
 
 TempoMap::TempoMap(unsigned long frame_rate) {
   
-  CDTree<int> cdtree(100000000);
-  
-  cerr<<"[";
-  for (int i = 0; i < 20; ++i)
-    cerr<<" "<<cdtree.get(i);
-  cerr<<" ]"<<endl;
-  
-  cdtree.fill(4, 5);
-  
-  cerr<<cdtree.get(9457982)<<" "<<cdtree.get(218347)<<endl;
-
 }
 
 

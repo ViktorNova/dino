@@ -25,11 +25,13 @@ public:
 private:
   
   bool is_prunable(const T& data) const;
+  void delete_data();
+  void delete_children();
   
   unsigned int m_depth;
   unsigned int m_size;
   unsigned int m_segmentsize;
-  CDTreeNode<T>* m_children;
+  CDTreeNode<T>** m_children;
   T* m_data;
 };
 
@@ -39,7 +41,7 @@ unsigned int CDTreeNode<T>::count_nodes() const {
   unsigned int result = 1;
   if (m_children) {
     for (unsigned int i = 0; i < m_size; ++i)
-      result += m_children[i].count_nodes();
+      result += m_children[i]->count_nodes();
   }
   return result;
 }
@@ -51,7 +53,7 @@ CDTreeNode<T>::CDTreeNode(unsigned int children, unsigned int depth)
     m_size(children), 
     m_segmentsize(int(pow(float(children), int(depth - 1)))),
     m_children(NULL),
-    m_data(new T) {
+    m_data(new T()) {
   
 }
 
@@ -59,9 +61,9 @@ CDTreeNode<T>::CDTreeNode(unsigned int children, unsigned int depth)
 template <class T>
 CDTreeNode<T>::~CDTreeNode() {
   if (m_data)
-    delete m_data;
+    delete_data();
   if (m_children)
-    delete [] m_children;
+    delete_children();
 }
 
 
@@ -79,27 +81,23 @@ bool CDTreeNode<T>::set(unsigned int i, const T& data) {
   if (m_data) {
     if (data == *m_data)
       return true;
-    delete m_data;
-    m_data = NULL;
-    m_children = new CDTreeNode<T>[m_size];
+    delete_data();
+    m_children = new CDTreeNode<T>*[m_size];
     for (unsigned int i = 0; i < m_size; ++i)
-      m_children[i] = CDTreeNode<T>(m_size, m_depth - 1);
+      m_children[i] = new CDTreeNode<T>(m_size, m_depth - 1);
   }
   
   // set the data value, check if we can prune the tree
-  //m_children[i / m_segmentsize].set(i % m_segmentsize, data);
-  if (m_children[i / m_segmentsize].set(i % m_segmentsize, data)) {
+  if (m_children[i / m_segmentsize]->set(i % m_segmentsize, data)) {
     bool prunable = true;
     for (unsigned int j = 0; j < m_size && prunable; ++j) {
       if (j != i / m_segmentsize) {
-	if (!(prunable = m_children[j].is_prunable(data)))
+	if (!(prunable = m_children[j]->is_prunable(data)))
 	  return false;
       }
     }
-    m_data = new T;
-    *m_data = data;
-    delete [] m_children;
-    m_children = NULL;
+    m_data = new T(data);
+    delete_children();
     return true;
   }
 
@@ -112,12 +110,14 @@ const T& CDTreeNode<T>::get(unsigned int i) const {
   assert(m_data || m_children);
   if (m_data)
     return *m_data;
-  return m_children[i / m_segmentsize].get(i % m_segmentsize);
+  return m_children[i / m_segmentsize]->get(i % m_segmentsize);
 }
 
 
 template <class T>
 bool CDTreeNode<T>::fill_start(unsigned int i, const T& data, T& old_data) {
+  
+  // if we're at a leaf, just check against the data
   if (m_depth == 0) {
     if (*m_data == data)
       return false;
@@ -126,23 +126,25 @@ bool CDTreeNode<T>::fill_start(unsigned int i, const T& data, T& old_data) {
     return true;
   }
   
+  // if we're at a pruned subtree, add children
   if (m_data) {
+    // unless we already have that data here
     if (*m_data == data) {
       old_data = *m_data;
       return true;
     }
-    delete m_data;
-    m_data = NULL;
-    m_children = new CDTreeNode<T>[m_size];
+    delete_data();
+    m_children = new CDTreeNode<T>*[m_size];
     for (unsigned int i = 0; i < m_size; ++i)
-      m_children[i] = CDTreeNode<T>(m_size, m_depth - 1);
+      m_children[i] = new CDTreeNode<T>(m_size, m_depth - 1);
   }
   
+  // if there are children, start filling at the right one and keep going
   unsigned int j = i / m_segmentsize;
-  bool not_done = m_children[j].fill_start(i % m_segmentsize, 
-					   data, old_data);
+  bool not_done = m_children[j]->fill_start(i % m_segmentsize, 
+					    data, old_data);
   for (++j; j < m_size && not_done; ++j) {
-    not_done = m_children[j].fill(data, old_data);
+    not_done = m_children[j]->fill(data, old_data);
   }
   
   return not_done;
@@ -151,6 +153,8 @@ bool CDTreeNode<T>::fill_start(unsigned int i, const T& data, T& old_data) {
 
 template <class T>
 bool CDTreeNode<T>::fill(const T&data, const T& old_data) {
+  
+  // if we're at a leaf, just check against the data
   if (m_depth == 0) {
     if (*m_data == old_data) {
       *m_data = data;
@@ -160,21 +164,19 @@ bool CDTreeNode<T>::fill(const T&data, const T& old_data) {
       return false;
   }
   
+  // if we're at a pruned subtree, just check against the data
   if (m_data) {
     if (*m_data == old_data) {
       *m_data = data;
       return true;
     }
-    delete m_data;
-    m_data = NULL;
-    m_children = new CDTreeNode<T>[m_size];
-    for (unsigned int i = 0; i < m_size; ++i)
-      m_children[i] = CDTreeNode<T>(m_size, m_depth - 1);
+    return false;
   }
   
+  // otherwise there must be children, check all of them until we're done
   bool not_done = true;
   for (unsigned int j = 0; j < m_size && not_done; ++j) {
-    not_done = m_children[j].fill(data, old_data);
+    not_done = m_children[j]->fill(data, old_data);
   }
   
   return not_done;
@@ -183,18 +185,41 @@ bool CDTreeNode<T>::fill(const T&data, const T& old_data) {
 
 template <class T>
 bool CDTreeNode<T>::is_prunable(const T& data) const {
+  
+  // if we're at a leaf or pruned subtree, just check the data
   if (m_data) {
     if (*m_data == data)
       return true;
     return false;
   }
   
+  // otherwise check recursively
   for (unsigned int i = 0; i < m_size; ++i) {
-    if (!m_children[i].is_prunable(data))
+    if (!m_children[i]->is_prunable(data))
       return false;
   }
+  
   return true;
 }
+
+
+template <class T>
+void CDTreeNode<T>::delete_data() {
+  delete m_data;
+  m_data = NULL;
+}
+
+
+template <class T>
+void CDTreeNode<T>::delete_children() {
+  if (m_children) {
+    for (unsigned int i = 0; i < m_size; ++i)
+      delete m_children[i];
+    delete [] m_children;
+    m_children = NULL;
+  }
+}
+
 
 
 /** This is a data structure that has constant time random read access to
@@ -244,7 +269,6 @@ CDTree<T>::CDTree(unsigned long size,
 
 template <class T>
 void CDTree<T>::set(unsigned int i, const T& data) {
-  T tmp;
   m_children[i / m_segmentsize].set(i % m_segmentsize, data);
 }
 

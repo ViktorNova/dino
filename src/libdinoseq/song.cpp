@@ -111,8 +111,8 @@ int Song::get_length() const {
 }
 
 
-Song::TempoChange* Song::get_tempo_changes() {
-  return m_tempo_head;
+const TempoMap::TempoChange* Song::get_tempo_changes() const {
+  return m_tempo_map.get_changes(0);
 }
 
 

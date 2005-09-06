@@ -37,7 +37,7 @@ private:
   int m_drag_beat;
   int m_drag_start_y;
   int m_editing_bpm;
-  Song::TempoChange* m_active_tempo;
+  const TempoMap::TempoChange* m_active_tempo;
 };
 
 

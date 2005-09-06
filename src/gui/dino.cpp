@@ -5,8 +5,6 @@
 #include <sstream>
 #include <utility>
 
-#include <ladcca/ladcca.h>
-
 #include "deleter.hpp"
 #include "dino.hpp"
 #include "evilscrolledwindow.hpp"
@@ -545,8 +543,8 @@ void Dino::init_info_editor() {
 
 
 bool Dino::init_lash(int argc, char** argv) {
-  m_lash_client = cca_init(cca_extract_args(&argc, &argv), PACKAGE_NAME, 
-			   CCA_Config_File, CCA_PROTOCOL(2, 0));
+  m_lash_client = lash_init(lash_extract_args(&argc, &argv), PACKAGE_NAME, 
+			    LASH_Config_File, LASH_PROTOCOL(2, 0));
   if (m_lash_client) {
     signal_timeout().
       connect(mem_fun(*this, &Dino::slot_check_ladcca_events), 500);
@@ -556,30 +554,32 @@ bool Dino::init_lash(int argc, char** argv) {
 
 
 bool Dino::slot_check_ladcca_events() {
-  cca_event_t* event;
-  while ((event = cca_get_event(m_lash_client))) {
+  lash_event_t* event;
+  while ((event = lash_get_event(m_lash_client))) {
     
     // save
-    if (cca_event_get_type(event) == CCA_Save_File) {
-      if (m_song.write_file(string(cca_event_get_string(event)) + "/song")) {
-	cca_send_event(m_lash_client, cca_event_new_with_type(CCA_Save_File));
+    if (lash_event_get_type(event) == LASH_Save_File) {
+      if (m_song.write_file(string(lash_event_get_string(event)) + "/song")) {
+	lash_send_event(m_lash_client, 
+			lash_event_new_with_type(LASH_Save_File));
       }
     }
     
     // restore
-    else if (cca_event_get_type(event) == CCA_Restore_File) {
-      if (m_song.load_file(string(cca_event_get_string(event)) + "/song")) {
+    else if (lash_event_get_type(event) == LASH_Restore_File) {
+      if (m_song.load_file(string(lash_event_get_string(event)) + "/song")) {
 	reset_gui();
-	cca_send_event(m_lash_client,cca_event_new_with_type(CCA_Restore_File));
+	lash_send_event(m_lash_client,
+			lash_event_new_with_type(LASH_Restore_File));
       }
     }
     
     // quit
-    else if (cca_event_get_type(event) == CCA_Quit) {
+    else if (lash_event_get_type(event) == LASH_Quit) {
       Main::instance()->quit();
     }
     
-    cca_event_destroy(event);
+    lash_event_destroy(event);
   }
   return true;
 }

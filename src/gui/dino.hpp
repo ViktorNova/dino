@@ -3,7 +3,7 @@
 
 #include <gtkmm.h>
 #include <libglademm.h>
-#include <ladcca/ladcca.h>
+#include <lash/lash.h>
 
 #include "cceditor.hpp"
 #include "octavelabel.hpp"
@@ -130,7 +130,7 @@ private:
   
   Sequencer m_seq;
   
-  cca_client_t* m_lash_client;
+  lash_client_t* m_lash_client;
 };
 
 

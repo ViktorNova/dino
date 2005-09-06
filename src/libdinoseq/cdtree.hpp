@@ -24,6 +24,9 @@ public:
   
 private:
   
+  CDTreeNode(const CDTreeNode&) { assert(0); }
+  CDTreeNode& operator=(const CDTreeNode&) { assert(0); return *this; }
+  
   bool is_prunable(const T& data) const;
   void delete_data();
   void delete_children();
@@ -249,7 +252,7 @@ private:
   
   unsigned long m_size;
   unsigned int m_segmentsize;
-  CDTreeNode<T>* m_children;
+  CDTreeNode<T>** m_children;
 };
 
 
@@ -258,25 +261,25 @@ CDTree<T>::CDTree(unsigned long size,
 		  unsigned int children, unsigned int depth)
   : m_size(size), 
     m_segmentsize(int(pow(float(children), int(depth - 1)))),
-    m_children(new CDTreeNode<T>[m_size / m_segmentsize + 1]) {
+    m_children(new CDTreeNode<T>*[m_size / m_segmentsize + 1]) {
   
   assert(depth != 0);
   
   for (unsigned int i = 0; i < m_size / m_segmentsize + 1; ++i)
-    m_children[i] = CDTreeNode<T>(children, depth - 1);
+    m_children[i] = new CDTreeNode<T>(children, depth - 1);
 }
   
 
 template <class T>
 void CDTree<T>::set(unsigned int i, const T& data) {
-  m_children[i / m_segmentsize].set(i % m_segmentsize, data);
+  m_children[i / m_segmentsize]->set(i % m_segmentsize, data);
 }
 
 
 template <class T>
 const T& CDTree<T>::get(unsigned int i) const {
   assert(i < m_size);
-  return m_children[i / m_segmentsize].get(i % m_segmentsize);
+  return m_children[i / m_segmentsize]->get(i % m_segmentsize);
 }
 
 
@@ -284,9 +287,9 @@ template <class T>
 void CDTree<T>::fill(unsigned int i, const T& data) {
   int j = i / m_segmentsize;
   T old_data;
-  bool not_done = m_children[j].fill_start(i % m_segmentsize, data, old_data);
+  bool not_done = m_children[j]->fill_start(i % m_segmentsize, data, old_data);
   for (++j; (j * m_segmentsize < m_size) && not_done; ++j)
-    not_done = m_children[j].fill(data, old_data);
+    not_done = m_children[j]->fill(data, old_data);
 }
 
 
@@ -294,7 +297,7 @@ template <class T>
 unsigned int CDTree<T>::count_nodes() const {
   unsigned int result = 0;
   for (unsigned int i = 0; i * m_segmentsize < m_size; ++i)
-    result += m_children[i].count_nodes();
+    result += m_children[i]->count_nodes();
   return result;
 }
 

@@ -40,7 +40,7 @@ public:
   const map<int, Track*>& get_tracks() const;
   map<int, Track*>& get_tracks();
   int get_length() const;
-  TempoChange* get_tempo_changes();
+  const TempoMap::TempoChange* get_tempo_changes() const;
   
   // mutators
   void set_title(const string& title);

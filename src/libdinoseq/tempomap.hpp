@@ -25,12 +25,30 @@
 
 #include <sys/types.h>
 
+#include "cdtree.hpp"
 
 /** This class maps frame numbers to beats and ticks, and beats and ticks
     to frame numbers. It has functions for removing and adding tempo 
     changes on whole beats. */
 class TempoMap {
 public:
+  
+  class TempoChange {
+  public:
+
+    TempoChange(unsigned long nframe, unsigned long nbeat, unsigned int nbpm,
+		TempoChange* nprev, TempoChange* nnext)
+      : frame(nframe), beat(nbeat), bpm(nbpm), prev(nprev), next(nnext) {
+    
+    }
+    
+    unsigned long frame;
+    unsigned long beat;
+    unsigned int bpm;
+    TempoChange* prev;
+    TempoChange* next;
+  };
+  
   
   TempoMap(unsigned long frame_rate = 48000); 
 
@@ -41,9 +59,14 @@ public:
 	       double& bpm, int32_t& beat, int32_t& tick) const;
   unsigned long get_frame(int32_t beat, int32_t tick,
 			  unsigned long ticks_per_beat) const;
+  const TempoChange* get_changes(unsigned long beat) const;
   
-protected:
+private:
   
+  TempoChange* m_tc_list;
+  volatile CDTree<TempoChange*>* m_frame2tc;
+  
+  unsigned long m_frame_rate;
 };
 
 

@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 
 # Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.1.46)
+AC_INIT(dino, 0.1.47)
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src/gui/main.cpp])
 AM_INIT_AUTOMAKE
@@ -16,7 +16,7 @@ AC_PROG_CXX
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4 >= 2.4.1)
 PKG_CHECK_MODULES(LIBXMLPP, libxml++-2.6 >= 2.6.1)
 PKG_CHECK_MODULES(JACK, jack >= 0.99.0)
-PKG_CHECK_MODULES(LADCCA, ladcca-1.0 >= 0.4.0)
+PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.0)
 
 DEBUG_CFLAGS='-fno-default-inline -ansi -pedantic -Wall -Werror'
 AC_SUBST(DEBUG_CFLAGS)

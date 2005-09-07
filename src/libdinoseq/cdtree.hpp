@@ -230,7 +230,7 @@ public:
   const T& get(unsigned long i) const;
   /** This function fills the interval [start, end) with the value @c data. */
   void fill(unsigned long start, unsigned long end, const T& data);
-  
+  /** This function returns the number of nodes in this CDTree<T> object. */
   unsigned int count_nodes() const;
   
 private:

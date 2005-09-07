@@ -33,8 +33,10 @@ TempoMap::TempoMap(unsigned long frame_rate)
     m_frame2tc(new CDTree<TempoChange*>(400000000)),
     m_frame_rate(frame_rate) {
   
-  const_cast<CDTree<TempoChange*>*>(m_frame2tc)->fill(0, m_tc_list);
+  const_cast<CDTree<TempoChange*>*>(m_frame2tc)->fill(0, 400000000, m_tc_list);
   
+  
+  /*
   TempoChange* iter;
   
   for (iter = m_tc_list; iter != NULL; iter = iter->next)
@@ -58,7 +60,9 @@ TempoMap::TempoMap(unsigned long frame_rate)
   for (iter = m_tc_list; iter != NULL; iter = iter->next)
     cerr<<" -> "<<iter->beat<<": ("<<iter->bpm<<", "<<iter->frame<<")";
   cerr<<endl;
-
+  */  
+  
+  
 }
 
 

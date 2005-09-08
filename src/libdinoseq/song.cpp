@@ -14,6 +14,10 @@ Song::Song() : m_length(32), m_dirty(false) {
   m_tempo_head = new TempoChange(0, 120);
   m_current_tempo = m_tempo_head;
   
+  m_tempo_map.signal_tempochange_added.connect(hide(signal_tempo_changed));
+  m_tempo_map.signal_tempochange_changed.connect(hide(signal_tempo_changed));
+  m_tempo_map.signal_tempochange_removed.connect(hide(signal_tempo_changed));
+  
   /*
   // debug
   m_tempo_head->next = new TempoChange(8, 180);
@@ -83,13 +87,11 @@ bool Song::remove_track(int id) {
 
 void Song::add_tempo_change(int beat, double bpm) {
   m_tempo_map.add_tempo_change(beat, int(bpm));
-  signal_tempo_changed();
 }
 
 
 void Song::remove_tempo_change(int beat) {
   m_tempo_map.remove_tempo_change(beat);
-  signal_tempo_changed();
 }
 
 

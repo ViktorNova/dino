@@ -70,11 +70,16 @@ void TempoMap::add_tempo_change(unsigned long beat, unsigned int bpm) {
   TempoChange* tc = NULL;
   TempoChange* iter;
   
+  bool is_new = true;
+  
   // insert the new tempo change
   for (iter = m_tc_list; iter != NULL; iter = iter->next) {
     if (iter->beat == beat) {
+      if (iter->bpm == bpm)
+	return;
       tc = iter;
       tc->bpm = bpm;
+      is_new = false;
       break;
     }
     else if (iter->beat < beat && !iter->next) {
@@ -127,12 +132,19 @@ void TempoMap::add_tempo_change(unsigned long beat, unsigned int bpm) {
   delete tmp2;
   // END OF CRITICAL SECTION
   
+  if (is_new)
+    signal_tempochange_added(beat);
+  else
+    signal_tempochange_changed(beat);
+  
 }
 
 
 void TempoMap::remove_tempo_change(unsigned long beat) {
   if (beat == 0)
     return;
+  
+  bool removed = false;
   TempoChange* iter;
   for (iter = m_tc_list; iter != NULL; iter = iter->next) {
     if (iter->beat == beat) {
@@ -141,6 +153,7 @@ void TempoMap::remove_tempo_change(unsigned long beat) {
       if (iter->next)
 	iter->next->prev = iter->prev;
       delete iter;
+      removed = true;
     }
   }
 
@@ -165,7 +178,9 @@ void TempoMap::remove_tempo_change(unsigned long beat) {
   // we can't really do this here, needs to be taken care of in the Deleter
   delete tmp2;
   // END OF CRITICAL SECTION
-
+  
+  if (removed)
+    signal_tempochange_removed(beat);
 }
 
 

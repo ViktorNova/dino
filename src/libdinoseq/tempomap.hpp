@@ -25,7 +25,13 @@
 
 #include <sys/types.h>
 
+#include <sigc++/sigc++.h>
+
 #include "cdtree.hpp"
+
+
+using namespace sigc;
+
 
 /** This class maps frame numbers to beats and ticks, and beats and ticks
     to frame numbers. It has functions for removing and adding tempo 
@@ -60,6 +66,10 @@ public:
   unsigned long get_frame(int32_t beat, int32_t tick,
 			  unsigned long ticks_per_beat) const;
   const TempoChange* get_changes(unsigned long beat) const;
+  
+  signal<void, int> signal_tempochange_added;
+  signal<void, int> signal_tempochange_removed;
+  signal<void, int> signal_tempochange_changed;
   
 private:
   

@@ -81,6 +81,18 @@ bool Song::remove_track(int id) {
 }
 
 
+void Song::add_tempo_change(int beat, double bpm) {
+  m_tempo_map.add_tempo_change(beat, int(bpm));
+  signal_tempo_changed();
+}
+
+
+void Song::remove_tempo_change(int beat) {
+  m_tempo_map.remove_tempo_change(beat);
+  signal_tempo_changed();
+}
+
+
 const string& Song::get_title() const {
   return m_title;
 }

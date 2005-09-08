@@ -48,6 +48,8 @@ public:
   void set_info(const string& info);
   int add_track(const string& name = "");
   bool remove_track(int id);
+  void add_tempo_change(int beat, double bpm);
+  void remove_tempo_change(int beat);
   
   // sequencing
   void get_timebase_info(unsigned long frame, unsigned long framerate,
@@ -72,6 +74,7 @@ public:
   mutable signal<void, int> signal_length_changed;
   mutable signal<void, int> signal_track_added;
   mutable signal<void, int> signal_track_removed;
+  mutable signal<void> signal_tempo_changed;
   
 private:
   

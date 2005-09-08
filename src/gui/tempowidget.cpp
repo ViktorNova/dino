@@ -14,6 +14,8 @@ using namespace std;
 TempoWidget::TempoWidget(Song* song) 
   : m_song(song), m_col_width(20), m_drag_beat(-1), m_active_tempo(NULL) {
   assert(song);
+  
+  // initialise colours
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 62000, 65535);
   m_bg_color2.set_rgb(65535, 57000, 65535);
@@ -27,6 +29,9 @@ TempoWidget::TempoWidget(Song* song)
   m_colormap->alloc_color(m_grid_color);
   m_colormap->alloc_color(m_edge_color);
   m_colormap->alloc_color(m_hl_color);
+  
+  // connect signals
+  song->signal_tempo_changed.connect(mem_fun(*this, &TempoWidget::update));
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   set_size_request(m_col_width * m_song->get_length(), m_col_width);
@@ -130,6 +135,8 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
   
   switch (event->button) {
   case 1: {
+    if (beat >= 0 && beat < unsigned(m_song->get_length()))
+      m_song->add_tempo_change(beat, 60);
     return true;
   }
     
@@ -149,6 +156,8 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 3:
+    if (beat >= 0 && beat < unsigned(m_song->get_length()))
+      m_song->remove_tempo_change(beat);
     return true;
   } 
   
@@ -159,6 +168,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
 bool TempoWidget::on_button_release_event(GdkEventButton* event) {
   if (event->button == 2 && m_active_tempo) {
     //m_active_tempo->bpm = m_editing_bpm;
+    m_song->add_tempo_change(m_active_tempo->beat, m_editing_bpm);
     m_active_tempo = NULL;
     update();
   }

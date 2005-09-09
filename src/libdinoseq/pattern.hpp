@@ -43,18 +43,6 @@ public:
     map<int, CCEvent*> changes;
   };
   
-  /** Lexical comparison for pairs of ints */
-  struct Compair {
-    inline bool operator()(const pair<int, int>& p1, 
-			   const pair<int, int>& p2) const{
-      if (p1.first < p2.first)
-	return true;
-      else if (p1.first > p2.first)
-	return false;
-      return p1.second < p2.second;
-    }
-  };
-  
   
   typedef vector<MIDIEvent*> EventList;
   

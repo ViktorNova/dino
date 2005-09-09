@@ -48,7 +48,7 @@ private:
 
 
 extern Deleter<MIDIEvent> g_event_deleter;
-extern Deleter<TempoMap::TempoChange> g_tempochange_deleter;
+extern Deleter< CDTree<TempoMap::TempoChange*> > g_tempochange_deleter;
 
 
 #endif

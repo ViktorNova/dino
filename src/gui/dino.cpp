@@ -35,7 +35,7 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml)
 				       true), 100);
   signal_timeout().
     connect(bind_return(mem_fun(g_tempochange_deleter, 
-				&Deleter<TempoMap::TempoChange>::do_delete),
+				&Deleter< CDTree<TempoMap::TempoChange*> >::do_delete),
 			true), 100);
   
   m_window = w<Gtk::Window>("main_window");

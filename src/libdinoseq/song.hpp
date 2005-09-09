@@ -41,7 +41,7 @@ public:
   void remove_tempo_change(int beat);
   
   // sequencing
-  void get_timebase_info(unsigned long frame, unsigned long framerate,
+  void get_timebase_info(unsigned long frame, unsigned long frame_rate,
 			 double& bpm, int32_t& beat, int32_t& tick) const;
   double get_current_tempo(int beat, int tick);
   unsigned long bt2frame(int beat, int tick);

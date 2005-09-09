@@ -22,6 +22,7 @@
 
 #include <iostream>
 
+#include "deleter.hpp"
 #include "tempomap.hpp"
 
 
@@ -129,7 +130,9 @@ void TempoMap::add_tempo_change(unsigned long beat, unsigned int bpm) {
   // let's hope that pointer assignment is atomic
   m_frame2tc = tmp;
   // we can't really do this here, needs to be taken care of in the Deleter
-  delete tmp2;
+  //delete tmp2;
+  g_tempochange_deleter.queue_deletion(tmp2);
+  
   // END OF CRITICAL SECTION
   
   if (is_new)
@@ -176,7 +179,9 @@ void TempoMap::remove_tempo_change(unsigned long beat) {
   // let's hope that pointer assignment is atomic
   m_frame2tc = tmp;
   // we can't really do this here, needs to be taken care of in the Deleter
-  delete tmp2;
+  //delete tmp2;
+  g_tempochange_deleter.queue_deletion(tmp2);
+  
   // END OF CRITICAL SECTION
   
   if (removed)
@@ -186,6 +191,7 @@ void TempoMap::remove_tempo_change(unsigned long beat) {
 
 void TempoMap::get_bbt(unsigned long frame, unsigned long ticks_per_beat,
 		       double& bpm, int32_t& beat, int32_t& tick) const {
+  ticks_per_beat = 10000;
   TempoChange* tc = const_cast<CDTree<TempoChange*>*>(m_frame2tc)->get(frame);
   bpm = double(tc->bpm);
   double beat_d = 

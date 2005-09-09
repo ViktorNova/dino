@@ -10,7 +10,8 @@ extern "C" {
 
 
 Sequencer::Sequencer(const string& client_name, Song& song) 
-  : m_client_name(client_name), m_song(song), m_valid(false) {
+  : m_client_name(client_name), m_song(song), m_valid(false),
+    m_last_beat(0), m_last_tick(0) {
   
   if (!init_jack(m_client_name)) {
     cerr<<"Could not initialise JACK!"<<endl;
@@ -195,19 +196,22 @@ void Sequencer::jack_timebase_callback(jack_transport_state_t state,
   if (new_pos || state != JackTransportRolling) {
     pos->beat = beat;
     pos->tick = tick;
-    cerr<<"New position!"<<endl;
   }
   else {
     double db = nframes * pos->beats_per_minute / (pos->frame_rate * 60.0);
-    pos->beat += int32_t(db);
-    pos->tick += int32_t((db - int(db)) * pos->ticks_per_beat);
+    pos->beat = m_last_beat + int32_t(db);
+    pos->tick = m_last_tick + int32_t((db - int(db)) * pos->ticks_per_beat);
     if (pos->tick >= pos->ticks_per_beat) {
       pos->tick -= int32_t(pos->ticks_per_beat);
       ++pos->beat;
     }
   }
   
+  m_last_beat = pos->beat;
+  m_last_tick = pos->tick;
+
   pos->bar = int32_t(pos->beat / pos->beats_per_bar);
+  pos->beat %= 4;
   pos->valid = JackPositionBBT;
 }
 
@@ -218,6 +222,7 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   
   // first, tell the GUI thread that it's OK to delete unused objects
   g_event_deleter.confirm();
+  g_tempochange_deleter.confirm();
   
   // no valid time info, don't do anything
   if (!(pos.valid & JackTransportBBT))
@@ -225,6 +230,7 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   
   // at the end of the song, stop and go back to the beginning
   if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length()) {
+    cerr<<"At the end, stopping"<<endl;
     jack_transport_stop(m_jack_client);
     jack_transport_locate(m_jack_client, 0);
     return 0;
@@ -262,7 +268,8 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
   }
   
   // if we are rolling, sequence MIDI
-  unsigned int beat = pos.beat, tick = pos.tick;
+  unsigned int beat = (unsigned int)(pos.beat * pos.beats_per_bar);
+  unsigned int tick = pos.tick;
   unsigned int ticks = (unsigned int)
     (nframes * pos.beats_per_minute * pos.ticks_per_beat / 
      (pos.frame_rate * 60.0));
@@ -301,11 +308,13 @@ bool Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
 				    unsigned int beat, unsigned int tick,
 				    const jack_position_t& pos, 
 				    jack_nframes_t nframes) {
+  /*
   cerr<<"NOTE "<<(event->get_type() == MIDIEvent::NoteOn ? "ON" : "OFF")
       <<" at "<<beat<<", "<<tick<<":"
       <<"\t"<<int(event->get_note())
       <<"\t"<<int(event->get_velocity())
       <<endl;
+  */
   double dt = (beat - pos.beat) * pos.ticks_per_beat + tick - pos.tick;
   jack_nframes_t frame = 
     jack_nframes_t(dt * 60 * pos.frame_rate / 

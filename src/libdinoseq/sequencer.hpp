@@ -111,6 +111,8 @@ private:
   jack_client_t* m_jack_client;
   map<int, jack_port_t*> m_output_ports;
   jack_port_t* m_input_port;
+  int m_last_beat;
+  int m_last_tick;
 };
 
 

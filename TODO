@@ -21,4 +21,7 @@ Later:
  [ ] Record MIDI note events
  [ ] Record MIDI CC and pitch bend events
  [ ] Play loops, set loop points
- [ ] Edit the song and control the sequencer with OSC commands
+ [ ] Control the sequencer with OSC commands
+ [ ] Edit the song with OSC commands
+ [ ] Write a Python wrapper for OSC control
+ 

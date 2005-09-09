@@ -150,12 +150,30 @@ bool Song::is_dirty() const {
 bool Song::write_file(const string& filename) const {
   Document doc;
   Element* dino_elt = doc.create_root_node("dinosong");
+  
+  // write metadata 
   dino_elt->set_attribute("title", m_title);
   dino_elt->set_attribute("author", m_author);
+  dino_elt->add_child("info")->set_child_text(m_info);
+  
+  // write length
   char length_txt[10];
   sprintf(length_txt, "%d", m_length);
   dino_elt->set_attribute("length", length_txt);
-  dino_elt->add_child("info")->set_child_text(m_info);
+  
+  // write the tempomap
+  const TempoMap::TempoChange* tc = m_tempo_map.get_changes(0);
+  Element* tmap_elt = dino_elt->add_child("tempomap");
+  for ( ; tc != NULL; tc = tc->next) {
+    Element* tc_elt = tmap_elt->add_child("tempochange");
+    char tmp_txt[10];
+    sprintf(tmp_txt, "%d", int(tc->beat));
+    tc_elt->set_attribute("beat", tmp_txt);
+    sprintf(tmp_txt, "%d", tc->bpm);
+    tc_elt->set_attribute("bpm", tmp_txt);
+  }
+  
+  // write all tracks
   map<int, Track*>::const_iterator iter;
   for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter) {
     Element* track_elt = dino_elt->add_child("track");
@@ -194,6 +212,20 @@ bool Song::load_file(const string& filename) {
       set_info(text_node->get_content());
   }
   
+  // parse tempomap
+  nodes = dino_elt->get_children("tempomap");
+  if (nodes.begin() != nodes.end()) {
+    const Element* elt = dynamic_cast<Element*>(*nodes.begin());
+    Node::NodeList nodes2 = elt->get_children("tempochange");
+    for (iter = nodes2.begin(); iter != nodes2.end(); ++iter) {
+      const Element* tc_elt = dynamic_cast<Element*>(*iter);
+      int beat, bpm;
+      sscanf(tc_elt->get_attribute("beat")->get_value().c_str(), "%d", &beat);
+      sscanf(tc_elt->get_attribute("bpm")->get_value().c_str(), "%d", &bpm);
+      m_tempo_map.add_tempo_change(beat, bpm);
+    }
+  }
+  
   // parse all tracks
   nodes = dino_elt->get_children("track");
   for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
@@ -215,6 +247,7 @@ void Song::clear() {
   m_info = "";
   m_length = 0;
   m_tracks.clear();
+  m_tempo_map = TempoMap();
 }
 
 

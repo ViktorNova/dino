@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include <glibmm/thread.h>
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
@@ -90,8 +89,6 @@ private:
   vector<SequenceEntry*> m_sequence;
   
   mutable bool m_dirty;
-  
-  mutable Mutex m_lock;
   
 };
 

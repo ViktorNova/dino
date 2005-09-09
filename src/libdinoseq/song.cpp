@@ -11,24 +11,11 @@ using namespace xmlpp;
 
 
 Song::Song() : m_length(32), m_dirty(false) {
-  m_tempo_head = new TempoChange(0, 120);
-  m_current_tempo = m_tempo_head;
   
   m_tempo_map.signal_tempochange_added.connect(hide(signal_tempo_changed));
   m_tempo_map.signal_tempochange_changed.connect(hide(signal_tempo_changed));
   m_tempo_map.signal_tempochange_removed.connect(hide(signal_tempo_changed));
   
-  /*
-  // debug
-  m_tempo_head->next = new TempoChange(8, 180);
-  m_tempo_head->next->prev = m_tempo_head;
-  m_tempo_head->next->next = new TempoChange(9, 181);
-  m_tempo_head->next->next->prev = m_tempo_head->next;
-  m_tempo_head->next->next->next = new TempoChange(10, 182);
-  m_tempo_head->next->next->next->prev = m_tempo_head->next->next;
-  m_tempo_head->next->next->next->next = new TempoChange(16, 90);
-  m_tempo_head->next->next->next->next->prev = m_tempo_head->next->next->next;
-  */
 }
 
 
@@ -131,16 +118,10 @@ const TempoMap::TempoChange* Song::get_tempo_changes() const {
 
 
 double Song::get_current_tempo(int beat, int tick) {
-  if (m_current_tempo->next &&
-      m_current_tempo->next->time <= beat + tick / 10000.0) {
-    m_current_tempo = m_current_tempo->next;
-    cerr<<"beat = "<<beat<<", tick = "<<tick<<endl;
-    cerr<<m_current_tempo->time<<" <= "<<(beat + tick / 10000.0)<<endl;
-  }
-  return m_current_tempo->bpm;
+  return 100.0;
 }
 
-
+/*
 double Song::get_second(int beat, int tick) {
   double seconds = 0;
   TempoChange* tempo = m_tempo_head;
@@ -152,7 +133,7 @@ double Song::get_second(int beat, int tick) {
   cerr<<"beat "<<beat<<", tick "<<tick<<" -> second "<<seconds<<endl;
   return seconds;
 }
-
+*/
 
 bool Song::is_dirty() const {
   if (m_dirty)
@@ -200,8 +181,8 @@ bool Song::load_file(const string& filename) {
   Node::NodeList::const_iterator iter;
   
   // get attributes
-  m_title = dino_elt->get_attribute("title")->get_value();
-  m_author = dino_elt->get_attribute("author")->get_value();
+  set_title(dino_elt->get_attribute("title")->get_value());
+  set_author(dino_elt->get_attribute("author")->get_value());
   sscanf(dino_elt->get_attribute("length")->get_value().c_str(), 
 	 "%d", &m_length);
   
@@ -210,7 +191,7 @@ bool Song::load_file(const string& filename) {
   if (nodes.begin() != nodes.end()) {
     const Element* elt = dynamic_cast<Element*>(*nodes.begin());
     if (elt && (text_node = elt->get_child_text()) != NULL)
-      m_info = text_node->get_content();
+      set_info(text_node->get_content());
   }
   
   // parse all tracks
@@ -221,6 +202,7 @@ bool Song::load_file(const string& filename) {
     sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
     m_tracks[id] = new Track(m_length);
     m_tracks[id]->parse_xml_node(track_elt);
+    signal_track_added(id);
   }
   
   return true;

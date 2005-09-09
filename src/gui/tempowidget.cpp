@@ -3,8 +3,6 @@
 #include <map>
 #include <vector>
 
-#include <glibmm/thread.h>
-
 #include "tempowidget.hpp"
 
 

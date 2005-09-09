@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 
-#include <glibmm/thread.h>
 #include <sigc++/signal.h>
 
 #include "tempomap.hpp"
@@ -20,16 +19,6 @@ using namespace std;
     a song, and some metadata like title, author, and comments. */
 class Song {
 public:
-  
-  /** This struct contains information about a tempo change in the song. */
-  struct TempoChange {
-    TempoChange(double new_time, double new_bpm) 
-      : time(new_time), bpm(new_bpm), prev(NULL), next(NULL) { }
-    double time;
-    double bpm;
-    TempoChange* prev;
-    TempoChange* next;
-  };
   
   Song();
   
@@ -55,8 +44,6 @@ public:
   void get_timebase_info(unsigned long frame, unsigned long framerate,
 			 double& bpm, int32_t& beat, int32_t& tick) const;
   double get_current_tempo(int beat, int tick);
-  //void locate(double second, int& beat, int& tick);
-  double get_second(int beat, int tick);
   unsigned long bt2frame(int beat, int tick);
   pair<int, int> frame2bt(unsigned long frame);
   
@@ -80,15 +67,13 @@ private:
   
   // non-copyable for now
   Song& operator=(const Song&) { return *this; }
+  Song(const Song&) { }
   
   string m_title;
   string m_author;
   string m_info;
   map<int, Track*> m_tracks;
   int m_length;
-  TempoChange* m_tempo_head;
-  
-  mutable const TempoChange* m_current_tempo;
   
   TempoMap m_tempo_map;
   

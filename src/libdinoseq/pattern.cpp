@@ -409,7 +409,7 @@ void Pattern::delete_note_event(MIDIEvent* event) {
     event->get_previous()->set_next(event->get_next());
   if (event->get_next())
     event->get_next()->set_previous(event->get_previous());
-  queue_deletion(event);
+  g_event_deleter.queue_deletion(event);
 }
   
 

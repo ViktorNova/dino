@@ -6,7 +6,6 @@
 #include <vector>
 
 
-#include <glibmm/thread.h>
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
@@ -122,7 +121,6 @@ private:
   /** The MIDI control changes in the pattern */
   map<int, CCData> m_control_changes;
   
-  mutable Mutex m_lock;
   mutable bool m_dirty;
   
   mutable unsigned long m_last_beat;

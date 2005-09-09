@@ -49,10 +49,12 @@ void Sequencer::stop() {
 
 void Sequencer::go_to_beat(double beat) {
   if (m_valid) {
-    double second = m_song.get_second(int(beat), 
+    /*double second = m_song.get_second(int(beat), 
 				      int((beat - int(beat)) * 10000));
     jack_transport_locate(m_jack_client,
 			  int(second * jack_get_sample_rate(m_jack_client)));
+    */
+    jack_transport_locate(m_jack_client, 0);
   }
 }
   
@@ -215,9 +217,7 @@ int Sequencer::jack_process_callback(jack_nframes_t nframes) {
   jack_transport_state_t state = jack_transport_query(m_jack_client, &pos);
   
   // first, tell the GUI thread that it's OK to delete unused objects
-  MIDIEvent* event;
-  for (int i = 0; i < 100 && g_notes_not_used.pop(event); ++i) 
-    g_notes_to_delete.push(event);
+  g_event_deleter.confirm();
   
   // no valid time info, don't do anything
   if (!(pos.valid & JackTransportBBT))

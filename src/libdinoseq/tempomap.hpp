@@ -67,9 +67,9 @@ public:
 			  unsigned long ticks_per_beat) const;
   const TempoChange* get_changes(unsigned long beat) const;
   
-  signal<void, int> signal_tempochange_added;
-  signal<void, int> signal_tempochange_removed;
-  signal<void, int> signal_tempochange_changed;
+  sigc::signal<void, int> signal_tempochange_added;
+  sigc::signal<void, int> signal_tempochange_removed;
+  sigc::signal<void, int> signal_tempochange_changed;
   
 private:
   

@@ -268,7 +268,7 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
   }
   
   // if we are rolling, sequence MIDI
-  unsigned int beat = (unsigned int)(pos.beat * pos.beats_per_bar);
+  unsigned int beat = pos.bar * (unsigned int)(pos.beats_per_bar) + pos.beat;
   unsigned int tick = pos.tick;
   unsigned int ticks = (unsigned int)
     (nframes * pos.beats_per_minute * pos.ticks_per_beat / 

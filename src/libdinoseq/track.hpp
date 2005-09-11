@@ -85,7 +85,7 @@ private:
   string m_name;
   map<int, Pattern*> m_patterns;
   int m_length;
-  int m_channel;
+  volatile int m_channel;
   vector<SequenceEntry*> m_sequence;
   
   mutable bool m_dirty;

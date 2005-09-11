@@ -176,6 +176,7 @@ void Track::set_length(int length) {
 
 /** Set the MIDI channel for this track. */
 void Track::set_channel(int channel) {
+  cerr<<"Setting channel to "<<channel<<endl;
   m_channel = channel;
 }
 

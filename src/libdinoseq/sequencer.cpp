@@ -259,12 +259,11 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
 	jack_port_t* port = m_output_ports[iter->first];
 	void* port_buf = jack_port_get_buffer(port, nframes);
 	jack_midi_clear_buffer(port_buf, nframes);
-	unsigned char* p = jack_midi_write_next_event(port_buf, 0, 3, nframes);
-	if (p) {
-	  p[0] = 0xB0;
-	  p[1] = 0x7B;
-	  p[2] = 0x00;
-	}
+	MIDIEvent& event = MIDIEvent::AllNotesOff;
+	unsigned char* p = 
+	  jack_midi_write_next_event(port_buf, 0, event.get_size(), nframes);
+	if (p)
+	  memcpy(p, event.get_data(), event.get_size());
       }
       m_sent_all_off = true;
     }
@@ -298,14 +297,13 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
 	   (event = trk->get_events(beat, tick, last_beat, last_tick, 
 				    (unsigned int)(pos.ticks_per_beat),
 				    list))) {
-      for ( ; event; event = event->get_next())
+      for ( ; event; event = event->get_next()) {
+	event->set_channel(iter->second->get_channel());
 	full = !add_event_to_buffer(event, port_buf, beat, tick, pos, nframes);
+      }
     }
-
   }
-  
-  
-  
+
 }
 
 
@@ -318,8 +316,10 @@ bool Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
       <<" at "<<beat<<", "<<tick<<":"
       <<"\t"<<int(event->get_note())
       <<"\t"<<int(event->get_velocity())
+      <<"\t"<<int(event->get_channel())
       <<endl;
   */
+  
   double dt = (beat - pos.beat) * pos.ticks_per_beat + tick - pos.tick;
   jack_nframes_t frame = 
     jack_nframes_t(dt * 60 * pos.frame_rate / 

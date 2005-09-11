@@ -61,7 +61,10 @@ public:
   MIDIEvent* get_next() const;
   MIDIEvent* get_previous() const;
   MIDIEvent* get_assoc() const;
-
+  const unsigned char* get_data() const;
+  unsigned int get_size() const;
+  unsigned char get_channel() const;
+  
   void set_length(unsigned int length);
   void set_step(unsigned int step);
   void set_type(unsigned char type);
@@ -70,6 +73,7 @@ public:
   void set_next(MIDIEvent* event);
   void set_previous(MIDIEvent* event);
   void set_assoc(MIDIEvent* event);
+  void set_channel(unsigned char channel);
   
   static const unsigned char NoteOn = 0x90;
   static const unsigned char NoteOff = 0x80;

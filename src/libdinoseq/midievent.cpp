@@ -49,13 +49,28 @@ MIDIEvent* MIDIEvent::get_assoc() const {
 }
 
 
+const unsigned char* MIDIEvent::get_data() const {
+  return m_data;
+}
+
+
+unsigned int MIDIEvent::get_size() const {
+  return 3;
+}
+
+
+unsigned char MIDIEvent::get_channel() const {
+  return m_data[0] & 0xF;
+}
+
+
 void MIDIEvent::set_length(unsigned int length) {
   m_length = length;
 }
 
 
 void MIDIEvent::set_step(unsigned int step) {
-  m_step = step;
+  m_step = step; 
 }
 
 
@@ -89,3 +104,7 @@ void MIDIEvent::set_assoc(MIDIEvent* event) {
 }
 
 
+void MIDIEvent::set_channel(unsigned char channel) {
+  m_data[0] &= 0xF0;
+  m_data[0] |= channel & 0x0F;
+}

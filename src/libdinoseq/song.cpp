@@ -121,19 +121,6 @@ double Song::get_current_tempo(int beat, int tick) {
   return double(m_tempo_map.get_changes(beat)->bpm);
 }
 
-/*
-double Song::get_second(int beat, int tick) {
-  double seconds = 0;
-  TempoChange* tempo = m_tempo_head;
-  while (tempo->next && tempo->next->time <= beat + tick / 10000.0) {
-    seconds += (tempo->next->time - tempo->time) * 60 / tempo->bpm;
-    tempo = tempo->next;
-  }
-  seconds += (beat + tick / 10000.0 - tempo->time) * 60 / tempo->bpm;
-  cerr<<"beat "<<beat<<", tick "<<tick<<" -> second "<<seconds<<endl;
-  return seconds;
-}
-*/
 
 bool Song::is_dirty() const {
   if (m_dirty)
@@ -252,12 +239,15 @@ void Song::clear() {
 
 
 unsigned long Song::bt2frame(int beat, int tick) {
-  return 0;
+  assert(!"This function is not implemented");
 }
 
 
 pair<int, int> Song::frame2bt(unsigned long frame) {
-  return make_pair(0, 0);
+  double bpm;
+  int32_t beat, tick;
+  m_tempo_map.get_bbt(frame, 48000, bpm, beat, tick);
+  return make_pair<int, int>(beat, tick);
 }
 
 

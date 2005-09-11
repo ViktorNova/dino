@@ -12,7 +12,7 @@ extern "C" {
 
 Sequencer::Sequencer(const string& client_name, Song& song) 
   : m_client_name(client_name), m_song(song), m_valid(false),
-    m_last_beat(0), m_last_tick(0) {
+    m_last_beat(0), m_last_tick(0), m_sent_all_off(false) {
   
   if (!init_jack(m_client_name)) {
     cerr<<"Could not initialise JACK!"<<endl;
@@ -253,20 +253,24 @@ void Sequencer::sequence_midi(jack_transport_state_t state,
 			      jack_nframes_t nframes) {
   // if we're not rolling, turn off all notes and return
   if (state != JackTransportRolling) {
-    map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
-    for ( ; iter != m_song.get_tracks().end(); ++iter) {
-      jack_port_t* port = m_output_ports[iter->first];
-      void* port_buf = jack_port_get_buffer(port, nframes);
-      jack_midi_clear_buffer(port_buf, nframes);
-      unsigned char* p = jack_midi_write_next_event(port_buf, 0, 3, nframes);
-      if (p) {
-	p[0] = 0xB0;
-	p[1] = 0x7B;
-	p[2] = 0x00;
+    if (!m_sent_all_off) {
+      map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
+      for ( ; iter != m_song.get_tracks().end(); ++iter) {
+	jack_port_t* port = m_output_ports[iter->first];
+	void* port_buf = jack_port_get_buffer(port, nframes);
+	jack_midi_clear_buffer(port_buf, nframes);
+	unsigned char* p = jack_midi_write_next_event(port_buf, 0, 3, nframes);
+	if (p) {
+	  p[0] = 0xB0;
+	  p[1] = 0x7B;
+	  p[2] = 0x00;
+	}
       }
+      m_sent_all_off = true;
     }
     return;
   }
+  m_sent_all_off = false;
   
   // if we are rolling, sequence MIDI
   unsigned int beat = pos.bar * (unsigned int)(pos.beats_per_bar) + pos.beat;

@@ -113,6 +113,7 @@ private:
   jack_port_t* m_input_port;
   int m_last_beat;
   int m_last_tick;
+  bool m_sent_all_off;
 };
 
 

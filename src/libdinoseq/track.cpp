@@ -311,13 +311,19 @@ MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick,
     SequenceEntry* se = m_sequence[i];
     if (se) {
       beat -= se->start;
+      unsigned int btick = before_tick;
+      if (before_beat - se->start >= se->length)
+	btick = 0;
       MIDIEvent* event = se->pattern->get_events(beat, tick, 
 						 before_beat- se->start,
-						 before_tick, ticks_per_beat,
+						 btick, ticks_per_beat,
 						 list);
       beat += se->start;
       if (event)
 	return event;
+      if (beat >= se->start + se->length) {
+	return &MIDIEvent::AllNotesOff;
+      }
     }
   }
   

@@ -5,6 +5,9 @@
 
 using namespace std;
 
+
+MIDIEvent MIDIEvent::AllNotesOff(0xB0, 0, 123, 0);
+
   
 unsigned int MIDIEvent::get_length() const {
   return m_length;

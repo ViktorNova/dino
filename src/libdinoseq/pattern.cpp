@@ -342,6 +342,7 @@ MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick,
     list = 0;
   }
   
+  /*
   beat = (i - 1) / m_steps;
   tick = (unsigned int)(((i - 1) % m_steps) * ticks_per_beat / double(m_steps));
   ++tick;
@@ -349,6 +350,10 @@ MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick,
     tick = 0;
     ++beat;
   }
+  */
+  
+  beat = before_beat;
+  tick = before_tick;
   
   return NULL;
 }

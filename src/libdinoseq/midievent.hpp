@@ -37,10 +37,20 @@ public:
   
   MIDIEvent(unsigned char type, int stp, int val, 
 	    int vel, int len, MIDIEvent* ass = NULL) 
-    : m_step(stp), m_length(len), m_next(NULL), m_previous(NULL), m_assoc(ass) {
+    : m_step(stp), m_length(len), m_next(NULL), 
+      m_previous(NULL), m_assoc(ass) {
     m_data[0] = type;
     m_data[1] = val;
     m_data[2] = vel;
+  }
+  
+  MIDIEvent(unsigned char type, int stp, unsigned char data1, 
+	    unsigned char data2) 
+    : m_step(stp), m_length(0),
+      m_next(NULL), m_previous(NULL), m_assoc(NULL) {
+    m_data[0] = type;
+    m_data[1] = data1;
+    m_data[2] = data2;
   }
   
   unsigned int get_length() const;
@@ -65,6 +75,8 @@ public:
   static const unsigned char NoteOff = 0x80;
   static const unsigned char Controller = 0xB0;
   static const unsigned char PitchWheel = 0xE0;
+  
+  static MIDIEvent AllNotesOff;
   
 protected:
   unsigned int m_step;

@@ -10,6 +10,7 @@ libdinoseq_la_SOURCES = \
 	song.cpp song.hpp \
 	ringbuffer.hpp \
 	sequencer.cpp sequencer.hpp \
-	tempomap.cpp tempomap.hpp
+	tempomap.cpp tempomap.hpp \
+	cdtree.hpp
 
 libdinoseq_la_LIBADD = @LIBXMLPP_LIBS@ @JACK_LIBS@

@@ -133,8 +133,10 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
   
   switch (event->button) {
   case 1: {
-    if (beat >= 0 && beat < unsigned(m_song->get_length()))
-      m_song->add_tempo_change(beat, 60);
+    if (beat >= 0 && beat < unsigned(m_song->get_length())) {
+      double bpm = m_song->get_current_tempo(beat, 0);
+      m_song->add_tempo_change(beat, bpm);
+    }
     return true;
   }
     

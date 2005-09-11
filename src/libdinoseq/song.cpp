@@ -118,7 +118,7 @@ const TempoMap::TempoChange* Song::get_tempo_changes() const {
 
 
 double Song::get_current_tempo(int beat, int tick) {
-  return 100.0;
+  return double(m_tempo_map.get_changes(beat)->bpm);
 }
 
 /*

@@ -11,6 +11,7 @@ libdinoseq_la_SOURCES = \
 	ringbuffer.hpp \
 	sequencer.cpp sequencer.hpp \
 	tempomap.cpp tempomap.hpp \
-	cdtree.hpp
+	cdtree.hpp \
+	debug.hpp debug.cpp
 
 libdinoseq_la_LIBADD = @LIBXMLPP_LIBS@ @JACK_LIBS@

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 
+#include "debug.hpp"
 #include "track.hpp"
 #include "pattern.hpp"
 
@@ -8,8 +9,19 @@
 Track::Track(int length, const string& name) 
   : m_name(name), m_length(length), m_dirty(false) {
   
+  dbg1<<"Creating track \""<<name<<"\""<<endl;
   for (int i = 0; i < 300; ++i)
     m_sequence.push_back(NULL);
+}
+
+
+Track::~Track() {
+  dbg1<<"Destroying track \""<<m_name<<"\""<<endl;
+  map<int, Pattern*>::iterator iter;
+  for (iter = m_patterns.begin(); iter != m_patterns.end(); ++iter)
+    delete iter->second;
+  for (unsigned int i = 0; i < m_sequence.size(); ++i)
+    delete m_sequence[i];
 }
 
 
@@ -60,6 +72,7 @@ unsigned int Track::get_length() const {
 /** Sets the name of this track. */
 void Track::set_name(const string& name) {
   if (name != m_name) {
+    dbg1<<"Changing track name from \""<<m_name<<"\" to \""<<name<<"\""<<endl;
     m_name = name;
     signal_name_changed(m_name);
   }
@@ -176,7 +189,7 @@ void Track::set_length(int length) {
 
 /** Set the MIDI channel for this track. */
 void Track::set_channel(int channel) {
-  cerr<<"Setting channel to "<<channel<<endl;
+  dbg1<<"Setting MIDI channel for track \""<<m_name<<"\" to "<<channel<<endl;
   m_channel = channel;
 }
 

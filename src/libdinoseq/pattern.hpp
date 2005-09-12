@@ -27,6 +27,8 @@ public:
   Pattern();
   Pattern(const string& name, int length, int steps, int cc_steps);
   
+  ~Pattern();
+  
   /** This struct contains information about a single CC event. */
   struct CCEvent {
     CCEvent(int par, int val) 

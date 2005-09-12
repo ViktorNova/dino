@@ -22,6 +22,7 @@
 
 #include <iostream>
 
+#include "debug.hpp"
 #include "deleter.hpp"
 #include "tempomap.hpp"
 
@@ -34,36 +35,9 @@ TempoMap::TempoMap(unsigned long frame_rate)
     m_frame2tc(new CDTree<TempoChange*>(400000000)),
     m_frame_rate(frame_rate) {
   
+  dbg1<<"Initialising tempo map"<<endl;
+  
   const_cast<CDTree<TempoChange*>*>(m_frame2tc)->fill(0, 400000000, m_tc_list);
-  
-  
-  /*
-  TempoChange* iter;
-  
-  for (iter = m_tc_list; iter != NULL; iter = iter->next)
-    cerr<<" -> "<<iter->beat<<": ("<<iter->bpm<<", "<<iter->frame<<")";
-  cerr<<endl;
-  
-  add_tempo_change(0, 145);
-
-  for (iter = m_tc_list; iter != NULL; iter = iter->next)
-    cerr<<" -> "<<iter->beat<<": ("<<iter->bpm<<", "<<iter->frame<<")";
-  cerr<<endl;
-  
-  add_tempo_change(10, 150);
-
-  for (iter = m_tc_list; iter != NULL; iter = iter->next)
-    cerr<<" -> "<<iter->beat<<": ("<<iter->bpm<<", "<<iter->frame<<")";
-  cerr<<endl;
-
-  add_tempo_change(4, 132);
-  
-  for (iter = m_tc_list; iter != NULL; iter = iter->next)
-    cerr<<" -> "<<iter->beat<<": ("<<iter->bpm<<", "<<iter->frame<<")";
-  cerr<<endl;
-  */  
-  
-  
 }
 
 

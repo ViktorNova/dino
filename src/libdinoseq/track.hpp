@@ -40,6 +40,8 @@ public:
   
   Track(int length = 0, const string& name = "Untitled");
   
+  ~Track();
+  
   // accessors
   const string& get_name() const;
   map<int, Pattern*>& get_patterns();

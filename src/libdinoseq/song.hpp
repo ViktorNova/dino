@@ -21,6 +21,7 @@ class Song {
 public:
   
   Song();
+  ~Song();
   
   // accessors
   const string& get_title() const;

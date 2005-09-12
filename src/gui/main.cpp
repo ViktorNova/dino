@@ -26,6 +26,7 @@
 #include <sigc++/slot.h>
 #include <libglademm.h>
 
+#include "debug.hpp"
 #include "dino.hpp"
 
 
@@ -37,7 +38,7 @@ using namespace Glib;
 
 void printVersion() {
   cout<<"Dino "<<VERSION<<endl
-      <<"Copyright (C) 2004 Lars Luthman <larsl@users.sourceforge.net>"<<endl
+      <<"Copyright (C) 2005 Lars Luthman <larsl@users.sourceforge.net>"<<endl
       <<"This program comes with ABSOLUTELY NO WARRANTY."<<endl
       <<"This is free software, and you are welcome to redistribute it"<<endl
       <<"under certain conditions; see the file COPYING for details."<<endl;
@@ -53,13 +54,17 @@ int main(int argc, char** argv) {
   }
   
   // load the GUI
+  dbg1<<"Initialising gtkmm"<<endl;
   Main kit(argc, argv);
+  dbg1<<"Loading GUI"<<endl;
   RefPtr<Xml> refXml = Xml::create("dino.glade");
   Dino dino(argc, argv, refXml);
   
   // run
-  if (dino.get_window())
+  if (dino.get_window()) {
+    dbg1<<"Starting GUI"<<endl;
     Main::run(*dino.get_window());
+  }
   else {
     cerr<<"Could not load the GUI!"<<endl;
     return 1;

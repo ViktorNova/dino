@@ -4,6 +4,7 @@
 
 #include <libxml++/libxml++.h>
 
+#include "debug.hpp"
 #include "song.hpp"
 
 
@@ -12,6 +13,8 @@ using namespace xmlpp;
 
 Song::Song() : m_length(32), m_dirty(false) {
   
+  dbg1<<"Initialising song"<<endl;
+  
   m_tempo_map.signal_tempochange_added.connect(hide(signal_tempo_changed));
   m_tempo_map.signal_tempochange_changed.connect(hide(signal_tempo_changed));
   m_tempo_map.signal_tempochange_removed.connect(hide(signal_tempo_changed));
@@ -19,8 +22,17 @@ Song::Song() : m_length(32), m_dirty(false) {
 }
 
 
+Song::~Song() {
+  dbg1<<"Destroying song"<<endl;
+  map<int, Track*>::iterator iter;
+  for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter)
+    delete iter->second;
+}
+
+
 void Song::set_title(const string& title) {
   if (title != m_title) {
+    dbg1<<"Changing song title to \""<<title<<"\""<<endl;
     m_title = title;
     m_dirty = true;
     signal_title_changed(m_title);
@@ -30,6 +42,7 @@ void Song::set_title(const string& title) {
 
 void Song::set_author(const string& author) {
   if (author != m_author) {
+    dbg1<<"Changing song author to \""<<author<<"\""<<endl;
     m_author = author;
     m_dirty = true;
     signal_author_changed(m_author);

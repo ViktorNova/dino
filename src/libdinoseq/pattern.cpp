@@ -6,19 +6,21 @@
 #include <iostream>
 #include <set>
 
+#include "debug.hpp"
 #include "deleter.hpp"
 #include "pattern.hpp"
 
 
 Pattern::Pattern() : m_name("Untitled"), m_dirty(false), 
 		     m_already_returned(false) {
-  
+  dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
 }
 
 
 Pattern::Pattern(const string& name, int length, int steps, int cc_steps) 
   : m_name(name), m_length(length), m_steps(steps), 
     m_cc_steps(cc_steps), m_dirty(false) {
+  dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
   assert(m_steps > 0);
   assert(m_cc_steps > 0);
   assert(m_cc_steps % m_steps == 0);
@@ -33,6 +35,28 @@ Pattern::Pattern(const string& name, int length, int steps, int cc_steps)
 }
 
 
+Pattern::~Pattern() {
+  dbg1<<"Destroying pattern \""<<m_name<<"\""<<endl;
+  EventList::iterator iter;
+  for (iter = m_note_ons.begin(); iter != m_note_ons.end(); ++iter) {
+    MIDIEvent* event = *iter;
+    while (event) {
+      MIDIEvent* tmp = event;
+      delete event;
+      event = tmp->get_next();
+    }
+  }
+  for (iter = m_note_offs.begin(); iter != m_note_offs.end(); ++iter) {
+    MIDIEvent* event = *iter;
+    while (event) {
+      MIDIEvent* tmp = event;
+      delete event;
+      event = tmp->get_next();
+    }
+  }
+}
+
+
 const string& Pattern::get_name() const {
   return m_name;
 }
@@ -40,6 +64,7 @@ const string& Pattern::get_name() const {
 
 void Pattern::set_name(const string& name) {
   if (name != m_name) {
+    dbg1<<"Changing pattern name from \""<<m_name<<"\" to \""<<name<<"\""<<endl;
     m_name = name;
     signal_name_changed(m_name);
   }

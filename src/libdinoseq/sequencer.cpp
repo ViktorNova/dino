@@ -5,6 +5,7 @@ extern "C" {
 #include <jack/midiport.h>
 }
 
+#include "debug.hpp"
 #include "deleter.hpp"
 #include "sequencer.hpp"
 #include "song.hpp"
@@ -14,8 +15,11 @@ Sequencer::Sequencer(const string& client_name, Song& song)
   : m_client_name(client_name), m_song(song), m_valid(false),
     m_last_beat(0), m_last_tick(0), m_sent_all_off(false) {
   
+  dbg1<<"Initialising sequencer"<<endl;
+  
   if (!init_jack(m_client_name)) {
-    cerr<<"Could not initialise JACK!"<<endl;
+    dbg0<<"Could not initialise JACK!"<<endl;
+    dbg0<<"Could not initialise sequencer!"<<endl;
     return;
   }
 
@@ -28,6 +32,7 @@ Sequencer::Sequencer(const string& client_name, Song& song)
 
 
 Sequencer::~Sequencer() {
+  dbg1<<"Destroying sequencer"<<endl;
   if (m_valid) {
     stop();
     go_to_beat(0);
@@ -131,7 +136,9 @@ void Sequencer::reset_ports() {
 
   
 bool Sequencer::init_jack(const string& client_name) {
-
+  
+  dbg1<<"Initialising JACK client"<<endl;
+  
   m_jack_client = jack_client_new(client_name.c_str());
   if (!m_jack_client)
     return false;

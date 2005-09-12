@@ -1,9 +1,13 @@
 #ifndef DELETER_HPP
 #define DELETER_HPP
 
+#include <typeinfo>
+#include <cxxabi.h>
+
+#include "debug.hpp"
 #include "pattern.hpp"
-#include "tempomap.hpp"
 #include "ringbuffer.hpp"
+#include "tempomap.hpp"
 
 
 //extern Ringbuffer<MIDIEvent*> g_notes_not_used;
@@ -17,7 +21,9 @@ class Deleter {
 public:
   
   Deleter() : m_objects_not_used(1000), m_objects_to_delete(1000) {
-
+    int status;
+    dbg1<<"Initialising deallocator for "
+	<<abi::__cxa_demangle(typeid(T).name(), 0, 0, &status)<<endl;
   }
   
   bool queue_deletion(T* pointer) {

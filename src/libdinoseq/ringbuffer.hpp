@@ -1,6 +1,11 @@
 #ifndef RINGBUFFER_HPP
 #define RINGBUFFER_HPP
 
+#include <typeinfo>
+#include <cxxabi.h>
+
+#include "debug.hpp"
+
 
 /** This template class is an implementation of a ringbuffer (or rather
     a circular queue). It can be used to send objects between threads
@@ -30,6 +35,10 @@ protected:
 
 
 template <class T> Ringbuffer<T>::Ringbuffer(int size) {
+  int status;
+  dbg1<<"Creating ringbuffer for "
+      <<abi::__cxa_demangle(typeid(T).name(), 0, 0, &status)<<endl;
+
   m_data = new T[size];
   m_read_pos = 0;
   m_write_pos = 0;
@@ -38,6 +47,9 @@ template <class T> Ringbuffer<T>::Ringbuffer(int size) {
 
 
 template <class T> Ringbuffer<T>::~Ringbuffer<T>() {
+  int status;
+  dbg1<<"Destroying ringbuffer for "
+      <<abi::__cxa_demangle(typeid(T).name(), 0, 0, &status)<<endl;
   delete m_data;
 }
 

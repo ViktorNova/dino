@@ -25,9 +25,6 @@ Dino::Dino(int argc, char** argv, RefPtr<Xml> xml)
     m_pattern_ruler_1(m_song), m_octave_label(20, 8),
     m_seq("Dino", m_song) {
   
-  if (!m_seq.is_valid())
-    cerr<<"You will not be able to play any songs."<<endl;
-  
   init_lash(argc, argv);
   
   signal_timeout().connect(bind_return(mem_fun(g_event_deleter, 
@@ -268,7 +265,6 @@ void Dino::update_track_combo() {
 
 
 void Dino::update_pattern_combo() {
-  cerr<<"update_pattern_combo()"<<endl;
   m_pattern_combo_connection.block();
   int newActive = m_active_pattern;
   m_cmb_pattern.clear();
@@ -549,12 +545,15 @@ void Dino::init_info_editor() {
 
 
 bool Dino::init_lash(int argc, char** argv) {
+  dbg1<<"Initialising LASH client"<<endl;
   m_lash_client = lash_init(lash_extract_args(&argc, &argv), PACKAGE_NAME, 
 			    LASH_Config_File, LASH_PROTOCOL(2, 0));
   if (m_lash_client) {
     signal_timeout().
       connect(mem_fun(*this, &Dino::slot_check_ladcca_events), 500);
   }
+  else
+    dbg0<<"Could not initialise LASH!"<<endl;
   return (m_lash_client != NULL);
 }
 
@@ -592,7 +591,6 @@ bool Dino::slot_check_ladcca_events() {
 
 
 void Dino::set_active_track(int active_track) {
-  cerr<<"set_active_track("<<active_track<<")"<<endl;
   if (active_track != m_active_track) {
     m_active_track = active_track;
     m_conn_pat_added.disconnect();
@@ -610,7 +608,6 @@ void Dino::set_active_track(int active_track) {
 
 
 void Dino::set_active_pattern(int active_pattern) {
-  cerr<<"set_active_pattern("<<active_pattern<<")"<<endl;
   if (active_pattern != m_active_pattern) {
     m_active_pattern = active_pattern;
     signal_active_pattern_changed(m_active_track, m_active_pattern);

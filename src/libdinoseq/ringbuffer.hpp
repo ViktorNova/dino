@@ -35,10 +35,7 @@ protected:
 
 
 template <class T> Ringbuffer<T>::Ringbuffer(int size) {
-  int status;
-  dbg1<<"Creating ringbuffer for "
-      <<abi::__cxa_demangle(typeid(T).name(), 0, 0, &status)<<endl;
-
+  dbg1<<"Creating ringbuffer for "<<demangle(typeid(T).name())<<endl;
   m_data = new T[size];
   m_read_pos = 0;
   m_write_pos = 0;
@@ -47,9 +44,7 @@ template <class T> Ringbuffer<T>::Ringbuffer(int size) {
 
 
 template <class T> Ringbuffer<T>::~Ringbuffer<T>() {
-  int status;
-  dbg1<<"Destroying ringbuffer for "
-      <<abi::__cxa_demangle(typeid(T).name(), 0, 0, &status)<<endl;
+  dbg1<<"Destroying ringbuffer for "<<demangle(typeid(T).name())<<endl;
   delete m_data;
 }
 

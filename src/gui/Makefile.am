@@ -4,7 +4,7 @@ bin_PROGRAMS = dino
 
 dino_SOURCES = \
 	main.cpp \
-	dino.cpp dino.hpp \
+	dinogui.cpp dinogui.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterneditor.cpp patterneditor.hpp \
 	cceditor.cpp cceditor.hpp \

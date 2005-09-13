@@ -30,163 +30,175 @@
 using namespace std;
 
 
-TempoMap::TempoMap(unsigned long frame_rate) 
-  : m_tc_list(new TempoChange(0, 0, 100, NULL, NULL)),
-    m_frame2tc(new CDTree<TempoChange*>(400000000)),
-    m_frame_rate(frame_rate) {
-  
-  dbg1<<"Initialising tempo map"<<endl;
-  
-  const_cast<CDTree<TempoChange*>*>(m_frame2tc)->fill(0, 400000000, m_tc_list);
-}
+namespace Dino {
 
 
-void TempoMap::add_tempo_change(unsigned long beat, unsigned int bpm) {
-  TempoChange* tc = NULL;
-  TempoChange* iter;
+  TempoMap::TempoMap(unsigned long frame_rate) 
+    : m_tc_list(new TempoChange(0, 0, 100, NULL, NULL)),
+      m_frame2tc(new CDTree<TempoChange*>(400000000)),
+      m_frame_rate(frame_rate) {
   
-  bool is_new = true;
+    dbg1<<"Initialising tempo map"<<endl;
   
-  // insert the new tempo change
-  for (iter = m_tc_list; iter != NULL; iter = iter->next) {
-    if (iter->beat == beat) {
-      if (iter->bpm == bpm)
-	return;
-      tc = iter;
-      tc->bpm = bpm;
-      is_new = false;
-      break;
-    }
-    else if (iter->beat < beat && !iter->next) {
-      unsigned long frame;
-      frame = (unsigned long)(iter->frame + (beat - iter->beat) * 
-			      m_frame_rate * 60 / double(iter->bpm));
-      tc = new TempoChange(frame, beat, bpm, iter, NULL);
-      tc->prev->next = tc;
-      break;
-    }
-    else if (iter->beat < beat && iter->next && iter->next->beat > beat) {
-      unsigned long frame;
-      frame = (unsigned long)(iter->frame + (beat - iter->beat) * 
-			      m_frame_rate * 60 / double(iter->bpm));
-      tc = new TempoChange(frame, beat, bpm, iter, iter->next);
-      tc->prev->next = tc;
-      tc->next->prev = tc;
-      break;
-    }
+    const_cast<CDTree<TempoChange*>*>(m_frame2tc)->fill(0, 400000000, m_tc_list);
   }
-  
-  // update the frame numbers for all subsequent tempo changes
-  if (tc->next) {
-    unsigned long dframe = 
-      (unsigned long)(tc->frame + (tc->next->beat - beat) * 
-		      m_frame_rate * 60 / double(tc->bpm)) - tc->next->frame;
-    for (iter = tc->next; iter != NULL; iter = iter->next)
-      iter->frame += dframe;
-  }
-  
-  // update the framenumber->TempoChange mapping
-  CDTree<TempoChange*>* tmp = new CDTree<TempoChange*>(400000000);
-  unsigned long a, b;
-  for (iter = m_tc_list; iter != NULL; iter = iter->next) {
-    a = iter->frame;
-    if (iter->next)
-      b = iter->next->frame;
-    else
-      b = 400000000;
-    tmp->fill(a, b, iter);
-  }
-  
-  // CRITICAL SECTION
-  /* m_frame2tc is accessed by get_bbt() which can be called by the 
-     @c jack_timebase_callback function */
-  CDTree<TempoChange*>* tmp2 = const_cast<CDTree<TempoChange*>*>(m_frame2tc);
-  // let's hope that pointer assignment is atomic
-  m_frame2tc = tmp;
-  // we can't really do this here, needs to be taken care of in the Deleter
-  //delete tmp2;
-  g_tempochange_deleter.queue_deletion(tmp2);
-  
-  // END OF CRITICAL SECTION
-  
-  if (is_new)
-    signal_tempochange_added(beat);
-  else
-    signal_tempochange_changed(beat);
-  
-}
 
 
-void TempoMap::remove_tempo_change(unsigned long beat) {
-  if (beat == 0)
-    return;
+  void TempoMap::add_tempo_change(unsigned long beat, unsigned int bpm) {
+    TempoChange* tc = NULL;
+    TempoChange* iter;
   
-  bool removed = false;
-  TempoChange* iter;
-  for (iter = m_tc_list; iter != NULL; iter = iter->next) {
-    if (iter->beat == beat) {
-      if (iter->prev)
-	iter->prev->next = iter->next;
+    bool is_new = true;
+  
+    // insert the new tempo change
+    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+      if (iter->beat == beat) {
+	if (iter->bpm == bpm)
+	  return;
+	tc = iter;
+	tc->bpm = bpm;
+	is_new = false;
+	break;
+      }
+      else if (iter->beat < beat && !iter->next) {
+	unsigned long frame;
+	frame = (unsigned long)(iter->frame + (beat - iter->beat) * 
+				m_frame_rate * 60 / double(iter->bpm));
+	tc = new TempoChange(frame, beat, bpm, iter, NULL);
+	tc->prev->next = tc;
+	break;
+      }
+      else if (iter->beat < beat && iter->next && iter->next->beat > beat) {
+	unsigned long frame;
+	frame = (unsigned long)(iter->frame + (beat - iter->beat) * 
+				m_frame_rate * 60 / double(iter->bpm));
+	tc = new TempoChange(frame, beat, bpm, iter, iter->next);
+	tc->prev->next = tc;
+	tc->next->prev = tc;
+	break;
+      }
+    }
+  
+    // update the frame numbers for all subsequent tempo changes
+    if (tc->next) {
+      unsigned long dframe = 
+	(unsigned long)(tc->frame + (tc->next->beat - beat) * 
+			m_frame_rate * 60 / double(tc->bpm)) - tc->next->frame;
+      for (iter = tc->next; iter != NULL; iter = iter->next)
+	iter->frame += dframe;
+    }
+  
+    // update the framenumber->TempoChange mapping
+    CDTree<TempoChange*>* tmp = new CDTree<TempoChange*>(400000000);
+    unsigned long a, b;
+    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+      a = iter->frame;
       if (iter->next)
-	iter->next->prev = iter->prev;
-      delete iter;
-      removed = true;
+	b = iter->next->frame;
+      else
+	b = 400000000;
+      tmp->fill(a, b, iter);
     }
-  }
-
-  // update the framenumber->TempoChange mapping
-  CDTree<TempoChange*>* tmp = new CDTree<TempoChange*>(400000000);
-  unsigned long a, b;
-  for (iter = m_tc_list; iter != NULL; iter = iter->next) {
-    a = iter->frame;
-    if (iter->next)
-      b = iter->next->frame;
+  
+    // CRITICAL SECTION
+    /* m_frame2tc is accessed by get_bbt() which can be called by the 
+       @c jack_timebase_callback function */
+    CDTree<TempoChange*>* tmp2 = const_cast<CDTree<TempoChange*>*>(m_frame2tc);
+    // let's hope that pointer assignment is atomic
+    m_frame2tc = tmp;
+    // we can't really do this here, needs to be taken care of in the Deleter
+    //delete tmp2;
+    g_tempochange_deleter.queue_deletion(tmp2);
+  
+    // END OF CRITICAL SECTION
+  
+    if (is_new)
+      signal_tempochange_added(beat);
     else
-      b = 400000000;
-    tmp->fill(a, b, iter);
+      signal_tempochange_changed(beat);
+  
   }
-  
-  // CRITICAL SECTION
-  /* m_frame2tc is accessed by get_bbt() which can be called by the 
-     @c jack_timebase_callback function */
-  CDTree<TempoChange*>* tmp2 = const_cast<CDTree<TempoChange*>*>(m_frame2tc);
-  // let's hope that pointer assignment is atomic
-  m_frame2tc = tmp;
-  // we can't really do this here, needs to be taken care of in the Deleter
-  //delete tmp2;
-  g_tempochange_deleter.queue_deletion(tmp2);
-  
-  // END OF CRITICAL SECTION
-  
-  if (removed)
-    signal_tempochange_removed(beat);
-}
 
 
-void TempoMap::get_bbt(unsigned long frame, unsigned long ticks_per_beat,
-		       double& bpm, int32_t& beat, int32_t& tick) const {
-  ticks_per_beat = 10000;
-  TempoChange* tc = const_cast<CDTree<TempoChange*>*>(m_frame2tc)->get(frame);
-  bpm = double(tc->bpm);
-  double beat_d = 
-    tc->beat + bpm * double(frame - tc->frame) / (60 * m_frame_rate);
-  beat = int32_t(beat_d);
-  tick = int32_t((beat_d - int(beat_d)) * ticks_per_beat);
-}
+  void TempoMap::remove_tempo_change(unsigned long beat) {
+    if (beat == 0)
+      return;
+  
+    bool removed = false;
+    TempoChange* iter;
+    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+      if (iter->beat == beat) {
+	if (iter->prev)
+	  iter->prev->next = iter->next;
+	if (iter->next)
+	  iter->next->prev = iter->prev;
+	delete iter;
+	removed = true;
+      }
+    }
+
+    // update the framenumber->TempoChange mapping
+    CDTree<TempoChange*>* tmp = new CDTree<TempoChange*>(400000000);
+    unsigned long a, b;
+    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+      a = iter->frame;
+      if (iter->next)
+	b = iter->next->frame;
+      else
+	b = 400000000;
+      tmp->fill(a, b, iter);
+    }
+  
+    // CRITICAL SECTION
+    /* m_frame2tc is accessed by get_bbt() which can be called by the 
+       @c jack_timebase_callback function */
+    CDTree<TempoChange*>* tmp2 = const_cast<CDTree<TempoChange*>*>(m_frame2tc);
+    // let's hope that pointer assignment is atomic
+    m_frame2tc = tmp;
+    // we can't really do this here, needs to be taken care of in the Deleter
+    //delete tmp2;
+    g_tempochange_deleter.queue_deletion(tmp2);
+  
+    // END OF CRITICAL SECTION
+  
+    if (removed)
+      signal_tempochange_removed(beat);
+  }
+
+
+  void TempoMap::get_bbt(unsigned long frame, unsigned long ticks_per_beat,
+			 double& bpm, int32_t& beat, int32_t& tick) const {
+    ticks_per_beat = 10000;
+    TempoChange* tc = const_cast<CDTree<TempoChange*>*>(m_frame2tc)->get(frame);
+    bpm = double(tc->bpm);
+    double beat_d = 
+      tc->beat + bpm * double(frame - tc->frame) / (60 * m_frame_rate);
+    beat = int32_t(beat_d);
+    tick = int32_t((beat_d - int(beat_d)) * ticks_per_beat);
+  }
  
 
-unsigned long TempoMap::get_frame(int32_t beat, int32_t tick,
-				  unsigned long ticks_per_beat) const {
-  assert(0);
-  //  return (unsigned long)(beat * 60 * ticks_per_beat / 100.0);
-}
-
-
-const TempoMap::TempoChange* TempoMap::get_changes(unsigned long beat) const {
-  const TempoChange* iter = m_tc_list;
-  for ( ; iter != NULL; iter = iter->next) {
-    if (!iter->next || iter->next->beat > beat)
-      break;
+  unsigned long TempoMap::get_frame(int32_t beat, int32_t tick,
+				    unsigned long ticks_per_beat) const {
+    TempoChange* iter;
+    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+      if (!iter->next || iter->next->beat > (unsigned)beat)
+	break;
+    }
+    return (unsigned long)(iter->frame + (beat + double(tick) / 
+					  ticks_per_beat - iter->beat) *
+			   (m_frame_rate * 60 / double(iter->bpm)));
   }
-  return iter;
+
+
+  const TempoMap::TempoChange* TempoMap::get_changes(unsigned long beat) const {
+    const TempoChange* iter = m_tc_list;
+    for ( ; iter != NULL; iter = iter->next) {
+      if (!iter->next || iter->next->beat > beat)
+	break;
+    }
+    return iter;
+  }
+
+
 }

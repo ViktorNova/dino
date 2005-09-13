@@ -4,6 +4,8 @@
 
 #include "cceditor.hpp"
 #include "pattern.hpp"
+#include "song.hpp"
+#include "track.hpp"
 
 
 CCEditor::CCEditor(Song& song) 

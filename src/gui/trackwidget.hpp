@@ -4,14 +4,16 @@
 #include <gtkmm.h>
 
 
+namespace Dino {
+  class Song;
+  class Track;
+}
+
 using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
 using namespace sigc;
-
-
-class Song;
-class Track;
+using namespace Dino;
 
 
 class TrackWidget : public DrawingArea {
@@ -31,6 +33,8 @@ public:
   
   void update();
   
+  void set_current_beat(int beat);
+  
   signal<void, int> signal_clicked;
   
 private:
@@ -45,6 +49,8 @@ private:
     m_hl_color;
   
   int m_drag_beat, m_drag_pattern;
+  
+  int m_current_beat;
   
   Menu m_pattern_menu;
 };

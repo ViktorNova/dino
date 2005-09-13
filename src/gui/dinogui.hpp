@@ -1,5 +1,5 @@
-#ifndef DINO_HPP
-#define DINO_HPP
+#ifndef DINOGUI_HPP
+#define DINOGUI_HPP
 
 #include <gtkmm.h>
 #include <libglademm.h>
@@ -20,13 +20,14 @@ using namespace Gnome::Glade;
 using namespace Gtk;
 using namespace sigc;
 using namespace std;
+using namespace Dino;
 
 
 /** This is the main class. It connects our custom widgets to the rest of the
     GUI and sets up all signals and initial values. */
-class Dino {
+class DinoGUI {
 public:
-  Dino(int argc, char** argv, RefPtr<Xml> xml);
+  DinoGUI(int argc, char** argv, RefPtr<Xml> xml);
   
   Gtk::Window* get_window();
   

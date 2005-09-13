@@ -1,6 +1,12 @@
 #include <iostream>
-using namespace std;
+
+#include "pattern.hpp"
 #include "ruler.hpp"
+#include "song.hpp"
+#include "track.hpp"
+
+
+using namespace std;
 
 
 ::Ruler::Ruler(int length, int subs, int interval, int size, int height)
@@ -80,4 +86,27 @@ bool ::Ruler::on_button_press_event(GdkEventButton* event) {
   double pos = event->x / m_div_size;
   signal_clicked(pos, event->button);
   return true;
+}
+
+
+PatternRuler::PatternRuler(const Song& song) 
+  : ::Ruler(0, 1, 1, 20, 20), m_song(song) {
+
+}
+
+
+void PatternRuler::set_pattern(int track, int pattern) {
+  if (track != -1 && pattern != -1) {
+    const Pattern* pat(m_song.get_tracks().find(track)->second->
+		       get_patterns().find(pattern)->second);
+    set_length(pat->get_length());
+    set_subdivisions(pat->get_steps());
+    set_interval(1);
+    if (pat->get_steps() == pat->get_cc_steps())
+      set_division_size(8 * pat->get_steps());
+    else
+      set_division_size(4 * pat->get_cc_steps());
+  }
+  else
+    set_length(0);
 }

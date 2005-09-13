@@ -2,16 +2,19 @@
 #include <iostream>
 #include <map>
 
+#include "debug.hpp"
 #include "trackwidget.hpp"
 #include "pattern.hpp"
 #include "song.hpp"
+#include "track.hpp"
 
 
 using namespace std;
 
 
 TrackWidget::TrackWidget(const Song* song) 
-  : m_song(song), m_col_width(20), m_drag_beat(-1), m_drag_pattern(-1) {
+  : m_song(song), m_col_width(20), m_drag_beat(-1), m_drag_pattern(-1),
+    m_current_beat(0) {
   assert(song);
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
@@ -28,7 +31,7 @@ TrackWidget::TrackWidget(const Song* song)
   m_colormap->alloc_color(m_hl_color);
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
-  set_size_request(m_col_width * m_song->get_length(), m_col_width);
+  set_size_request(m_col_width * m_song->get_length(), m_col_width + 4);
 }
   
 
@@ -52,10 +55,20 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
 
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
-  
+
   int width = m_col_width * m_song->get_length();
   int height = m_col_width;
-  Rectangle bounds(0, 0, width + 1, height);
+  
+  // draw current beat
+  if (m_current_beat < m_song->get_length()) {
+    Rectangle bounds(0, 0, width + 1, 4);
+    m_gc->set_clip_rectangle(bounds);
+    m_gc->set_foreground(m_grid_color);
+    win->draw_rectangle(m_gc, true, m_current_beat * m_col_width, 
+			0, m_col_width + 1, 4);
+  }
+  
+  Rectangle bounds(0, 4, width + 1, height + 4);
   m_gc->set_clip_rectangle(bounds);
   
   // draw background
@@ -65,13 +78,13 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
       m_gc->set_foreground(m_bg_color);
     else
       m_gc->set_foreground(m_bg_color2);
-    win->draw_rectangle(m_gc, true, b * m_col_width, 0, m_col_width, height);
+    win->draw_rectangle(m_gc, true, b * m_col_width, 4, m_col_width, height);
   }
   m_gc->set_foreground(m_grid_color);
-  win->draw_line(m_gc, 0, 0, width, 0);
-  win->draw_line(m_gc, 0, height-1, width, height-1);
+  win->draw_line(m_gc, 0, 4, width, 4);
+  win->draw_line(m_gc, 0, height-1 + 4, width, height-1 + 4);
   for (int c = 0; c < m_song->get_length() + 1; ++c) {
-    win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
+    win->draw_line(m_gc, c * m_col_width, 4, c * m_col_width, height + 4);
   }
   
   // draw patterns
@@ -85,10 +98,10 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
     int length = se->length;
-    win->draw_rectangle(m_gc, true, i * m_col_width, 0, 
+    win->draw_rectangle(m_gc, true, i * m_col_width, 4, 
 			length * m_col_width, height - 1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, i * m_col_width, 0,
+    win->draw_rectangle(m_gc, false, i * m_col_width, 4,
 			length * m_col_width, height - 1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
     sprintf(tmp, "%03d", se->pattern_id);
@@ -97,7 +110,7 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
     Rectangle textBounds(i * m_col_width, 0, 
 			 length * m_col_width, height - 1);
     m_gc->set_clip_rectangle(textBounds);
-    win->draw_layout(m_gc, i * m_col_width + 2, (height - lHeight)/2, l);
+    win->draw_layout(m_gc, i * m_col_width + 2, 4 + (height - lHeight)/2, l);
   }
   
   return true;
@@ -186,4 +199,12 @@ void TrackWidget::update() {
   RefPtr<Gdk::Window> win = get_window();
   win->invalidate_rect(Rectangle(0, 0, get_width(), get_height()), false);
   win->process_updates(false);
+}
+
+
+void TrackWidget::set_current_beat(int beat) {
+  if (beat != m_current_beat) {
+    m_current_beat = beat;
+    update();
+  }
 }

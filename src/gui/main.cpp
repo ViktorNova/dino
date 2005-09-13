@@ -27,7 +27,7 @@
 #include <libglademm.h>
 
 #include "debug.hpp"
-#include "dino.hpp"
+#include "dinogui.hpp"
 
 
 using namespace std;
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   Main kit(argc, argv);
   dbg1<<"Loading GUI"<<endl;
   RefPtr<Xml> refXml = Xml::create("dino.glade");
-  Dino dino(argc, argv, refXml);
+  DinoGUI dino(argc, argv, refXml);
   
   // run
   if (dino.get_window()) {

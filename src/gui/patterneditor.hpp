@@ -1,15 +1,21 @@
 #ifndef PATTERNEDITOR_HPP
 #define PATTERNEDITOR_HPP
 
+#include <utility>
+
 #include <gtkmm.h>
 
-#include "pattern.hpp"
-#include "song.hpp"
 
+namespace Dino {
+  class Pattern;
+  class Song;
+}
 
 using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
+using namespace std;
+using namespace Dino;
 
 
 class PatternEditor : public DrawingArea {

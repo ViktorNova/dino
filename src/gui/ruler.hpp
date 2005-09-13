@@ -3,14 +3,16 @@
 
 #include <gtkmm.h>
 
-#include "pattern.hpp"
-#include "song.hpp"
 
+namespace Dino {
+  class Song;
+}
 
 using namespace Gtk;
 using namespace Gdk;
 using namespace Glib;
 using namespace sigc;
+using namespace Dino;
 
 
 class Ruler : public DrawingArea {
@@ -46,24 +48,15 @@ private:
 
 class PatternRuler : public ::Ruler {
 public:
-  PatternRuler(const Song& song) : ::Ruler(0, 1, 1, 20, 20), m_song(song) { }
-  void set_pattern(int track, int pattern) {
-    if (track != -1 && pattern != -1) {
-      const Pattern* pat(m_song.get_tracks().find(track)->second->
-			 get_patterns().find(pattern)->second);
-      set_length(pat->get_length());
-      set_subdivisions(pat->get_steps());
-      set_interval(1);
-      if (pat->get_steps() == pat->get_cc_steps())
-	set_division_size(8 * pat->get_steps());
-      else
-	set_division_size(4 * pat->get_cc_steps());
-    }
-    else
-      set_length(0);
-  }
+
+  PatternRuler(const Song& song);
+
+  void set_pattern(int track, int pattern);
+
 private:
+
   const Song& m_song;
+
 };
 
 

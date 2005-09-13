@@ -1,16 +1,23 @@
 #ifndef TRACKLABEL_HPP
 #define TRACKLABEL_HPP
 
-#include <gtkmm.h>
+#include <string>
 
-#include "song.hpp"
-#include "track.hpp"
+#include <gtkmm.h>
 
 
 using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
 using namespace Pango;
+using namespace std;
+
+namespace Dino {
+  class Song;
+  class Track;
+}
+
+using namespace Dino;
 
 
 class TrackLabel : public DrawingArea {
@@ -29,7 +36,7 @@ public:
   void update();
   void set_active_track(int id);
   
-  signal<void, int> signal_clicked;
+  sigc::signal<void, int> signal_clicked;
   
 private:
   
@@ -37,7 +44,7 @@ private:
   
   const Song* m_song;
   Track* m_track;
-  connection m_name_connection;
+  sigc::connection m_name_connection;
   int m_id;
   int m_width, m_height;
   bool m_is_active;

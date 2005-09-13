@@ -3,12 +3,15 @@
 
 #include <gtkmm.h>
 
-#include "song.hpp"
 
+namespace Dino {
+  class Song;
+}
 
 using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
+using namespace Dino;
 
 
 class TempoWidget : public DrawingArea {

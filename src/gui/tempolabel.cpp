@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 
+#include "song.hpp"
 #include "tempolabel.hpp"
 
 

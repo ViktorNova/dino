@@ -3,13 +3,16 @@
 
 #include <gtkmm.h>
 
-#include "pattern.hpp"
-#include "song.hpp"
 
+namespace Dino {
+  class Pattern;
+  class Song;
+}
 
 using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
+using namespace Dino;
 
 
 class CCEditor : public DrawingArea {

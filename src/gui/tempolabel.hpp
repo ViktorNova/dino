@@ -5,11 +5,11 @@
 
 #include "song.hpp"
 
-
 using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
 using namespace Pango;
+using namespace Dino;
 
 
 class TempoLabel : public DrawingArea {

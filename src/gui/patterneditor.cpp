@@ -1,7 +1,10 @@
 #include <iostream>
 
+#include "midievent.hpp"
+#include "pattern.hpp"
 #include "patterneditor.hpp"
 #include "song.hpp"
+#include "track.hpp"
 
 
 PatternEditor::PatternEditor(Song& song) 

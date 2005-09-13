@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 
+#include "song.hpp"
 #include "tempowidget.hpp"
 
 
@@ -14,7 +15,7 @@ TempoWidget::TempoWidget(Song* song)
   assert(song);
   
   // initialise colours
-  m_colormap  = Colormap::get_system();
+  m_colormap = Colormap::get_system();
   m_bg_color.set_rgb(65535, 62000, 65535);
   m_bg_color2.set_rgb(65535, 57000, 65535);
   m_fg_color.set_rgb(65535, 30000, 65535);

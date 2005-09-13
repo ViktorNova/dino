@@ -2,5 +2,11 @@
 #include "deleter.hpp"
 
 
-Deleter<MIDIEvent> g_event_deleter;
-Deleter< CDTree<TempoMap::TempoChange*> > g_tempochange_deleter;
+namespace Dino {
+
+
+  Deleter<Dino::MIDIEvent> g_event_deleter;
+  Deleter< CDTree<TempoMap::TempoChange*> > g_tempochange_deleter;
+
+
+}

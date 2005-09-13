@@ -7,6 +7,7 @@
 
 
 namespace Dino {
+  class MIDIEvent;
   class Pattern;
   class Song;
 }
@@ -33,6 +34,7 @@ protected:
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
   
+  void draw_note(const MIDIEvent* event);
   void update();
   
 private:
@@ -40,8 +42,9 @@ private:
 
   RefPtr<GC> m_gc;
   RefPtr<Colormap> m_colormap;
-  Color m_bg_color, m_bg_color2, m_fg_color, m_grid_color, 
+  Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 
     m_edge_color, m_hl_color;
+  Color m_note_colors[16];
   int m_row_height;
   int m_col_width;
   int m_max_note;
@@ -49,6 +52,8 @@ private:
   pair<int, int> m_added_note;
   int m_drag_step;
   int m_drag_note;
+  int m_drag_y;
+  int m_drag_start_vel;
   
   RefPtr<Pixmap> m_pix;
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;

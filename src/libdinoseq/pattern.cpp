@@ -82,7 +82,7 @@ namespace Dino {
       before @c step. This function will also update the @c previous and 
       @c next pointers in the Note, so the doubly linked list will stay
       consistent with the note map. */
-  void Pattern::add_note(int step, int value, int noteLength) {
+  void Pattern::add_note(int step, int value, int velocity, int noteLength) {
     assert(step >= 0);
     assert(step < m_length * m_steps);
     assert(value >= 0);
@@ -124,10 +124,12 @@ namespace Dino {
   
     // add the note events
     note_off = 
-      new MIDIEvent(MIDIEvent::NoteOff, step + newLength - 1, value, 64, 0);
+      new MIDIEvent(MIDIEvent::NoteOff, step + newLength - 1, 
+		    value, velocity, 0);
     add_note_event(note_off);
     note_on = 
-      new MIDIEvent(MIDIEvent::NoteOn, step, value, 64, newLength, note_off);
+      new MIDIEvent(MIDIEvent::NoteOn, step, 
+		    value, velocity, newLength, note_off);
     note_off->set_assoc(note_on);
     add_note_event(note_on);
   
@@ -321,7 +323,7 @@ namespace Dino {
 	     "%d", &value);
       sscanf(note_elt->get_attribute("length")->get_value().c_str(), 
 	     "%d", &length);
-      add_note(step, value, length);
+      add_note(step, value, 64, length);
     }
     return true;
   }

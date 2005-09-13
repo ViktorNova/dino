@@ -1,5 +1,7 @@
+#include <cstdlib>
 #include <iostream>
 
+#include "debug.hpp"
 #include "midievent.hpp"
 #include "pattern.hpp"
 #include "patterneditor.hpp"
@@ -9,20 +11,34 @@
 
 PatternEditor::PatternEditor(Song& song) 
   : m_song(song), m_row_height(8), m_col_width(8), 
-    m_max_note(128), m_pat(NULL) {
-  m_colormap  = Colormap::get_system();
+    m_max_note(128), m_drag_y(-1), m_drag_start_vel(-1), m_pat(NULL) {
+  
+  // initialise colours
+  m_colormap = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
   m_bg_color2.set_rgb(60000, 60000, 65535);
-  m_fg_color.set_rgb(0, 0, 65535);
+  m_fg_color1.set_rgb(0, 0, 65535);
   m_grid_color.set_rgb(40000, 40000, 40000);
   m_edge_color.set_rgb(0, 0, 0);
   m_hl_color.set_rgb(65535, 0, 0);
+  
+  // initialise note colours for different velocities
+  gushort red1 = 40000, green1 = 45000, blue1 = 40000;
+  gushort red2 = 0, green2 = 30000, blue2 = 0;
+  for (int i = 0; i < 16; ++i)
+    m_note_colors[i].set_rgb(gushort((red1 * (15 - i) + red2 * i) / 15.0),
+			     gushort((green1 * (15 - i) + green2 * i) / 15.0),
+			     gushort((blue1 * (15 - i) + blue2 * i) / 15.0));
+  
+  // allocate all colours
   m_colormap->alloc_color(m_bg_color);
   m_colormap->alloc_color(m_bg_color2);
-  m_colormap->alloc_color(m_fg_color);
+  m_colormap->alloc_color(m_fg_color1);
   m_colormap->alloc_color(m_grid_color);
   m_colormap->alloc_color(m_edge_color);
   m_colormap->alloc_color(m_hl_color);
+  for (int i = 0; i < 16; ++i)
+    m_colormap->alloc_color(m_note_colors[i]);
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   
@@ -69,16 +85,22 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
 
     // button one adds notes
     if (event->button == 1) {
-      m_pat->add_note(step, note, 1);
+      m_pat->add_note(step, note, 64, 1);
       m_added_note = make_pair(step, note);
     }
     
-    // button 2 changes the length
+    // button 2 changes the velocity or length
     else if (event->button == 2) {
       MIDIEvent* note_on = m_pat->find_note(step, note);
       if (note_on) {
-	m_pat->resize_note(note_on, step - note_on->get_step() + 1);
-	m_added_note = make_pair(note_on->get_step(), note);
+	if (event->state & GDK_CONTROL_MASK) {
+	  dbg1<<"Changing velocity"<<endl;
+	  m_drag_start_vel = note_on->get_velocity();
+	}
+	else {
+	  m_pat->resize_note(note_on, step - note_on->get_step() + 1);
+	  m_added_note = make_pair(note_on->get_step(), note);
+	}
       }
     }
     
@@ -89,7 +111,8 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
 			 m_max_note - int(event->y) / m_row_height - 1);
       m_pat->delete_note(note_on);
     }
-
+    
+    m_drag_y = int(event->y);
     m_drag_step = step;
     m_drag_note = note;
   }
@@ -124,17 +147,33 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       (event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK))) {
     int step = int(event->x) / m_col_width;
     int note = m_max_note - int(event->y) / m_row_height - 1;
-    if (step == m_drag_step && note == m_drag_note)
-      return true;
-    if (step < m_added_note.first)
-      step = m_added_note.first;
-    else if (step >= m_pat->get_length() * m_pat->get_steps())
-      step = m_pat->get_length() * m_pat->get_steps() - 1;
-    MIDIEvent* note_on = 
-      m_pat->find_note(m_added_note.first, m_added_note.second);
-    m_pat->resize_note(note_on, step - m_added_note.first + 1);
-    m_drag_step = step;
-    m_drag_note = note;
+    
+    if (event->state & GDK_CONTROL_MASK) {
+      dbg1<<"Really changing velocity"<<endl;
+      MIDIEvent* note_on = m_pat->find_note(m_drag_step, m_drag_note);
+      if (note_on) {
+	double dy = m_drag_y - int(event->y);
+	int velocity = int(m_drag_start_vel + dy);
+	velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
+	note_on->set_velocity(velocity);
+	queue_draw();
+      }
+    }
+    
+    else {
+      if (step == m_drag_step && note == m_drag_note)
+	return true;
+      if (step < m_added_note.first)
+	step = m_added_note.first;
+      else if (step >= m_pat->get_length() * m_pat->get_steps())
+	step = m_pat->get_length() * m_pat->get_steps() - 1;
+      MIDIEvent* note_on = 
+	m_pat->find_note(m_added_note.first, m_added_note.second);
+      m_pat->resize_note(note_on, step - m_added_note.first + 1);
+    
+      m_drag_step = step;
+      m_drag_note = note;
+    }
   }
   else if (event->state & GDK_BUTTON3_MASK) {
     int step = int(event->x) / m_col_width;
@@ -158,7 +197,7 @@ void PatternEditor::on_realize() {
   RefPtr<Gdk::Window> win = get_window();
   m_gc = GC::create(win);
   m_gc->set_background(m_bg_color);
-  m_gc->set_foreground(m_fg_color);
+  m_gc->set_foreground(m_fg_color1);
   win->clear();
 }
 
@@ -197,19 +236,9 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   for (unsigned int i = 0; i < notes.size(); ++i) {
     MIDIEvent* ne = notes[i];
     while (ne) {
-      if (ne->get_type() == MIDIEvent::NoteOn) {
-	m_gc->set_foreground(m_fg_color);
-	win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
-			    (m_max_note - ne->get_note()- 1) * m_row_height + 1, 
-			    ne->get_length() * m_col_width, m_row_height - 1);
-	m_gc->set_foreground(m_edge_color);
-	win->draw_rectangle(m_gc, false, i * m_col_width, 
-			    (m_max_note - ne->get_note() - 1) * m_row_height, 
-			    ne->get_length() * m_col_width, m_row_height);
-      }
+      if (ne->get_type() == MIDIEvent::NoteOn)
+	draw_note(ne);
       ne = ne->get_next();
-    }
-    if (ne && ne->get_type() == MIDIEvent::NoteOn) {
     }
   }
   
@@ -220,6 +249,21 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   */
   
   return true;
+}
+
+
+void PatternEditor::draw_note(const MIDIEvent* event) {
+  RefPtr<Gdk::Window> win = get_window();
+  
+  int i = event->get_step();
+  m_gc->set_foreground(m_note_colors[int(event->get_velocity() / 8)]);
+  win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
+		      (m_max_note - event->get_note()- 1) * m_row_height + 1, 
+		      event->get_length() * m_col_width, m_row_height - 1);
+  m_gc->set_foreground(m_edge_color);
+  win->draw_rectangle(m_gc, false, i * m_col_width, 
+		      (m_max_note - event->get_note() - 1) * m_row_height, 
+		      event->get_length() * m_col_width, m_row_height);
 }
 
 

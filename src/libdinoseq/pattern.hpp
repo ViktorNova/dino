@@ -65,7 +65,7 @@ namespace Dino {
   
     // mutators
     void set_name(const string& name);
-    void add_note(int step, int value, int length);
+    void add_note(int step, int value, int velocity, int length);
     int delete_note(MIDIEvent* note_on);
     int resize_note(MIDIEvent* note_on, int length);
     void add_cc(int ccNumber, int step, int value);

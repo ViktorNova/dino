@@ -11,7 +11,8 @@
 
 PatternEditor::PatternEditor(Song& song) 
   : m_song(song), m_row_height(8), m_col_width(8), 
-    m_max_note(128), m_drag_y(-1), m_drag_start_vel(-1), m_pat(NULL) {
+    m_max_note(128), m_drag_y(-1), m_drag_start_vel(-1), 
+    m_editing_velocity(false), m_pat(NULL) {
   
   // initialise colours
   m_colormap = Colormap::get_system();
@@ -39,7 +40,9 @@ PatternEditor::PatternEditor(Song& song)
   m_colormap->alloc_color(m_hl_color);
   for (int i = 0; i < 16; ++i)
     m_colormap->alloc_color(m_note_colors[i]);
-  
+
+  m_layout = Layout::create(get_pango_context());
+  m_layout->set_text("127");
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   
   m_added_note = make_pair(-1, -1);
@@ -94,7 +97,8 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       MIDIEvent* note_on = m_pat->find_note(step, note);
       if (note_on) {
 	if (event->state & GDK_CONTROL_MASK) {
-	  dbg1<<"Changing velocity"<<endl;
+	  m_editing_velocity = true;
+	  m_editing_event = note_on;
 	  m_drag_start_vel = note_on->get_velocity();
 	}
 	else {
@@ -135,6 +139,12 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
     m_pat->resize_note(note_on, step - m_added_note.first + 1);
     m_added_note = make_pair(-1, -1);
   }
+  
+  if (m_editing_velocity) {
+    m_editing_velocity = false;
+    update();
+  }
+  
   return true;
 }
 
@@ -148,8 +158,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
     int step = int(event->x) / m_col_width;
     int note = m_max_note - int(event->y) / m_row_height - 1;
     
-    if (event->state & GDK_CONTROL_MASK) {
-      dbg1<<"Really changing velocity"<<endl;
+    if ((event->state & GDK_CONTROL_MASK) && m_editing_velocity) {
       MIDIEvent* note_on = m_pat->find_note(m_drag_step, m_drag_note);
       if (note_on) {
 	double dy = m_drag_y - int(event->y);
@@ -198,6 +207,8 @@ void PatternEditor::on_realize() {
   m_gc = GC::create(win);
   m_gc->set_background(m_bg_color);
   m_gc->set_foreground(m_fg_color1);
+  FontDescription fd("helvetica bold 9");
+  get_pango_context()->set_font_description(fd);
   win->clear();
 }
 
@@ -242,6 +253,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     }
   }
   
+  
   /*
     gc->set_foreground(hlColor);
     win->draw_rectangle(gc, false, event->area.x, event->area.y,
@@ -253,6 +265,12 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
 
 
 void PatternEditor::draw_note(const MIDIEvent* event) {
+
+  if (m_editing_velocity && event == m_editing_event) {
+    draw_velocity_box(event);
+    return;
+  }
+  
   RefPtr<Gdk::Window> win = get_window();
   
   int i = event->get_step();
@@ -267,13 +285,42 @@ void PatternEditor::draw_note(const MIDIEvent* event) {
 }
 
 
+void PatternEditor::draw_velocity_box(const MIDIEvent* event) {
+  RefPtr<Gdk::Window> win = get_window();
+  m_gc->set_foreground(m_edge_color);
+  int box_height = m_layout->get_pixel_logical_extents().get_height() + 6;
+  box_height = (box_height < m_row_height * 2 ? m_row_height * 2 : box_height);
+  int box_width = m_col_width * event->get_length() + 4;
+  int l_width = m_layout->get_pixel_logical_extents().get_width();
+  box_width = (box_width < l_width + 6 ? l_width + 6 : box_width);
+  win->draw_rectangle(m_gc, false, event->get_step() * m_col_width - 2,
+		      int((m_max_note - event->get_note() - 0.5) * 
+			  m_row_height - box_height / 2), 
+		      box_width, box_height);
+  m_gc->set_foreground(m_note_colors[event->get_velocity() / 8]);
+  win->draw_rectangle(m_gc, true, event->get_step() * m_col_width - 1, 
+		      int((m_max_note - event->get_note() - 0.5) * 
+			  m_row_height - box_height / 2) + 1, 
+		      box_width - 1, box_height - 1);
+  char buffer[10];
+  sprintf(buffer, "%d", event->get_velocity());
+  m_layout->set_text(buffer);
+  m_gc->set_foreground(m_edge_color);
+  win->draw_layout(m_gc, event->get_step() * m_col_width + 2,
+		   int((m_max_note - event->get_note() - 0.5) * 
+		       m_row_height - box_height / 2) + 3, m_layout);
+}
+
+
 void PatternEditor::update() {
   m_pat->get_dirty_rect(&m_d_min_step, &m_d_min_note, &m_d_max_step, &m_d_max_note);
   RefPtr<Gdk::Window> win = get_window();
-  win->invalidate_rect(Rectangle(m_d_min_step * m_col_width, 
-				 (m_max_note - m_d_max_note - 1) * m_row_height, 
-				 (m_d_max_step - m_d_min_step + 1) * m_col_width + 1,
-				 (m_d_max_note - m_d_min_note + 1) * m_row_height + 1),
-		       false);
+  win->invalidate_rect(Gdk::Rectangle(m_d_min_step * m_col_width, 
+				      (m_max_note - m_d_max_note - 1) * 
+				      m_row_height, 
+				      (m_d_max_step - m_d_min_step + 1) * 
+				      m_col_width + 1,
+				      (m_d_max_note - m_d_min_note + 1) * 
+				      m_row_height + 1), false);
   win->process_updates(false);
 }

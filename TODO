@@ -3,6 +3,7 @@ is playing (and recording).
 
 Should be done before 0.2:
 
+ [ ] Change song length
  [X] Creating and deleting tracks
  [X] Changing track properties (label, MIDI port, MIDI channel)
  [X] Creating and deleting patterns

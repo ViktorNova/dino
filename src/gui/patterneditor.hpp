@@ -17,6 +17,7 @@ using namespace Glib;
 using namespace Gtk;
 using namespace std;
 using namespace Dino;
+using namespace Pango;
 
 
 class PatternEditor : public DrawingArea {
@@ -35,6 +36,7 @@ protected:
   virtual bool on_expose_event(GdkEventExpose* event);
   
   void draw_note(const MIDIEvent* event);
+  void draw_velocity_box(const MIDIEvent* event);
   void update();
   
 private:
@@ -42,9 +44,9 @@ private:
 
   RefPtr<GC> m_gc;
   RefPtr<Colormap> m_colormap;
-  Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 
+  Gdk::Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 
     m_edge_color, m_hl_color;
-  Color m_note_colors[16];
+  Gdk::Color m_note_colors[16];
   int m_row_height;
   int m_col_width;
   int m_max_note;
@@ -54,10 +56,13 @@ private:
   int m_drag_note;
   int m_drag_y;
   int m_drag_start_vel;
+  bool m_editing_velocity;
+  const MIDIEvent* m_editing_event;
   
   RefPtr<Pixmap> m_pix;
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Pattern* m_pat;
+  RefPtr<Layout> m_layout;
 };
 
 

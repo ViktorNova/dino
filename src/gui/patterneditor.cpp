@@ -10,9 +10,9 @@
 
 
 PatternEditor::PatternEditor(Song& song) 
-  : m_song(song), m_row_height(8), m_col_width(8), 
-    m_max_note(128), m_drag_y(-1), m_drag_start_vel(-1), 
-    m_editing_velocity(false), m_pat(NULL) {
+  : m_drag_operation(NoOperation), m_song(song), m_row_height(8), 
+    m_col_width(8), m_max_note(128), m_drag_y(-1), 
+    m_drag_start_vel(-1), m_pat(NULL) {
   
   // initialise colours
   m_colormap = Colormap::get_system();
@@ -81,45 +81,58 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
   if (!m_pat)
     return false;
   
+  // check that we're on the editor surface
   if (event->x < m_pat->get_length() * m_pat->get_steps() * m_col_width &&
       event->y < m_max_note * m_row_height) {
+    
     int note = m_max_note - int(event->y) / m_row_height - 1;
     int step = int(event->x) / m_col_width;
 
-    // button one adds notes
-    if (event->button == 1) {
+    m_drag_y = int(event->y);
+    m_drag_step = step;
+    m_drag_note = note;
+    
+    switch (event->button) {
+
+      // button one adds notes
+    case 1: {
       m_pat->add_note(step, note, 64, 1);
       m_added_note = make_pair(step, note);
+      m_drag_operation = ChangingNoteLength;
+      break;
     }
     
     // button 2 changes the velocity or length
-    else if (event->button == 2) {
+    case 2: {
       MIDIEvent* note_on = m_pat->find_note(step, note);
       if (note_on) {
 	if (event->state & GDK_CONTROL_MASK) {
-	  m_editing_velocity = true;
-	  m_editing_event = note_on;
+	  dbg1<<"Starting to change velocity"<<endl;
+	  m_drag_operation = ChangingNoteVelocity;
 	  m_drag_start_vel = note_on->get_velocity();
+	  queue_draw();
 	}
 	else {
 	  m_pat->resize_note(note_on, step - note_on->get_step() + 1);
 	  m_added_note = make_pair(note_on->get_step(), note);
+	  m_drag_operation = ChangingNoteLength;
 	}
       }
+      break;
     }
     
     // button 3 deletes
-    else if (event->button == 3) {
+    case 3: {
       MIDIEvent* note_on = 
 	m_pat->find_note(int(event->x) / m_col_width, 
 			 m_max_note - int(event->y) / m_row_height - 1);
       m_pat->delete_note(note_on);
+      m_drag_operation = DeletingNotes;
+      break;
     }
-    
-    m_drag_y = int(event->y);
-    m_drag_step = step;
-    m_drag_note = note;
+    }
   }
+  
   return true;
 }
 
@@ -128,7 +141,7 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
   if (!m_pat)
     return false;
 
-  if (m_added_note.first != -1 && event->button == 1) {
+  if (m_drag_operation == ChangingNoteLength) {
     int step = int(event->x) / m_col_width;
     if (step < m_added_note.first)
       step = m_added_note.first;
@@ -140,10 +153,12 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
     m_added_note = make_pair(-1, -1);
   }
   
-  if (m_editing_velocity) {
-    m_editing_velocity = false;
-    update();
+  if (m_drag_operation == ChangingNoteVelocity) {
+    m_drag_operation = NoOperation;
+    queue_draw();
   }
+
+  m_drag_operation = NoOperation;
   
   return true;
 }
@@ -152,39 +167,42 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
 bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
   if (!m_pat)
     return false;
+  
+  switch (m_drag_operation) {
 
-  if (m_added_note.first != -1 && 
-      (event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK))) {
+  case ChangingNoteVelocity: {
+    MIDIEvent* note_on = m_pat->find_note(m_drag_step, m_drag_note);
+    if (note_on) {
+      double dy = m_drag_y - int(event->y);
+      int velocity = int(m_drag_start_vel + dy);
+      velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
+      note_on->set_velocity(velocity);
+      queue_draw();
+    }
+    break;
+  }
+    
+  case ChangingNoteLength: {
     int step = int(event->x) / m_col_width;
     int note = m_max_note - int(event->y) / m_row_height - 1;
     
-    if ((event->state & GDK_CONTROL_MASK) && m_editing_velocity) {
-      MIDIEvent* note_on = m_pat->find_note(m_drag_step, m_drag_note);
-      if (note_on) {
-	double dy = m_drag_y - int(event->y);
-	int velocity = int(m_drag_start_vel + dy);
-	velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
-	note_on->set_velocity(velocity);
-	queue_draw();
-      }
-    }
+    // or changing the note length
+    if (step == m_drag_step && note == m_drag_note)
+      return true;
+    if (step < m_added_note.first)
+      step = m_added_note.first;
+    else if (step >= m_pat->get_length() * m_pat->get_steps())
+      step = m_pat->get_length() * m_pat->get_steps() - 1;
+    MIDIEvent* note_on = 
+      m_pat->find_note(m_added_note.first, m_added_note.second);
+    m_pat->resize_note(note_on, step - m_added_note.first + 1);
     
-    else {
-      if (step == m_drag_step && note == m_drag_note)
-	return true;
-      if (step < m_added_note.first)
-	step = m_added_note.first;
-      else if (step >= m_pat->get_length() * m_pat->get_steps())
-	step = m_pat->get_length() * m_pat->get_steps() - 1;
-      MIDIEvent* note_on = 
-	m_pat->find_note(m_added_note.first, m_added_note.second);
-      m_pat->resize_note(note_on, step - m_added_note.first + 1);
-    
-      m_drag_step = step;
-      m_drag_note = note;
-    }
+    m_drag_step = step;
+    m_drag_note = note;
+    break;
   }
-  else if (event->state & GDK_BUTTON3_MASK) {
+    
+  case DeletingNotes: {
     int step = int(event->x) / m_col_width;
     int note = m_max_note - int(event->y) / m_row_height - 1;
     if (step == m_drag_step && note == m_drag_note)
@@ -195,6 +213,11 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       m_drag_step = step;
       m_drag_note = note;
     }
+    break;
+  }
+    
+  default:
+    break;
   }
 
   return true;
@@ -253,6 +276,10 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     }
   }
   
+  if (m_drag_operation == ChangingNoteVelocity) {
+    MIDIEvent* event = m_pat->find_note(m_drag_step, m_drag_note);
+    draw_velocity_box(event);
+  }
   
   /*
     gc->set_foreground(hlColor);
@@ -266,11 +293,6 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
 
 void PatternEditor::draw_note(const MIDIEvent* event) {
 
-  if (m_editing_velocity && event == m_editing_event) {
-    draw_velocity_box(event);
-    return;
-  }
-  
   RefPtr<Gdk::Window> win = get_window();
   
   int i = event->get_step();

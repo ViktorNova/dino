@@ -40,6 +40,17 @@ protected:
   void update();
   
 private:
+  
+  /** This is used to figure out what to do when a motion event is received.
+      It is set on a button press event and reset (set to NoOperation) on a
+      button release event. */
+  enum DragOperation {
+    NoOperation,
+    ChangingNoteLength,
+    ChangingNoteVelocity,
+    DeletingNotes
+  } m_drag_operation;
+  
   Song& m_song;
 
   RefPtr<GC> m_gc;
@@ -56,8 +67,6 @@ private:
   int m_drag_note;
   int m_drag_y;
   int m_drag_start_vel;
-  bool m_editing_velocity;
-  const MIDIEvent* m_editing_event;
   
   RefPtr<Pixmap> m_pix;
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;

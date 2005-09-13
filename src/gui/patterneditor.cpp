@@ -50,12 +50,19 @@ PatternEditor::PatternEditor(Song& song)
 }
 
 
+/*
 void PatternEditor::set_pattern(int track, int pattern) {
   Pattern* pat = NULL;
   if (pattern != -1)
     pat = m_song.get_tracks()[track]->get_patterns()[pattern];
-  if (pat != m_pat) {
-    m_pat = pat;
+  set_pattern(pat);
+}
+*/
+
+
+void PatternEditor::set_pattern(Pattern* pattern) {
+  if (pattern != m_pat) {
+    m_pat = pattern;
     if (m_pat) {
       int s = m_pat->get_steps(), cc = m_pat->get_cc_steps();
       if (s == cc)
@@ -70,6 +77,7 @@ void PatternEditor::set_pattern(int track, int pattern) {
 	connect(sigc::hide(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)))));
       set_size_request(m_pat->get_length() * s * m_col_width + 1, 
 		       m_max_note * m_row_height + 1);
+      queue_draw();
     }
     else
       set_size_request();
@@ -107,7 +115,6 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       MIDIEvent* note_on = m_pat->find_note(step, note);
       if (note_on) {
 	if (event->state & GDK_CONTROL_MASK) {
-	  dbg1<<"Starting to change velocity"<<endl;
 	  m_drag_operation = ChangingNoteVelocity;
 	  m_drag_start_vel = note_on->get_velocity();
 	  queue_draw();

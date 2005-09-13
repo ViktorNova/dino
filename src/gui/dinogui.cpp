@@ -388,8 +388,6 @@ void DinoGUI::init_pattern_editor() {
   EvilScrolledWindow* scwNoteEditor = manage(new EvilScrolledWindow);
   boxNoteEditor->pack_start(*scwNoteEditor);
   scwNoteEditor->add(m_pe);
-  signal_active_pattern_changed.
-    connect(mem_fun(m_pe, &PatternEditor::set_pattern));
   
   // add the octave labels
   EvilScrolledWindow* scwOctaveLabel = 
@@ -616,6 +614,15 @@ void DinoGUI::set_active_pattern(int active_pattern) {
   if (active_pattern != m_active_pattern) {
     m_active_pattern = active_pattern;
     signal_active_pattern_changed(m_active_track, m_active_pattern);
+    Pattern* pattern = NULL;
+    map<int, Track*>::iterator iter = m_song.get_tracks().find(m_active_track);
+    if (iter != m_song.get_tracks().end()) {
+      map<int, Pattern*>::iterator iter2 = 
+	iter->second->get_patterns().find(m_active_pattern);
+      if (iter2 != iter->second->get_patterns().end())
+	pattern = iter2->second;
+    }
+    m_pe.set_pattern(pattern);
   }
 }
 

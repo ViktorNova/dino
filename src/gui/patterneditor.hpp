@@ -24,7 +24,8 @@ class PatternEditor : public DrawingArea {
 public:
   PatternEditor(Song& song);
   
-  void set_pattern(int track, int pattern);
+  //void set_pattern(int track, int pattern);
+  void set_pattern(Pattern* pattern);
   
 protected:
   

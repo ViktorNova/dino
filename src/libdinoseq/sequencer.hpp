@@ -3,7 +3,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include <sigc++/signal.h>
 #include <jack/jack.h>
 
 

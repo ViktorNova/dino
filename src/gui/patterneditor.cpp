@@ -102,7 +102,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
     switch (event->button) {
 
-      // button one adds notes
+      // button 1 adds notes
     case 1: {
       m_pat->add_note(step, note, 64, 1);
       m_added_note = make_pair(step, note);

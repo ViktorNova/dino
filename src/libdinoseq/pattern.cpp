@@ -294,6 +294,8 @@ namespace Dino {
 	note_elt->set_attribute("value", tmp_txt);
 	sprintf(tmp_txt, "%d", ne->get_length());
 	note_elt->set_attribute("length", tmp_txt);
+	sprintf(tmp_txt, "%d", ne->get_velocity());
+	note_elt->set_attribute("velocity", tmp_txt);
       }
     }
     return true;
@@ -317,13 +319,15 @@ namespace Dino {
       const Element* note_elt = dynamic_cast<const Element*>(*iter);
       if (!note_elt)
 	continue;
-      int step, value, length;
+      int step, value, length, velocity;
       sscanf(note_elt->get_attribute("step")->get_value().c_str(), "%d", &step);
       sscanf(note_elt->get_attribute("value")->get_value().c_str(), 
 	     "%d", &value);
       sscanf(note_elt->get_attribute("length")->get_value().c_str(), 
 	     "%d", &length);
-      add_note(step, value, 64, length);
+      sscanf(note_elt->get_attribute("velocity")->get_value().c_str(), 
+	     "%d", &velocity);
+      add_note(step, value, velocity, length);
     }
     return true;
   }

@@ -35,7 +35,7 @@ namespace Dino {
       connect(mem_fun(*this, &Sequencer::track_removed));
 
     Glib::signal_timeout().connect(mem_fun(*this, &Sequencer::beat_checker), 20);
-  
+    reset_ports();
   }
 
 

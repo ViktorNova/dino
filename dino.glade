@@ -1264,6 +1264,7 @@
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-7</property>
+	      <signal name="clicked" handler="gtk_widget_hide" object="dlg_about" last_modification_time="Wed, 14 Sep 2005 15:20:06 GMT"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -1299,7 +1300,9 @@ A pattern based MIDI sequencer for GNU/Linux
 © Lars Luthman 2005
 
 This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</property>
+modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+&lt;b&gt;http://dinoseq.sf.net&lt;/b&gt;</property>
 	  <property name="use_underline">False</property>
 	  <property name="use_markup">True</property>
 	  <property name="justify">GTK_JUSTIFY_CENTER</property>

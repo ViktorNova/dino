@@ -197,8 +197,10 @@ void TrackWidget::slot_insert_pattern(int pattern, int position) {
 
 void TrackWidget::update() {
   RefPtr<Gdk::Window> win = get_window();
-  win->invalidate_rect(Rectangle(0, 0, get_width(), get_height()), false);
-  win->process_updates(false);
+  if (win) {
+    win->invalidate_rect(Rectangle(0, 0, get_width(), get_height()), false);
+    win->process_updates(false);
+  }
 }
 
 

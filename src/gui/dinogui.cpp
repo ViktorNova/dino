@@ -551,7 +551,12 @@ bool DinoGUI::init_lash(int argc, char** argv) {
   dbg1<<"Initialising LASH client"<<endl;
   m_lash_client = lash_init(lash_extract_args(&argc, &argv), PACKAGE_NAME, 
 			    LASH_Config_File, LASH_PROTOCOL(2, 0));
+  
   if (m_lash_client) {
+    lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
+    lash_event_set_string(event, "Dino");
+    lash_send_event(m_lash_client, event);			
+    lash_jack_client_name(m_lash_client, "Dino");
     signal_timeout().
       connect(mem_fun(*this, &DinoGUI::slot_check_ladcca_events), 500);
   }

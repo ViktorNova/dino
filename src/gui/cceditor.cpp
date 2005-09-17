@@ -8,8 +8,8 @@
 #include "track.hpp"
 
 
-CCEditor::CCEditor(Song& song) 
-  : m_song(song), m_col_width(8), m_height(64 + 3), 
+CCEditor::CCEditor() 
+  : m_col_width(8), m_height(64 + 3), 
     m_v_scale((m_height - 3) / 128.0), m_pat(NULL), 
     m_cc_number(0), m_line_step(-1) {
   m_colormap  = Colormap::get_system();
@@ -29,12 +29,9 @@ CCEditor::CCEditor(Song& song)
 }
 
 
-void CCEditor::set_pattern(int track, int pattern) {
-  Pattern* pat = NULL;
-  if (pattern != -1)
-    pat = m_song.get_tracks()[track]->get_patterns()[pattern];
-  if (m_pat != pat) {
-    m_pat = pat;
+void CCEditor::set_pattern(Pattern* pattern) {
+  if (m_pat != pattern) {
+    m_pat = pattern;
     if (m_pat) {
       int s = m_pat->get_steps(), cc = m_pat->get_cc_steps();
       if (s == cc)

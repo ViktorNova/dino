@@ -9,7 +9,6 @@
 namespace Dino {
   class MIDIEvent;
   class Pattern;
-  class Song;
 }
 
 using namespace Gdk;
@@ -22,7 +21,7 @@ using namespace Pango;
 
 class PatternEditor : public DrawingArea {
 public:
-  PatternEditor(Song& song);
+  PatternEditor();
   
   //void set_pattern(int track, int pattern);
   void set_pattern(Pattern* pattern);
@@ -52,8 +51,6 @@ private:
     DeletingNotes
   } m_drag_operation;
   
-  Song& m_song;
-
   RefPtr<GC> m_gc;
   RefPtr<Colormap> m_colormap;
   Gdk::Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 

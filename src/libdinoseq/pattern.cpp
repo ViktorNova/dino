@@ -36,6 +36,8 @@ namespace Dino {
       m_note_ons.push_back(NULL);
       m_note_offs.push_back(NULL);
     }
+    for (int i = 0; i < m_length * m_cc_steps; ++i)
+      m_ccs.push_back(&MIDIEvent::ChannelVolume);
   }
 
 
@@ -51,6 +53,14 @@ namespace Dino {
       }
     }
     for (iter = m_note_offs.begin(); iter != m_note_offs.end(); ++iter) {
+      MIDIEvent* event = *iter;
+      while (event) {
+	MIDIEvent* tmp = event;
+	delete event;
+	event = tmp->get_next();
+      }
+    }
+    for (iter = m_ccs.begin(); iter != m_ccs.end(); ++iter) {
       MIDIEvent* event = *iter;
       while (event) {
 	MIDIEvent* tmp = event;
@@ -338,42 +348,58 @@ namespace Dino {
 				 unsigned int before_tick,
 				 unsigned int ticks_per_beat,
 				 unsigned int& list) const {
-  
+    
+    int steps = m_cc_steps;
     // convert beats and ticks to pattern steps
     double beat_d = tick / double(ticks_per_beat);
-    unsigned int step = (unsigned int)ceil((beat + beat_d) * m_steps);
+    unsigned int step = (unsigned int)ceil((beat + beat_d) * steps);
     double b_beat_d = before_tick / double(ticks_per_beat);
-    unsigned int b_step = (unsigned int)ceil((before_beat + b_beat_d) * m_steps);
+    unsigned int b_step = (unsigned int)ceil((before_beat + b_beat_d) * steps);
     unsigned int i = step;
   
-    for ( ; i < b_step && i < (unsigned long)(m_length * m_steps); ++i) {
+    for ( ; i < b_step && i < (unsigned long)(m_length * steps); ++i) {
     
-      cerr<<"list = "<<list<<", i = "<<i<<endl;
-    
-      if (list == 0) {
-	list = 1;
-	if (m_note_ons[i]) {
-	  beat = i / m_steps;
-	  tick = (unsigned int)((i % m_steps) * ticks_per_beat / double(m_steps));
+      //cerr<<"list = "<<list<<", i = "<<i<<endl;
+      
+      if (i % (m_cc_steps / m_steps) == 0) {
+	if (list == 0) {
+	  list = 1;
+	  if (m_note_ons[i / (m_cc_steps / m_steps)]) {
+	    beat = i / steps;
+	    tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
+	    m_already_returned = true;
+	    m_last_beat = beat;
+	    m_last_tick = tick;
+	    return m_note_ons[i / (m_cc_steps / m_steps)];
+	  }
+	}
+	
+	if (list == 1) {
+	  list = 2;
+	  if (m_note_offs[i / (m_cc_steps / m_steps)]) {
+	    beat = i / steps;
+	    tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
+	    m_already_returned = true;
+	    m_last_beat = beat;
+	    m_last_tick = tick;
+	    return m_note_offs[i / (m_cc_steps / m_steps)];
+	  }
+	}
+      }
+      
+      if (list <= 2) {
+	list = 3;
+	if (m_ccs[i]) {
+	  beat = i / steps;
+	  tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
 	  m_already_returned = true;
 	  m_last_beat = beat;
 	  m_last_tick = tick;
-	  return m_note_ons[i];
+	  cerr<<"returning CC at beat "<<beat<<", tick "<<tick<<endl;
+	  return m_ccs[i];
 	}
       }
-    
-      if (list == 1) {
-	list = 2;
-	if (m_note_offs[i]) {
-	  beat = i / m_steps;
-	  tick = (unsigned int)((i % m_steps) * ticks_per_beat / double(m_steps));
-	  m_already_returned = true;
-	  m_last_beat = beat;
-	  m_last_tick = tick;
-	  return m_note_offs[i];
-	}
-      }
-    
+      
       list = 0;
     }
   

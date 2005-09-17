@@ -109,6 +109,8 @@ namespace Dino {
     EventList m_note_ons;
     /** The note off events in the pattern */
     EventList m_note_offs;
+    /** The CC events in the pattern */
+    EventList m_ccs;
     /** Number of CC steps per beat */
     int m_cc_steps;
     /** The MIDI control changes in the pattern */

@@ -9,8 +9,8 @@
 #include "track.hpp"
 
 
-PatternEditor::PatternEditor(Song& song) 
-  : m_drag_operation(NoOperation), m_song(song), m_row_height(8), 
+PatternEditor::PatternEditor() 
+  : m_drag_operation(NoOperation), m_row_height(8), 
     m_col_width(8), m_max_note(128), m_drag_y(-1), 
     m_drag_start_vel(-1), m_pat(NULL) {
   
@@ -48,16 +48,6 @@ PatternEditor::PatternEditor(Song& song)
   m_added_note = make_pair(-1, -1);
   m_drag_step = -1;
 }
-
-
-/*
-void PatternEditor::set_pattern(int track, int pattern) {
-  Pattern* pat = NULL;
-  if (pattern != -1)
-    pat = m_song.get_tracks()[track]->get_patterns()[pattern];
-  set_pattern(pat);
-}
-*/
 
 
 void PatternEditor::set_pattern(Pattern* pattern) {

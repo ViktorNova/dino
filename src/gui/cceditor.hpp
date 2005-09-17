@@ -6,7 +6,6 @@
 
 namespace Dino {
   class Pattern;
-  class Song;
 }
 
 using namespace Gdk;
@@ -17,9 +16,9 @@ using namespace Dino;
 
 class CCEditor : public DrawingArea {
 public:
-  CCEditor(Song& song);
+  CCEditor();
   
-  void set_pattern(int track, int pattern);
+  void set_pattern(Pattern* pattern);
   void set_cc_number(int cc_number);
   void set_height(int height);  
   
@@ -35,7 +34,6 @@ protected:
   void update(int step = -1);
   
 private:
-  Song& m_song;
   
   RefPtr<GC> m_gc;
   RefPtr<Colormap> m_colormap;

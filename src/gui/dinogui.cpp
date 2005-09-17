@@ -24,9 +24,8 @@ using namespace sigc;
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 
   : m_active_track(-1), m_active_pattern(-1), m_xml(xml), 
-    m_pe(m_song), m_cce(m_song), m_sequence_ruler(32, 1, 4, 20, 20), 
-    m_pattern_ruler_1(m_song), m_octave_label(20, 8),
-    m_seq("Dino", m_song) {
+    m_sequence_ruler(32, 1, 4, 20, 20), m_pattern_ruler_1(m_song), 
+    m_octave_label(20, 8), m_seq("Dino", m_song) {
   
   init_lash(argc, argv);
   
@@ -399,8 +398,8 @@ void DinoGUI::init_pattern_editor() {
   EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
   boxCCEditor->pack_start(*scwCCEditor);
   scwCCEditor->add(m_cce);
-  signal_active_pattern_changed.
-    connect(mem_fun(m_cce, &CCEditor::set_pattern));
+  //signal_active_pattern_changed.
+  // connect(mem_fun(m_cce, &CCEditor::set_pattern));
   
   // synchronise scrolling
   scwPatternRuler1->set_hadjustment(scwNoteEditor->get_hadjustment());
@@ -628,6 +627,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
 	pattern = iter2->second;
     }
     m_pe.set_pattern(pattern);
+    m_cce.set_pattern(pattern);
   }
 }
 

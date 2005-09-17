@@ -10,6 +10,7 @@ namespace Dino {
 
 
   MIDIEvent MIDIEvent::AllNotesOff(0xB0, 0, 123, 0);
+  MIDIEvent MIDIEvent::ChannelVolume(0xB0, 0, 7, 10);
 
   
   unsigned int MIDIEvent::get_length() const {

@@ -84,7 +84,8 @@ namespace Dino {
     static const unsigned char PitchWheel = 0xE0;
   
     static MIDIEvent AllNotesOff;
-  
+    static MIDIEvent ChannelVolume;
+    
   protected:
     unsigned int m_step;
     unsigned int m_length;

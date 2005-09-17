@@ -264,14 +264,23 @@ namespace Dino {
   void Sequencer::sequence_midi(jack_transport_state_t state, 
 				const jack_position_t& pos, 
 				jack_nframes_t nframes) {
+    
+    // clear all MIDI output buffers
+    map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
+    for ( ; iter != m_song.get_tracks().end(); ++iter) {
+      jack_port_t* port = m_output_ports[iter->first];
+      void* port_buf = jack_port_get_buffer(port, nframes);
+      jack_midi_clear_buffer(port_buf, nframes);
+    }
+    
     // if we're not rolling, turn off all notes and return
     if (state != JackTransportRolling) {
       if (!m_sent_all_off) {
-	map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
-	for ( ; iter != m_song.get_tracks().end(); ++iter) {
+	cerr<<"didn't send all off last time"<<endl;
+	for (iter = m_song.get_tracks().begin();
+	     iter != m_song.get_tracks().end(); ++iter) {
 	  jack_port_t* port = m_output_ports[iter->first];
 	  void* port_buf = jack_port_get_buffer(port, nframes);
-	  jack_midi_clear_buffer(port_buf, nframes);
 	  MIDIEvent& event = MIDIEvent::AllNotesOff;
 	  unsigned char* p = 
 	    jack_midi_write_next_event(port_buf, 0, event.get_size(), nframes);
@@ -279,9 +288,11 @@ namespace Dino {
 	    memcpy(p, event.get_data(), event.get_size());
 	}
 	m_sent_all_off = true;
+	cerr<<"sent all off"<<endl;
       }
       return;
     }
+    cerr<<"resetting all off flag"<<endl;
     m_sent_all_off = false;
   
     // if we are rolling, sequence MIDI
@@ -293,13 +304,12 @@ namespace Dino {
     unsigned int list;
     unsigned int last_tick = (tick + ticks) % int(pos.ticks_per_beat);
     unsigned int last_beat = beat + (tick + ticks) / int(pos.ticks_per_beat);
-    map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
-    for ( ; iter != m_song.get_tracks().end(); ++iter) {
+    for (iter = m_song.get_tracks().begin(); 
+	 iter != m_song.get_tracks().end(); ++iter) {
     
-      // clear the MIDI buffer
+      // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->first];
       void* port_buf = jack_port_get_buffer(port, nframes);
-      jack_midi_clear_buffer(port_buf, nframes);
     
       // add events in buffer
       const Track* trk = iter->second;

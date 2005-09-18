@@ -35,6 +35,8 @@ namespace Dino {
     const string& get_info() const;
     const map<int, Track*>& get_tracks() const;
     map<int, Track*>& get_tracks();
+    const Track* get_track(int id) const;
+    Track* get_track(int id);
     int get_length() const;
     const TempoMap::TempoChange* get_tempo_changes() const;
   

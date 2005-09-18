@@ -10,7 +10,7 @@ using namespace std;
 
 
 TrackLabel::TrackLabel(const Song* song) 
-  : m_song(song), m_width(100), m_height(20) {
+  : m_song(song), m_width(100), m_height(20), m_is_active(false) {
   assert(song);
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(30000, 30000, 60000);

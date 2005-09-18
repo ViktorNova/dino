@@ -27,7 +27,6 @@ namespace Dino {
   class Pattern {
   public:
   
-    Pattern();
     Pattern(const string& name, int length, int steps, int cc_steps);
   
     ~Pattern();
@@ -52,7 +51,7 @@ namespace Dino {
     void add_note(int step, int value, int velocity, int length);
     int delete_note(MIDIEvent* note_on);
     int resize_note(MIDIEvent* note_on, int length);
-    void add_controller(int ccNumber);
+    void add_controller(int ccNumber, const string& name);
     void remove_controller(int ccNumber);
     void add_cc(int ccNumber, int step, int value);
     int delete_cc(int ccNumber, int step);
@@ -83,7 +82,11 @@ namespace Dino {
     sigc::signal<void, int, int> signal_cc_removed;
 
   private:
-  
+    
+    // no copying for now
+    Pattern(const Pattern&) { }
+    Pattern& operator=(const Pattern&) { return *this; }
+    
     bool find_note_event(int step, int value, bool note_on, MIDIEvent*& event);
     void delete_note_event(MIDIEvent* event);
     void add_note_event(MIDIEvent* event);

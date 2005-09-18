@@ -124,6 +124,18 @@ namespace Dino {
   }
 
 
+  const Track* Song::get_track(int id) const {
+    return get_track(id);
+  }
+  
+  
+  Track* Song::get_track(int id) {
+    map<int, Track*>::iterator iter = m_tracks.find(id);
+    assert(iter != m_tracks.end());
+    return iter->second;
+  }
+
+
   int Song::get_length() const {
     return m_length;
   }

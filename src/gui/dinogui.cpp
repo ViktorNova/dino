@@ -181,7 +181,11 @@ void DinoGUI::slot_edit_delete_pattern() {
 
 void DinoGUI::slot_edit_add_controller() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
+    assert(m_song.get_tracks().find(m_active_track) != 
+	   m_song.get_tracks().end());
     Track* trk = m_song.get_tracks().find(m_active_track)->second;
+    assert(trk->get_patterns().find(m_active_pattern) != 
+	   trk->get_patterns().end());
     Pattern* pat = trk->get_patterns().find(m_active_pattern)->second;
 
     if (pat != NULL) {
@@ -189,30 +193,24 @@ void DinoGUI::slot_edit_add_controller() {
       m_dlgcont_cmb_controller.clear();
       
       static char tmp[512];
-      map<int, Pattern::EventList>::const_iterator iter = 
-	pat->get_controllers().begin();
       int selected = -1;
       
       for (int i = 0; cc_descriptions[i] != NULL; ++i) {
-	if (iter != pat->get_controllers().end())
-	  cerr<<"iter->first = "<<iter->first<<", i = "<<i<<endl;
-	if ((iter != pat->get_controllers().end()) && (i == iter->first)) {
-	  cerr<<"matching! "<<i<<" == "<<iter->first<<endl;
-	  ++iter;
-	  continue;
+	if (pat->get_controllers().count(i) == 0) {
+	  if (selected == -1)
+	    selected = i;
+	  sprintf(tmp, "%03d ", i);
+	  m_dlgcont_cmb_controller.
+	    append_text(string(tmp) + cc_descriptions[i], i);
 	}
-	if (selected == -1)
-	  selected = i;
-	sprintf(tmp, "%03d ", i);
-	m_dlgcont_cmb_controller.
-	  append_text(string(tmp) + cc_descriptions[i], i);
       }
       
       m_dlgcont_cmb_controller.set_active_id(selected);
       if (m_dlg_controller_properties->run() == RESPONSE_OK) {
-	pat->add_controller(m_dlgcont_cmb_controller.get_active_id());
-	m_dlg_controller_properties->hide();
+	pat->add_controller(m_dlgcont_cmb_controller.get_active_id(),
+			    m_dlgcont_ent_name->get_text());
       }
+      m_dlg_controller_properties->hide();
       
     }
   }
@@ -439,7 +437,7 @@ void DinoGUI::init_pattern_editor() {
   signal_active_pattern_changed.
     connect(hide_return(hide<0>(mem_fun(m_cmb_pattern, 
 					&SingleTextCombo::set_active_id))));
-  signal_active_pattern_changed.connect(hide(hide(update_controllers)));
+  //signal_active_pattern_changed.connect(hide(hide(update_controllers)));
   
   m_track_combo_connection = m_cmb_track.signal_changed().
     connect(compose(mem_fun(*this, &DinoGUI::set_active_track),
@@ -447,6 +445,9 @@ void DinoGUI::init_pattern_editor() {
   m_pattern_combo_connection = m_cmb_pattern.signal_changed().
     connect(compose(mem_fun(*this, &DinoGUI::set_active_pattern),
 		    mem_fun(m_cmb_pattern, &SingleTextCombo::get_active_id)));
+  m_cmb_controller.signal_changed().
+    connect(compose(mem_fun(*this, &DinoGUI::set_active_controller),
+		    mem_fun(m_cmb_controller, &SingleTextCombo::get_active_id)));
   
   // add the ruler
   EvilScrolledWindow* scwPatternRuler1 = 
@@ -482,9 +483,6 @@ void DinoGUI::init_pattern_editor() {
   scwOctaveLabel->set_vadjustment(*scwNoteEditor->get_vadjustment());
 
   // connect and setup the CC controls
-  //m_sb_cc_number->signal_value_changed().
-  //  connect(sigc::mem_fun(this, &DinoGUI::slot_cc_number_changed));
-  //m_sb_cc_number->set_numeric(true);
   m_sb_cc_editor_size->signal_value_changed().
     connect(sigc::mem_fun(this, &DinoGUI::slot_cc_editor_size_changed));
   m_sb_cc_editor_size->set_editable(false);
@@ -711,6 +709,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     m_pe.set_pattern(pattern);
     m_cce.set_pattern(pattern);
     set_active_controller(-1);
+    update_controller_combo();
   }
 }
 
@@ -718,6 +717,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
 void DinoGUI::set_active_controller(int active_controller) {
   if (active_controller != m_active_controller) {
     m_active_controller = active_controller;
+    m_cce.set_cc_number(m_active_controller);
     signal_active_controller_changed(m_active_controller);
   }
 }

@@ -15,12 +15,6 @@
 namespace Dino {
 
 
-  Pattern::Pattern() : m_name("Untitled"), m_dirty(false), 
-		       m_already_returned(false) {
-    dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
-  }
-
-
   Pattern::Pattern(const string& name, int length, int steps, int cc_steps) 
     : m_name(name), m_length(length), m_steps(steps), 
       m_cc_steps(cc_steps), m_dirty(false) {
@@ -36,11 +30,6 @@ namespace Dino {
       m_note_ons.push_back(NULL);
       m_note_offs.push_back(NULL);
     }
-    
-    EventList m_ccs;
-    for (int i = 0; i < m_length * m_cc_steps; ++i)
-      m_ccs.push_back(NULL);
-    m_control_changes[1] = m_ccs;
   }
 
 
@@ -56,15 +45,6 @@ namespace Dino {
       }
     }
     for (iter = m_note_offs.begin(); iter != m_note_offs.end(); ++iter) {
-      MIDIEvent* event = *iter;
-      while (event) {
-	MIDIEvent* tmp = event;
-	delete event;
-	event = tmp->get_next();
-      }
-    }
-    EventList& m_ccs = m_control_changes[1];
-    for (iter = m_ccs.begin(); iter != m_ccs.end(); ++iter) {
       MIDIEvent* event = *iter;
       while (event) {
 	MIDIEvent* tmp = event;
@@ -205,13 +185,14 @@ namespace Dino {
   }
 
 
-  void Pattern::add_controller(int ccNumber) {
+  void Pattern::add_controller(int ccNumber, const string& name) {
     assert(ccNumber >= 0);
     assert(ccNumber < 128);
     if (m_control_changes.find(ccNumber) == m_control_changes.end()) {
+      dbg1<<"Creating controller \""<<name<<"\" with number "<<ccNumber<<endl;
       EventList& m_ccs = m_control_changes[ccNumber];
       for (int i = 0; i < m_length * m_cc_steps; ++i)
-	m_ccs[i] = NULL;
+	m_ccs.push_back(NULL);
       signal_controller_added(ccNumber);
     }
   }
@@ -221,6 +202,7 @@ namespace Dino {
     assert(ccNumber >= 0);
     assert(ccNumber < 128);
     if (m_control_changes.find(ccNumber) != m_control_changes.end()) {
+      dbg1<<"Removing controller with number "<<ccNumber<<endl;
       EventList& m_ccs = m_control_changes[ccNumber];
       for (int i = 0; i < m_length * m_cc_steps; ++i)
 	// XXX don't do this
@@ -279,7 +261,9 @@ namespace Dino {
 
   Pattern::EventList& Pattern::get_controller(int ccNumber) {
     assert(ccNumber >= 0 && ccNumber < 128);
-    return m_control_changes[ccNumber];
+    map<int, EventList>::iterator iter = m_control_changes.find(ccNumber);
+    assert(iter != m_control_changes.end());
+    return iter->second;
   }
 
 
@@ -429,6 +413,7 @@ namespace Dino {
       
       if (list <= 2) {
 	list = 3;
+	/*
 	const EventList& m_ccs = m_control_changes.find(1)->second;
 	if (m_ccs[i]) {
 	  beat = i / steps;
@@ -439,6 +424,7 @@ namespace Dino {
 	  cerr<<"returning CC at beat "<<beat<<", tick "<<tick<<endl;
 	  return m_ccs[i];
 	}
+	*/
       }
       
       list = 0;

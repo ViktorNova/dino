@@ -12,7 +12,7 @@
 CCEditor::CCEditor() 
   : m_col_width(8), m_height(64 + 3), 
     m_v_scale((m_height - 3) / 128.0), m_pat(NULL), 
-    m_cc_number(0), m_line_step(-1) {
+    m_cc_number(-1), m_line_step(-1) {
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
   m_bg_color2.set_rgb(60000, 60000, 65535);
@@ -33,6 +33,7 @@ CCEditor::CCEditor()
 void CCEditor::set_pattern(Pattern* pattern) {
   if (m_pat != pattern) {
     m_pat = pattern;
+    m_cc_number = -1;
     if (m_pat) {
       int s = m_pat->get_steps(), cc = m_pat->get_cc_steps();
       if (s == cc)
@@ -51,7 +52,6 @@ void CCEditor::set_pattern(Pattern* pattern) {
 
 
 void CCEditor::set_cc_number(int ccNumber) {
-  assert(ccNumber >= 0 && ccNumber < 128);
   m_cc_number = ccNumber;
   update();
 }
@@ -72,7 +72,7 @@ void CCEditor::set_height(int height) {
 
 
 bool CCEditor::on_button_press_event(GdkEventButton* event) {
-  if (!m_pat)
+  if (!m_pat || m_cc_number < 0)
     return false;
   
   if (event->button == 1) {
@@ -107,7 +107,7 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
 
 
 bool CCEditor::on_button_release_event(GdkEventButton* event) {
-  if (!m_pat)
+  if (!m_pat || m_cc_number < 0)
     return false;
   
   if (event->button == 2 && m_line_step != -1) {
@@ -154,7 +154,7 @@ bool CCEditor::on_button_release_event(GdkEventButton* event) {
 
 
 bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
-  if (!m_pat)
+  if (!m_pat || m_cc_number < 0)
     return false;
 
   if (event->state & GDK_BUTTON1_MASK) {
@@ -196,7 +196,7 @@ void CCEditor::on_realize() {
 bool CCEditor::on_expose_event(GdkEventExpose* event) {
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
-  if (!m_pat)
+  if (!m_pat || m_cc_number < 0)
     return true;
   
   int height = m_height;

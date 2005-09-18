@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "cceditor.hpp"
+#include "midievent.hpp"
 #include "pattern.hpp"
 #include "song.hpp"
 #include "track.hpp"
@@ -214,20 +215,18 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
-  const Pattern::CCData& data = m_pat->get_cc(m_cc_number);
-  std::map<int, Pattern::CCEvent*>::const_iterator iter;
-  iter = data.changes.upper_bound(event->area.x / m_col_width - 2);
-  for ( ; iter != data.changes.end() && 
-	  iter->first <= (event->area.x + event->area.width) / m_col_width + 1;
-	++iter) {
-    m_gc->set_foreground(m_fg_color);
-    win->draw_rectangle(m_gc, true, iter->first * m_col_width, 
-			int((128 - iter->second->value - 1) * m_v_scale), 
-			m_col_width, 3);
-    m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, iter->first * m_col_width, 
-			int((128 - iter->second->value - 1) * m_v_scale), 
-			m_col_width, 3);
+  const Pattern::EventList& data = m_pat->get_controller(m_cc_number);
+  for (unsigned int i = 0; i < data.size(); ++i) {
+    if (data[i] != NULL) {
+      m_gc->set_foreground(m_fg_color);
+      win->draw_rectangle(m_gc, true, i * m_col_width, 
+			  int((128 - data[i]->get_value() - 1) * m_v_scale), 
+			  m_col_width, 3);
+      m_gc->set_foreground(m_edge_color);
+      win->draw_rectangle(m_gc, false, i * m_col_width, 
+			  int((128 - data[i]->get_value() - 1) * m_v_scale), 
+			  m_col_width, 3);
+    }
   }
   
   return true;

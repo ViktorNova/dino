@@ -47,6 +47,8 @@ public:
   void slot_edit_edit_track_properties();
   void slot_edit_add_pattern();
   void slot_edit_delete_pattern();
+  void slot_edit_add_controller();
+  void slot_edit_delete_controller();
   
   void slot_transport_play();
   void slot_transport_stop();
@@ -68,6 +70,7 @@ private:
   void update_track_widgets();
   void update_track_combo();
   void update_pattern_combo();
+  void update_controller_combo();
   void update_editor_widgets();
   void update_port_combo();
   void init_pattern_editor();
@@ -82,14 +85,17 @@ private:
   bool slot_check_ladcca_events();
   void set_active_track(int active_track);
   void set_active_pattern(int active_pattern);
+  void set_active_controller(int active_controller);
   
   // internal signals
   signal<void, int> signal_active_track_changed;
   signal<void, int, int> signal_active_pattern_changed;
+  signal<void, int> signal_active_controller_changed;
   
   Song m_song;
   int m_active_track;
   int m_active_pattern;
+  int m_active_controller;
   
   RefPtr<Xml> m_xml;
   Gtk::Window* m_window;
@@ -100,12 +106,13 @@ private:
   
   SingleTextCombo m_cmb_track;
   SingleTextCombo m_cmb_pattern;
+  SingleTextCombo m_cmb_controller;
   connection m_track_combo_connection;
   connection m_pattern_combo_connection;
   connection m_conn_pat_added;
   connection m_conn_pat_removed;
-  SpinButton* m_sb_cc_number;
-  Label* m_lb_cc_description;
+  //SpinButton* m_sb_cc_number;
+  //Label* m_lb_cc_description;
   SpinButton* m_sb_cc_editor_size;
   ::Ruler m_sequence_ruler;
   PatternRuler m_pattern_ruler_1;
@@ -124,6 +131,10 @@ private:
   SpinButton* m_dlgpat_sbn_length;
   SpinButton* m_dlgpat_sbn_steps;
   SpinButton* m_dlgpat_sbn_cc_steps;
+  
+  Dialog* m_dlg_controller_properties;
+  Entry* m_dlgcont_ent_name;
+  SingleTextCombo m_dlgcont_cmb_controller;
   
   static char* cc_descriptions[];
   

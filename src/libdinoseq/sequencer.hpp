@@ -115,7 +115,8 @@ namespace Dino {
     string m_client_name;
     /** No one is allowed to read or write anything in this variable without
 	locking m_song.get_big_mutex() - the exception is the list of tempo 
-	changes, which always must be readable for the JACK timebase callback. */
+	changes, which always must be readable for the JACK timebase 
+	callback. */
     Song& m_song;
     /** This is @c true if JACK and ALSA has been initialised succesfully. */
     bool m_valid;

@@ -61,6 +61,7 @@ namespace Dino {
     unsigned char get_type() const;
     unsigned char get_note() const;
     unsigned char get_velocity() const;
+    unsigned char get_value() const;
     MIDIEvent* get_next() const;
     MIDIEvent* get_previous() const;
     MIDIEvent* get_assoc() const;
@@ -73,6 +74,7 @@ namespace Dino {
     void set_type(unsigned char type);
     void set_note(unsigned char note);
     void set_velocity(unsigned char vel);
+    void set_value(unsigned char value);
     void set_next(MIDIEvent* event);
     void set_previous(MIDIEvent* event);
     void set_assoc(MIDIEvent* event);

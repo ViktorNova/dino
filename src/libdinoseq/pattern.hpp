@@ -32,30 +32,14 @@ namespace Dino {
   
     ~Pattern();
   
-    /** This struct contains information about a single CC event. */
-    struct CCEvent {
-      CCEvent(int par, int val) 
-	: param(par), value(val), next(NULL), previous(NULL) { }
-      int param;
-      int value;
-      CCEvent* next;
-      CCEvent* previous;
-    };
-  
-    /** This struct contains information about the CC events for a certain
-	CC number. */
-    struct CCData {
-      map<int, CCEvent*> changes;
-    };
-  
-  
     typedef vector<MIDIEvent*> EventList;
   
   
     // accessors
     const string& get_name() const;
     const EventList& get_notes() const;
-    CCData& get_cc(int cc_number);
+    const map<int, EventList> get_controllers() const;
+    EventList& get_controller(int cc_number);
     int get_steps() const;
     int get_cc_steps() const;
     int get_length() const;
@@ -68,6 +52,8 @@ namespace Dino {
     void add_note(int step, int value, int velocity, int length);
     int delete_note(MIDIEvent* note_on);
     int resize_note(MIDIEvent* note_on, int length);
+    void add_controller(int ccNumber);
+    void remove_controller(int ccNumber);
     void add_cc(int ccNumber, int step, int value);
     int delete_cc(int ccNumber, int step);
   
@@ -92,6 +78,8 @@ namespace Dino {
     sigc::signal<void, int, int> signal_note_removed;
     sigc::signal<void, int, int, int> signal_cc_added;
     sigc::signal<void, int, int, int> signal_cc_changed;
+    sigc::signal<void, int> signal_controller_added;
+    sigc::signal<void, int> signal_controller_removed;
     sigc::signal<void, int, int> signal_cc_removed;
 
   private:
@@ -109,12 +97,10 @@ namespace Dino {
     EventList m_note_ons;
     /** The note off events in the pattern */
     EventList m_note_offs;
-    /** The CC events in the pattern */
-    EventList m_ccs;
     /** Number of CC steps per beat */
     int m_cc_steps;
     /** The MIDI control changes in the pattern */
-    map<int, CCData> m_control_changes;
+    map<int, EventList> m_control_changes;
   
     mutable bool m_dirty;
   

@@ -38,6 +38,11 @@ namespace Dino {
   }
 
 
+  unsigned char MIDIEvent::get_value() const {
+    return m_data[2];
+  }
+  
+  
   MIDIEvent* MIDIEvent::get_next() const {
     return m_next;
   }
@@ -90,6 +95,11 @@ namespace Dino {
 
   void MIDIEvent::set_velocity(unsigned char vel) {
     m_data[2] = vel;
+  }
+
+
+  void MIDIEvent::set_value(unsigned char value) {
+    m_data[2] = value;
   }
 
 

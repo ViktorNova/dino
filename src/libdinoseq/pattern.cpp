@@ -36,8 +36,11 @@ namespace Dino {
       m_note_ons.push_back(NULL);
       m_note_offs.push_back(NULL);
     }
+    
+    EventList m_ccs;
     for (int i = 0; i < m_length * m_cc_steps; ++i)
-      m_ccs.push_back(&MIDIEvent::ChannelVolume);
+      m_ccs.push_back(NULL);
+    m_control_changes[1] = m_ccs;
   }
 
 
@@ -60,6 +63,7 @@ namespace Dino {
 	event = tmp->get_next();
       }
     }
+    EventList& m_ccs = m_control_changes[1];
     for (iter = m_ccs.begin(); iter != m_ccs.end(); ++iter) {
       MIDIEvent* event = *iter;
       while (event) {
@@ -201,30 +205,61 @@ namespace Dino {
   }
 
 
+  void Pattern::add_controller(int ccNumber) {
+    assert(ccNumber >= 0);
+    assert(ccNumber < 128);
+    if (m_control_changes.find(ccNumber) == m_control_changes.end()) {
+      EventList& m_ccs = m_control_changes[ccNumber];
+      for (int i = 0; i < m_length * m_cc_steps; ++i)
+	m_ccs[i] = NULL;
+      signal_controller_added(ccNumber);
+    }
+  }
+
+
+  void Pattern::remove_controller(int ccNumber) {
+    assert(ccNumber >= 0);
+    assert(ccNumber < 128);
+    if (m_control_changes.find(ccNumber) != m_control_changes.end()) {
+      EventList& m_ccs = m_control_changes[ccNumber];
+      for (int i = 0; i < m_length * m_cc_steps; ++i)
+	// XXX don't do this
+	delete m_ccs[i];
+      m_control_changes.erase(ccNumber);
+      signal_controller_removed(ccNumber);
+    }
+  }
+
+
   void Pattern::add_cc(int ccNumber, int step, int value) {
     assert(ccNumber >= 0 && ccNumber < 128);
     assert(step >= 0 && step < m_length * m_cc_steps);
     assert(value >= 0 && value < 128);
-    bool isUpdate = false;
-    if (m_control_changes[ccNumber].changes.find(step) != 
-	m_control_changes[ccNumber].changes.end())
-      isUpdate = true;
-    m_control_changes[ccNumber].changes[step] = new CCEvent(ccNumber, value);
-    if (isUpdate)
-      signal_cc_changed(ccNumber, step, value);
-    else
+    assert(m_control_changes.find(ccNumber) != m_control_changes.end());
+    
+    EventList& m_ccs = m_control_changes[ccNumber];
+    
+    if (m_ccs[step] == NULL) {
+      m_ccs[step] = new MIDIEvent(0xB0, 0, 7, value);
       signal_cc_added(ccNumber, step, value);
+    }
+    
+    else if (m_ccs[step]->get_value() != value) {
+      m_ccs[step]->set_value(value);
+      signal_cc_changed(ccNumber, step, value);
+    }
   }
 
 
   int Pattern::delete_cc(int ccNumber, int step) {
     assert(ccNumber >= 0 && ccNumber < 128);
     assert(step >= 0 && step < m_length * m_cc_steps);
-    CCData& data(m_control_changes[ccNumber]);
-    map<int, CCEvent*>::iterator iter = data.changes.find(step);
-    if (iter != data.changes.end()) {
-      delete iter->second;
-      data.changes.erase(iter);
+    assert(m_control_changes.find(ccNumber) != m_control_changes.end());
+    EventList& m_ccs = m_control_changes[ccNumber];
+    if (m_ccs[step] != NULL) {
+      // XXX don't do this
+      //delete m_ccs[step];
+      m_ccs[step] = NULL;
       signal_cc_removed(ccNumber, step);
       return step;
     }
@@ -237,7 +272,12 @@ namespace Dino {
   }
 
 
-  Pattern::CCData& Pattern::get_cc(int ccNumber) {
+  const map<int, Pattern::EventList> Pattern::get_controllers() const {
+    return m_control_changes;
+  }
+
+
+  Pattern::EventList& Pattern::get_controller(int ccNumber) {
     assert(ccNumber >= 0 && ccNumber < 128);
     return m_control_changes[ccNumber];
   }
@@ -389,6 +429,7 @@ namespace Dino {
       
       if (list <= 2) {
 	list = 3;
+	const EventList& m_ccs = m_control_changes.find(1)->second;
 	if (m_ccs[i]) {
 	  beat = i / steps;
 	  tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));

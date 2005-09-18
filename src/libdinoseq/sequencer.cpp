@@ -269,30 +269,32 @@ namespace Dino {
     map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
     for ( ; iter != m_song.get_tracks().end(); ++iter) {
       jack_port_t* port = m_output_ports[iter->first];
-      void* port_buf = jack_port_get_buffer(port, nframes);
-      jack_midi_clear_buffer(port_buf, nframes);
+      if (port) {
+	void* port_buf = jack_port_get_buffer(port, nframes);
+	jack_midi_clear_buffer(port_buf, nframes);
+      }
     }
     
     // if we're not rolling, turn off all notes and return
     if (state != JackTransportRolling) {
       if (!m_sent_all_off) {
-	cerr<<"didn't send all off last time"<<endl;
 	for (iter = m_song.get_tracks().begin();
 	     iter != m_song.get_tracks().end(); ++iter) {
 	  jack_port_t* port = m_output_ports[iter->first];
-	  void* port_buf = jack_port_get_buffer(port, nframes);
-	  MIDIEvent& event = MIDIEvent::AllNotesOff;
-	  unsigned char* p = 
-	    jack_midi_write_next_event(port_buf, 0, event.get_size(), nframes);
-	  if (p)
-	    memcpy(p, event.get_data(), event.get_size());
+	  if (port) {
+	    void* port_buf = jack_port_get_buffer(port, nframes);
+	    MIDIEvent& event = MIDIEvent::AllNotesOff;
+	    unsigned char* p = 
+	      jack_midi_write_next_event(port_buf, 0, 
+					 event.get_size(), nframes);
+	    if (p)
+	      memcpy(p, event.get_data(), event.get_size());
+	  }
 	}
 	m_sent_all_off = true;
-	cerr<<"sent all off"<<endl;
       }
       return;
     }
-    cerr<<"resetting all off flag"<<endl;
     m_sent_all_off = false;
   
     // if we are rolling, sequence MIDI
@@ -309,20 +311,23 @@ namespace Dino {
     
       // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->first];
-      void* port_buf = jack_port_get_buffer(port, nframes);
-    
-      // add events in buffer
-      const Track* trk = iter->second;
-      MIDIEvent* event;
-      bool full = false;
-      list = 0;
-      while (!full &&
-	     (event = trk->get_events(beat, tick, last_beat, last_tick, 
-				      (unsigned int)(pos.ticks_per_beat),
-				      list))) {
-	for ( ; event; event = event->get_next()) {
-	  event->set_channel(iter->second->get_channel());
-	  full = !add_event_to_buffer(event, port_buf, beat, tick, pos, nframes);
+      if (port) {
+	void* port_buf = jack_port_get_buffer(port, nframes);
+	
+	// add events in buffer
+	const Track* trk = iter->second;
+	MIDIEvent* event;
+	bool full = false;
+	list = 0;
+	while (!full &&
+	       (event = trk->get_events(beat, tick, last_beat, last_tick, 
+					(unsigned int)(pos.ticks_per_beat),
+					list))) {
+	  for ( ; event; event = event->get_next()) {
+	    event->set_channel(iter->second->get_channel());
+	    full = !add_event_to_buffer(event, port_buf, beat, 
+					tick, pos, nframes);
+	  }
 	}
       }
     }

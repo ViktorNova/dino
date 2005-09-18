@@ -23,8 +23,8 @@ using namespace sigc;
 
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_active_track(-1), m_active_pattern(-1), m_xml(xml), 
-    m_sequence_ruler(32, 1, 4, 20, 20), m_pattern_ruler_1(m_song), 
+  : m_active_track(-1), m_active_pattern(-1), m_active_controller(-1),
+    m_xml(xml), m_sequence_ruler(32, 1, 4, 20, 20), m_pattern_ruler_1(m_song), 
     m_octave_label(20, 8), m_seq("Dino", m_song) {
   
   init_lash(argc, argv);
@@ -175,7 +175,52 @@ void DinoGUI::slot_edit_add_pattern() {
  
 
 void DinoGUI::slot_edit_delete_pattern() {
-  
+  // XXX this must be implemented
+}
+
+
+void DinoGUI::slot_edit_add_controller() {
+  if (m_active_track >= 0 && m_active_pattern >= 0) {
+    Track* trk = m_song.get_tracks().find(m_active_track)->second;
+    Pattern* pat = trk->get_patterns().find(m_active_pattern)->second;
+
+    if (pat != NULL) {
+      m_dlgcont_ent_name->set_text("Untitled");
+      m_dlgcont_cmb_controller.clear();
+      
+      static char tmp[512];
+      map<int, Pattern::EventList>::const_iterator iter = 
+	pat->get_controllers().begin();
+      int selected = -1;
+      
+      for (int i = 0; cc_descriptions[i] != NULL; ++i) {
+	if (iter != pat->get_controllers().end())
+	  cerr<<"iter->first = "<<iter->first<<", i = "<<i<<endl;
+	if ((iter != pat->get_controllers().end()) && (i == iter->first)) {
+	  cerr<<"matching! "<<i<<" == "<<iter->first<<endl;
+	  ++iter;
+	  continue;
+	}
+	if (selected == -1)
+	  selected = i;
+	sprintf(tmp, "%03d ", i);
+	m_dlgcont_cmb_controller.
+	  append_text(string(tmp) + cc_descriptions[i], i);
+      }
+      
+      m_dlgcont_cmb_controller.set_active_id(selected);
+      if (m_dlg_controller_properties->run() == RESPONSE_OK) {
+	pat->add_controller(m_dlgcont_cmb_controller.get_active_id());
+	m_dlg_controller_properties->hide();
+      }
+      
+    }
+  }
+}
+
+
+void DinoGUI::slot_edit_delete_controller() {
+  // XXX this must be implemented
 }
 
 
@@ -207,7 +252,7 @@ void DinoGUI::reset_gui() {
   signal_active_pattern_changed(m_active_track, m_active_pattern);
   update_track_combo();
   update_pattern_combo();
-  m_sb_cc_number->set_value(1);
+  //m_sb_cc_number->set_value(1);
   update_editor_widgets();
   update_track_widgets();
   m_ent_title->set_text(m_song.get_title());
@@ -295,6 +340,28 @@ void DinoGUI::update_pattern_combo() {
 }
 
 
+void DinoGUI::update_controller_combo() {
+  m_cmb_controller.clear();
+  int new_active = m_active_controller;
+  if (m_active_track >= 0 && m_active_pattern >= 0) {
+    const Track* trk = m_song.get_tracks().find(m_active_track)->second;
+    const Pattern* pat = trk->get_patterns().find(m_active_pattern)->second;
+    const map<int, Pattern::EventList>& conts = pat->get_controllers();
+    map<int, Pattern::EventList>::const_iterator iter;
+    char tmp[10];
+    for (iter = conts.begin(); iter != conts.end(); ++iter) {
+      sprintf(tmp, "%03d", iter->first);
+      m_cmb_controller.append_text(tmp, iter->first);
+      if (new_active == -1)
+	new_active = iter->first;
+    }
+  }
+  if (new_active == -1)
+    m_cmb_controller.append_text("No controllers");
+  m_cmb_controller.set_active_id(new_active);
+}
+
+
 void DinoGUI::update_editor_widgets() {
 
 }
@@ -316,8 +383,8 @@ void DinoGUI::update_port_combo() {
 
 
 void DinoGUI::slot_cc_number_changed() {
-  m_lb_cc_description->set_text(cc_descriptions[m_sb_cc_number->get_value_as_int()]);
-  m_cce.set_cc_number(m_sb_cc_number->get_value_as_int());
+  //m_lb_cc_description->set_text(cc_descriptions[m_sb_cc_number->get_value_as_int()]);
+  m_cce.set_cc_number(m_active_controller);
 }
 
 
@@ -348,26 +415,32 @@ void DinoGUI::init_pattern_editor() {
   Box* boxPatternRuler1 = w<Box>("box_pattern_ruler_1");
   HBox* hbx_track_combo = w<HBox>("hbx_track_combo");
   HBox* hbx_pattern_combo = w<HBox>("hbx_pattern_combo");
+  HBox* hbx_controller_combo = w<HBox>("hbx_controller_combo");
   Scrollbar* scbHorizontal = w<Scrollbar>("scb_pattern_editor");
   Scrollbar* scbVertical = w<Scrollbar>("scb_note_editor");
   Box* boxNoteEditor = w<Box>("box_note_editor");
   Box* boxCCEditor = w<Box>("box_cc_editor");
   Box* box_octave_label = w<Box>("box_octave_label");
-  m_sb_cc_number = w<SpinButton>("sb_cc_number");
-  m_lb_cc_description = w<Label>("lb_cc_description");
+  //m_sb_cc_number = w<SpinButton>("sb_cc_number");
+  //m_lb_cc_description = w<Label>("lb_cc_description");
   m_sb_cc_editor_size = w<SpinButton>("sb_cc_editor_size");
   
   // add and connect the combo boxes
   hbx_pattern_combo->pack_start(m_cmb_pattern);
   hbx_track_combo->pack_start(m_cmb_track);
+  hbx_controller_combo->pack_start(m_cmb_controller);
   slot<void> update_tracks = mem_fun(*this, &DinoGUI::update_track_combo);
   slot<void> update_patterns = mem_fun(*this, &DinoGUI::update_pattern_combo);
+  slot<void> update_controllers = mem_fun(*this, 
+					  &DinoGUI::update_controller_combo);
   signal_active_track_changed.
     connect(hide_return(mem_fun(m_cmb_track,&SingleTextCombo::set_active_id)));
   signal_active_track_changed.connect(hide(update_patterns));
   signal_active_pattern_changed.
     connect(hide_return(hide<0>(mem_fun(m_cmb_pattern, 
 					&SingleTextCombo::set_active_id))));
+  signal_active_pattern_changed.connect(hide(hide(update_controllers)));
+  
   m_track_combo_connection = m_cmb_track.signal_changed().
     connect(compose(mem_fun(*this, &DinoGUI::set_active_track),
 		    mem_fun(m_cmb_track, &SingleTextCombo::get_active_id)));
@@ -409,9 +482,9 @@ void DinoGUI::init_pattern_editor() {
   scwOctaveLabel->set_vadjustment(*scwNoteEditor->get_vadjustment());
 
   // connect and setup the CC controls
-  m_sb_cc_number->signal_value_changed().
-    connect(sigc::mem_fun(this, &DinoGUI::slot_cc_number_changed));
-  m_sb_cc_number->set_numeric(true);
+  //m_sb_cc_number->signal_value_changed().
+  //  connect(sigc::mem_fun(this, &DinoGUI::slot_cc_number_changed));
+  //m_sb_cc_number->set_numeric(true);
   m_sb_cc_editor_size->signal_value_changed().
     connect(sigc::mem_fun(this, &DinoGUI::slot_cc_editor_size_changed));
   m_sb_cc_editor_size->set_editable(false);
@@ -428,6 +501,13 @@ void DinoGUI::init_pattern_editor() {
   m_dlgpat_sbn_length = w<SpinButton>("dlgpat_sbn_length");
   m_dlgpat_sbn_steps = w<SpinButton>("dlgpat_sbn_steps");
   m_dlgpat_sbn_cc_steps = w<SpinButton>("dlgpat_sbn_cc_steps");
+
+  // setup the controller properties dialog
+  m_dlg_controller_properties = w<Dialog>("dlg_controller_properties");
+  m_dlgcont_ent_name = w<Entry>("dlgcont_ent_name");
+  HBox* dlgcont_hbx_controller = w<HBox>("dlgcont_hbx_controller");
+  dlgcont_hbx_controller->pack_start(m_dlgcont_cmb_controller);
+  dlgcont_hbx_controller->show_all();
 }
 
 
@@ -498,9 +578,11 @@ void DinoGUI::init_menus() {
   menuSlots["delete1"] = &DinoGUI::slot_edit_delete;
   menuSlots["add_track1"] = &DinoGUI::slot_edit_add_track;
   menuSlots["delete_track1"] = &DinoGUI::slot_edit_delete_track;
-  menuSlots["edit_track_properties1"] = &DinoGUI::slot_edit_edit_track_properties;
+  menuSlots["edit_track_properties1"]=&DinoGUI::slot_edit_edit_track_properties;
   menuSlots["add_pattern1"] = &DinoGUI::slot_edit_add_pattern;
   menuSlots["delete_pattern1"] = &DinoGUI::slot_edit_delete_pattern;
+  menuSlots["add_controller1"] = &DinoGUI::slot_edit_add_controller;
+  menuSlots["delete_controller1"] = &DinoGUI::slot_edit_delete_controller;
   menuSlots["about1"] = &DinoGUI::slot_help_about_dino;
   menuSlots["play1"] = &DinoGUI::slot_transport_play;
   menuSlots["stop1"] = &DinoGUI::slot_transport_stop;
@@ -628,6 +710,15 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     }
     m_pe.set_pattern(pattern);
     m_cce.set_pattern(pattern);
+    set_active_controller(-1);
+  }
+}
+
+
+void DinoGUI::set_active_controller(int active_controller) {
+  if (active_controller != m_active_controller) {
+    m_active_controller = active_controller;
+    signal_active_controller_changed(m_active_controller);
   }
 }
 

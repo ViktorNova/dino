@@ -25,8 +25,8 @@ namespace Dino {
   
   protected:
   
-    int m_read_pos;
-    int m_write_pos;
+    volatile int m_read_pos;
+    volatile int m_write_pos;
     int m_size;
   
     T* m_data;
@@ -35,7 +35,7 @@ namespace Dino {
 
 
   template <class T> Ringbuffer<T>::Ringbuffer(int size) {
-    //dbg1<<"Creating ringbuffer for "<<demangle(typeid(T).name())<<endl;
+    dbg1<<"Creating ringbuffer for "<<demangle(typeid(T).name())<<endl;
     m_data = new T[size];
     m_read_pos = 0;
     m_write_pos = 0;

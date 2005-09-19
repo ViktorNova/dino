@@ -298,17 +298,21 @@ namespace Dino {
     m_sent_all_off = false;
   
     // if we are rolling, sequence MIDI
-    unsigned int beat = pos.bar * (unsigned int)(pos.beats_per_bar) + pos.beat;
-    unsigned int tick = pos.tick;
+    unsigned int first_beat = 
+      pos.bar * (unsigned int)(pos.beats_per_bar) + pos.beat;
+    unsigned int first_tick = pos.tick;
     unsigned int ticks = (unsigned int)
       (nframes * pos.beats_per_minute * pos.ticks_per_beat / 
        (pos.frame_rate * 60.0));
     unsigned int list;
-    unsigned int last_tick = (tick + ticks) % int(pos.ticks_per_beat);
-    unsigned int last_beat = beat + (tick + ticks) / int(pos.ticks_per_beat);
+    unsigned int last_tick = (first_tick + ticks) % int(pos.ticks_per_beat);
+    unsigned int last_beat = 
+      first_beat + (first_tick + ticks) / int(pos.ticks_per_beat);
     for (iter = m_song.get_tracks().begin(); 
 	 iter != m_song.get_tracks().end(); ++iter) {
-    
+      unsigned int beat = first_beat;
+      unsigned int tick = first_tick;
+
       // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->first];
       if (port) {

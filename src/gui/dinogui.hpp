@@ -111,6 +111,8 @@ private:
   connection m_pattern_combo_connection;
   connection m_conn_pat_added;
   connection m_conn_pat_removed;
+  connection m_conn_cont_added;
+  connection m_conn_cont_removed;
   //SpinButton* m_sb_cc_number;
   //Label* m_lb_cc_description;
   SpinButton* m_sb_cc_editor_size;

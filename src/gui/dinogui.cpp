@@ -246,11 +246,13 @@ void DinoGUI::slot_help_about_dino() {
 void DinoGUI::reset_gui() {
   m_active_track = -1;
   m_active_pattern = -1;
+  m_active_controller = -1;
   signal_active_track_changed(m_active_track);
   signal_active_pattern_changed(m_active_track, m_active_pattern);
+  signal_active_controller_changed(m_active_controller);
   update_track_combo();
   update_pattern_combo();
-  //m_sb_cc_number->set_value(1);
+  update_controller_combo();
   update_editor_widgets();
   update_track_widgets();
   m_ent_title->set_text(m_song.get_title());
@@ -698,13 +700,22 @@ void DinoGUI::set_active_pattern(int active_pattern) {
   if (active_pattern != m_active_pattern) {
     m_active_pattern = active_pattern;
     signal_active_pattern_changed(m_active_track, m_active_pattern);
+    m_conn_cont_added.disconnect();
+    m_conn_cont_removed.disconnect();
     Pattern* pattern = NULL;
     map<int, Track*>::iterator iter = m_song.get_tracks().find(m_active_track);
     if (iter != m_song.get_tracks().end()) {
       map<int, Pattern*>::iterator iter2 = 
 	iter->second->get_patterns().find(m_active_pattern);
-      if (iter2 != iter->second->get_patterns().end())
+      if (iter2 != iter->second->get_patterns().end()) {
 	pattern = iter2->second;
+	slot<void> u_slot = 
+	  mem_fun(*this, &DinoGUI::update_controller_combo);
+	m_conn_cont_added = 
+	  pattern->signal_controller_added.connect(hide(u_slot));
+	m_conn_cont_added = 
+	  pattern->signal_controller_removed.connect(hide(u_slot));
+      }
     }
     m_pe.set_pattern(pattern);
     m_cce.set_pattern(pattern);

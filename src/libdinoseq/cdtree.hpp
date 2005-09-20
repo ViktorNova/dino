@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+#include "deletable.hpp"
+
 
 using namespace std;
 
@@ -216,7 +218,7 @@ void CDTreeNode<T>::delete_children() {
     its elements, but uses much less memory for sparse lists than a
     vector would do. */
 template <class T>
-class CDTree {
+class CDTree : public Deletable {
 public:
   
   /** This constructor creates a new CDTree object with room for @c size

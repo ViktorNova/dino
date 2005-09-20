@@ -29,14 +29,6 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   
   init_lash(argc, argv);
   
-  signal_timeout().connect(bind_return(mem_fun(g_event_deleter, 
-					       &Deleter<Dino::MIDIEvent>::do_delete),
-				       true), 100);
-  signal_timeout().
-    connect(bind_return(mem_fun(g_tempochange_deleter, 
-				&Deleter< CDTree<TempoMap::TempoChange*> >::do_delete),
-			true), 100);
-  
   m_window = w<Gtk::Window>("main_window");
   m_about_dialog = w<Dialog>("dlg_about");
   
@@ -175,7 +167,10 @@ void DinoGUI::slot_edit_add_pattern() {
  
 
 void DinoGUI::slot_edit_delete_pattern() {
-  // XXX this must be implemented
+  if (m_active_track < 0 || m_active_pattern < 0)
+    return;
+  Track* trk = m_song.get_track(m_active_track);
+  trk->remove_pattern(m_active_pattern);
 }
 
 

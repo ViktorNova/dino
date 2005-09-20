@@ -27,6 +27,8 @@
 #define NULL 0
 #endif
 
+#include "deletable.hpp"
+
 
 namespace Dino {
 
@@ -35,7 +37,7 @@ namespace Dino {
       information about the type of event and the data assiciated
       with the event, as well as where in the Pattern the event appears
       and other related information. */
-  class MIDIEvent {
+  class MIDIEvent : public Deletable {
   public:
   
     MIDIEvent(unsigned char type, int stp, int val, 

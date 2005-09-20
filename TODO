@@ -6,7 +6,7 @@ Should be done before 0.2:
  [ ] Change song length
  [X] Creating and deleting tracks
  [X] Changing track properties (label, MIDI port, MIDI channel)
- [/] Creating and deleting patterns
+ [X] Creating and deleting patterns
  [ ] Changing pattern properties (label, length, note resolution, CC resolution)
  [X] Editing note events in patterns
  [\] Editing CC and pitch bend events in patterns

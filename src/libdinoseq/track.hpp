@@ -7,6 +7,8 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
+#include "deletable.hpp"
+
 
 using namespace Glib;
 using namespace sigc;
@@ -24,7 +26,7 @@ namespace Dino {
       and how that instrument is played. It has a list of patterns, and a
       sequence that says when those patterns are played. 
   */
-  class Track {
+  class Track : public Deletable {
   public:
   
     /** This struct contains information about a sequence entry, i.e. a
@@ -56,6 +58,7 @@ namespace Dino {
     // mutators
     void set_name(const string& name);
     int add_pattern(const string& name, int length, int steps, int ccSteps);
+    void remove_pattern(int id);
     void set_sequence_entry(int beat, int pattern, int length = -1);
     void set_seq_entry_length(unsigned int beat, unsigned int length);
     bool remove_sequence_entry(int beat);

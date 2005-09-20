@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "debug.hpp"
+#include "deleter.hpp"
 #include "midievent.hpp"
 #include "pattern.hpp"
 #include "track.hpp"
@@ -94,6 +95,18 @@ namespace Dino {
     m_patterns[id] = new Pattern(name, length, steps, ccSteps);
     signal_pattern_added(id);
     return id;
+  }
+
+  
+  /** Removes the pattern with the given ID. */
+  void Track::remove_pattern(int id) {
+    // XXX Make sure that this is threadsafe
+    map<int, Pattern*>::iterator iter = m_patterns.find(id);
+    if (iter != m_patterns.end()) {
+      g_deletable_deleter.queue_deletion(iter->second);
+      m_patterns.erase(iter);
+      signal_pattern_removed(id);
+    }
   }
 
 

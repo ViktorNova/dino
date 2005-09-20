@@ -9,6 +9,8 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
+#include "deletable.hpp"
+
 
 using namespace Glib;
 using namespace sigc;
@@ -24,7 +26,7 @@ namespace Dino {
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
       by the sequencer. */
-  class Pattern {
+  class Pattern : public Deletable {
   public:
   
     Pattern(const string& name, int length, int steps, int cc_steps);

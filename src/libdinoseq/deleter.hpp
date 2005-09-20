@@ -1,10 +1,15 @@
 #ifndef DELETER_HPP
 #define DELETER_HPP
 
+#include <glibmm.h>
+
 #include "debug.hpp"
 #include "midievent.hpp"
 #include "ringbuffer.hpp"
 #include "tempomap.hpp"
+
+
+using namespace Glib;
 
 
 namespace Dino {
@@ -16,8 +21,10 @@ namespace Dino {
   
     Deleter() : m_objects_not_used(1000), m_objects_to_delete(1000) {
       dbg1<<"Initialising deallocator for "<<demangle(typeid(T).name())<<endl;
+      signal_timeout().
+	connect(bind_return(mem_fun(*this, &Deleter<T>::do_delete), true), 100);
     }
-  
+    
     bool queue_deletion(T* pointer) {
       //cerr<<"Queuing deletion of "<<pointer<<endl;
       return m_objects_not_used.push(pointer);
@@ -45,9 +52,9 @@ namespace Dino {
   };
 
 
-  extern Deleter<MIDIEvent> g_event_deleter;
-  extern Deleter< CDTree<TempoMap::TempoChange*> > g_tempochange_deleter;
-
+  //extern Deleter<MIDIEvent> g_event_deleter;
+  //extern Deleter< CDTree<TempoMap::TempoChange*> > g_tempochange_deleter;
+  extern Deleter<Deletable> g_deletable_deleter;
 
 }
 

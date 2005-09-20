@@ -232,8 +232,8 @@ namespace Dino {
     jack_transport_state_t state = jack_transport_query(m_jack_client, &pos);
   
     // first, tell the GUI thread that it's OK to delete unused objects
-    g_event_deleter.confirm();
-    g_tempochange_deleter.confirm();
+    g_deletable_deleter.confirm();
+    //g_tempochange_deleter.confirm();
   
     // no valid time info, don't do anything
     if (!(pos.valid & JackTransportBBT))

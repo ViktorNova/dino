@@ -108,7 +108,7 @@ namespace Dino {
     m_frame2tc = tmp;
     // we can't really do this here, needs to be taken care of in the Deleter
     //delete tmp2;
-    g_tempochange_deleter.queue_deletion(tmp2);
+    g_deletable_deleter.queue_deletion(tmp2);
   
     // END OF CRITICAL SECTION
   
@@ -157,7 +157,7 @@ namespace Dino {
     m_frame2tc = tmp;
     // we can't really do this here, needs to be taken care of in the Deleter
     //delete tmp2;
-    g_tempochange_deleter.queue_deletion(tmp2);
+    g_deletable_deleter.queue_deletion(tmp2);
   
     // END OF CRITICAL SECTION
   

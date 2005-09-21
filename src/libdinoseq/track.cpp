@@ -25,8 +25,12 @@ namespace Dino {
     map<int, Pattern*>::iterator iter;
     for (iter = m_patterns.begin(); iter != m_patterns.end(); ++iter)
       delete iter->second;
-    for (unsigned int i = 0; i < m_sequence.size(); ++i)
-      delete m_sequence[i];
+    SequenceEntry* ptr = NULL;
+    for (unsigned int i = 0; i < m_sequence.size(); ++i) {
+      if (m_sequence[i] != ptr)
+	delete m_sequence[i];
+      ptr = m_sequence[i];
+    }
   }
 
 

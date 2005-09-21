@@ -197,6 +197,8 @@ namespace Dino {
 
   /** Set the length of the track. Only the Song should do this. */
   void Track::set_length(int length) {
+    // XXX delete and shorten sequence entries to fit the new length
+    // and make sure that it's threadsafe!
     if (length != m_length) {
       m_length = length;
       signal_length_changed(m_length);

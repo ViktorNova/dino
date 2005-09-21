@@ -44,6 +44,7 @@ namespace Dino {
     void set_title(const string& title);
     void set_author(const string& author);
     void set_info(const string& info);
+    void set_length(int length);
     int add_track(const string& name = "");
     bool remove_track(int id);
     void add_tempo_change(int beat, double bpm);

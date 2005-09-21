@@ -9,7 +9,7 @@ Should be done before 0.2:
  [X] Creating and deleting patterns
  [ ] Changing pattern properties (label, length, note resolution, CC resolution)
  [X] Editing note events in patterns
- [\] Editing CC and pitch bend events in patterns
+ [/] Editing CC and pitch bend events in patterns
  [X] Arrange patterns
  [X] Add, edit, and delete tempo changes
  [X] Play MIDI note events

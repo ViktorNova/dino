@@ -5,6 +5,7 @@
 #include <libxml++/libxml++.h>
 
 #include "debug.hpp"
+#include "deleter.hpp"
 #include "song.hpp"
 #include "track.hpp"
 
@@ -63,6 +64,18 @@ namespace Dino {
   }
 
 
+  void Song::set_length(int length) {
+    // XXX implement this - must be threadsafe since the sequencer uses it
+    if (length != m_length) {
+      map<int, Track*>::iterator iter;
+      for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter)
+	iter->second->set_length(length);
+      m_length = length;
+      signal_length_changed(length);
+    }
+  }
+
+
   int Song::add_track(const string& name) {
     map<int, Track*>::reverse_iterator iter = m_tracks.rbegin();
     int id;
@@ -81,7 +94,7 @@ namespace Dino {
     map<int, Track*>::iterator iter = m_tracks.find(id);
     if (iter == m_tracks.end())
       return false;
-    delete iter->second;
+    g_deletable_deleter.queue_deletion(iter->second);
     m_tracks.erase(iter);
     m_dirty = true;
     signal_track_removed(id);

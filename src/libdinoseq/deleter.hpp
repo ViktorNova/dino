@@ -2,7 +2,7 @@
 #define DELETER_HPP
 
 #include <glibmm.h>
-
+#include <sigc++/sigc++.h>
 #include "debug.hpp"
 #include "midievent.hpp"
 #include "ringbuffer.hpp"
@@ -10,6 +10,7 @@
 
 
 using namespace Glib;
+using namespace sigc;
 
 
 namespace Dino {
@@ -21,8 +22,13 @@ namespace Dino {
   
     Deleter() : m_objects_not_used(1000), m_objects_to_delete(1000) {
       dbg1<<"Initialising deallocator for "<<demangle(typeid(T).name())<<endl;
-      signal_timeout().
+      m_connection = signal_timeout().
 	connect(bind_return(mem_fun(*this, &Deleter<T>::do_delete), true), 100);
+    }
+    
+    ~Deleter() {
+      dbg1<<"Destroying deallocator for "<<demangle(typeid(T).name())<<endl;
+      m_connection.disconnect();
     }
     
     bool queue_deletion(T* pointer) {
@@ -48,7 +54,7 @@ namespace Dino {
   
     Ringbuffer<T*> m_objects_not_used;
     Ringbuffer<T*> m_objects_to_delete;
-  
+    connection m_connection;
   };
 
 

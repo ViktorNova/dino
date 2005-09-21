@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 
 # Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.1.78)
+AC_INIT(dino, 0.1.79)
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src/gui/main.cpp])
 AM_INIT_AUTOMAKE

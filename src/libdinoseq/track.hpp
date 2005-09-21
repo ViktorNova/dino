@@ -50,6 +50,7 @@ namespace Dino {
     const string& get_name() const;
     map<int, Pattern*>& get_patterns();
     const map<int, Pattern*>& get_patterns() const;
+    Pattern* get_pattern(int id);
     //const vector<SequenceEntry*>& get_sequence() const;
     const SequenceEntry* get_seq_entry(unsigned int beat);
     int get_channel() const;

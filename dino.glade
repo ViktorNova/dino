@@ -188,6 +188,15 @@
 		  </child>
 
 		  <child>
+		    <widget class="GtkMenuItem" id="edit_pattern_properties1">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">Edit pattern propert_ies</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="on_edit_pattern_properties1_activate" last_modification_time="Wed, 21 Sep 2005 20:40:30 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
 		    <widget class="GtkMenuItem" id="add_controller1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">Add c_ontroller</property>

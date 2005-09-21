@@ -47,6 +47,7 @@ public:
   void slot_edit_edit_track_properties();
   void slot_edit_add_pattern();
   void slot_edit_delete_pattern();
+  void slot_edit_edit_pattern_properties();
   void slot_edit_add_controller();
   void slot_edit_delete_controller();
   

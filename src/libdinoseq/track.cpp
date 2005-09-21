@@ -54,6 +54,14 @@ namespace Dino {
   }
 
 
+  Pattern* Track::get_pattern(int id) {
+    map<int, Pattern*>::iterator iter = m_patterns.find(id);
+    if (iter != m_patterns.end())
+      return iter->second;
+    return NULL;
+  }
+
+
   /** Returns the sequence as a map of ints indexed by ints. This will probably
       be removed or made const in the future. */
   /*const vector<Track::SequenceEntry*>& Track::get_sequence() const {

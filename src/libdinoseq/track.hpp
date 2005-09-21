@@ -31,7 +31,7 @@ namespace Dino {
   
     /** This struct contains information about a sequence entry, i.e. a
 	scheduled start and length for a pattern. */
-    struct SequenceEntry {
+    struct SequenceEntry : public Deletable {
       SequenceEntry(int patID, Pattern* patPtr, 
 		    unsigned int st, unsigned int len) 
 	: pattern_id(patID), pattern(patPtr), start(st), length(len) { }

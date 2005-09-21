@@ -104,9 +104,14 @@ namespace Dino {
   
   /** Removes the pattern with the given ID. */
   void Track::remove_pattern(int id) {
-    // XXX Make sure that this is threadsafe
     map<int, Pattern*>::iterator iter = m_patterns.find(id);
     if (iter != m_patterns.end()) {
+      
+      for (unsigned int i = 0; i < m_sequence.size(); ++i) {
+	if (m_sequence[i] && m_sequence[i]->pattern == iter->second)
+	  remove_sequence_entry(i);
+      }
+      
       g_deletable_deleter.queue_deletion(iter->second);
       m_patterns.erase(iter);
       signal_pattern_removed(id);
@@ -190,9 +195,11 @@ namespace Dino {
     assert(beat < m_length);
     SequenceEntry* se = m_sequence[beat];
     if (se) {
+      int start = se->start;
       for (int i = se->start + se->length - 1; i >= int(se->start); --i)
 	m_sequence[i] = NULL;
-      delete se;
+      g_deletable_deleter.queue_deletion(se);
+      signal_sequence_entry_removed(start);
       return true;
     }
     return false;

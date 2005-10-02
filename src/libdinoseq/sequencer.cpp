@@ -351,8 +351,9 @@ namespace Dino {
       <<"\t"<<int(event->get_channel())
       <<endl;
     */
-  
-    double dt = (beat - pos.beat) * pos.ticks_per_beat + tick - pos.tick;
+    
+    double dt = (beat - (pos.beat + pos.bar * pos.beats_per_bar)) * 
+      pos.ticks_per_beat + tick - pos.tick;
     jack_nframes_t frame = 
       jack_nframes_t(dt * 60 * pos.frame_rate / 
 		     (pos.ticks_per_beat * pos.beats_per_minute));

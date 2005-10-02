@@ -320,16 +320,19 @@ namespace Dino {
     elt->set_attribute("ccsteps", tmp_txt);
     for (unsigned int i = 0; i < m_note_ons.size(); ++i) {
       MIDIEvent* ne = m_note_ons[i];
-      if (ne && ne->get_type() == MIDIEvent::NoteOn) {
-	Element* note_elt = elt->add_child("note");
-	sprintf(tmp_txt, "%d", ne->get_step());
-	note_elt->set_attribute("step", tmp_txt);
-	sprintf(tmp_txt, "%d", ne->get_note());
-	note_elt->set_attribute("value", tmp_txt);
-	sprintf(tmp_txt, "%d", ne->get_length());
-	note_elt->set_attribute("length", tmp_txt);
-	sprintf(tmp_txt, "%d", ne->get_velocity());
-	note_elt->set_attribute("velocity", tmp_txt);
+      while (ne) {
+	if (ne->get_type() == MIDIEvent::NoteOn) {
+	  Element* note_elt = elt->add_child("note");
+	  sprintf(tmp_txt, "%d", ne->get_step());
+	  note_elt->set_attribute("step", tmp_txt);
+	  sprintf(tmp_txt, "%d", ne->get_note());
+	  note_elt->set_attribute("value", tmp_txt);
+	  sprintf(tmp_txt, "%d", ne->get_length());
+	  note_elt->set_attribute("length", tmp_txt);
+	  sprintf(tmp_txt, "%d", ne->get_velocity());
+	  note_elt->set_attribute("velocity", tmp_txt);
+	}
+	ne = ne->get_next();
       }
     }
     return true;
@@ -359,8 +362,11 @@ namespace Dino {
 	     "%d", &value);
       sscanf(note_elt->get_attribute("length")->get_value().c_str(), 
 	     "%d", &length);
-      sscanf(note_elt->get_attribute("velocity")->get_value().c_str(), 
-	     "%d", &velocity);
+      velocity = 64;
+      if (note_elt->get_attribute("velocity")) {
+	sscanf(note_elt->get_attribute("velocity")->get_value().c_str(), 
+	       "%d", &velocity);
+      }
       add_note(step, value, velocity, length);
     }
     return true;

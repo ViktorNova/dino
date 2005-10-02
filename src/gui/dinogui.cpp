@@ -255,6 +255,7 @@ void DinoGUI::slot_transport_go_to_start() {
 void DinoGUI::slot_help_about_dino() {
   assert(m_about_dialog != NULL);
   m_about_dialog->run();
+  m_about_dialog->hide();
 }
 
 

@@ -31,6 +31,8 @@ TempoWidget::TempoWidget(Song* song)
   
   // connect signals
   song->signal_tempo_changed.connect(mem_fun(*this, &TempoWidget::update));
+  song->signal_length_changed.
+    connect(mem_fun(*this, &TempoWidget::length_changed));
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   set_size_request(m_col_width * m_song->get_length(), m_col_width);
@@ -194,4 +196,9 @@ void TempoWidget::update() {
   RefPtr<Gdk::Window> win = get_window();
   win->invalidate_rect(Rectangle(0, 0, get_width(), get_height()), false);
   win->process_updates(false);
+}
+
+
+void TempoWidget::length_changed(int length) {
+  set_size_request(m_col_width * length, m_col_width);
 }

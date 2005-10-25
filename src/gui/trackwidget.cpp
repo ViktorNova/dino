@@ -32,6 +32,9 @@ TrackWidget::TrackWidget(const Song* song)
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   set_size_request(m_col_width * m_song->get_length(), m_col_width + 4);
+  
+  song->signal_length_changed.
+    connect(mem_fun(*this, &TrackWidget::slot_length_changed));
 }
   
 
@@ -192,6 +195,11 @@ void TrackWidget::slot_insert_pattern(int pattern, int position) {
   int length = m_track->get_patterns()[pattern]->get_length();
   m_track->set_sequence_entry(position, pattern, length);
   update();
+}
+
+
+void TrackWidget::slot_length_changed(int length) {
+  set_size_request(m_col_width * length, m_col_width + 4);
 }
 
 

@@ -30,6 +30,7 @@ public:
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   
   void slot_insert_pattern(int pattern, int position);
+  void slot_length_changed(int length);
   
   void update();
   

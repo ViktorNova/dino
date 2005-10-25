@@ -29,6 +29,8 @@ public:
   
 private:
   
+  void length_changed(int length);
+  
   Song* m_song;
   int m_col_width;
 

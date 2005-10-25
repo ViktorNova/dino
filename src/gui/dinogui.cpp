@@ -38,6 +38,9 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   init_menus();
   reset_gui();
   
+  m_song.signal_length_changed.
+    connect(mem_fun(m_sequence_ruler, &::Ruler::set_length));
+  
   m_window->show_all();
 }
 
@@ -234,6 +237,12 @@ void DinoGUI::slot_edit_add_controller() {
 
 void DinoGUI::slot_edit_delete_controller() {
   // XXX this must be implemented
+}
+
+
+void DinoGUI::slot_edit_set_song_length() {
+  // XXX this must be properly implemented
+  m_song.set_length(63);
 }
 
 
@@ -586,6 +595,7 @@ void DinoGUI::init_menus() {
     &DinoGUI::slot_edit_edit_pattern_properties;
   menuSlots["add_controller1"] = &DinoGUI::slot_edit_add_controller;
   menuSlots["delete_controller1"] = &DinoGUI::slot_edit_delete_controller;
+  menuSlots["set_song_length1"] = &DinoGUI::slot_edit_set_song_length;
   menuSlots["about1"] = &DinoGUI::slot_help_about_dino;
   menuSlots["play1"] = &DinoGUI::slot_transport_play;
   menuSlots["stop1"] = &DinoGUI::slot_transport_stop;

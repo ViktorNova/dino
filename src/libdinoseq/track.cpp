@@ -360,7 +360,8 @@ namespace Dino {
 
 
   MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
-			       unsigned int before_beat, unsigned int before_tick,
+			       unsigned int before_beat, 
+			       unsigned int before_tick,
 			       unsigned int ticks_per_beat,
 			       unsigned int& list) const {
   
@@ -380,7 +381,7 @@ namespace Dino {
 	if (before_beat - se->start >= se->length)
 	  btick = 0;
 	MIDIEvent* event = se->pattern->get_events(beat, tick, 
-						   before_beat- se->start,
+						   before_beat - se->start,
 						   btick, ticks_per_beat,
 						   list);
 	beat += se->start;
@@ -393,6 +394,14 @@ namespace Dino {
     }
   
     return NULL;
+  }
+
+
+  int Track::get_events2(unsigned int& beat, unsigned int& tick, 
+			 unsigned int before_beat, unsigned int before_tick, 
+			 unsigned int ticks_per_beat, 
+			 MIDIEvent** events, int room) const {
+    return 0;
   }
 
 

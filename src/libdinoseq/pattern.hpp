@@ -63,11 +63,15 @@ namespace Dino {
     void make_clean() const;
     bool fill_xml_node(Element* elt) const;
     bool parse_xml_node(const Element* elt);
-  
+    
+    // sequencing
     MIDIEvent* get_events(unsigned int& beat, unsigned int& tick, 
 			  unsigned int before_beat, unsigned int before_tick,
 			  unsigned int ticks_per_beat, unsigned int& list) const;
-  
+    int get_events2(unsigned int& beat, unsigned int& tick,
+		    unsigned int before_beat, unsigned int before_tick,
+		    unsigned int ticks_per_beat, 
+		    MIDIEvent** events, int room) const;
   public:
   
     sigc::signal<void, string> signal_name_changed;

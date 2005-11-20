@@ -244,7 +244,7 @@ namespace Dino {
   
     // at the end of the song, stop and go back to the beginning
     if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length()) {
-      cerr<<"At the end, stopping"<<endl;
+      //cerr<<"At the end, stopping"<<endl;
       jack_transport_stop(m_jack_client);
       jack_transport_locate(m_jack_client, 0);
       return 0;

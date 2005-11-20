@@ -443,6 +443,14 @@ namespace Dino {
   }
 
 
+  int Pattern::get_events2(unsigned int& beat, unsigned int& tick,
+			   unsigned int before_beat, unsigned int before_tick,
+			   unsigned int ticks_per_beat, 
+			   MIDIEvent** events, int room) const {
+    return 0;
+  }
+  
+
   MIDIEvent* Pattern::find_note(int step, int value) {
     MIDIEvent* event;
   

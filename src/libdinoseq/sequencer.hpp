@@ -113,6 +113,8 @@ namespace Dino {
 			     const jack_position_t& pos, jack_nframes_t nframes);
   
     string m_client_name;
+    /* XXX The below is false, I think. Everything should be readable by
+       the audio thread at all times without locking any mutii. */
     /** No one is allowed to read or write anything in this variable without
 	locking m_song.get_big_mutex() - the exception is the list of tempo 
 	changes, which always must be readable for the JACK timebase 
@@ -127,7 +129,9 @@ namespace Dino {
     int m_last_beat;
     int m_last_tick;
     bool m_sent_all_off;
-  
+    static const int m_event_buffer_size = 1024;
+    MIDIEvent* m_event_buffer[m_event_buffer_size];
+    
     volatile int m_current_beat;
     volatile int m_old_current_beat;
   };

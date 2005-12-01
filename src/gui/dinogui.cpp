@@ -643,8 +643,8 @@ void DinoGUI::init_info_editor() {
 
 bool DinoGUI::init_lash(int argc, char** argv) {
   dbg1<<"Initialising LASH client"<<endl;
-  m_lash_client = lash_init(lash_extract_args(&argc, &argv), PACKAGE_NAME, 
-			    LASH_Config_File, LASH_PROTOCOL(2, 0));
+  m_lash_client = lash_init2(lash_extract_args(&argc, &argv), PACKAGE_NAME, 
+			     LASH_Config_File, LASH_PROTOCOL(2, 0));
   
   if (m_lash_client) {
     lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);

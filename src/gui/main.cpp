@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
     Main::run(*dino.get_window());
   }
   else {
-    cerr<<"Could not load the GUI!"<<endl;
+    dbg0<<"Could not load the GUI"<<endl;
     return 1;
   }
   

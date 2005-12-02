@@ -9,7 +9,6 @@
 #include "tempomap.hpp"
 
 
-using namespace sigc;
 using namespace std;
 
 
@@ -65,13 +64,13 @@ namespace Dino {
   
   public:
   
-    mutable signal<void, const string&> signal_title_changed;
-    mutable signal<void, const string&> signal_author_changed;
-    mutable signal<void, const string&> signal_info_changed;
-    mutable signal<void, int> signal_length_changed;
-    mutable signal<void, int> signal_track_added;
-    mutable signal<void, int> signal_track_removed;
-    mutable signal<void> signal_tempo_changed;
+    mutable sigc::signal<void, const string&> signal_title_changed;
+    mutable sigc::signal<void, const string&> signal_author_changed;
+    mutable sigc::signal<void, const string&> signal_info_changed;
+    mutable sigc::signal<void, int> signal_length_changed;
+    mutable sigc::signal<void, int> signal_track_added;
+    mutable sigc::signal<void, int> signal_track_removed;
+    mutable sigc::signal<void> signal_tempo_changed;
   
   private:
   

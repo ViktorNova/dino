@@ -11,7 +11,6 @@ namespace Dino {
 using namespace Gtk;
 using namespace Gdk;
 using namespace Glib;
-using namespace sigc;
 using namespace Dino;
 
 
@@ -30,7 +29,7 @@ public:
 
 public:
   
-  signal<void, double, int> signal_clicked;
+  sigc::signal<void, double, int> signal_clicked;
   
 private:
   

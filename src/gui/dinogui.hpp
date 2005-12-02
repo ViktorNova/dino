@@ -18,7 +18,6 @@
 using namespace Glib;
 using namespace Gnome::Glade;
 using namespace Gtk;
-using namespace sigc;
 using namespace std;
 using namespace Dino;
 
@@ -90,9 +89,9 @@ private:
   void set_active_controller(int active_controller);
   
   // internal signals
-  signal<void, int> signal_active_track_changed;
-  signal<void, int, int> signal_active_pattern_changed;
-  signal<void, int> signal_active_controller_changed;
+  sigc::signal<void, int> signal_active_track_changed;
+  sigc::signal<void, int, int> signal_active_pattern_changed;
+  sigc::signal<void, int> signal_active_controller_changed;
   
   Song m_song;
   int m_active_track;

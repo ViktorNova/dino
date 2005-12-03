@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <iostream>
+#include <cassert>
 
 #include "debug.hpp"
 #include "deleter.hpp"

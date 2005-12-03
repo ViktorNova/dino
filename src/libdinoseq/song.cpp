@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <inttypes.h>
+#include <cassert>
 
 #include <libxml++/libxml++.h>
 

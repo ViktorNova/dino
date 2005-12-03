@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <iostream>
+#include <cassert>
 
 extern "C" {
 #include <jack/midiport.h>

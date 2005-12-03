@@ -2,6 +2,7 @@
 #define CDTREE_HPP
 
 #include <cmath>
+#include <cassert>
 
 #include "deletable.hpp"
 

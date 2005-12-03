@@ -91,7 +91,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     m_drag_note = note;
     
     switch (event->button) {
-
+      
       // button 1 adds notes
     case 1: {
       m_pat->add_note(step, note, 64, 1);
@@ -212,7 +212,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
     }
     break;
   }
-    
+
   default:
     break;
   }

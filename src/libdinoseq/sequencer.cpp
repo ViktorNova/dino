@@ -288,8 +288,8 @@ namespace Dino {
 	    void* port_buf = jack_port_get_buffer(port, nframes);
 	    MIDIEvent& event = MIDIEvent::AllNotesOff;
 	    unsigned char* p = 
-	      jack_midi_write_next_event(port_buf, 0, 
-					 event.get_size(), nframes);
+	      jack_midi_event_reserve(port_buf, 0, 
+				      event.get_size(), nframes);
 	    if (p)
 	      memcpy(p, event.get_data(), event.get_size());
 	  }
@@ -360,7 +360,7 @@ namespace Dino {
     jack_nframes_t frame = 
       jack_nframes_t(dt * 60 * pos.frame_rate / 
 		     (pos.ticks_per_beat * pos.beats_per_minute));
-    unsigned char* p = jack_midi_write_next_event(port_buf, frame, 3, nframes);
+    unsigned char* p = jack_midi_event_reserve(port_buf, frame, 3, nframes);
     if (p) {
       p[0] = event->get_type();
       p[1] = event->get_note();

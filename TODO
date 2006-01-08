@@ -17,12 +17,23 @@ Should be done before 0.2:
  [X] Support for CCA events Save_File, Restore_File, and Quit
  [ ] Play MIDI CC and pitch bend events
 
-Later:
+Later (before 0.4?):
 
  [ ] Record MIDI note events
  [ ] Record MIDI CC and pitch bend events
  [ ] Play loops, set loop points
  [ ] Control the sequencer with OSC commands
  [ ] Edit the song with OSC commands
- [ ] Write a Python wrapper for OSC control
+ [ ] Write a Python wrapper for OSC control or embed Python directly
  
+Crazy ideas:
+
+ * Redesign the pattern and sequencer classes so there can be different pattern
+   types with plugins (DSSI maybe?) that provides editor GUI and sequencing
+   for particular pattern types. There could be drum patterns, 303-like 
+   monophonic patterns with slide and accent, free-form MIDI event patterns etc.
+
+ * Add OSC sequencing, both for CC-like control values and arbitrary OSC events.
+
+ * Add export to Ogg Vorbis or other audio formats using JACK freewheeling 
+   and recording.

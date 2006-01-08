@@ -240,9 +240,9 @@ void DinoGUI::slot_edit_delete_controller() {
 }
 
 
-void DinoGUI::slot_edit_set_song_length() {
+void DinoGUI::slot_edit_set_song_length(int song_length) {
   // XXX this must be properly implemented
-  m_song.set_length(63);
+  m_song.set_length(song_length);
 }
 
 
@@ -527,6 +527,7 @@ void DinoGUI::init_sequence_editor() {
   Scrollbar* scbHorizontal = w<Scrollbar>("scbh_arrangement_editor");
   Scrollbar* scbVertical = w<Scrollbar>("scbv_arrangement_editor");
   Box* boxSequenceRuler = w<Box>("box_sequence_ruler");
+  SpinButton* spb_song_length = w<SpinButton>("sbn_song_length");
   
   // add the ruler
   EvilScrolledWindow* scwSequenceRuler = 
@@ -562,8 +563,14 @@ void DinoGUI::init_sequence_editor() {
   m_song.signal_track_added.connect(update_track_view);
   m_song.signal_track_removed.connect(update_track_view);
   m_song.signal_length_changed.connect(update_track_view);
+  m_song.signal_length_changed.connect(mem_fun(*spb_song_length,
+					       &SpinButton::set_value));
+  spb_song_length->signal_value_changed().
+    connect(compose(mem_fun(m_song, &Song::set_length),
+		    mem_fun(*spb_song_length, &SpinButton::get_value_as_int)));
   m_sequence_ruler.signal_clicked.
     connect(hide(mem_fun(m_seq, &Sequencer::go_to_beat)));
+  
   
   // setup the track properties dialog
   m_dlg_track_properties = w<Dialog>("dlg_track_properties");
@@ -595,7 +602,6 @@ void DinoGUI::init_menus() {
     &DinoGUI::slot_edit_edit_pattern_properties;
   menuSlots["add_controller1"] = &DinoGUI::slot_edit_add_controller;
   menuSlots["delete_controller1"] = &DinoGUI::slot_edit_delete_controller;
-  menuSlots["set_song_length1"] = &DinoGUI::slot_edit_set_song_length;
   menuSlots["about1"] = &DinoGUI::slot_help_about_dino;
   menuSlots["play1"] = &DinoGUI::slot_transport_play;
   menuSlots["stop1"] = &DinoGUI::slot_transport_stop;

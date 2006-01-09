@@ -4,7 +4,7 @@
 
 #include "debug.hpp"
 #include "deleter.hpp"
-#include "basemidievent.hpp"
+#include "midievent.hpp"
 #include "pattern.hpp"
 #include "track.hpp"
 
@@ -360,7 +360,7 @@ namespace Dino {
   }
 
 
-  BaseMIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
+  MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
 				   unsigned int before_beat, 
 				   unsigned int before_tick,
 				   unsigned int ticks_per_beat,
@@ -381,7 +381,7 @@ namespace Dino {
 	unsigned int btick = before_tick;
 	if (before_beat - se->start >= se->length)
 	  btick = 0;
-	BaseMIDIEvent* event = se->pattern->get_events(beat, tick, 
+	MIDIEvent* event = se->pattern->get_events(beat, tick, 
 						       before_beat - se->start,
 						       btick, ticks_per_beat,
 						       list);
@@ -389,7 +389,7 @@ namespace Dino {
 	if (event)
 	  return event;
 	if (beat >= se->start + se->length) {
-	  return &BaseMIDIEvent::AllNotesOff;
+	  return &MIDIEvent::AllNotesOff;
 	}
       }
     }
@@ -401,7 +401,7 @@ namespace Dino {
   int Track::get_events2(unsigned int& beat, unsigned int& tick, 
 			 unsigned int before_beat, unsigned int before_tick, 
 			 unsigned int ticks_per_beat, 
-			 BaseMIDIEvent** events, int room) const {
+			 MIDIEvent** events, int room) const {
     return 0;
   }
 

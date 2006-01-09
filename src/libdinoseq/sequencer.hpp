@@ -15,7 +15,7 @@ using namespace std;
 namespace Dino {
 
 
-  class BaseMIDIEvent;
+  class MIDIEvent;
   class Song;
 
 
@@ -106,7 +106,7 @@ namespace Dino {
 		       const jack_position_t& pos, jack_nframes_t nframes);
     /** This function adds a MIDI event to a JACK MIDI output buffer. It is
 	used by sequence_midi(). */
-    bool add_event_to_buffer(BaseMIDIEvent* event, void* port_buf,
+    bool add_event_to_buffer(MIDIEvent* event, void* port_buf,
 			     unsigned int beat, unsigned int tick,
 			     const jack_position_t& pos, jack_nframes_t nframes);
   
@@ -128,7 +128,7 @@ namespace Dino {
     int m_last_tick;
     bool m_sent_all_off;
     static const int m_event_buffer_size = 1024;
-    BaseMIDIEvent* m_event_buffer[m_event_buffer_size];
+    MIDIEvent* m_event_buffer[m_event_buffer_size];
     
     volatile int m_current_beat;
     volatile int m_old_current_beat;

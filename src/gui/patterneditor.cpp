@@ -271,9 +271,9 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   
   const Pattern::NoteEventList& notes(m_pat->get_notes());
   for (unsigned int i = 0; i < notes.size(); ++i) {
-    BaseMIDIEvent* ne = notes[i];
+    MIDIEvent* ne = notes[i];
     while (ne) {
-      if (ne->get_type() == BaseMIDIEvent::NoteOn)
+      if (ne->get_type() == MIDIEvent::NoteOn)
 	draw_note(static_cast<NoteEvent*>(ne));
       ne = ne->get_next();
     }

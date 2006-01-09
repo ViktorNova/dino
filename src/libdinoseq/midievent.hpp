@@ -1,6 +1,6 @@
 /****************************************************************************
     
-    basemidievent.hpp - A MIDI event implementation for the Dino sequencer
+    midievent.hpp - A MIDI event implementation for the Dino sequencer
     
     Copyright (C) 2005  Lars Luthman <larsl@users.sourceforge.net>
     
@@ -20,8 +20,8 @@
 
 ****************************************************************************/
 
-#ifndef BASEMIDIEVENT_HPP
-#define BASEMIDIEVENT_HPP
+#ifndef MIDIEVENT_HPP
+#define MIDIEVENT_HPP
 
 #ifndef NULL
 #define NULL 0
@@ -37,10 +37,10 @@ namespace Dino {
       information about the type of event and the data associated
       with the event, as well as where in the Pattern the event appears
       and other related information. */
-  class BaseMIDIEvent : public Deletable {
+  class MIDIEvent : public Deletable {
   public:
   
-    BaseMIDIEvent(unsigned char type, unsigned char data1, unsigned char data2) 
+    MIDIEvent(unsigned char type, unsigned char data1, unsigned char data2) 
       : m_next(NULL) {
       m_data[0] = type;
       m_data[1] = data1;
@@ -51,7 +51,7 @@ namespace Dino {
     unsigned char get_note() const;
     unsigned char get_velocity() const;
     unsigned char get_value() const;
-    BaseMIDIEvent* get_next() const;
+    MIDIEvent* get_next() const;
     const unsigned char* get_data() const;
     unsigned int get_size() const;
     unsigned char get_channel() const;
@@ -60,7 +60,7 @@ namespace Dino {
     void set_note(unsigned char note);
     void set_velocity(unsigned char vel);
     void set_value(unsigned char value);
-    void set_next(BaseMIDIEvent* event);
+    void set_next(MIDIEvent* event);
     void set_channel(unsigned char channel);
   
     static const unsigned char NoteOn = 0x90;
@@ -68,12 +68,12 @@ namespace Dino {
     static const unsigned char Controller = 0xB0;
     static const unsigned char PitchWheel = 0xE0;
   
-    static BaseMIDIEvent AllNotesOff;
-    static BaseMIDIEvent ChannelVolume;
+    static MIDIEvent AllNotesOff;
+    static MIDIEvent ChannelVolume;
     
   protected:
 
-    BaseMIDIEvent* m_next;
+    MIDIEvent* m_next;
     unsigned char m_data[4];
     
   };

@@ -96,7 +96,7 @@ namespace Dino {
       }
       else {
 	NoteEvent* old_off = playing_note->get_assoc();
-	NoteEvent* new_off = new NoteEvent(BaseMIDIEvent::NoteOff, step - 1, 
+	NoteEvent* new_off = new NoteEvent(MIDIEvent::NoteOff, step - 1, 
 					   value, 64, 0, playing_note);
 	add_note_event(new_off);
 	playing_note->set_assoc(new_off);
@@ -296,7 +296,7 @@ namespace Dino {
   }
 
 
-  BaseMIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
+  MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
 				     unsigned int before_beat, 
 				     unsigned int before_tick,
 				     unsigned int ticks_per_beat,
@@ -369,7 +369,7 @@ namespace Dino {
   int Pattern::get_events2(unsigned int& beat, unsigned int& tick,
 			   unsigned int before_beat, unsigned int before_tick,
 			   unsigned int ticks_per_beat, 
-			   BaseMIDIEvent** events, int room) const {
+			   MIDIEvent** events, int room) const {
     return 0;
   }
   
@@ -417,7 +417,7 @@ namespace Dino {
 
   void Pattern::delete_note_event(NoteEvent* event) {
     NoteEventList* notes;
-    if (event->get_type() == BaseMIDIEvent::NoteOn)
+    if (event->get_type() == MIDIEvent::NoteOn)
       notes = &m_note_ons;
     else
       notes = &m_note_offs;

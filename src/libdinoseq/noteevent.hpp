@@ -27,7 +27,7 @@
 #define NULL 0
 #endif
 
-#include "basemidievent.hpp"
+#include "midievent.hpp"
 
 
 namespace Dino {
@@ -37,19 +37,19 @@ namespace Dino {
       information about the type of event and the data associated
       with the event, as well as where in the Pattern the event appears
       and other related information. */
-  class NoteEvent : public BaseMIDIEvent {
+  class NoteEvent : public MIDIEvent {
   public:
   
     NoteEvent(unsigned char type, int stp, int val, 
 	      int vel, int len, NoteEvent* ass = NULL) 
-      : BaseMIDIEvent(type, val, vel),
+      : MIDIEvent(type, val, vel),
 	m_step(stp), m_length(len), m_previous(NULL), m_assoc(ass) {
     
     }
   
     NoteEvent(unsigned char type, int stp, unsigned char data1, 
 	      unsigned char data2) 
-      : BaseMIDIEvent(type, data1, data2),
+      : MIDIEvent(type, data1, data2),
 	m_step(stp), m_length(0), m_previous(NULL), m_assoc(NULL) {
 
     }

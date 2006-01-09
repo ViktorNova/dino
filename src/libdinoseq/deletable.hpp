@@ -2,11 +2,15 @@
 #define DELETABLE_HPP
 
 
-class Deletable {
-public:
-  virtual ~Deletable() { }
+namespace Dino {
 
-};
+  class Deletable {
+  public:
+    virtual ~Deletable() { }
+    
+  };
+
+}
 
 
 #endif

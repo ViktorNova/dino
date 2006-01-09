@@ -200,38 +200,7 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
 
 
 void DinoGUI::slot_edit_add_controller() {
-  if (m_active_track >= 0 && m_active_pattern >= 0) {
-    Track* trk = m_song.get_track(m_active_track);
-    assert(trk != NULL);
-    Pattern* pat = trk->get_pattern(m_active_pattern);
-    assert(pat != NULL);
-
-    if (pat != NULL) {
-      m_dlgcont_ent_name->set_text("Untitled");
-      m_dlgcont_cmb_controller.clear();
-      
-      static char tmp[512];
-      int selected = -1;
-      
-      for (int i = 0; cc_descriptions[i] != NULL; ++i) {
-	if (pat->get_controllers().count(i) == 0) {
-	  if (selected == -1)
-	    selected = i;
-	  sprintf(tmp, "%03d ", i);
-	  m_dlgcont_cmb_controller.
-	    append_text(string(tmp) + cc_descriptions[i], i);
-	}
-      }
-      
-      m_dlgcont_cmb_controller.set_active_id(selected);
-      if (m_dlg_controller_properties->run() == RESPONSE_OK) {
-	pat->add_controller(m_dlgcont_cmb_controller.get_active_id(),
-			    m_dlgcont_ent_name->get_text());
-      }
-      m_dlg_controller_properties->hide();
-      
-    }
-  }
+  // XXX this must be implemented
 }
 
 
@@ -366,24 +335,7 @@ void DinoGUI::update_pattern_combo() {
 
 
 void DinoGUI::update_controller_combo() {
-  m_cmb_controller.clear();
-  int new_active = m_active_controller;
-  if (m_active_track >= 0 && m_active_pattern >= 0) {
-    Track* trk = m_song.get_track(m_active_track);
-    const Pattern* pat = trk->get_pattern(m_active_pattern);
-    const map<int, Pattern::EventList>& conts = pat->get_controllers();
-    map<int, Pattern::EventList>::const_iterator iter;
-    char tmp[10];
-    for (iter = conts.begin(); iter != conts.end(); ++iter) {
-      sprintf(tmp, "%03d", iter->first);
-      m_cmb_controller.append_text(tmp, iter->first);
-      if (new_active == -1)
-	new_active = iter->first;
-    }
-  }
-  if (new_active == -1)
-    m_cmb_controller.append_text("No controllers");
-  m_cmb_controller.set_active_id(new_active);
+  // XXX this must be implemented
 }
 
 
@@ -408,13 +360,12 @@ void DinoGUI::update_port_combo() {
 
 
 void DinoGUI::slot_cc_number_changed() {
-  //m_lb_cc_description->set_text(cc_descriptions[m_sb_cc_number->get_value_as_int()]);
-  m_cce.set_cc_number(m_active_controller);
+  // XXX what is this?
 }
 
 
 void DinoGUI::slot_cc_editor_size_changed() {
-  m_cce.set_height(m_sb_cc_editor_size->get_value_as_int());
+  // XXX should be removed or changed
 }
 
 
@@ -428,7 +379,7 @@ void DinoGUI::init_pattern_editor() {
   Scrollbar* scbHorizontal = w<Scrollbar>("scb_pattern_editor");
   Scrollbar* scbVertical = w<Scrollbar>("scb_note_editor");
   Box* boxNoteEditor = w<Box>("box_note_editor");
-  Box* boxCCEditor = w<Box>("box_cc_editor");
+  //Box* boxCCEditor = w<Box>("box_cc_editor");
   Box* box_octave_label = w<Box>("box_octave_label");
   //m_sb_cc_number = w<SpinButton>("sb_cc_number");
   //m_lb_cc_description = w<Label>("lb_cc_description");
@@ -481,8 +432,9 @@ void DinoGUI::init_pattern_editor() {
   
   // add the CC editor
   EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
-  boxCCEditor->pack_start(*scwCCEditor);
-  scwCCEditor->add(m_cce);
+  // XXX this should be removed or changed
+  //boxCCEditor->pack_start(*scwCCEditor);
+  //scwCCEditor->add(m_cce);
   //signal_active_pattern_changed.
   // connect(mem_fun(m_cce, &CCEditor::set_pattern));
   
@@ -735,7 +687,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
       }
     }
     m_pe.set_pattern(pattern);
-    m_cce.set_pattern(pattern);
+    //m_cce.set_pattern(pattern);
     set_active_controller(-1);
     update_controller_combo();
   }
@@ -743,11 +695,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
 
 
 void DinoGUI::set_active_controller(int active_controller) {
-  if (active_controller != m_active_controller) {
-    m_active_controller = active_controller;
-    m_cce.set_cc_number(m_active_controller);
-    signal_active_controller_changed(m_active_controller);
-  }
+  // XXX this should be removed or changed
 }
 
 

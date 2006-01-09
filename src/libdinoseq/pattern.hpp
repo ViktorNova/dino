@@ -39,8 +39,6 @@ namespace Dino {
     // accessors
     const string& get_name() const;
     const EventList& get_notes() const;
-    const map<int, EventList> get_controllers() const;
-    EventList& get_controller(int cc_number);
     int get_steps() const;
     int get_cc_steps() const;
     int get_length() const;
@@ -53,10 +51,6 @@ namespace Dino {
     void add_note(int step, int value, int velocity, int length);
     int delete_note(MIDIEvent* note_on);
     int resize_note(MIDIEvent* note_on, int length);
-    void add_controller(int ccNumber, const string& name);
-    void remove_controller(int ccNumber);
-    void add_cc(int ccNumber, int step, int value);
-    int delete_cc(int ccNumber, int step);
   
     // XML I/O
     bool is_dirty() const;
@@ -108,8 +102,6 @@ namespace Dino {
     EventList m_note_offs;
     /** Number of CC steps per beat */
     int m_cc_steps;
-    /** The MIDI control changes in the pattern */
-    map<int, EventList> m_control_changes;
   
     mutable bool m_dirty;
   

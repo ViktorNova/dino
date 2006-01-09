@@ -49,7 +49,6 @@ namespace Dino {
       if (m_jack_client)
 	jack_client_close(m_jack_client);
     }
-    // XXX What the hell? delete m_jack_client;
   }
   
 

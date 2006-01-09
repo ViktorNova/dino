@@ -7,7 +7,6 @@ dino_SOURCES = \
 	dinogui.cpp dinogui.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterneditor.cpp patterneditor.hpp \
-	cceditor.cpp cceditor.hpp \
 	ruler.cpp ruler.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
 	tempolabel.cpp tempolabel.hpp \

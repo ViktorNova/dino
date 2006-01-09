@@ -185,85 +185,8 @@ namespace Dino {
   }
 
 
-  void Pattern::add_controller(int ccNumber, const string& name) {
-    assert(ccNumber >= 0);
-    assert(ccNumber < 128);
-    if (m_control_changes.find(ccNumber) == m_control_changes.end()) {
-      dbg1<<"Creating controller \""<<name<<"\" with number "<<ccNumber<<endl;
-      EventList& m_ccs = m_control_changes[ccNumber];
-      for (int i = 0; i < m_length * m_cc_steps; ++i)
-	m_ccs.push_back(NULL);
-      signal_controller_added(ccNumber);
-    }
-  }
-
-
-  void Pattern::remove_controller(int ccNumber) {
-    assert(ccNumber >= 0);
-    assert(ccNumber < 128);
-    if (m_control_changes.find(ccNumber) != m_control_changes.end()) {
-      dbg1<<"Removing controller with number "<<ccNumber<<endl;
-      EventList& m_ccs = m_control_changes[ccNumber];
-      for (int i = 0; i < m_length * m_cc_steps; ++i)
-	// XXX don't do this
-	delete m_ccs[i];
-      m_control_changes.erase(ccNumber);
-      signal_controller_removed(ccNumber);
-    }
-  }
-
-
-  void Pattern::add_cc(int ccNumber, int step, int value) {
-    assert(ccNumber >= 0 && ccNumber < 128);
-    assert(step >= 0 && step < m_length * m_cc_steps);
-    assert(value >= 0 && value < 128);
-    assert(m_control_changes.find(ccNumber) != m_control_changes.end());
-    
-    EventList& m_ccs = m_control_changes[ccNumber];
-    
-    if (m_ccs[step] == NULL) {
-      m_ccs[step] = new MIDIEvent(0xB0, 0, 7, value);
-      signal_cc_added(ccNumber, step, value);
-    }
-    
-    else if (m_ccs[step]->get_value() != value) {
-      m_ccs[step]->set_value(value);
-      signal_cc_changed(ccNumber, step, value);
-    }
-  }
-
-
-  int Pattern::delete_cc(int ccNumber, int step) {
-    assert(ccNumber >= 0 && ccNumber < 128);
-    assert(step >= 0 && step < m_length * m_cc_steps);
-    assert(m_control_changes.find(ccNumber) != m_control_changes.end());
-    EventList& m_ccs = m_control_changes[ccNumber];
-    if (m_ccs[step] != NULL) {
-      // XXX don't do this
-      //delete m_ccs[step];
-      m_ccs[step] = NULL;
-      signal_cc_removed(ccNumber, step);
-      return step;
-    }
-    return -1;
-  }
-
-
   const Pattern::EventList& Pattern::get_notes() const {
     return m_note_ons;
-  }
-
-
-  const map<int, Pattern::EventList> Pattern::get_controllers() const {
-    return m_control_changes;
-  }
-
-
-  Pattern::EventList& Pattern::get_controller(int ccNumber) {
-    assert(ccNumber >= 0 && ccNumber < 128);
-    map<int, EventList>::iterator iter = m_control_changes.find(ccNumber);
-    assert(iter != m_control_changes.end());
-    return iter->second;
   }
 
 

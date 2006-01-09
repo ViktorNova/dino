@@ -5,7 +5,6 @@
 #include <libglademm.h>
 #include <lash/lash.h>
 
-#include "cceditor.hpp"
 #include "octavelabel.hpp"
 #include "patterneditor.hpp"
 #include "ringbuffer.hpp"
@@ -101,7 +100,6 @@ private:
   RefPtr<Xml> m_xml;
   Gtk::Window* m_window;
   PatternEditor m_pe;
-  CCEditor m_cce;
   VBox* m_vbx_track_editor;
   VBox* m_vbx_track_labels;
   

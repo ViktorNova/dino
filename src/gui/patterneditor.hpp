@@ -7,7 +7,7 @@
 
 
 namespace Dino {
-  class MIDIEvent;
+  class NoteEvent;
   class Pattern;
 }
 
@@ -28,8 +28,8 @@ protected:
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
   
-  void draw_note(const Dino::MIDIEvent* event);
-  void draw_velocity_box(const Dino::MIDIEvent* event);
+  void draw_note(const Dino::NoteEvent* event);
+  void draw_velocity_box(const Dino::NoteEvent* event);
   void update();
   
 private:

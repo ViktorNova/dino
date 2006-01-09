@@ -12,6 +12,7 @@ extern "C" {
 #include "sequencer.hpp"
 #include "song.hpp"
 #include "track.hpp"
+#include "basemidievent.hpp"
 
 
 namespace Dino {
@@ -285,7 +286,7 @@ namespace Dino {
 	  jack_port_t* port = m_output_ports[iter->first];
 	  if (port) {
 	    void* port_buf = jack_port_get_buffer(port, nframes);
-	    MIDIEvent& event = MIDIEvent::AllNotesOff;
+	    BaseMIDIEvent& event = BaseMIDIEvent::AllNotesOff;
 	    unsigned char* p = 
 	      jack_midi_event_reserve(port_buf, 0, 
 				      event.get_size(), nframes);
@@ -322,7 +323,7 @@ namespace Dino {
 	
 	// add events in buffer
 	const Track* trk = iter->second;
-	MIDIEvent* event;
+	BaseMIDIEvent* event;
 	bool full = false;
 	list = 0;
 	while (!full &&
@@ -341,7 +342,7 @@ namespace Dino {
   }
 
 
-  bool Sequencer::add_event_to_buffer(MIDIEvent* event, void* port_buf,
+  bool Sequencer::add_event_to_buffer(BaseMIDIEvent* event, void* port_buf,
 				      unsigned int beat, unsigned int tick,
 				      const jack_position_t& pos, 
 				      jack_nframes_t nframes) {

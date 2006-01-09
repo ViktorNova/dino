@@ -20,8 +20,9 @@ using namespace xmlpp;
 
 namespace Dino {
 
-  class MIDIEvent;
-
+  class NoteEvent;
+  class BaseMIDIEvent;
+  
 
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
@@ -33,24 +34,24 @@ namespace Dino {
   
     ~Pattern();
   
-    typedef vector<MIDIEvent*> EventList;
+    typedef vector<NoteEvent*> NoteEventList;
   
   
     // accessors
     const string& get_name() const;
-    const EventList& get_notes() const;
+    const NoteEventList& get_notes() const;
     int get_steps() const;
     int get_cc_steps() const;
     int get_length() const;
     void get_dirty_rect(int* min_step, int* min_note, 
 			int* max_step, int* max_note);
-    MIDIEvent* find_note(int step, int value);
+    NoteEvent* find_note(int step, int value);
   
     // mutators
     void set_name(const string& name);
     void add_note(int step, int value, int velocity, int length);
-    int delete_note(MIDIEvent* note_on);
-    int resize_note(MIDIEvent* note_on, int length);
+    int delete_note(NoteEvent* note_on);
+    int resize_note(NoteEvent* note_on, int length);
   
     // XML I/O
     bool is_dirty() const;
@@ -59,13 +60,16 @@ namespace Dino {
     bool parse_xml_node(const Element* elt);
     
     // sequencing
-    MIDIEvent* get_events(unsigned int& beat, unsigned int& tick, 
-			  unsigned int before_beat, unsigned int before_tick,
-			  unsigned int ticks_per_beat, unsigned int& list) const;
+    BaseMIDIEvent* get_events(unsigned int& beat, unsigned int& tick, 
+			      unsigned int before_beat, 
+			      unsigned int before_tick,
+			      unsigned int ticks_per_beat, 
+			      unsigned int& list) const;
+    
     int get_events2(unsigned int& beat, unsigned int& tick,
 		    unsigned int before_beat, unsigned int before_tick,
 		    unsigned int ticks_per_beat, 
-		    MIDIEvent** events, int room) const;
+		    BaseMIDIEvent** events, int room) const;
   public:
   
     sigc::signal<void, string> signal_name_changed;
@@ -87,9 +91,9 @@ namespace Dino {
     Pattern(const Pattern&) { }
     Pattern& operator=(const Pattern&) { return *this; }
     
-    bool find_note_event(int step, int value, bool note_on, MIDIEvent*& event);
-    void delete_note_event(MIDIEvent* event);
-    void add_note_event(MIDIEvent* event);
+    bool find_note_event(int step, int value, bool note_on, NoteEvent*& event);
+    void delete_note_event(NoteEvent* event);
+    void add_note_event(NoteEvent* event);
   
     string m_name;
     /** Pattern length in beats */
@@ -97,9 +101,9 @@ namespace Dino {
     /** Number of steps per beat */
     int m_steps;
     /** The note on events in the pattern */
-    EventList m_note_ons;
+    NoteEventList m_note_ons;
     /** The note off events in the pattern */
-    EventList m_note_offs;
+    NoteEventList m_note_offs;
     /** Number of CC steps per beat */
     int m_cc_steps;
   

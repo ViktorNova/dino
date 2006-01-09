@@ -4,7 +4,7 @@
 
 #include "debug.hpp"
 #include "deleter.hpp"
-#include "midievent.hpp"
+#include "basemidievent.hpp"
 #include "pattern.hpp"
 #include "track.hpp"
 
@@ -360,11 +360,11 @@ namespace Dino {
   }
 
 
-  MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
-			       unsigned int before_beat, 
-			       unsigned int before_tick,
-			       unsigned int ticks_per_beat,
-			       unsigned int& list) const {
+  BaseMIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
+				   unsigned int before_beat, 
+				   unsigned int before_tick,
+				   unsigned int ticks_per_beat,
+				   unsigned int& list) const {
   
     // if we have reached the end of the wanted period, return NULL so the
     // sequencer will stop looking for events in this track
@@ -381,15 +381,15 @@ namespace Dino {
 	unsigned int btick = before_tick;
 	if (before_beat - se->start >= se->length)
 	  btick = 0;
-	MIDIEvent* event = se->pattern->get_events(beat, tick, 
-						   before_beat - se->start,
-						   btick, ticks_per_beat,
-						   list);
+	BaseMIDIEvent* event = se->pattern->get_events(beat, tick, 
+						       before_beat - se->start,
+						       btick, ticks_per_beat,
+						       list);
 	beat += se->start;
 	if (event)
 	  return event;
 	if (beat >= se->start + se->length) {
-	  return &MIDIEvent::AllNotesOff;
+	  return &BaseMIDIEvent::AllNotesOff;
 	}
       }
     }
@@ -401,7 +401,7 @@ namespace Dino {
   int Track::get_events2(unsigned int& beat, unsigned int& tick, 
 			 unsigned int before_beat, unsigned int before_tick, 
 			 unsigned int ticks_per_beat, 
-			 MIDIEvent** events, int room) const {
+			 BaseMIDIEvent** events, int room) const {
     return 0;
   }
 

@@ -8,7 +8,7 @@
 
 #include "debug.hpp"
 #include "deleter.hpp"
-#include "midievent.hpp"
+#include "noteevent.hpp"
 #include "pattern.hpp"
 
 
@@ -35,21 +35,21 @@ namespace Dino {
 
   Pattern::~Pattern() {
     dbg1<<"Destroying pattern \""<<m_name<<"\""<<endl;
-    EventList::iterator iter;
+    NoteEventList::iterator iter;
     for (iter = m_note_ons.begin(); iter != m_note_ons.end(); ++iter) {
-      MIDIEvent* event = *iter;
+      NoteEvent* event = *iter;
       while (event) {
-	MIDIEvent* tmp = event;
+	NoteEvent* tmp = event;
 	delete event;
-	event = tmp->get_next();
+	event = static_cast<NoteEvent*>(tmp->get_next());
       }
     }
     for (iter = m_note_offs.begin(); iter != m_note_offs.end(); ++iter) {
-      MIDIEvent* event = *iter;
+      NoteEvent* event = *iter;
       while (event) {
-	MIDIEvent* tmp = event;
+	NoteEvent* tmp = event;
 	delete event;
-	event = tmp->get_next();
+	event = static_cast<NoteEvent*>(tmp->get_next());
       }
     }
   }
@@ -82,21 +82,21 @@ namespace Dino {
     assert(value >= 0);
     assert(value < 128);
   
-    MIDIEvent* note_on;
-    MIDIEvent* note_off;
+    NoteEvent* note_on;
+    NoteEvent* note_off;
   
     // if a note with this value is playing at this step, stop it
-    MIDIEvent* playing_note = find_note(step, value);
+    NoteEvent* playing_note = find_note(step, value);
     if (playing_note) {
       if (playing_note->get_step() == (unsigned int)step) {
-	MIDIEvent* assoc = playing_note->get_assoc();
+	NoteEvent* assoc = playing_note->get_assoc();
 	delete_note_event(playing_note);
 	delete_note_event(assoc);
 	signal_note_removed(step, value);
       }
       else {
-	MIDIEvent* old_off = playing_note->get_assoc();
-	MIDIEvent* new_off = new MIDIEvent(MIDIEvent::NoteOff, step - 1, 
+	NoteEvent* old_off = playing_note->get_assoc();
+	NoteEvent* new_off = new NoteEvent(BaseMIDIEvent::NoteOff, step - 1, 
 					   value, 64, 0, playing_note);
 	add_note_event(new_off);
 	playing_note->set_assoc(new_off);
@@ -118,11 +118,11 @@ namespace Dino {
   
     // add the note events
     note_off = 
-      new MIDIEvent(MIDIEvent::NoteOff, step + newLength - 1, 
+      new NoteEvent(NoteEvent::NoteOff, step + newLength - 1, 
 		    value, velocity, 0);
     add_note_event(note_off);
     note_on = 
-      new MIDIEvent(MIDIEvent::NoteOn, step, 
+      new NoteEvent(NoteEvent::NoteOn, step, 
 		    value, velocity, newLength, note_off);
     note_off->set_assoc(note_on);
     add_note_event(note_on);
@@ -136,9 +136,9 @@ namespace Dino {
       @c next pointers so the doubly linked list will stay consistent with the
       note map. It will return the step that the deleted note started on,
       or -1 if no note was deleted. */
-  int Pattern::delete_note(MIDIEvent* note_on) {
+  int Pattern::delete_note(NoteEvent* note_on) {
     if (note_on) {
-      MIDIEvent* off = note_on->get_assoc();
+      NoteEvent* off = note_on->get_assoc();
       int on_step = note_on->get_step();
       unsigned char value = note_on->get_note();
       delete_note_event(note_on);
@@ -151,7 +151,7 @@ namespace Dino {
   }
 
 
-  int Pattern::resize_note(MIDIEvent* note_on, int length) {
+  int Pattern::resize_note(NoteEvent* note_on, int length) {
     assert(note_on);
   
     unsigned int step = note_on->get_step();
@@ -163,7 +163,7 @@ namespace Dino {
   
     // check that the note will not overlap with another note
     for (unsigned int i = step + 1; i < step + length; ++i) {
-      MIDIEvent* event;
+      NoteEvent* event;
       if (find_note_event(i, note_on->get_note(), true, event)) {
 	length = i - step;
 	break;
@@ -172,9 +172,9 @@ namespace Dino {
   
     // resize the note
     if ((unsigned int)length != note_on->get_length()) {
-      MIDIEvent* new_off = new MIDIEvent(MIDIEvent::NoteOff, step + length - 1, 
+      NoteEvent* new_off = new NoteEvent(NoteEvent::NoteOff, step + length - 1, 
 					 note_on->get_note(), 64, 0, note_on);
-      MIDIEvent* old_off = note_on->get_assoc();
+      NoteEvent* old_off = note_on->get_assoc();
       add_note_event(new_off);
       note_on->set_assoc(new_off);
       note_on->set_length(length);
@@ -185,7 +185,7 @@ namespace Dino {
   }
 
 
-  const Pattern::EventList& Pattern::get_notes() const {
+  const Pattern::NoteEventList& Pattern::get_notes() const {
     return m_note_ons;
   }
 
@@ -242,9 +242,9 @@ namespace Dino {
     sprintf(tmp_txt, "%d", get_cc_steps());
     elt->set_attribute("ccsteps", tmp_txt);
     for (unsigned int i = 0; i < m_note_ons.size(); ++i) {
-      MIDIEvent* ne = m_note_ons[i];
+      NoteEvent* ne = m_note_ons[i];
       while (ne) {
-	if (ne->get_type() == MIDIEvent::NoteOn) {
+	if (ne->get_type() == NoteEvent::NoteOn) {
 	  Element* note_elt = elt->add_child("note");
 	  sprintf(tmp_txt, "%d", ne->get_step());
 	  note_elt->set_attribute("step", tmp_txt);
@@ -255,7 +255,7 @@ namespace Dino {
 	  sprintf(tmp_txt, "%d", ne->get_velocity());
 	  note_elt->set_attribute("velocity", tmp_txt);
 	}
-	ne = ne->get_next();
+	ne = static_cast<NoteEvent*>(ne->get_next());
       }
     }
     return true;
@@ -296,11 +296,11 @@ namespace Dino {
   }
 
 
-  MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
-				 unsigned int before_beat, 
-				 unsigned int before_tick,
-				 unsigned int ticks_per_beat,
-				 unsigned int& list) const {
+  BaseMIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
+				     unsigned int before_beat, 
+				     unsigned int before_tick,
+				     unsigned int ticks_per_beat,
+				     unsigned int& list) const {
     
     int steps = m_cc_steps;
     // convert beats and ticks to pattern steps
@@ -369,13 +369,13 @@ namespace Dino {
   int Pattern::get_events2(unsigned int& beat, unsigned int& tick,
 			   unsigned int before_beat, unsigned int before_tick,
 			   unsigned int ticks_per_beat, 
-			   MIDIEvent** events, int room) const {
+			   BaseMIDIEvent** events, int room) const {
     return 0;
   }
   
 
-  MIDIEvent* Pattern::find_note(int step, int value) {
-    MIDIEvent* event;
+  NoteEvent* Pattern::find_note(int step, int value) {
+    NoteEvent* event;
   
     for (int i = step; i >= 0; --i) {
 
@@ -384,7 +384,7 @@ namespace Dino {
 	while (event) {
 	  if (event->get_note() == value)
 	    return NULL;
-	  event = event->get_next();
+	  event = static_cast<NoteEvent*>(event->get_next());
 	}
       }
     
@@ -392,7 +392,7 @@ namespace Dino {
       while (event) {
 	if (event->get_note() == value)
 	  return event;
-	event = event->get_next();
+	event = static_cast<NoteEvent*>(event->get_next());
       }
     }
   
@@ -401,42 +401,43 @@ namespace Dino {
 
 
   bool Pattern::find_note_event(int step, int value, bool note_on, 
-				MIDIEvent*& event) {
+				NoteEvent*& event) {
     if (note_on)
       event = m_note_ons[step];
     else
       event = m_note_offs[step];
     while (event) {
-      if (event->get_note() == value && event->get_type() == MIDIEvent::NoteOn)
+      if (event->get_note() == value && event->get_type() == NoteEvent::NoteOn)
 	return true;
-      event = event->get_next();
+      event = static_cast<NoteEvent*>(event->get_next());
     }
     return false;
   }
 
 
-  void Pattern::delete_note_event(MIDIEvent* event) {
-    EventList* notes;
-    if (event->get_type() == MIDIEvent::NoteOn)
+  void Pattern::delete_note_event(NoteEvent* event) {
+    NoteEventList* notes;
+    if (event->get_type() == BaseMIDIEvent::NoteOn)
       notes = &m_note_ons;
     else
       notes = &m_note_offs;
   
     unsigned int step = event->get_step();
     if (!event->get_previous())
-      (*notes)[step] = event->get_next();
+      (*notes)[step] = static_cast<NoteEvent*>(event->get_next());
     else
       event->get_previous()->set_next(event->get_next());
     if (event->get_next())
-      event->get_next()->set_previous(event->get_previous());
+      static_cast<NoteEvent*>(event->get_next())->
+	set_previous(event->get_previous());
     g_deletable_deleter.queue_deletion(event);
   }
   
 
-  void Pattern::add_note_event(MIDIEvent* event) {
+  void Pattern::add_note_event(NoteEvent* event) {
   
-    EventList* notes;
-    if (event->get_type() == MIDIEvent::NoteOn)
+    NoteEventList* notes;
+    if (event->get_type() == NoteEvent::NoteOn)
       notes = &m_note_ons;
     else
       notes = &m_note_offs;

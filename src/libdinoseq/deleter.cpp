@@ -5,8 +5,6 @@
 namespace Dino {
 
 
-  //Deleter<Dino::MIDIEvent> g_event_deleter;
-  //Deleter< CDTree<TempoMap::TempoChange*> > g_tempochange_deleter;
   Deleter<Deletable> g_deletable_deleter;
 
 

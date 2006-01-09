@@ -4,10 +4,8 @@
 #include <glibmm.h>
 #include <sigc++/sigc++.h>
 #include "debug.hpp"
-#include "midievent.hpp"
 #include "ringbuffer.hpp"
-#include "tempomap.hpp"
-
+#include "deletable.hpp"
 
 using namespace Glib;
 using namespace sigc;
@@ -58,8 +56,6 @@ namespace Dino {
   };
 
 
-  //extern Deleter<MIDIEvent> g_event_deleter;
-  //extern Deleter< CDTree<TempoMap::TempoChange*> > g_tempochange_deleter;
   extern Deleter<Deletable> g_deletable_deleter;
 
 }

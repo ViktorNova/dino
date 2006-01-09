@@ -8,16 +8,11 @@ namespace Dino {
   class Song;
 }
 
-using namespace Gdk;
-using namespace Glib;
-using namespace Gtk;
-using namespace Dino;
 
-
-class TempoWidget : public DrawingArea {
+class TempoWidget : public Gtk::DrawingArea {
 public:
   
-  TempoWidget(Song* song = NULL);
+  TempoWidget(Dino::Song* song = NULL);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -31,18 +26,18 @@ private:
   
   void length_changed(int length);
   
-  Song* m_song;
+  Dino::Song* m_song;
   int m_col_width;
 
-  RefPtr<GC> m_gc;
-  RefPtr<Colormap> m_colormap;
+  Glib::RefPtr<Gdk::GC> m_gc;
+  Glib::RefPtr<Gdk::Colormap> m_colormap;
   Gdk::Color m_bg_color, m_bg_color2, m_fg_color, 
     m_grid_color, m_edge_color, m_hl_color;
   
   int m_drag_beat;
   int m_drag_start_y;
   int m_editing_bpm;
-  const TempoMap::TempoChange* m_active_tempo;
+  const Dino::TempoMap::TempoChange* m_active_tempo;
 };
 
 

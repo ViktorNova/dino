@@ -6,26 +6,18 @@
 #include <gtkmm.h>
 
 
-using namespace Gdk;
-using namespace Glib;
-using namespace Gtk;
-using namespace Pango;
-using namespace std;
-
 namespace Dino {
   class Song;
   class Track;
 }
 
-using namespace Dino;
 
-
-class TrackLabel : public DrawingArea {
+class TrackLabel : public Gtk::DrawingArea {
 public:
   
-  TrackLabel(const Song* song = NULL);
+  TrackLabel(const Dino::Song* song = NULL);
   
-  void set_track(int id, Track* track);
+  void set_track(int id, Dino::Track* track);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -40,19 +32,19 @@ public:
   
 private:
   
-  void slot_name_changed(const string& name);
+  void slot_name_changed(const std::string& name);
   
-  const Song* m_song;
-  Track* m_track;
+  const Dino::Song* m_song;
+  Dino::Track* m_track;
   sigc::connection m_name_connection;
   int m_id;
   int m_width, m_height;
   bool m_is_active;
 
-  RefPtr<GC> m_gc;
-  RefPtr<Colormap> m_colormap;
+  Glib::RefPtr<Gdk::GC> m_gc;
+  Glib::RefPtr<Gdk::Colormap> m_colormap;
   Gdk::Color m_bg_color, m_fg_color;
-  RefPtr<Layout> m_layout;
+  Glib::RefPtr<Pango::Layout> m_layout;
 };
 
 

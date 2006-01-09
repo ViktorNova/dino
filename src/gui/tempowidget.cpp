@@ -8,6 +8,10 @@
 
 
 using namespace std;
+using namespace Dino;
+using namespace Gdk;
+using namespace Gtk;
+using namespace Glib;
 
 
 TempoWidget::TempoWidget(Song* song) 

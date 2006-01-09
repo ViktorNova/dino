@@ -4,6 +4,8 @@
 
 
 using namespace std;
+using namespace Gtk;
+using namespace Gdk;
 
 
 OctaveLabel::OctaveLabel(int width, int note_height)

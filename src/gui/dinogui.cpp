@@ -19,7 +19,11 @@
 
 
 using namespace sigc;
-
+using namespace Gtk;
+using namespace Gdk;
+using namespace Glib;
+using namespace Gnome::Glade;
+using namespace Dino;
 
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 

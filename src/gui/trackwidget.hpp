@@ -9,19 +9,13 @@ namespace Dino {
   class Track;
 }
 
-using namespace Gdk;
-using namespace Glib;
-using namespace Gtk;
-using namespace sigc;
-using namespace Dino;
 
-
-class TrackWidget : public DrawingArea {
+class TrackWidget : public Gtk::DrawingArea {
 public:
   
-  TrackWidget(const Song* song = NULL);
+  TrackWidget(const Dino::Song* song = NULL);
   
-  void set_track(Track* track);
+  void set_track(Dino::Track* track);
 
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -36,16 +30,16 @@ public:
   
   void set_current_beat(int beat);
   
-  signal<void, int> signal_clicked;
+  sigc::signal<void, int> signal_clicked;
   
 private:
   
-  const Song* m_song;
-  Track* m_track;
+  const Dino::Song* m_song;
+  Dino::Track* m_track;
   int m_col_width;
 
-  RefPtr<GC> m_gc;
-  RefPtr<Colormap> m_colormap;
+  Glib::RefPtr<Gdk::GC> m_gc;
+  Glib::RefPtr<Gdk::Colormap> m_colormap;
   Gdk::Color m_bg_color, m_bg_color2, m_fg_color, m_grid_color, m_edge_color, 
     m_hl_color;
   
@@ -53,7 +47,7 @@ private:
   
   int m_current_beat;
   
-  Menu m_pattern_menu;
+  Gtk::Menu m_pattern_menu;
 };
 
 

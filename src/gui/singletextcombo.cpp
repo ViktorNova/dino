@@ -6,6 +6,11 @@
 #include "singletextcombo.hpp"
 
 
+using namespace Gtk;
+using namespace std;
+using namespace Glib;
+
+
 SingleTextCombo::SingleTextCombo() {
   m_store = ListStore::create(m_text_columns);
   set_model(m_store);

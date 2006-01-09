@@ -9,6 +9,12 @@
 #include "track.hpp"
 
 
+using namespace Gdk;
+using namespace Pango;
+using namespace Gtk;
+using namespace Dino;
+
+
 PatternEditor::PatternEditor() 
   : m_drag_operation(NoOperation), m_row_height(8), 
     m_col_width(8), m_max_note(128), m_drag_y(-1), 

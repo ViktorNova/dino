@@ -10,6 +10,11 @@
 
 
 using namespace std;
+using namespace Dino;
+using namespace Gdk;
+using namespace Gtk;
+using namespace Glib;
+using namespace Pango;
 
 
 TrackWidget::TrackWidget(const Song* song) 
@@ -64,14 +69,14 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   
   // draw current beat
   if (m_current_beat < m_song->get_length()) {
-    Rectangle bounds(0, 0, width + 1, 4);
+    Gdk::Rectangle bounds(0, 0, width + 1, 4);
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_grid_color);
     win->draw_rectangle(m_gc, true, m_current_beat * m_col_width, 
 			0, m_col_width + 1, 4);
   }
   
-  Rectangle bounds(0, 4, width + 1, height + 4);
+  Gdk::Rectangle bounds(0, 4, width + 1, height + 4);
   m_gc->set_clip_rectangle(bounds);
   
   // draw background
@@ -110,8 +115,8 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
     sprintf(tmp, "%03d", se->pattern_id);
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Rectangle textBounds(i * m_col_width, 0, 
-			 length * m_col_width, height - 1);
+    Gdk::Rectangle textBounds(i * m_col_width, 0, 
+			      length * m_col_width, height - 1);
     m_gc->set_clip_rectangle(textBounds);
     win->draw_layout(m_gc, i * m_col_width + 2, 4 + (height - lHeight)/2, l);
   }
@@ -206,7 +211,7 @@ void TrackWidget::slot_length_changed(int length) {
 void TrackWidget::update() {
   RefPtr<Gdk::Window> win = get_window();
   if (win) {
-    win->invalidate_rect(Rectangle(0, 0, get_width(), get_height()), false);
+    win->invalidate_rect(Gdk::Rectangle(0,0, get_width(), get_height()), false);
     win->process_updates(false);
   }
 }

@@ -7,6 +7,11 @@
 
 
 using namespace std;
+using namespace Dino;
+using namespace Gdk;
+using namespace Glib;
+using namespace Gtk;
+using namespace Pango;
 
 
 TempoLabel::TempoLabel(const Song* song) 

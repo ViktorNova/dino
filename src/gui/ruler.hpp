@@ -8,13 +8,8 @@ namespace Dino {
   class Song;
 }
 
-using namespace Gtk;
-using namespace Gdk;
-using namespace Glib;
-using namespace Dino;
 
-
-class Ruler : public DrawingArea {
+class Ruler : public Gtk::DrawingArea {
 public:
   Ruler(int length, int subs, int interval, int size, int height);
   
@@ -39,8 +34,8 @@ private:
   int m_div_size;
   int m_height;
   
-  RefPtr<GC> m_gc;
-  RefPtr<Colormap> m_colormap;
+  Glib::RefPtr<Gdk::GC> m_gc;
+  Glib::RefPtr<Gdk::Colormap> m_colormap;
   
 };
 
@@ -48,13 +43,13 @@ private:
 class PatternRuler : public ::Ruler {
 public:
 
-  PatternRuler(const Song& song);
+  PatternRuler(const Dino::Song& song);
 
   void set_pattern(int track, int pattern);
 
 private:
 
-  const Song& m_song;
+  const Dino::Song& m_song;
 
 };
 

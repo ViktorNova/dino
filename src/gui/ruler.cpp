@@ -7,9 +7,11 @@
 
 
 using namespace std;
+using namespace Gdk;
+using namespace Dino;
 
 
-::Ruler::Ruler(int length, int subs, int interval, int size, int height)
+Ruler::Ruler(int length, int subs, int interval, int size, int height)
   : m_length(length), m_subs(subs), m_interval(interval), 
     m_div_size(size), m_height(height) {
   set_size_request(m_length * m_div_size + 1, m_height);
@@ -17,29 +19,29 @@ using namespace std;
 }
 
   
-void ::Ruler::set_length(int length) {
+void Ruler::set_length(int length) {
   m_length = length;
   set_size_request(m_length * m_div_size + 1, m_height);
 }
 
 
-void ::Ruler::set_subdivisions(int subs) {
+void Ruler::set_subdivisions(int subs) {
   m_subs = subs;
 }
 
 
-void ::Ruler::set_interval(int interval) {
+void Ruler::set_interval(int interval) {
   m_interval = interval;
 }
 
 
-void ::Ruler::set_division_size(int size) {
+void Ruler::set_division_size(int size) {
   m_div_size = size;
   set_size_request(m_length * m_div_size + 1, m_height);
 }
 
 
-void ::Ruler::on_realize() {
+void Ruler::on_realize() {
   Gtk::DrawingArea::on_realize();
   Glib::RefPtr<Gdk::Window> win = get_window();
   m_gc = GC::create(win);
@@ -47,7 +49,7 @@ void ::Ruler::on_realize() {
 }
 
 
-bool ::Ruler::on_expose_event(GdkEventExpose* event) {
+bool Ruler::on_expose_event(GdkEventExpose* event) {
 
   Glib::RefPtr<Gdk::Window> win = get_window();
   win->clear();
@@ -82,7 +84,7 @@ bool ::Ruler::on_expose_event(GdkEventExpose* event) {
 }
 
 
-bool ::Ruler::on_button_press_event(GdkEventButton* event) {
+bool Ruler::on_button_press_event(GdkEventButton* event) {
   double pos = event->x / m_div_size;
   signal_clicked(pos, event->button);
   return true;
@@ -90,7 +92,7 @@ bool ::Ruler::on_button_press_event(GdkEventButton* event) {
 
 
 PatternRuler::PatternRuler(const Song& song) 
-  : ::Ruler(0, 1, 1, 20, 20), m_song(song) {
+  : Ruler(0, 1, 1, 20, 20), m_song(song) {
 
 }
 

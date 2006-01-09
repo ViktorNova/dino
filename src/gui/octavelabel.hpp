@@ -4,12 +4,7 @@
 #include <gtkmm.h>
 
 
-using namespace Gtk;
-using namespace Gdk;
-using namespace Glib;
-
-
-class OctaveLabel : public DrawingArea {
+class OctaveLabel : public Gtk::DrawingArea {
 public:
   OctaveLabel(int width, int note_height);
   
@@ -21,9 +16,9 @@ private:
   int m_width;
   int m_note_height;
   
-  RefPtr<GC> m_gc;
-  RefPtr<Colormap> m_colormap;
-  Color m_bg_color, m_fg_color;  
+  Glib::RefPtr<Gdk::GC> m_gc;
+  Glib::RefPtr<Gdk::Colormap> m_colormap;
+  Gdk::Color m_bg_color, m_fg_color;  
 };
 
 

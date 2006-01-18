@@ -10,6 +10,7 @@
 #include <libxml++/libxml++.h>
 
 #include "deletable.hpp"
+#include "xmlserialisable.hpp"
 
 
 using namespace Glib;
@@ -27,7 +28,7 @@ namespace Dino {
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
       by the sequencer. */
-  class Pattern : public Deletable {
+  class Pattern : public Deletable, XMLSerialisable {
   public:
   
     Pattern(const string& name, int length, int steps, int cc_steps);

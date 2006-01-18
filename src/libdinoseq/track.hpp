@@ -8,6 +8,7 @@
 #include <libxml++/libxml++.h>
 
 #include "deletable.hpp"
+#include "xmlserialisable.hpp"
 
 
 using namespace Glib;
@@ -26,7 +27,7 @@ namespace Dino {
       and how that instrument is played. It has a list of patterns, and a
       sequence that says when those patterns are played. 
   */
-  class Track : public Deletable {
+  class Track : public Deletable, public XMLSerialisable {
   public:
   
     /** This struct contains information about a sequence entry, i.e. a

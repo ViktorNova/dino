@@ -14,6 +14,7 @@ libdinoseq_la_SOURCES = \
 	sequencer.cpp sequencer.hpp \
 	tempomap.cpp tempomap.hpp \
 	cdtree.hpp \
-	debug.hpp debug.cpp
+	debug.hpp debug.cpp \
+	xmlserialisable.hpp
 
 libdinoseq_la_LIBADD = @LIBXMLPP_LIBS@ @JACK_LIBS@

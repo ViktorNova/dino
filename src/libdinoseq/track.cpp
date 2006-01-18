@@ -121,7 +121,7 @@ namespace Dino {
 	  remove_sequence_entry(i);
       }
       
-      g_deletable_deleter.queue_deletion(iter->second);
+      iter->second->queue_deletion();
       m_patterns.erase(iter);
       signal_pattern_removed(id);
     }
@@ -207,7 +207,7 @@ namespace Dino {
       int start = se->start;
       for (int i = se->start + se->length - 1; i >= int(se->start); --i)
 	m_sequence[i] = NULL;
-      g_deletable_deleter.queue_deletion(se);
+      se->queue_deletion();
       signal_sequence_entry_removed(start);
       return true;
     }

@@ -3,7 +3,7 @@ AM_CPPFLAGS = @LIBXMLPP_CFLAGS@ @JACK_CFLAGS@ @DEBUG_CFLAGS@
 noinst_LTLIBRARIES = libdinoseq.la
 
 libdinoseq_la_SOURCES = \
-	deletable.hpp \
+	deletable.cpp deletable.hpp \
 	deleter.cpp deleter.hpp \
 	midievent.hpp midievent.cpp \
 	noteevent.cpp noteevent.hpp \

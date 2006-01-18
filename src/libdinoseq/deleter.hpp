@@ -5,7 +5,7 @@
 #include <sigc++/sigc++.h>
 #include "debug.hpp"
 #include "ringbuffer.hpp"
-#include "deletable.hpp"
+
 
 using namespace Glib;
 using namespace sigc;
@@ -68,8 +68,6 @@ namespace Dino {
     connection m_connection;
   };
 
-
-  extern Deleter<Deletable> g_deletable_deleter;
 
 }
 

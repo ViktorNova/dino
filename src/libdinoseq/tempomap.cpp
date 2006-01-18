@@ -106,9 +106,8 @@ namespace Dino {
     CDTree<TempoChange*>* tmp2 = const_cast<CDTree<TempoChange*>*>(m_frame2tc);
     // let's hope that pointer assignment is atomic
     m_frame2tc = tmp;
-    // we can't really do this here, needs to be taken care of in the Deleter
-    //delete tmp2;
-    g_deletable_deleter.queue_deletion(tmp2);
+    // we can't actually delete here, needs to be taken care of in the Deleter
+    tmp2->queue_deletion();
   
     // END OF CRITICAL SECTION
   
@@ -155,9 +154,8 @@ namespace Dino {
     CDTree<TempoChange*>* tmp2 = const_cast<CDTree<TempoChange*>*>(m_frame2tc);
     // let's hope that pointer assignment is atomic
     m_frame2tc = tmp;
-    // we can't really do this here, needs to be taken care of in the Deleter
-    //delete tmp2;
-    g_deletable_deleter.queue_deletion(tmp2);
+    // we can't actually delete here, needs to be taken care of in the Deleter
+    tmp2->queue_deletion();
   
     // END OF CRITICAL SECTION
   

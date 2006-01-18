@@ -95,7 +95,7 @@ namespace Dino {
     map<int, Track*>::iterator iter = m_tracks.find(id);
     if (iter == m_tracks.end())
       return false;
-    g_deletable_deleter.queue_deletion(iter->second);
+    iter->second->queue_deletion();
     m_tracks.erase(iter);
     m_dirty = true;
     signal_track_removed(id);

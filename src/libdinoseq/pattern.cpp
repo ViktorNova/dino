@@ -430,7 +430,7 @@ namespace Dino {
     if (event->get_next())
       static_cast<NoteEvent*>(event->get_next())->
 	set_previous(event->get_previous());
-    g_deletable_deleter.queue_deletion(event);
+    event->queue_deletion();
   }
   
 

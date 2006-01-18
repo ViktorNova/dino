@@ -36,7 +36,6 @@ namespace Dino {
   
     typedef vector<NoteEvent*> NoteEventList;
   
-  
     // accessors
     const string& get_name() const;
     const NoteEventList& get_notes() const;
@@ -61,10 +60,10 @@ namespace Dino {
     
     // sequencing
     MIDIEvent* get_events(unsigned int& beat, unsigned int& tick, 
-			      unsigned int before_beat, 
-			      unsigned int before_tick,
-			      unsigned int ticks_per_beat, 
-			      unsigned int& list) const;
+			  unsigned int before_beat, 
+			  unsigned int before_tick,
+			  unsigned int ticks_per_beat, 
+			  unsigned int& list) const;
     
     int get_events2(unsigned int& beat, unsigned int& tick,
 		    unsigned int before_beat, unsigned int before_tick,

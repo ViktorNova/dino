@@ -29,7 +29,7 @@ namespace Dino {
     volatile int m_write_pos;
     int m_size;
   
-    T* m_data;
+    volatile T* m_data;
 
   };
 

@@ -14,6 +14,9 @@ namespace Dino {
 
   
   unsigned char MIDIEvent::get_type() const {
+    const unsigned char& sb = m_data[0];
+    if (sb >= 0x80 && sb < 0xF0)
+      return m_data[0] & 0xF0;
     return m_data[0];
   }
 

@@ -58,16 +58,21 @@ namespace Dino {
       TempoChange* next;
     };
   
-  
+    /** Create a new tempo map for the given frame rate. */
     TempoMap(unsigned long frame_rate = 48000); 
-
+    
+    /** Add a new tempo change. */
     void add_tempo_change(unsigned long beat, unsigned int bpm);
+    /** Remove any tempo change that occurs at the given beat. */
     void remove_tempo_change(unsigned long beat);
-  
+    
+    /** Get the BPM tempo, beat, and tick for a given frame number. */
     void get_bbt(unsigned long frame, unsigned long ticks_per_beat,
 		 double& bpm, int32_t& beat, int32_t& tick) const;
+    /** Get the frame number for the given beat and tick. */
     unsigned long get_frame(int32_t beat, int32_t tick,
 			    unsigned long ticks_per_beat) const;
+    /** Get a linked list of all tempo changes. */
     const TempoChange* get_changes(unsigned long beat) const;
   
     sigc::signal<void, int> signal_tempochange_added;

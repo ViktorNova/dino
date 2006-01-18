@@ -14,22 +14,34 @@ namespace Dino {
   template <class T>
   class CDTreeNode {
   public:
-  
+    
+    /** This creates a new node with the given number of children and the given
+	maximum depth. */
     CDTreeNode(unsigned int children = 16, unsigned int depth = 5);
     ~CDTreeNode();
-  
+    
+    /** Sets the element at position @c i to @c data. */
     bool set(unsigned long i, const T& data);
+    /** Returns a reference to the element at position @c i. */
     const T& get(unsigned long i) const;
+    /** Fills the interval [start, end) with the value @c data. */
     bool fill(unsigned long start, unsigned long end, const T&data);
+    /** Returns the number of nodes below this one. */
     unsigned int count_nodes() const;
   
   private:
-  
+    
+    /** The copy constructor is private so no one can copy a node. */
     CDTreeNode(const CDTreeNode&) { assert(0); }
+    /** The assignment operator is private so no one can copy a node. */
     CDTreeNode& operator=(const CDTreeNode&) { assert(0); return *this; }
-  
+    
+    /** A node is prunable for a given value if all its children have the
+	same value. */
     bool is_prunable(const T& data) const;
+    /** Helper function to delete the data and set the data pointer to NULL. */
     void delete_data();
+    /** Helper function to delete all child nodes. */
     void delete_children();
   
     unsigned int m_depth;

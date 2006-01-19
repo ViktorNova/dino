@@ -385,9 +385,6 @@ void DinoGUI::init_pattern_editor() {
   Box* boxNoteEditor = w<Box>("box_note_editor");
   //Box* boxCCEditor = w<Box>("box_cc_editor");
   Box* box_octave_label = w<Box>("box_octave_label");
-  //m_sb_cc_number = w<SpinButton>("sb_cc_number");
-  //m_lb_cc_description = w<Label>("lb_cc_description");
-  m_sb_cc_editor_size = w<SpinButton>("sb_cc_editor_size");
   
   // add and connect the combo boxes
   hbx_pattern_combo->pack_start(m_cmb_pattern);
@@ -449,11 +446,6 @@ void DinoGUI::init_pattern_editor() {
   scwCCEditor->set_hadjustment(*scwNoteEditor->get_hadjustment());
   scwOctaveLabel->set_vadjustment(*scwNoteEditor->get_vadjustment());
 
-  // connect and setup the CC controls
-  m_sb_cc_editor_size->signal_value_changed().
-    connect(sigc::mem_fun(this, &DinoGUI::slot_cc_editor_size_changed));
-  m_sb_cc_editor_size->set_editable(false);
-  
   // connect external signals
   slot<void> update_t_combo = mem_fun(*this, &DinoGUI::update_track_combo);
   slot<void> update_p_combo = mem_fun(*this, &DinoGUI::update_pattern_combo);

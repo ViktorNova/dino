@@ -5,6 +5,7 @@
 #include <sstream>
 #include <utility>
 
+#include "cceditor.hpp"
 #include "deleter.hpp"
 #include "dinogui.hpp"
 #include "evilscrolledwindow.hpp"
@@ -383,7 +384,7 @@ void DinoGUI::init_pattern_editor() {
   Scrollbar* scbHorizontal = w<Scrollbar>("scb_pattern_editor");
   Scrollbar* scbVertical = w<Scrollbar>("scb_note_editor");
   Box* boxNoteEditor = w<Box>("box_note_editor");
-  //Box* boxCCEditor = w<Box>("box_cc_editor");
+  Box* boxCCEditor = w<Box>("box_cc_editor");
   Box* box_octave_label = w<Box>("box_octave_label");
   
   // add and connect the combo boxes
@@ -433,6 +434,10 @@ void DinoGUI::init_pattern_editor() {
   
   // add the CC editor
   EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
+  boxCCEditor->pack_start(*scwCCEditor);
+  CCEditor* cce = new CCEditor();
+  scwCCEditor->add(*cce);
+  
   // XXX this should be removed or changed
   //boxCCEditor->pack_start(*scwCCEditor);
   //scwCCEditor->add(m_cce);

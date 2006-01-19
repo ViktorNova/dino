@@ -4,6 +4,8 @@
 #include <libxml++/libxml++.h>
 
 
+/** This is an ABC for all classes that should be able to read and write
+    themselves to an XML element. */
 class XMLSerialisable {
 public:
   

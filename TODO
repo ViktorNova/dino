@@ -45,3 +45,8 @@ Crazy ideas:
    Crazy idea #1.
 
  * Make Dino a DSSI synth host? Naah...
+
+ * Optional "soft ends" for sequence entries, i.e. don't send note offs for
+   notes that are still playing at the end of the sequence entry. Maybe not so
+   crazy, it is probably required to let notes portamento across sequence entry
+   boundaries.

@@ -35,6 +35,7 @@ using namespace std;
 using namespace Gtk;
 using namespace Gnome::Glade;
 using namespace Glib;
+using namespace Dino;
 
 
 static void print_version() {

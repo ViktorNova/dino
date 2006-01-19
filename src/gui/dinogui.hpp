@@ -5,6 +5,7 @@
 #include <libglademm.h>
 #include <lash/lash.h>
 
+#include "debug.hpp"
 #include "octavelabel.hpp"
 #include "patterneditor.hpp"
 #include "ringbuffer.hpp"
@@ -12,7 +13,6 @@
 #include "sequencer.hpp"
 #include "singletextcombo.hpp"
 #include "song.hpp"
-
 
 
 /** This is the main class. It connects our custom widgets to the rest of the
@@ -57,7 +57,12 @@ private:
       name it returns NULL. */
   template <class T>
   inline T* w(const string& name) {
-    return dynamic_cast<T*>(m_xml->get_widget(name));
+    using namespace Dino;
+    T* widget = dynamic_cast<T*>(m_xml->get_widget(name));
+    if (widget == NULL)
+      dbg0<<"Could not load widget "<<name<<" of type "
+	  <<demangle(typeid(T).name())<<endl;
+    return widget;
   }
   
   void reset_gui();

@@ -30,6 +30,7 @@ protected:
   
   unsigned m_steps;
   unsigned m_step_width;
+  unsigned m_beat_length;
 };
 
 

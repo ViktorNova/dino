@@ -125,7 +125,6 @@ private:
   Gtk::Entry* m_dlgpat_ent_name;
   Gtk::SpinButton* m_dlgpat_sbn_length;
   Gtk::SpinButton* m_dlgpat_sbn_steps;
-  Gtk::SpinButton* m_dlgpat_sbn_cc_steps;
   
   Gtk::Dialog* m_dlg_controller_properties;
   Gtk::Entry* m_dlgcont_ent_name;

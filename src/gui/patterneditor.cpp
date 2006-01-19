@@ -60,11 +60,8 @@ void PatternEditor::set_pattern(Pattern* pattern) {
   if (pattern != m_pat) {
     m_pat = pattern;
     if (m_pat) {
-      int s = m_pat->get_steps(), cc = m_pat->get_cc_steps();
-      if (s == cc)
-	m_col_width = 8;
-      else
-	m_col_width = 4 * cc / s;
+      int s = m_pat->get_steps();
+      m_col_width = 8;
       m_pat->signal_note_added.
 	connect(sigc::hide(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)))));
       m_pat->signal_note_removed.

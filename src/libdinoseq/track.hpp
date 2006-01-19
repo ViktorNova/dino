@@ -59,7 +59,7 @@ namespace Dino {
   
     // mutators
     void set_name(const string& name);
-    int add_pattern(const string& name, int length, int steps, int ccSteps);
+    int add_pattern(const string& name, int length, int steps);
     void remove_pattern(int id);
     void set_sequence_entry(int beat, int pattern, int length = -1);
     void set_seq_entry_length(unsigned int beat, unsigned int length);

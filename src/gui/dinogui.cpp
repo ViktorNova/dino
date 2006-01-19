@@ -159,15 +159,12 @@ void DinoGUI::slot_edit_add_pattern() {
     m_dlgpat_ent_name->set_text("Untitled");
     m_dlgpat_sbn_length->set_value(4);
     m_dlgpat_sbn_steps->set_value(4);
-    m_dlgpat_sbn_cc_steps->set_value(1);
     m_dlg_pattern_properties->show_all();
     if (m_dlg_pattern_properties->run() == RESPONSE_OK) {
       m_song.get_track(m_active_track)->
 	add_pattern(m_dlgpat_ent_name->get_text(),
 		    m_dlgpat_sbn_length->get_value_as_int(),
-		    m_dlgpat_sbn_steps->get_value_as_int(),
-		    m_dlgpat_sbn_steps->get_value_as_int() *
-		    m_dlgpat_sbn_cc_steps->get_value_as_int());
+		    m_dlgpat_sbn_steps->get_value_as_int());
     }
     m_dlg_pattern_properties->hide();
   }
@@ -192,7 +189,6 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
     m_dlgpat_ent_name->set_text(pat->get_name());
     m_dlgpat_sbn_length->set_value(pat->get_length());
     m_dlgpat_sbn_steps->set_value(pat->get_steps());
-    m_dlgpat_sbn_cc_steps->set_value(pat->get_cc_steps() / pat->get_steps());
 
     m_dlg_pattern_properties->show_all();
     if (m_dlg_pattern_properties->run() == RESPONSE_OK) {
@@ -462,7 +458,6 @@ void DinoGUI::init_pattern_editor() {
   m_dlgpat_ent_name = w<Entry>("dlgpat_ent_name");
   m_dlgpat_sbn_length = w<SpinButton>("dlgpat_sbn_length");
   m_dlgpat_sbn_steps = w<SpinButton>("dlgpat_sbn_steps");
-  m_dlgpat_sbn_cc_steps = w<SpinButton>("dlgpat_sbn_cc_steps");
 
   // setup the controller properties dialog
   m_dlg_controller_properties = w<Dialog>("dlg_controller_properties");

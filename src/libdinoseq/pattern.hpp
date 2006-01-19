@@ -9,6 +9,7 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
+#include "controller.hpp"
 #include "deletable.hpp"
 #include "xmlserialisable.hpp"
 
@@ -31,7 +32,7 @@ namespace Dino {
   class Pattern : public Deletable, public XMLSerialisable {
   public:
   
-    Pattern(const string& name, int length, int steps, int cc_steps);
+    Pattern(const string& name, int length, int steps);
   
     ~Pattern();
   
@@ -41,12 +42,12 @@ namespace Dino {
     const string& get_name() const;
     const NoteEventList& get_notes() const;
     int get_steps() const;
-    int get_cc_steps() const;
     int get_length() const;
     void get_dirty_rect(int* min_step, int* min_note, 
 			int* max_step, int* max_note);
+    const std::vector<Controller>& get_controllers() const;
     NoteEvent* find_note(int step, int value);
-  
+    
     // mutators
     void set_name(const string& name);
     void add_note(int step, int value, int velocity, int length);
@@ -104,9 +105,9 @@ namespace Dino {
     NoteEventList m_note_ons;
     /** The note off events in the pattern */
     NoteEventList m_note_offs;
-    /** Number of CC steps per beat */
-    int m_cc_steps;
-  
+    /** The control change event lists */
+    std::vector<Controller> m_controllers;
+    
     mutable bool m_dirty;
   
     mutable unsigned long m_last_beat;

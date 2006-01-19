@@ -104,10 +104,7 @@ void PatternRuler::set_pattern(int track, int pattern) {
     set_length(pat->get_length());
     set_subdivisions(pat->get_steps());
     set_interval(1);
-    if (pat->get_steps() == pat->get_cc_steps())
-      set_division_size(8 * pat->get_steps());
-    else
-      set_division_size(4 * pat->get_cc_steps());
+    set_division_size(8 * pat->get_steps());
   }
   else
     set_length(0);

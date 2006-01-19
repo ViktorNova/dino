@@ -98,14 +98,13 @@ namespace Dino {
 
 
   /** Creates and adds a new pattern in this track with the given parameters.*/
-  int Track::add_pattern(const string& name, int length, 
-			 int steps, int ccSteps) {
+  int Track::add_pattern(const string& name, int length, int steps) {
     int id;
     if (m_patterns.rbegin() != m_patterns.rend())
       id = m_patterns.rbegin()->first + 1;
     else
       id = 1;
-    m_patterns[id] = new Pattern(name, length, steps, ccSteps);
+    m_patterns[id] = new Pattern(name, length, steps);
     signal_pattern_added(id);
     return id;
   }
@@ -322,15 +321,14 @@ namespace Dino {
       const Element* pat_elt = dynamic_cast<const Element*>(*iter);
       if (!pat_elt)
 	continue;
-      int id, length, steps, cc_steps;
+      int id, length, steps;
       sscanf(pat_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
       sscanf(pat_elt->get_attribute("length")->get_value().c_str(), 
 	     "%d", &length);
-      sscanf(pat_elt->get_attribute("steps")->get_value().c_str(), "%d", &steps);
-      sscanf(pat_elt->get_attribute("ccsteps")->get_value().c_str(), "%d", 
-	     &cc_steps);
+      sscanf(pat_elt->get_attribute("steps")->get_value().c_str(), 
+	     "%d", &steps);
       string name = pat_elt->get_attribute("name")->get_value();
-      m_patterns[id] = new Pattern(name, length, steps, cc_steps);
+      m_patterns[id] = new Pattern(name, length, steps);
       m_patterns[id]->parse_xml_node(pat_elt);
     }
   

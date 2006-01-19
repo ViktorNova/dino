@@ -15,13 +15,10 @@
 namespace Dino {
 
 
-  Pattern::Pattern(const string& name, int length, int steps, int cc_steps) 
-    : m_name(name), m_length(length), m_steps(steps), 
-      m_cc_steps(cc_steps), m_dirty(false) {
+  Pattern::Pattern(const string& name, int length, int steps) 
+    : m_name(name), m_length(length), m_steps(steps), m_dirty(false) {
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
     assert(m_steps > 0);
-    assert(m_cc_steps > 0);
-    assert(m_cc_steps % m_steps == 0);
     m_min_step = m_length * m_steps;
     m_max_step = -1;
     m_min_note = 128;
@@ -57,6 +54,11 @@ namespace Dino {
 
   const string& Pattern::get_name() const {
     return m_name;
+  }
+
+
+  const vector<Controller>& Pattern::get_controllers() const {
+    return m_controllers;
   }
 
 
@@ -195,11 +197,6 @@ namespace Dino {
   }
 
 
-  int Pattern::get_cc_steps() const {
-    return m_cc_steps;
-  }
-
-
   int Pattern::get_length() const {
     return m_length;
   }
@@ -239,8 +236,6 @@ namespace Dino {
     elt->set_attribute("length", tmp_txt);
     sprintf(tmp_txt, "%d", get_steps());
     elt->set_attribute("steps", tmp_txt);
-    sprintf(tmp_txt, "%d", get_cc_steps());
-    elt->set_attribute("ccsteps", tmp_txt);
     for (unsigned int i = 0; i < m_note_ons.size(); ++i) {
       NoteEvent* ne = m_note_ons[i];
       while (ne) {
@@ -302,7 +297,7 @@ namespace Dino {
 				     unsigned int ticks_per_beat,
 				     unsigned int& list) const {
     
-    int steps = m_cc_steps;
+    int steps = m_steps;
     // convert beats and ticks to pattern steps
     double beat_d = tick / double(ticks_per_beat);
     unsigned int step = (unsigned int)ceil((beat + beat_d) * steps);
@@ -314,37 +309,35 @@ namespace Dino {
     
       //cerr<<"list = "<<list<<", i = "<<i<<endl;
       
-      if (i % (m_cc_steps / m_steps) == 0) {
-	if (list == 0) {
-	  list = 1;
-	  if (m_note_ons[i / (m_cc_steps / m_steps)]) {
-	    beat = i / steps;
-	    tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
-	    m_already_returned = true;
-	    m_last_beat = beat;
-	    m_last_tick = tick;
-	    return m_note_ons[i / (m_cc_steps / m_steps)];
-	  }
+      if (list == 0) {
+	list = 1;
+	if (m_note_ons[i]) {
+	  beat = i / steps;
+	  tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
+	  m_already_returned = true;
+	  m_last_beat = beat;
+	  m_last_tick = tick;
+	  return m_note_ons[i];
 	}
-	
-	if (list == 1) {
-	  list = 2;
-	  if (m_note_offs[i / (m_cc_steps / m_steps)]) {
-	    beat = i / steps;
-	    tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
-	    m_already_returned = true;
-	    m_last_beat = beat;
-	    m_last_tick = tick;
-	    return m_note_offs[i / (m_cc_steps / m_steps)];
-	  }
+      }
+      
+      if (list == 1) {
+	list = 2;
+	if (m_note_offs[i]) {
+	  beat = i / steps;
+	  tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
+	  m_already_returned = true;
+	  m_last_beat = beat;
+	  m_last_tick = tick;
+	  return m_note_offs[i];
 	}
       }
       
       if (list <= 2) {
 	list = 3;
 	/*
-	const EventList& m_ccs = m_control_changes.find(1)->second;
-	if (m_ccs[i]) {
+	  const EventList& m_ccs = m_control_changes.find(1)->second;
+	  if (m_ccs[i]) {
 	  beat = i / steps;
 	  tick = (unsigned int)((i % steps) * ticks_per_beat / double(steps));
 	  m_already_returned = true;
@@ -352,13 +345,13 @@ namespace Dino {
 	  m_last_tick = tick;
 	  cerr<<"returning CC at beat "<<beat<<", tick "<<tick<<endl;
 	  return m_ccs[i];
-	}
+	  }
 	*/
       }
       
       list = 0;
     }
-  
+    
     beat = before_beat;
     tick = before_tick;
   

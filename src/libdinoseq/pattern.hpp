@@ -11,6 +11,7 @@
 
 #include "controller.hpp"
 #include "deletable.hpp"
+#include "noteevent.hpp"
 #include "xmlserialisable.hpp"
 
 
@@ -22,9 +23,6 @@ using namespace xmlpp;
 
 namespace Dino {
 
-  class NoteEvent;
-  class MIDIEvent;
-  
 
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
@@ -32,6 +30,34 @@ namespace Dino {
   class Pattern : public Deletable, public XMLSerialisable {
   public:
   
+    class NoteIterator {
+    public:
+      inline NoteIterator() : m_pattern(NULL), m_event(NULL) { }
+      inline NoteIterator(const Pattern* pat, NoteEvent* event) 
+	: m_pattern(pat), m_event(event) { }
+      inline const NoteEvent* operator*() const { return m_event; }
+      inline const NoteEvent* operator->() const { return m_event; }
+      inline bool operator==(const NoteIterator& iter) const {
+	return (&m_pattern == &iter.m_pattern && m_event == iter.m_event);
+      }
+      inline bool operator!=(const NoteIterator& iter) const {
+	return !operator==(iter);
+      }
+      inline NoteIterator& operator++() {
+	if (m_event->get_next())
+	  m_event = static_cast<NoteEvent*>(m_event->get_next());
+	if (m_event->get_step() + 1) {
+	  m_event = NULL;
+	}
+	return *this;
+      }
+	  
+    private:
+      const Pattern* m_pattern;
+      NoteEvent* m_event;
+    };
+    
+    
     Pattern(const string& name, int length, int steps);
   
     ~Pattern();
@@ -47,7 +73,7 @@ namespace Dino {
     void get_dirty_rect(int* min_step, int* min_note, 
 			int* max_step, int* max_note);
     const std::vector<Controller>& get_controllers() const;
-    const NoteEvent* find_note(int step, int value) const;
+    NoteIterator find_note(int step, int value) const;
     
     // mutators
     void set_name(const string& name);

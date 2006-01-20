@@ -393,7 +393,7 @@ namespace Dino {
   }
   
 
-  const NoteEvent* Pattern::find_note(int step, int value) const {
+  Pattern::NoteIterator Pattern::find_note(int step, int value) const {
     NoteEvent* event;
   
     for (int i = step; i >= 0; --i) {
@@ -402,7 +402,7 @@ namespace Dino {
 	event = m_note_offs[i];
 	while (event) {
 	  if (event->get_note() == value)
-	    return NULL;
+	    return NoteIterator(this, NULL);
 	  event = static_cast<NoteEvent*>(event->get_next());
 	}
       }
@@ -410,12 +410,12 @@ namespace Dino {
       event = m_note_ons[i];
       while (event) {
 	if (event->get_note() == value)
-	  return event;
+	  return NoteIterator(this, event);
 	event = static_cast<NoteEvent*>(event->get_next());
       }
     }
   
-    return NULL;
+    return NoteIterator(this, NULL);
   }
 
 

@@ -5,11 +5,7 @@
 
 #include <gtkmm.h>
 
-
-namespace Dino {
-  class NoteEvent;
-  class Pattern;
-}
+#include "pattern.hpp"
 
 
 class PatternEditor : public Gtk::DrawingArea {
@@ -28,8 +24,8 @@ protected:
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
   
-  void draw_note(const Dino::NoteEvent* event);
-  void draw_velocity_box(const Dino::NoteEvent* event);
+  void draw_note(Dino::Pattern::NoteIterator iterator);
+  void draw_velocity_box(Dino::Pattern::NoteIterator iterator);
   void update();
   
 private:

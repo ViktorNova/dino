@@ -13,7 +13,63 @@
 
 
 namespace Dino {
+  
+  
+  Pattern::NoteIterator::NoteIterator() 
+    : m_pattern(NULL),
+      m_event(NULL) {
 
+  }
+  
+  
+  Pattern::NoteIterator::NoteIterator(const Pattern* pat, NoteEvent* event)
+    : m_pattern(pat),
+      m_event(event) {
+
+  }
+  
+  
+  const NoteEvent* Pattern::NoteIterator::operator*() const {
+    return m_event;
+  }
+  
+  
+  const NoteEvent* Pattern::NoteIterator::operator->() const {
+    return m_event;
+  }
+  
+  
+  bool Pattern::NoteIterator::operator==(const NoteIterator& iter) const {
+    return (m_pattern == iter.m_pattern && m_event == iter.m_event);
+  }
+  
+  
+  bool Pattern::NoteIterator::operator!=(const NoteIterator& iter) const {
+    return !operator==(iter);
+  }
+  
+  
+  Pattern::NoteIterator& Pattern::NoteIterator::operator++() {
+    assert(m_pattern);
+    assert(m_event);
+    if (m_event->get_next())
+      m_event = static_cast<NoteEvent*>(m_event->get_next());
+    else {
+      unsigned step = m_event->get_step();
+      m_event = NULL;
+      for (int i = step + 1; 
+	   i < m_pattern->get_length() * m_pattern->get_steps(); ++i) {
+	if (m_pattern->m_note_ons[i]) {
+	  m_event = m_pattern->m_note_ons[i];
+	  break;
+	}
+      }
+    }
+    
+    return *this;
+  }
+
+  
 
   Pattern::Pattern(const string& name, int length, int steps) 
     : m_name(name), m_length(length), m_steps(steps), m_dirty(false) {
@@ -62,6 +118,20 @@ namespace Dino {
 
   const string& Pattern::get_name() const {
     return m_name;
+  }
+
+
+  Pattern::NoteIterator Pattern::notes_begin() const {
+    for (int i = 0; i < get_length() * get_steps(); ++i) {
+      if (m_note_ons[i])
+	return NoteIterator(this, m_note_ons[i]);
+    }
+    return NoteIterator(this, NULL);
+  }
+
+  
+  Pattern::NoteIterator Pattern::notes_end() const {
+    return NoteIterator(this, NULL);
   }
 
 
@@ -147,9 +217,10 @@ namespace Dino {
       @c next pointers so the doubly linked list will stay consistent with the
       note map. It will return the step that the deleted note started on,
       or -1 if no note was deleted. */
-  int Pattern::delete_note(const NoteEvent* note_on_event) {
-    assert(note_on_event);
-    NoteEvent* note_on = const_cast<NoteEvent*>(note_on_event);
+  int Pattern::delete_note(NoteIterator iterator) {
+    assert(iterator);
+    assert(iterator.m_pattern == this);
+    NoteEvent* note_on = const_cast<NoteEvent*>(iterator.m_event);
     
     if (note_on) {
       NoteEvent* off = note_on->get_assoc();
@@ -165,9 +236,10 @@ namespace Dino {
   }
 
 
-  int Pattern::resize_note(const NoteEvent* note_on_event, int length) {
-    assert(note_on_event);
-    NoteEvent* note_on = const_cast<NoteEvent*>(note_on_event);
+  int Pattern::resize_note(NoteIterator iterator, int length) {
+    assert(iterator);
+    assert(iterator.m_pattern == this);
+    NoteEvent* note_on = const_cast<NoteEvent*>(iterator.m_event);
     
     unsigned int step = note_on->get_step();
   
@@ -200,6 +272,14 @@ namespace Dino {
   }
 
 
+  void Pattern::set_velocity(NoteIterator note, unsigned char velocity) {
+    assert(note);
+    assert(note.m_pattern == this);
+    assert(velocity < 128);
+    note.m_event->set_velocity(velocity);
+  }
+
+
   void Pattern::add_cc(unsigned int controller, unsigned int step, 
 		       unsigned char value) {
     assert(controller < m_controllers.size());
@@ -212,12 +292,7 @@ namespace Dino {
     
   }
 
-
-  const Pattern::NoteEventList& Pattern::get_notes() const {
-    return m_note_ons;
-  }
-
-
+  
   int Pattern::get_steps() const {
     return m_steps;
   }

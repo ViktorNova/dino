@@ -32,27 +32,19 @@ namespace Dino {
   
     class NoteIterator {
     public:
-      inline NoteIterator() : m_pattern(NULL), m_event(NULL) { }
-      inline NoteIterator(const Pattern* pat, NoteEvent* event) 
-	: m_pattern(pat), m_event(event) { }
-      inline const NoteEvent* operator*() const { return m_event; }
-      inline const NoteEvent* operator->() const { return m_event; }
-      inline bool operator==(const NoteIterator& iter) const {
-	return (&m_pattern == &iter.m_pattern && m_event == iter.m_event);
-      }
-      inline bool operator!=(const NoteIterator& iter) const {
-	return !operator==(iter);
-      }
-      inline NoteIterator& operator++() {
-	if (m_event->get_next())
-	  m_event = static_cast<NoteEvent*>(m_event->get_next());
-	if (m_event->get_step() + 1) {
-	  m_event = NULL;
-	}
-	return *this;
+      NoteIterator();
+      NoteIterator(const Pattern* pat, NoteEvent* event);
+      const NoteEvent* operator*() const;
+      const NoteEvent* operator->() const;
+      bool operator==(const NoteIterator& iter) const;
+      bool operator!=(const NoteIterator& iter) const;
+      NoteIterator& operator++();
+      operator bool() const {
+	return (m_pattern != NULL && m_event != NULL);
       }
 	  
     private:
+      friend class Pattern;
       const Pattern* m_pattern;
       NoteEvent* m_event;
     };
@@ -66,7 +58,8 @@ namespace Dino {
   
     // accessors
     const string& get_name() const;
-    const NoteEventList& get_notes() const;
+    NoteIterator notes_begin() const;
+    NoteIterator notes_end() const;
     int get_steps() const;
     int get_length() const;
     // XXX This needs to be made const
@@ -78,8 +71,9 @@ namespace Dino {
     // mutators
     void set_name(const string& name);
     void add_note(unsigned step, int value, int velocity, int length);
-    int delete_note(const NoteEvent* note_on);
-    int resize_note(const NoteEvent* note_on, int length);
+    int delete_note(NoteIterator note_on);
+    int resize_note(NoteIterator note_on, int length);
+    void set_velocity(NoteIterator note, unsigned char velocity);
     void add_cc(unsigned int controller, unsigned int step, 
 		unsigned char value);
     void remove_cc(unsigned int controller, unsigned int step);
@@ -117,6 +111,8 @@ namespace Dino {
     sigc::signal<void, int, int> signal_cc_removed;
 
   private:
+    
+    //friend class Pattern::NoteIterator;
     
     // no copying for now
     Pattern(const Pattern&) { }

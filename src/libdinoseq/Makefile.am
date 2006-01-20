@@ -8,6 +8,7 @@ libdinoseq_la_SOURCES = \
 	deletable.cpp deletable.hpp \
 	deleter.cpp deleter.hpp \
 	midievent.hpp midievent.cpp \
+	note.cpp note.hpp \
 	noteevent.cpp noteevent.hpp \
 	pattern.cpp pattern.hpp \
 	track.cpp track.hpp \

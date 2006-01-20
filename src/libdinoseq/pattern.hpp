@@ -11,6 +11,7 @@
 
 #include "controller.hpp"
 #include "deletable.hpp"
+#include "note.hpp"
 #include "noteevent.hpp"
 #include "xmlserialisable.hpp"
 
@@ -30,7 +31,7 @@ namespace Dino {
   class Pattern : public Deletable, public XMLSerialisable {
   public:
     
-    /** This class is used to access the pattern's note data. 
+    /** This class is used to access the note data in a Pattern.
 	@b Example:
 	@code
 	int count_notes(const Dino::Pattern& pat) {
@@ -49,10 +50,10 @@ namespace Dino {
       /** Create an invalid iterator. */
       NoteIterator();
       
-      /** Dereference the iterator to get a constant NoteEvent pointer. */
-      const NoteEvent* operator*() const;
-      /** Dereference the iterator to get a constant NoteEvent pointer. */
-      const NoteEvent* operator->() const;
+      /** Dereference the iterator to get a constant Note pointer. */
+      const Note* operator*() const;
+      /** Dereference the iterator to get a constant Note pointer. */
+      const Note* operator->() const;
       /** Returns @c true if the two iterators refer to the same note. */
       bool operator==(const NoteIterator& iter) const;
       /** Returns @c true if the two iterators does not refer to the 
@@ -64,17 +65,17 @@ namespace Dino {
 	  However, it might return @c true for an iterator that has been 
 	  invalidated by removing the note it refers to, for example. */
       operator bool() const {
-	return (m_pattern != NULL && m_event != NULL);
+	return (m_pattern != NULL && m_note != NULL);
       }
 	  
     private:
       
       friend class Pattern;
       
-      NoteIterator(const Pattern* pat, NoteEvent* event);
+      NoteIterator(const Pattern* pat, Note* event);
       
       const Pattern* m_pattern;
-      NoteEvent* m_event;
+      Note* m_note;
     };
     
     
@@ -103,13 +104,13 @@ namespace Dino {
     const std::vector<Controller>& get_controllers() const;
     /** Return an iterator for the note with key @c value that is playing at
 	step @c step, or an invalid iterator if there is no such note. */
-    NoteIterator find_note(int step, int value) const;
+    NoteIterator find_note(unsigned int step, int value) const;
     
     // mutators
     void set_name(const string& name);
     void add_note(unsigned step, int value, int velocity, int length);
-    int delete_note(NoteIterator note_on);
-    int resize_note(NoteIterator note_on, int length);
+    void delete_note(NoteIterator note);
+    int resize_note(NoteIterator note, int length);
     void set_velocity(NoteIterator note, unsigned char velocity);
     void add_cc(unsigned int controller, unsigned int step, 
 		unsigned char value);
@@ -138,15 +139,14 @@ namespace Dino {
     sigc::signal<void, string> signal_name_changed;
     sigc::signal<void, int> signal_length_changed;
     sigc::signal<void, int> signal_steps_changed;
-    sigc::signal<void, int> signal_cc_steps_changed;
     sigc::signal<void, int, int, int> signal_note_added;
     sigc::signal<void, int, int, int> signal_note_changed;
     sigc::signal<void, int, int> signal_note_removed;
     sigc::signal<void, int, int, int> signal_cc_added;
     sigc::signal<void, int, int, int> signal_cc_changed;
+    sigc::signal<void, int, int> signal_cc_removed;
     sigc::signal<void, int> signal_controller_added;
     sigc::signal<void, int> signal_controller_removed;
-    sigc::signal<void, int, int> signal_cc_removed;
 
   private:
     
@@ -156,16 +156,18 @@ namespace Dino {
     Pattern(const Pattern&) { }
     Pattern& operator=(const Pattern&) { return *this; }
     
-    NoteEvent* find_note_internal(int step, int value);
-    bool find_note_event(int step, int value, bool note_on, NoteEvent*& event);
-    void delete_note_event(NoteEvent* event);
-    void add_note_event(NoteEvent* event);
-  
+    NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
+    NoteIterator find_note_on_before(unsigned step);
+    
+    
+    /** The name of the pattern */
     string m_name;
     /** Pattern length in beats */
     unsigned int m_length;
     /** Number of steps per beat */
     unsigned int m_steps;
+    /** The Note objects. */
+    //Note* m_notes;
     /** The note on events in the pattern */
     NoteEventList m_note_ons;
     /** The note off events in the pattern */

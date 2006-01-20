@@ -54,7 +54,7 @@ namespace Dino {
     unsigned char get_type() const;
     /** Return the second data byte of this event. For a note event this will
 	be the MIDI note number, between 0 and 127. */
-    unsigned char get_note() const;
+    unsigned char get_key() const;
     /** Return the low nibble of the status byte. For channel specific events
 	like note events and controllers, this will be the MIDI channel. */
     unsigned char get_channel() const;
@@ -80,7 +80,7 @@ namespace Dino {
     void set_channel(unsigned char channel);
     /** Set the second byte of the event. For note events this is the MIDI
 	note number (from 0 to 127). */
-    void set_note(unsigned char note);
+    void set_key(unsigned char note);
     /** Set the third byte of the event. For note events this is the key
 	velocity (from 0 to 127). */
     void set_velocity(unsigned char vel);

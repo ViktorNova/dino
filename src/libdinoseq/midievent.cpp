@@ -21,7 +21,7 @@ namespace Dino {
   }
 
 
-  unsigned char MIDIEvent::get_note() const {
+  unsigned char MIDIEvent::get_key() const {
     return m_data[1];
   }
 
@@ -61,7 +61,7 @@ namespace Dino {
   }
 
 
-  void MIDIEvent::set_note(unsigned char note) {
+  void MIDIEvent::set_key(unsigned char note) {
     m_data[1] = note;
   }
 

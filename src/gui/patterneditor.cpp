@@ -245,6 +245,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   if (!m_pat)
     return true;
   
+  // draw background
   int width = m_pat->get_length() * m_pat->get_steps() * m_col_width;
   int height = m_max_note * m_row_height;
   for (int b = 0; b < m_pat->get_length(); ++b) {
@@ -255,6 +256,8 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_rectangle(m_gc, true, b * m_pat->get_steps() * m_col_width, 0, 
 			m_pat->get_steps() * m_col_width, height);
   }
+  
+  // draw grid
   m_gc->set_foreground(m_grid_color);
   for (int r = -1; r < m_max_note; ++r) {
     win->draw_line(m_gc, 0, (m_max_note - r - 1) * m_row_height, 
@@ -265,18 +268,15 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
 			    width, m_row_height);
     }
   }
-  for (int c = 0; c < m_pat->get_steps() * m_pat->get_length() + 1; ++c) {
+  for (int c = 0; c < m_pat->get_steps() * m_pat->get_length() + 1; ++c)
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
-  }
   
-  // XXX remove 
-  //const Pattern::NoteEventList& notes(m_pat->get_notes());
+  // draw notes
   Pattern::NoteIterator iterator = m_pat->notes_begin();
-  for ( ; iterator != m_pat->notes_end(); ++iterator) {
-    if (iterator->get_type() == MIDIEvent::NoteOn)
-      draw_note(iterator);
-  }
+  for ( ; iterator != m_pat->notes_end(); ++iterator)
+    draw_note(iterator);
   
+  // draw box for editing note velocity
   if (m_drag_operation == ChangingNoteVelocity) {
     Pattern::NoteIterator iterator = m_pat->find_note(m_drag_step, m_drag_note);
     draw_velocity_box(iterator);
@@ -299,11 +299,11 @@ void PatternEditor::draw_note(Pattern::NoteIterator iterator) {
   int i = iterator->get_step();
   m_gc->set_foreground(m_note_colors[int(iterator->get_velocity() / 8)]);
   win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
-		      (m_max_note - iterator->get_note()- 1) * m_row_height + 1, 
+		      (m_max_note - iterator->get_key()- 1) * m_row_height + 1, 
 		      iterator->get_length() * m_col_width, m_row_height - 1);
   m_gc->set_foreground(m_edge_color);
   win->draw_rectangle(m_gc, false, i * m_col_width, 
-		      (m_max_note - iterator->get_note() - 1) * m_row_height, 
+		      (m_max_note - iterator->get_key() - 1) * m_row_height, 
 		      iterator->get_length() * m_col_width, m_row_height);
 }
 
@@ -317,12 +317,12 @@ void PatternEditor::draw_velocity_box(Pattern::NoteIterator iterator) {
   int l_width = m_layout->get_pixel_logical_extents().get_width();
   box_width = (box_width < l_width + 6 ? l_width + 6 : box_width);
   win->draw_rectangle(m_gc, false, iterator->get_step() * m_col_width - 2,
-		      int((m_max_note - iterator->get_note() - 0.5) * 
+		      int((m_max_note - iterator->get_key() - 0.5) * 
 			  m_row_height - box_height / 2), 
 		      box_width, box_height);
   m_gc->set_foreground(m_note_colors[iterator->get_velocity() / 8]);
   win->draw_rectangle(m_gc, true, iterator->get_step() * m_col_width - 1, 
-		      int((m_max_note - iterator->get_note() - 0.5) * 
+		      int((m_max_note - iterator->get_key() - 0.5) * 
 			  m_row_height - box_height / 2) + 1, 
 		      box_width - 1, box_height - 1);
   char buffer[10];
@@ -330,7 +330,7 @@ void PatternEditor::draw_velocity_box(Pattern::NoteIterator iterator) {
   m_layout->set_text(buffer);
   m_gc->set_foreground(m_edge_color);
   win->draw_layout(m_gc, iterator->get_step() * m_col_width + 2,
-		   int((m_max_note - iterator->get_note() - 0.5) * 
+		   int((m_max_note - iterator->get_key() - 0.5) * 
 		       m_row_height - box_height / 2) + 3, m_layout);
 }
 

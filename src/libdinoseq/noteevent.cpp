@@ -9,11 +9,23 @@ using namespace std;
 namespace Dino {
 
 
-  unsigned int NoteEvent::get_length() const {
-    return m_length;
+  NoteEvent::NoteEvent(unsigned char type, int stp, int val, int vel) 
+    : MIDIEvent(type, val, vel),
+      m_step(stp), 
+      m_previous(NULL) {
+    
   }
-
-
+  
+  
+  NoteEvent::NoteEvent(unsigned char type, int stp, unsigned char data1, 
+		       unsigned char data2) 
+    : MIDIEvent(type, data1, data2),
+      m_step(stp),
+      m_previous(NULL) {
+      
+  }
+   
+  
   unsigned int NoteEvent::get_step() const {
     return m_step;
   }
@@ -24,16 +36,11 @@ namespace Dino {
   }
 
 
-  NoteEvent* NoteEvent::get_assoc() const {
-    return m_assoc;
+  Note* NoteEvent::get_note() {
+    return m_note;
   }
 
-
-  void NoteEvent::set_length(unsigned int length) {
-    m_length = length;
-  }
-
-
+  
   void NoteEvent::set_step(unsigned int step) {
     m_step = step; 
   }
@@ -44,9 +51,8 @@ namespace Dino {
   }
 
 
-  void NoteEvent::set_assoc(NoteEvent* event) {
-    m_assoc = event;
+  void NoteEvent::set_note(Note* note) {
+    m_note = note;
   }
-
 
 }

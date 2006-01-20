@@ -31,7 +31,10 @@
 
 
 namespace Dino {
-
+  
+  
+  class Note;
+  
 
   /** This class represents a MIDI note event in a Pattern. It contains
       information about the type of event and the data associated
@@ -40,48 +43,32 @@ namespace Dino {
   class NoteEvent : public MIDIEvent {
   public:
   
-    NoteEvent(unsigned char type, int stp, int val, 
-	      int vel, int len, NoteEvent* ass = NULL) 
-      : MIDIEvent(type, val, vel),
-	m_step(stp), m_length(len), m_previous(NULL), m_assoc(ass) {
-    
-    }
-    
+    NoteEvent(unsigned char type, int stp, int val, int vel);
     NoteEvent(unsigned char type, int stp, unsigned char data1, 
-	      unsigned char data2) 
-      : MIDIEvent(type, data1, data2),
-	m_step(stp), m_length(0), m_previous(NULL), m_assoc(NULL) {
-
-    }
+	      unsigned char data2);
     
-    /** Return the length of the note in pattern steps. */
-    unsigned int get_length() const;
     /** Return the pattern step where this event occurs. */
     unsigned int get_step() const;
     /** Return a pointer to the previous event at the same pattern step. */
     NoteEvent* get_previous() const;
-    /** Return a pointer to the matching note on or note off event. */
-    NoteEvent* get_assoc() const;
+    /** Return a pointer to the Note object that owns this event. */
+    Note* get_note();
     
-    /** Set the length of the note in pattern steps. */
-    void set_length(unsigned int length);
     /** Set the pattern step where this event occurs. */
     void set_step(unsigned int step);
     /** Set the pointer to the previous event at the same pattern step. */
     void set_previous(NoteEvent* event);
-    /** Set the pointer to the matching note on or note off event. */
-    void set_assoc(NoteEvent* event);
-  
+    /** Set the pointer to the Note object that owns this event. */
+    void set_note(Note* note);
+    
   protected:
     
     /** The pattern step where this note event occurs. */
     unsigned int m_step;
-    /** The length of this note in pattern steps. */
-    unsigned int m_length;
     /** A pointer to the previous event at the same pattern step. */
     NoteEvent* m_previous;
-    /** A pointer to the matching note on or note off event. */
-    NoteEvent* m_assoc;
+    /** The Note object that owns this event. */
+    Note* m_note;
   };
 
 

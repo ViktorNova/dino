@@ -362,7 +362,7 @@ namespace Dino {
     unsigned char* p = jack_midi_event_reserve(port_buf, frame, 3, nframes);
     if (p) {
       p[0] = event->get_type();
-      p[1] = event->get_note();
+      p[1] = event->get_key();
       p[2] = event->get_velocity();
       return true;
     }

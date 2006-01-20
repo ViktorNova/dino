@@ -74,6 +74,8 @@ int main(int argc, char** argv) {
     return 0;
   }
   
+  dbg1<<"Dino "<<VERSION<<" starting"<<endl;
+  
   // load the GUI
   dbg1<<"Initialising gtkmm"<<endl;
   Main kit(argc, argv);

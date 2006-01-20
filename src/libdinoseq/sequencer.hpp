@@ -73,7 +73,9 @@ namespace Dino {
     void jack_timebase_callback(jack_transport_state_t state, 
 				jack_nframes_t nframes, jack_position_t* pos, 
 				int new_pos);
-    /** This is called once for each JACK cycle. MIDI is sequenced from here. */
+    /** This is called once for each JACK cycle. MIDI is sequenced from here. 
+	@callgraph
+    */
     int jack_process_callback(jack_nframes_t nframes);
     /** This is called when the JACK daemon is being shut down. */
     void jack_shutdown_handler();

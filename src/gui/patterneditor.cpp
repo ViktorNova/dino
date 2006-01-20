@@ -336,7 +336,9 @@ void PatternEditor::draw_velocity_box(Pattern::NoteIterator iterator) {
 
 
 void PatternEditor::update() {
-  m_pat->get_dirty_rect(&m_d_min_step, &m_d_min_note, &m_d_max_step, &m_d_max_note);
+  m_pat->get_dirty_rect(&m_d_min_step, &m_d_min_note, 
+			&m_d_max_step, &m_d_max_note);
+  m_pat->reset_dirty_rect();
   RefPtr<Gdk::Window> win = get_window();
   win->invalidate_rect(Gdk::Rectangle(m_d_min_step * m_col_width, 
 				      (m_max_note - m_d_max_note - 1) * 

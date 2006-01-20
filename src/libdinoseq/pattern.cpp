@@ -304,7 +304,7 @@ namespace Dino {
   
 
   void Pattern::get_dirty_rect(int* minStep, int* minNote, 
-			       int* maxStep, int* maxNote) {
+			       int* maxStep, int* maxNote) const {
     if (minStep)
       *minStep = this->m_min_step;
     if (minNote)
@@ -313,13 +313,17 @@ namespace Dino {
       *maxStep = this->m_max_step;
     if (maxNote)
       *maxNote = this->m_max_note;
-    this->m_min_step = m_length * m_steps;
-    this->m_max_step = -1;
-    this->m_min_note = 128;
-    this->m_max_note = -1;
+  }
+  
+  
+  void Pattern::reset_dirty_rect() {
+    m_min_step = m_length * m_steps;
+    m_max_step = -1;
+    m_min_note = 128;
+    m_max_note = -1;
   }
 
-
+  
   bool Pattern::is_dirty() const {
     return m_dirty;
   }

@@ -62,9 +62,8 @@ namespace Dino {
     NoteIterator notes_end() const;
     int get_steps() const;
     int get_length() const;
-    // XXX This needs to be made const
     void get_dirty_rect(int* min_step, int* min_note, 
-			int* max_step, int* max_note);
+			int* max_step, int* max_note) const;
     const std::vector<Controller>& get_controllers() const;
     NoteIterator find_note(int step, int value) const;
     
@@ -77,6 +76,7 @@ namespace Dino {
     void add_cc(unsigned int controller, unsigned int step, 
 		unsigned char value);
     void remove_cc(unsigned int controller, unsigned int step);
+    void reset_dirty_rect();
     
     // XML I/O
     bool is_dirty() const;

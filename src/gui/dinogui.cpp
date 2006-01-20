@@ -431,8 +431,7 @@ void DinoGUI::init_pattern_editor() {
   // add the CC editor
   EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
   boxCCEditor->pack_start(*scwCCEditor);
-  CCEditor* cce = new CCEditor();
-  scwCCEditor->add(*cce);
+  scwCCEditor->add(m_cce);
   
   // XXX this should be removed or changed
   //boxCCEditor->pack_start(*scwCCEditor);
@@ -683,7 +682,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
       }
     }
     m_pe.set_pattern(pattern);
-    //m_cce.set_pattern(pattern);
+    m_cce.set_controller(pattern, 0);
     set_active_controller(-1);
     update_controller_combo();
   }

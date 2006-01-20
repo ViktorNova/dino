@@ -43,17 +43,21 @@ namespace Dino {
     const NoteEventList& get_notes() const;
     int get_steps() const;
     int get_length() const;
+    // XXX This needs to be made const
     void get_dirty_rect(int* min_step, int* min_note, 
 			int* max_step, int* max_note);
     const std::vector<Controller>& get_controllers() const;
-    NoteEvent* find_note(int step, int value);
+    const NoteEvent* find_note(int step, int value) const;
     
     // mutators
     void set_name(const string& name);
-    void add_note(int step, int value, int velocity, int length);
-    int delete_note(NoteEvent* note_on);
-    int resize_note(NoteEvent* note_on, int length);
-  
+    void add_note(unsigned step, int value, int velocity, int length);
+    int delete_note(const NoteEvent* note_on);
+    int resize_note(const NoteEvent* note_on, int length);
+    void add_cc(unsigned int controller, unsigned int step, 
+		unsigned char value);
+    void remove_cc(unsigned int controller, unsigned int step);
+    
     // XML I/O
     bool is_dirty() const;
     void make_clean() const;
@@ -92,15 +96,16 @@ namespace Dino {
     Pattern(const Pattern&) { }
     Pattern& operator=(const Pattern&) { return *this; }
     
+    NoteEvent* find_note_internal(int step, int value);
     bool find_note_event(int step, int value, bool note_on, NoteEvent*& event);
     void delete_note_event(NoteEvent* event);
     void add_note_event(NoteEvent* event);
   
     string m_name;
     /** Pattern length in beats */
-    int m_length;
+    unsigned int m_length;
     /** Number of steps per beat */
-    int m_steps;
+    unsigned int m_steps;
     /** The note on events in the pattern */
     NoteEventList m_note_ons;
     /** The note off events in the pattern */

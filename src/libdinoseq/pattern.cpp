@@ -23,10 +23,18 @@ namespace Dino {
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
-    for (int i = 0; i < m_length * m_steps; ++i) {
+    for (unsigned i = 0; i < m_length * m_steps; ++i) {
       m_note_ons.push_back(NULL);
       m_note_offs.push_back(NULL);
     }
+    
+    Controller c(m_length * m_steps, 1);
+    c.set_event(0, 64);
+    c.set_event(3, 3);
+    c.set_event(14, 34);
+    c.set_event(16, 95);
+    c.set_event(24, 101);
+    m_controllers.push_back(c);
   }
 
 
@@ -78,7 +86,8 @@ namespace Dino {
       before @c step. This function will also update the @c previous and 
       @c next pointers in the Note, so the doubly linked list will stay
       consistent with the note map. */
-  void Pattern::add_note(int step, int value, int velocity, int noteLength) {
+  void Pattern::add_note(unsigned step, int value, int velocity, 
+			 int noteLength) {
     assert(step >= 0);
     assert(step < m_length * m_steps);
     assert(value >= 0);
@@ -88,7 +97,7 @@ namespace Dino {
     NoteEvent* note_off;
   
     // if a note with this value is playing at this step, stop it
-    NoteEvent* playing_note = find_note(step, value);
+    NoteEvent* playing_note = find_note_internal(step, value);
     if (playing_note) {
       if (playing_note->get_step() == (unsigned int)step) {
 	NoteEvent* assoc = playing_note->get_assoc();
@@ -111,7 +120,7 @@ namespace Dino {
   
     // make sure that the new note fits
     int newLength = noteLength;
-    for (int i = step + 1; i < step + noteLength; ++i) {
+    for (unsigned i = step + 1; i < step + noteLength; ++i) {
       if (find_note_event(i, value, true, playing_note)) {
 	newLength = i - step;
 	break;
@@ -138,7 +147,10 @@ namespace Dino {
       @c next pointers so the doubly linked list will stay consistent with the
       note map. It will return the step that the deleted note started on,
       or -1 if no note was deleted. */
-  int Pattern::delete_note(NoteEvent* note_on) {
+  int Pattern::delete_note(const NoteEvent* note_on_event) {
+    assert(note_on_event);
+    NoteEvent* note_on = const_cast<NoteEvent*>(note_on_event);
+    
     if (note_on) {
       NoteEvent* off = note_on->get_assoc();
       int on_step = note_on->get_step();
@@ -153,9 +165,10 @@ namespace Dino {
   }
 
 
-  int Pattern::resize_note(NoteEvent* note_on, int length) {
-    assert(note_on);
-  
+  int Pattern::resize_note(const NoteEvent* note_on_event, int length) {
+    assert(note_on_event);
+    NoteEvent* note_on = const_cast<NoteEvent*>(note_on_event);
+    
     unsigned int step = note_on->get_step();
   
     if (length < 1)
@@ -184,6 +197,19 @@ namespace Dino {
       signal_note_changed(step, note_on->get_note(), length);
     }
     return length;
+  }
+
+
+  void Pattern::add_cc(unsigned int controller, unsigned int step, 
+		       unsigned char value) {
+    assert(controller < m_controllers.size());
+    assert(step < m_length * m_steps);
+    m_controllers[controller].set_event(step, value);
+  }
+
+
+  void Pattern::remove_cc(unsigned int controller, unsigned int step) {
+    
   }
 
 
@@ -367,7 +393,33 @@ namespace Dino {
   }
   
 
-  NoteEvent* Pattern::find_note(int step, int value) {
+  const NoteEvent* Pattern::find_note(int step, int value) const {
+    NoteEvent* event;
+  
+    for (int i = step; i >= 0; --i) {
+
+      if (i < step) {
+	event = m_note_offs[i];
+	while (event) {
+	  if (event->get_note() == value)
+	    return NULL;
+	  event = static_cast<NoteEvent*>(event->get_next());
+	}
+      }
+    
+      event = m_note_ons[i];
+      while (event) {
+	if (event->get_note() == value)
+	  return event;
+	event = static_cast<NoteEvent*>(event->get_next());
+      }
+    }
+  
+    return NULL;
+  }
+
+
+  NoteEvent* Pattern::find_note_internal(int step, int value) {
     NoteEvent* event;
   
     for (int i = step; i >= 0; --i) {

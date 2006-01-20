@@ -105,7 +105,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
     // button 2 changes the velocity or length
     case 2: {
-      NoteEvent* note_on = m_pat->find_note(step, note);
+      const NoteEvent* note_on = m_pat->find_note(step, note);
       if (note_on) {
 	if (event->state & GDK_CONTROL_MASK) {
 	  m_drag_operation = ChangingNoteVelocity;
@@ -123,7 +123,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
     // button 3 deletes
     case 3: {
-      NoteEvent* note_on = 
+      const NoteEvent* note_on = 
 	m_pat->find_note(int(event->x) / m_col_width, 
 			 m_max_note - int(event->y) / m_row_height - 1);
       m_pat->delete_note(note_on);
@@ -147,7 +147,7 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
       step = m_added_note.first;
     else if (step >= m_pat->get_length() * m_pat->get_steps())
       step = m_pat->get_length() * m_pat->get_steps() - 1;
-    NoteEvent* note_on = 
+    const NoteEvent* note_on = 
       m_pat->find_note(m_added_note.first, m_added_note.second);
     m_pat->resize_note(note_on, step - m_added_note.first + 1);
     m_added_note = make_pair(-1, -1);
@@ -171,12 +171,13 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
   switch (m_drag_operation) {
 
   case ChangingNoteVelocity: {
-    NoteEvent* note_on = m_pat->find_note(m_drag_step, m_drag_note);
+    const NoteEvent* note_on = m_pat->find_note(m_drag_step, m_drag_note);
     if (note_on) {
       double dy = m_drag_y - int(event->y);
       int velocity = int(m_drag_start_vel + dy);
       velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
-      note_on->set_velocity(velocity);
+      // XXX Really need a set_note_velocity() function in Pattern
+      const_cast<NoteEvent*>(note_on)->set_velocity(velocity);
       queue_draw();
     }
     break;
@@ -193,7 +194,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       step = m_added_note.first;
     else if (step >= m_pat->get_length() * m_pat->get_steps())
       step = m_pat->get_length() * m_pat->get_steps() - 1;
-    NoteEvent* note_on = 
+    const NoteEvent* note_on = 
       m_pat->find_note(m_added_note.first, m_added_note.second);
     m_pat->resize_note(note_on, step - m_added_note.first + 1);
     
@@ -277,7 +278,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   }
   
   if (m_drag_operation == ChangingNoteVelocity) {
-    NoteEvent* event = m_pat->find_note(m_drag_step, m_drag_note);
+    const NoteEvent* event = m_pat->find_note(m_drag_step, m_drag_note);
     draw_velocity_box(event);
   }
   

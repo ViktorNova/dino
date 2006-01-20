@@ -5,6 +5,7 @@
 #include <libglademm.h>
 #include <lash/lash.h>
 
+#include "cceditor.hpp"
 #include "debug.hpp"
 #include "octavelabel.hpp"
 #include "patterneditor.hpp"
@@ -99,6 +100,7 @@ private:
   Glib::RefPtr<Gnome::Glade::Xml> m_xml;
   Gtk::Window* m_window;
   PatternEditor m_pe;
+  CCEditor m_cce;
   Gtk::VBox* m_vbx_track_editor;
   Gtk::VBox* m_vbx_track_labels;
   

@@ -6,10 +6,17 @@
 #include <gtkmm.h>
 
 
+namespace Dino {
+  class Pattern;
+}
+
+
 class CCEditor : public Gtk::DrawingArea {
 public:
   
   CCEditor();
+  
+  void set_controller(Dino::Pattern* pat, unsigned controller);
   
 protected:
   
@@ -28,9 +35,10 @@ protected:
   Gdk::Color m_bg_colour1, m_bg_colour2, m_grid_colour, 
     m_edge_colour, m_fg_colour;
   
-  unsigned m_steps;
   unsigned m_step_width;
-  unsigned m_beat_length;
+  
+  Dino::Pattern* m_pat;
+  unsigned int m_controller;
 };
 
 

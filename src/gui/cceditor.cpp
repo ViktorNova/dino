@@ -1,12 +1,13 @@
 #include <iostream>
 
 #include "cceditor.hpp"
-
+#include "pattern.hpp"
 
 using namespace Glib;
 using namespace Gtk;
 using namespace Gdk;
 using namespace std;
+using namespace Dino;
 
   
 CCEditor::CCEditor() 
@@ -15,9 +16,8 @@ CCEditor::CCEditor()
     m_grid_colour("#9C9C9C"),
     m_edge_colour("#000000"),
     m_fg_colour("#008000"),
-    m_steps(32),
     m_step_width(10),
-    m_beat_length(4) {
+    m_pat(NULL) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();
   cmap->alloc_color(m_bg_colour1);
@@ -26,7 +26,17 @@ CCEditor::CCEditor()
   cmap->alloc_color(m_edge_colour);
   cmap->alloc_color(m_fg_colour);
   
-  set_size_request(m_steps * m_step_width);
+}
+
+
+void CCEditor::set_controller(Dino::Pattern* pat, unsigned controller) {
+  m_pat = pat;
+  m_controller = controller;
+  if (m_pat) {
+    set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width, 
+		     -1);
+    queue_draw();
+  }
 }
 
 
@@ -54,24 +64,36 @@ void CCEditor::on_realize() {
 
 
 bool CCEditor::on_expose_event(GdkEventExpose* event) {
+  
+  if (!m_pat)
+    return true;
+  
   RefPtr<Gdk::Window> win = get_window();
-  for (unsigned i = 0; i < m_steps; i += m_beat_length) {
-    if ((i / m_beat_length) % 2 == 0)
+  
+  unsigned steps = m_pat->get_length() * m_pat->get_steps();
+  unsigned spb = m_pat->get_steps();
+  
+  for (unsigned i = 0; i < steps; i += spb) {
+    if ((i / spb) % 2 == 0)
       m_gc->set_foreground(m_bg_colour1);
     else
       m_gc->set_foreground(m_bg_colour2);
     win->draw_rectangle(m_gc, true, i * m_step_width, 0, 
-			m_beat_length * m_step_width, get_height());
+			spb * m_step_width, get_height());
   }
+  
   m_gc->set_foreground(m_grid_colour);
-  for (unsigned i = 0; i < m_steps; ++i) {
+  for (unsigned i = 0; i < steps; ++i) {
     win->draw_line(m_gc, (i + 1) * m_step_width, 0, 
 		   (i + 1) * m_step_width, get_height());
   }
-  m_gc->set_foreground(m_edge_colour);
-  for (unsigned i = 0; i < m_steps; ++i)
-    draw_cc(i, i);
-  draw_cc(0, 127);
+  
+  for (unsigned i = 0; i < steps; ++i) {
+    const CCEvent* event = m_pat->get_controllers()[m_controller].get_event(i);
+    if (event)
+      draw_cc(i, event->get_value());
+  }
+
   return true;
 }
 

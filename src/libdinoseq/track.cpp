@@ -358,49 +358,33 @@ namespace Dino {
   }
 
 
-  MIDIEvent* Track::get_events(unsigned int& beat, unsigned int& tick, 
-				   unsigned int before_beat, 
-				   unsigned int before_tick,
-				   unsigned int ticks_per_beat,
-				   unsigned int& list) const {
-  
-    // if we have reached the end of the wanted period, return NULL so the
-    // sequencer will stop looking for events in this track
-    if (beat >= before_beat && tick >= before_tick)
-      return NULL;
-  
-    // look in all beats inside this period
-    for (unsigned int i = beat; i <= before_beat; ++i) {
-      if (i == before_beat && before_tick == 0)
-	break;
-      SequenceEntry* se = m_sequence[i];
-      if (se) {
-	beat -= se->start;
-	unsigned int btick = before_tick;
-	if (before_beat - se->start >= se->length)
-	  btick = 0;
-	MIDIEvent* event = se->pattern->get_events(beat, tick, 
-						       before_beat - se->start,
-						       btick, ticks_per_beat,
-						       list);
-	beat += se->start;
-	if (event)
-	  return event;
-	if (beat >= se->start + se->length) {
-	  return &MIDIEvent::AllNotesOff;
-	}
+  int Track::get_events(double beat, double before_beat,
+			MIDIEvent** events, double* beats, int room) const {
+    assert(beat >= 0);
+    assert(before_beat >= beat);
+    
+    // XXX cut off notes that are playing at the end of a sequence entry
+    // XXX range check for the events!
+    int event_start = 0;
+    for (unsigned i = unsigned(beat); i < before_beat; ++i) {
+      if (m_sequence[i] != NULL) {
+	double start = beat - m_sequence[i]->start;
+	if (start < 0)
+	  start = 0;
+	double end = before_beat - m_sequence[i]->start;
+	if (end > m_sequence[i]->length)
+	  end = m_sequence[i]->length;
+	int n = m_sequence[i]->pattern->
+	  get_events(beat - m_sequence[i]->start, end, events + event_start, 
+		     beats + event_start, room - event_start);
+	for (int j = event_start; j < event_start + n; ++j)
+	  beats[j] += m_sequence[i]->start;
+	event_start += n;
+	i = m_sequence[i]->start + m_sequence[i]->length - 1;
       }
     }
-  
-    return NULL;
-  }
-
-
-  int Track::get_events2(unsigned int& beat, unsigned int& tick, 
-			 unsigned int before_beat, unsigned int before_tick, 
-			 unsigned int ticks_per_beat, 
-			 MIDIEvent** events, int room) const {
-    return 0;
+    
+    return event_start;
   }
 
 

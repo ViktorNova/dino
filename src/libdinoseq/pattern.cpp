@@ -424,20 +424,45 @@ namespace Dino {
   }
 
 
-  MIDIEvent* Pattern::get_events(unsigned int& beat, unsigned int& tick, 
-				 unsigned int before_beat, 
-				 unsigned int before_tick,
-				 unsigned int ticks_per_beat,
-				 unsigned int& list) const {
-    return NULL;
-  }
-
-
-  int Pattern::get_events2(unsigned int& beat, unsigned int& tick,
-			   unsigned int before_beat, unsigned int before_tick,
-			   unsigned int ticks_per_beat, 
-			   MIDIEvent** events, int room) const {
-    return 0;
+  int Pattern::get_events(double beat, double before_beat,
+			  MIDIEvent** events, double* beats, int room) const {
+    assert(beat < m_length);
+    assert(before_beat <= m_length);
+    
+    int list_no = 0;
+    /* XXX This needs:
+     *      range checking for the events array
+     *      note off events!
+     */
+    double off_d = 0.001;
+    unsigned step;
+    for (step = unsigned(ceil(beat * m_steps));
+	 step < before_beat * m_steps; ++step) {
+      
+      // note off events just before this step
+      if (step > 0 && m_note_offs[step-1] && m_steps * (beat + off_d) <= step) {
+	events[list_no] = m_note_offs[step - 1];
+	beats[list_no] = step / double(m_steps) - off_d;
+	++list_no;
+      }
+      
+      // note on events on this step
+      if (m_note_ons[step]) {
+	events[list_no] = m_note_ons[step];
+	beats[list_no] = step / double(m_steps);
+	++list_no;
+      }
+      
+    }
+    
+    // note off events after the last step
+    if (m_steps * (before_beat + off_d) > step && m_note_offs[step - 1]) {
+      events[list_no] = m_note_offs[step - 1];
+      beats[list_no] = step / double(m_steps) - off_d;
+      ++list_no;
+    }
+    
+    return list_no;
   }
   
 
@@ -482,16 +507,6 @@ namespace Dino {
   }
   
 
-  Pattern::NoteIterator Pattern::find_note_on_before(unsigned step) {
-    for (int i = step - 1; i >= 0; ++i) {
-      NoteEvent* note_on = m_note_ons[i];
-      while (note_on && note_on->get_next())
-	note_on = static_cast<NoteEvent*>(note_on->get_next());
-      return NoteIterator(this, note_on->get_note());
-    }
-    
-    return NoteIterator(this, NULL);
-  }
-  
-
 }
+
+

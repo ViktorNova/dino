@@ -93,6 +93,9 @@ namespace Dino {
     /** Return an invalid iterator that can be used to check when an iterator
 	has passed the last note in this pattern. */
     NoteIterator notes_end() const;
+    /** Return an iterator for the note with key @c value that is playing at
+	step @c step, or an invalid iterator if there is no such note. */
+    NoteIterator find_note(unsigned int step, int value) const;
     /** Return the number of steps per beat. */
     int get_steps() const;
     /** Return the length in beats. */
@@ -102,9 +105,6 @@ namespace Dino {
     void get_dirty_rect(int* min_step, int* min_note, 
 			int* max_step, int* max_note) const;
     const std::vector<Controller>& get_controllers() const;
-    /** Return an iterator for the note with key @c value that is playing at
-	step @c step, or an invalid iterator if there is no such note. */
-    NoteIterator find_note(unsigned int step, int value) const;
     
     // mutators
     void set_name(const string& name);
@@ -124,16 +124,8 @@ namespace Dino {
     bool parse_xml_node(const Element* elt);
     
     // sequencing
-    MIDIEvent* get_events(unsigned int& beat, unsigned int& tick, 
-			  unsigned int before_beat, 
-			  unsigned int before_tick,
-			  unsigned int ticks_per_beat, 
-			  unsigned int& list) const;
-    
-    int get_events2(unsigned int& beat, unsigned int& tick,
-		    unsigned int before_beat, unsigned int before_tick,
-		    unsigned int ticks_per_beat, 
-		    MIDIEvent** events, int room) const;
+    int get_events(double beat, double before_beat,
+		   MIDIEvent** events, double* beats, int room) const;
   public:
   
     sigc::signal<void, string> signal_name_changed;
@@ -157,8 +149,6 @@ namespace Dino {
     Pattern& operator=(const Pattern&) { return *this; }
     
     NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
-    NoteIterator find_note_on_before(unsigned step);
-    
     
     /** The name of the pattern */
     string m_name;
@@ -166,8 +156,6 @@ namespace Dino {
     unsigned int m_length;
     /** Number of steps per beat */
     unsigned int m_steps;
-    /** The Note objects. */
-    //Note* m_notes;
     /** The note on events in the pattern */
     NoteEventList m_note_ons;
     /** The note off events in the pattern */

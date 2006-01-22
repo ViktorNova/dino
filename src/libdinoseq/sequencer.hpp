@@ -106,11 +106,6 @@ namespace Dino {
 	events on the JACK MIDI output buffers). */
     void sequence_midi(jack_transport_state_t state,
 		       const jack_position_t& pos, jack_nframes_t nframes);
-    /** This function adds a MIDI event to a JACK MIDI output buffer. It is
-	used by sequence_midi(). */
-    bool add_event_to_buffer(MIDIEvent* event, void* port_buf,
-			     unsigned int beat, unsigned int tick,
-			     const jack_position_t& pos, jack_nframes_t nframes);
   
     string m_client_name;
     /* XXX The below is false, I think. Everything should be readable by
@@ -131,6 +126,7 @@ namespace Dino {
     bool m_sent_all_off;
     static const int m_event_buffer_size = 1024;
     MIDIEvent* m_event_buffer[m_event_buffer_size];
+    double m_timestamp_buffer[m_event_buffer_size];
     
     volatile int m_current_beat;
     volatile int m_old_current_beat;

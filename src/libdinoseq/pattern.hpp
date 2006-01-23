@@ -127,17 +127,28 @@ namespace Dino {
     int get_events(double beat, double before_beat,
 		   const MIDIEvent** events, double* beats, int room) const;
   public:
-  
+    
+    /** Emitted when the pattern name has changed. */
     sigc::signal<void, string> signal_name_changed;
+    /** Emitted when the length in beats has changed. */
     sigc::signal<void, int> signal_length_changed;
+    /** Emitted when the number of steps per beat has changed. */
     sigc::signal<void, int> signal_steps_changed;
+    /** Emitted when a note has been added. */
     sigc::signal<void, int, int, int> signal_note_added;
+    /** Emitted when an existing note has been changed. */
     sigc::signal<void, int, int, int> signal_note_changed;
+    /** Emitted when a note has been removed. */
     sigc::signal<void, int, int> signal_note_removed;
+    /** Emitted when a CC control point has been added. */
     sigc::signal<void, int, int, int> signal_cc_added;
+    /** Emitted when the value for a CC control point has changed. */
     sigc::signal<void, int, int, int> signal_cc_changed;
+    /** Emitted when a CC control point has been removed. */
     sigc::signal<void, int, int> signal_cc_removed;
+    /** Emitted when a whole controller has been added. */
     sigc::signal<void, int> signal_controller_added;
+    /** Emitted when a whole controller has been removed. */
     sigc::signal<void, int> signal_controller_removed;
 
   private:

@@ -135,9 +135,9 @@ namespace Dino {
 
 
   void Sequencer::reset_ports() {
-    map<int, Track*>::const_iterator iter = m_song.get_tracks().begin();
-    for ( ; iter != m_song.get_tracks().end(); ++iter)
-      track_added(iter->first);
+    Song::ConstTrackIterator iter;
+    for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter)
+      track_added(iter->get_id());
   }
 
   
@@ -268,11 +268,10 @@ namespace Dino {
 				jack_nframes_t nframes) {
     
     // if we're not rolling, turn off all notes and return
-    map<int, Track*>::const_iterator iter;
+    Song::ConstTrackIterator iter;
     if (state != JackTransportRolling) {
-      for (iter = m_song.get_tracks().begin();
-	   iter != m_song.get_tracks().end(); ++iter) {
-	jack_port_t* port = m_output_ports[iter->first];
+      for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
+	jack_port_t* port = m_output_ports[iter->get_id()];
 	if (port) {
 	  void* port_buf = jack_port_get_buffer(port, nframes);
 	  jack_midi_clear_buffer(port_buf, nframes);
@@ -294,20 +293,17 @@ namespace Dino {
       pos.tick / double(pos.ticks_per_beat);
     double end = start + pos.beats_per_minute * nframes / (60 * pos.frame_rate);
     
-    for (iter = m_song.get_tracks().begin(); 
-	 iter != m_song.get_tracks().end(); ++iter) {
+    for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
 
       // get the MIDI buffer
-      jack_port_t* port = m_output_ports[iter->first];
+      jack_port_t* port = m_output_ports[iter->get_id()];
       if (port) {
 	void* port_buf = jack_port_get_buffer(port, nframes);
 	jack_midi_clear_buffer(port_buf, nframes);
 
 	// add events in buffer
-	const Track* trk = iter->second;
-	
-	int n = trk->get_events(start, end, m_event_buffer, m_timestamp_buffer,
-				m_event_buffer_size);
+	int n = iter->get_events(start, end, m_event_buffer, m_timestamp_buffer,
+				 m_event_buffer_size);
 	for (int i = 0; i < n; ++i) {
 	  MIDIEvent* event;
 	  jack_nframes_t frame_offset = 

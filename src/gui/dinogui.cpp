@@ -111,15 +111,15 @@ void DinoGUI::slot_edit_add_track() {
   m_dlgtrack_cmb_port.set_active_id(-1);
   m_dlg_track_properties->show_all();
   if (m_dlg_track_properties->run() == RESPONSE_OK) {
-    int id = m_song.add_track(m_dlgtrack_ent_name->get_text());
-    m_song.get_track(id)->
-      set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
+    Song::TrackIterator iter =m_song.add_track(m_dlgtrack_ent_name->get_text());
+    iter->set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
     int instrument = m_dlgtrack_cmb_port.get_active_id();
     if (instrument == -1)
-      m_seq.set_instrument(id, "None");
+      m_seq.set_instrument(iter->get_id(), "None");
     else
-      m_seq.set_instrument(id, m_dlgtrack_cmb_port.get_active_text());
-    set_active_track(id);
+      m_seq.set_instrument(iter->get_id(), 
+			   m_dlgtrack_cmb_port.get_active_text());
+    set_active_track(iter->get_id());
   }
   m_dlg_track_properties->hide();
 }
@@ -127,21 +127,21 @@ void DinoGUI::slot_edit_add_track() {
 
 void DinoGUI::slot_edit_delete_track() {
   if (m_active_track >= 0) {
-    m_song.remove_track(m_active_track);
+    m_song.remove_track(m_song.find_track(m_active_track));
   }
 }
 
 
 void DinoGUI::slot_edit_edit_track_properties() {
   if (m_active_track >= 0) {
-    Track* t = m_song.get_track(m_active_track);
-    m_dlgtrack_ent_name->set_text(t->get_name());
+    Track t = *(m_song.find_track(m_active_track));
+    m_dlgtrack_ent_name->set_text(t.get_name());
     update_port_combo();
-    m_dlgtrack_sbn_channel->set_value(t->get_channel() + 1);
+    m_dlgtrack_sbn_channel->set_value(t.get_channel() + 1);
     m_dlg_track_properties->show_all();
     if (m_dlg_track_properties->run() == RESPONSE_OK) {
-      t->set_name(m_dlgtrack_ent_name->get_text());
-      t->set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
+      t.set_name(m_dlgtrack_ent_name->get_text());
+      t.set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
       int instrument = m_dlgtrack_cmb_port.get_active_id();
       if (instrument == -1)
 	m_seq.set_instrument(m_active_track, "None");
@@ -161,7 +161,7 @@ void DinoGUI::slot_edit_add_pattern() {
     m_dlgpat_sbn_steps->set_value(4);
     m_dlg_pattern_properties->show_all();
     if (m_dlg_pattern_properties->run() == RESPONSE_OK) {
-      m_song.get_track(m_active_track)->
+      m_song.find_track(m_active_track)->
 	add_pattern(m_dlgpat_ent_name->get_text(),
 		    m_dlgpat_sbn_length->get_value_as_int(),
 		    m_dlgpat_sbn_steps->get_value_as_int());
@@ -174,16 +174,16 @@ void DinoGUI::slot_edit_add_pattern() {
 void DinoGUI::slot_edit_delete_pattern() {
   if (m_active_track < 0 || m_active_pattern < 0)
     return;
-  Track* trk = m_song.get_track(m_active_track);
-  trk->remove_pattern(m_active_pattern);
+  Track& trk = *(m_song.find_track(m_active_track));
+  trk.remove_pattern(m_active_pattern);
 }
 
 
 void DinoGUI::slot_edit_edit_pattern_properties() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
-    Track* trk = m_song.get_track(m_active_track);
-    assert(trk != NULL);
-    Pattern* pat = trk->get_pattern(m_active_pattern);
+    Song::TrackIterator iter = m_song.find_track(m_active_track);
+    assert(iter != m_song.tracks_end());
+    Pattern* pat = iter->get_pattern(m_active_pattern);
     assert(pat != NULL);
 
     m_dlgpat_ent_name->set_text(pat->get_name());
@@ -262,19 +262,21 @@ void DinoGUI::update_track_widgets() {
   m_vbx_track_editor->pack_start(*tmpw, PACK_SHRINK);
   TempoLabel* tmpl = manage(new TempoLabel(&m_song));
   m_vbx_track_labels->pack_start(*tmpl, PACK_SHRINK);
-  for (map<int, Track*>::iterator iter = m_song.get_tracks().begin();
-       iter != m_song.get_tracks().end(); ++iter) {
+  for (Song::TrackIterator iter = m_song.tracks_begin();
+       iter != m_song.tracks_end(); ++iter) {
     TrackWidget* tw = manage(new TrackWidget(&m_song));
-    tw->set_track(iter->second);
+    tw->set_track(&*iter);
     tw->signal_clicked.
-      connect(hide(bind(mem_fun(*this, &DinoGUI::set_active_track), iter->first)));
+      connect(hide(bind(mem_fun(*this, &DinoGUI::set_active_track), 
+			iter->get_id())));
     m_seq.signal_beat_changed.
       connect(mem_fun(*tw, &TrackWidget::set_current_beat));
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
     TrackLabel* tl = manage(new TrackLabel(&m_song));
-    tl->set_track(iter->first, iter->second);
+    tl->set_track(iter->get_id(), &(*iter));
     tl->signal_clicked.
-      connect(hide(bind(mem_fun(*this, &DinoGUI::set_active_track), iter->first)));
+      connect(hide(bind(mem_fun(*this, &DinoGUI::set_active_track), 
+			iter->get_id())));
     m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
     signal_active_track_changed.
       connect(mem_fun(*tl, &TrackLabel::set_active_track));
@@ -289,15 +291,16 @@ void DinoGUI::update_track_combo() {
   int oldActive = m_cmb_track.get_active_id();
   m_cmb_track.clear();
   int newActive = m_active_track;
-  if (m_song.get_tracks().size() > 0) {
+  if (m_song.get_number_of_tracks() > 0) {
     char tmp[10];
-    for (map<int, Track*>::iterator iter = m_song.get_tracks().begin();
-	 iter != m_song.get_tracks().end(); ++iter) {
-      sprintf(tmp, "%03d ", iter->first);
-      m_cmb_track.append_text(string(tmp) + iter->second->get_name(), 
-			      iter->first);
-      if (newActive == -1 || (m_active_track == -1 &&iter->first <= oldActive))
-	newActive = iter->first;
+    for (Song::TrackIterator iter = m_song.tracks_begin();
+	 iter != m_song.tracks_end(); ++iter) {
+      sprintf(tmp, "%03d ", iter->get_id());
+      m_cmb_track.append_text(string(tmp) + iter->get_name(), 
+			      iter->get_id());
+      if (newActive == -1 || (m_active_track == -1 &&
+			      iter->get_id() <= oldActive))
+	newActive = iter->get_id();
     }
   }
   else {
@@ -314,7 +317,7 @@ void DinoGUI::update_pattern_combo() {
   m_cmb_pattern.clear();
   int trackID = m_cmb_track.get_active_id();
   if (trackID >= 0) {
-    const Track* trk = m_song.get_track(trackID);
+    Song::ConstTrackIterator trk = m_song.find_track(trackID);
     m_cmb_pattern.clear();
     map<int, Pattern*>::const_iterator iter;
     char tmp[10];
@@ -651,7 +654,7 @@ void DinoGUI::set_active_track(int active_track) {
     m_conn_pat_added.disconnect();
     m_conn_pat_removed.disconnect();
     if (m_active_track != -1) {
-      Track* t = m_song.get_track(m_active_track);
+      Song::TrackIterator t = m_song.find_track(m_active_track);
       slot<void> update_slot = mem_fun(*this, &DinoGUI::update_pattern_combo);
       m_conn_pat_added = t->signal_pattern_added.connect(hide(update_slot));
       m_conn_pat_removed= t->signal_pattern_removed.connect(hide(update_slot));
@@ -669,8 +672,8 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     m_conn_cont_added.disconnect();
     m_conn_cont_removed.disconnect();
     Pattern* pattern = NULL;
-    Track* trk = m_song.get_track(m_active_track);
-    if (trk != NULL) {
+    Song::TrackIterator trk = m_song.find_track(m_active_track);
+    if (trk != m_song.tracks_end()) {
       pattern = trk->get_pattern(m_active_pattern);
       if (pattern != NULL) {
 	slot<void> u_slot = 

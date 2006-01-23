@@ -12,8 +12,11 @@
 namespace Dino {
 
 
-  Track::Track(int length, const string& name) 
-    : m_name(name), m_length(length), m_dirty(false) {
+  Track::Track(int id, int length, const string& name) 
+    : m_id(id),
+      m_name(name),
+      m_length(length),
+      m_dirty(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
     for (int i = 0; i < 300; ++i)
@@ -34,6 +37,11 @@ namespace Dino {
     }
   }
 
+
+  int Track::get_id() const {
+    return m_id;
+  }
+  
 
   /** Returns the name of the track. The name is just a label that the user
       can change. */

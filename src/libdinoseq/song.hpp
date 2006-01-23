@@ -25,6 +25,66 @@ namespace Dino {
   class Song {
   public:
     
+    class ConstTrackIterator;
+    
+    class TrackIterator {
+    public:      
+      const Track& operator*() const { return *(m_iterator->second); }
+      Track& operator*() { return *(m_iterator->second); }
+      const Track* operator->() const { return m_iterator->second; }
+      Track* operator->() { return m_iterator->second; }
+      bool operator==(const TrackIterator& iter) const { 
+	return (m_iterator == iter.m_iterator);
+      }
+      bool operator!=(const TrackIterator& iter) const { 
+	return (m_iterator != iter.m_iterator);
+      }
+      
+      TrackIterator& operator++() { ++m_iterator; return *this; }
+      
+    private:
+      
+      friend class Song;
+      friend class ConstTrackIterator;
+      
+      TrackIterator(const std::map<int, Track*>::iterator& iter)
+	: m_iterator(iter) {
+      }
+      
+      std::map<int, Track*>::iterator m_iterator;
+    };
+
+
+    class ConstTrackIterator {
+    public:
+      ConstTrackIterator() { }
+      ConstTrackIterator(const TrackIterator& iter) 
+	: m_iterator(iter.m_iterator) {
+      }
+      
+      const Track& operator*() const { return *(m_iterator->second); }
+      const Track* operator->() const { return m_iterator->second; }
+      bool operator==(const ConstTrackIterator& iter) const { 
+	return (m_iterator == iter.m_iterator);
+      }
+      bool operator!=(const ConstTrackIterator& iter) const { 
+	return (m_iterator != iter.m_iterator);
+      }
+      
+      ConstTrackIterator& operator++() { ++m_iterator; return *this; }
+      
+    private:
+      
+      friend class Song;
+      
+      ConstTrackIterator(const std::map<int, Track*>::const_iterator& iter)
+	: m_iterator(iter) {
+      }
+      
+      std::map<int, Track*>::const_iterator m_iterator;
+    };
+    
+    
     Song();
     ~Song();
   
@@ -32,20 +92,25 @@ namespace Dino {
     const string& get_title() const;
     const string& get_author() const;
     const string& get_info() const;
-    const map<int, Track*>& get_tracks() const;
-    map<int, Track*>& get_tracks();
-    const Track* get_track(int id) const;
-    Track* get_track(int id);
+    ConstTrackIterator tracks_begin() const;
+    ConstTrackIterator tracks_end() const;
+    ConstTrackIterator find_track(int id) const;
+    const size_t get_number_of_tracks() const;
     int get_length() const;
     const TempoMap::TempoChange* get_tempo_changes() const;
-  
+    
+    // non-const accessors
+    TrackIterator tracks_begin();
+    TrackIterator tracks_end();
+    TrackIterator find_track(int id);
+
     // mutators
     void set_title(const string& title);
     void set_author(const string& author);
     void set_info(const string& info);
     void set_length(int length);
-    int add_track(const string& name = "");
-    bool remove_track(int id);
+    TrackIterator add_track(const string& name = "");
+    bool remove_track(const TrackIterator& iterator);
     void add_tempo_change(int beat, double bpm);
     void remove_tempo_change(int beat);
   

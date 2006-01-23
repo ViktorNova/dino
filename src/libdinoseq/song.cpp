@@ -36,6 +36,41 @@ namespace Dino {
   }
 
 
+  Song::ConstTrackIterator Song::tracks_begin() const {
+    return ConstTrackIterator(m_tracks.begin());
+  }
+  
+  
+  Song::TrackIterator Song::tracks_begin() {
+    return TrackIterator(m_tracks.begin());
+  }
+  
+  
+  Song::ConstTrackIterator Song::tracks_end() const {
+    return ConstTrackIterator(m_tracks.end());
+  }
+  
+  
+  Song::TrackIterator Song::tracks_end() {
+    return TrackIterator(m_tracks.end());
+  }
+  
+  
+  Song::ConstTrackIterator Song::find_track(int id) const {
+    return ConstTrackIterator(m_tracks.find(id));
+  }
+  
+  
+  Song::TrackIterator Song::find_track(int id) {
+    return TrackIterator(m_tracks.find(id));
+  }
+  
+
+  const size_t Song::get_number_of_tracks() const {
+    return m_tracks.size();
+  }
+
+  
   void Song::set_title(const string& title) {
     if (title != m_title) {
       dbg1<<"Changing song title to \""<<title<<"\""<<endl;
@@ -77,24 +112,26 @@ namespace Dino {
   }
 
 
-  int Song::add_track(const string& name) {
+  Song::TrackIterator Song::add_track(const string& name) {
     map<int, Track*>::reverse_iterator iter = m_tracks.rbegin();
     int id;
     if (iter == m_tracks.rend())
       id = 1;
     else
       id = iter->first + 1;
-    m_tracks[id] = new Track(m_length, name);
+    // XXX Use insert()!
+    m_tracks[id] = new Track(id, m_length, name);
     m_dirty = true;
     signal_track_added(id);
-    return id;
+    return TrackIterator(m_tracks.find(id));
   }
 
 
-  bool Song::remove_track(int id) {
-    map<int, Track*>::iterator iter = m_tracks.find(id);
+  bool Song::remove_track(const Song::TrackIterator& iterator) {
+    map<int, Track*>::iterator iter = iterator.m_iterator;
     if (iter == m_tracks.end())
       return false;
+    int id = iter->second->get_id();
     iter->second->queue_deletion();
     m_tracks.erase(iter);
     m_dirty = true;
@@ -126,8 +163,9 @@ namespace Dino {
   const string& Song::get_info() const {
     return m_info;
   }
-
-
+  
+  
+  /*
   const map<int, Track*>& Song::get_tracks() const {
     return m_tracks;
   }
@@ -148,7 +186,8 @@ namespace Dino {
     assert(iter != m_tracks.end());
     return iter->second;
   }
-
+  */
+  
 
   int Song::get_length() const {
     return m_length;

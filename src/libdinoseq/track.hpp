@@ -43,11 +43,12 @@ namespace Dino {
     };
   
   
-    Track(int length = 0, const string& name = "Untitled");
+    Track(int id, int length = 0, const string& name = "Untitled");
   
     ~Track();
   
     // accessors
+    int get_id() const;
     const string& get_name() const;
     map<int, Pattern*>& get_patterns();
     const map<int, Pattern*>& get_patterns() const;
@@ -89,6 +90,7 @@ namespace Dino {
   
   private:
   
+    int m_id;
     string m_name;
     map<int, Pattern*> m_patterns;
     int m_length;

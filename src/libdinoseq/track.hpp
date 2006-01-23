@@ -76,7 +76,7 @@ namespace Dino {
   
     // sequencing
     int get_events(double beat, double before_beat,
-		   MIDIEvent** events, double* beats, int room) const;
+		   const MIDIEvent** events, double* beats, int room) const;
     
   public:
 

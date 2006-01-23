@@ -94,6 +94,7 @@ namespace Dino {
       m_note_offs.push_back(NULL);
     }
     
+    // debugging
     Controller c(m_length * m_steps, 1);
     c.set_event(0, 64);
     c.set_event(3, 3);
@@ -425,7 +426,8 @@ namespace Dino {
 
 
   int Pattern::get_events(double beat, double before_beat,
-			  MIDIEvent** events, double* beats, int room) const {
+			  const MIDIEvent** events, double* beats, 
+			  int room) const {
     assert(beat < m_length);
     assert(before_beat <= m_length);
     
@@ -451,6 +453,15 @@ namespace Dino {
 	events[list_no] = m_note_ons[step];
 	beats[list_no] = step / double(m_steps);
 	++list_no;
+      }
+      
+      // controllers
+      for (unsigned i = 0; i < m_controllers.size(); ++i) {
+	if (m_controllers[i].get_event(step)) {
+	  events[list_no] = m_controllers[i].get_event(step);
+	  beats[list_no] = step / double(m_steps);
+	  ++list_no;
+	}
       }
       
     }

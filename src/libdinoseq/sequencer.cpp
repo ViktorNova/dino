@@ -305,7 +305,7 @@ namespace Dino {
 	int n = iter->get_events(start, end, m_event_buffer, m_timestamp_buffer,
 				 m_event_buffer_size);
 	for (int i = 0; i < n; ++i) {
-	  MIDIEvent* event;
+	  const MIDIEvent* event;
 	  jack_nframes_t frame_offset = 
 	    jack_nframes_t(60 * pos.frame_rate * 
 			   (m_timestamp_buffer[i] - start) / 

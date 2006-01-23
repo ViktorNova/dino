@@ -125,7 +125,7 @@ namespace Dino {
     int m_last_tick;
     bool m_sent_all_off;
     static const int m_event_buffer_size = 1024;
-    MIDIEvent* m_event_buffer[m_event_buffer_size];
+    const MIDIEvent* m_event_buffer[m_event_buffer_size];
     double m_timestamp_buffer[m_event_buffer_size];
     
     volatile int m_current_beat;

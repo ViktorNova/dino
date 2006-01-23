@@ -367,7 +367,8 @@ namespace Dino {
 
 
   int Track::get_events(double beat, double before_beat,
-			MIDIEvent** events, double* beats, int room) const {
+			const MIDIEvent** events, double* beats, 
+			int room) const {
     assert(beat >= 0);
     assert(before_beat >= beat);
     

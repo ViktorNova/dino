@@ -263,7 +263,7 @@ namespace Dino {
   int Pattern::resize_note(NoteIterator iterator, int length) {
     assert(iterator);
     assert(iterator.m_pattern == this);
-    assert(iterator->get_step() + length < m_length * m_steps);
+    assert(iterator->get_step() + length <= m_length * m_steps);
     
     // check if there is room for a note of the wanted length or if
     // it has to be shortened

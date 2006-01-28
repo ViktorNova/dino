@@ -12,6 +12,9 @@
 #include "pattern.hpp"
 
 
+using namespace std;
+
+
 namespace Dino {
   
   
@@ -95,12 +98,12 @@ namespace Dino {
     }
     
     // debugging
-    Controller c(m_length * m_steps, 1);
-    c.set_event(0, 64);
-    c.set_event(3, 3);
-    c.set_event(14, 34);
-    c.set_event(16, 95);
-    c.set_event(24, 101);
+    Controller* c = new Controller(m_length * m_steps, 1, 0, 128);
+    c->set_event(0, 64);
+    c->set_event(3, 3);
+    c->set_event(14, 34);
+    c->set_event(16, 95);
+    c->set_event(24, 101);
     m_controllers.push_back(c);
   }
 
@@ -145,15 +148,11 @@ namespace Dino {
     return NoteIterator(this, NULL);
   }
 
-
-  const vector<Controller>& Pattern::get_controllers() const {
-    return m_controllers;
-  }
-
-
+  
   void Pattern::set_name(const string& name) {
     if (name != m_name) {
-      dbg1<<"Changing pattern name from \""<<m_name<<"\" to \""<<name<<"\""<<endl;
+      dbg1<<"Changing pattern name from \""<<m_name<<"\" to \""
+	  <<name<<"\""<<endl;
       m_name = name;
       signal_name_changed(m_name);
     }
@@ -314,13 +313,24 @@ namespace Dino {
   }
 
 
-  void Pattern::add_cc(unsigned int controller, unsigned int step, 
+  Pattern::ControllerIterator Pattern::add_controller(unsigned long param, 
+						      int min, int max) {
+    return ctrls_end();
+  }
+  
+  
+  void Pattern::remove_controller(ControllerIterator iter) {
+    
+  }
+
+  
+  void Pattern::add_cc(ControllerIterator iter, unsigned int step, 
 		       unsigned char value) {
     
   }
 
 
-  void Pattern::remove_cc(unsigned int controller, unsigned int step) {
+  void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
     
   }
 
@@ -457,8 +467,8 @@ namespace Dino {
       
       // controllers
       for (unsigned i = 0; i < m_controllers.size(); ++i) {
-	if (m_controllers[i].get_event(step)) {
-	  events[list_no] = m_controllers[i].get_event(step);
+	if (m_controllers[i]->get_event(step)) {
+	  events[list_no] = m_controllers[i]->get_event(step);
 	  beats[list_no] = step / double(m_steps);
 	  ++list_no;
 	}
@@ -500,6 +510,25 @@ namespace Dino {
     }
     
     return NoteIterator(this, NULL);
+  }
+
+
+  Pattern::ControllerIterator Pattern::ctrls_begin() const {
+    return m_controllers.begin();
+  }
+  
+  
+  Pattern::ControllerIterator Pattern::ctrls_end() const {
+    return m_controllers.end();
+  }
+  
+  
+  Pattern::ControllerIterator Pattern::ctrls_find(unsigned long param) const {
+    for (unsigned i = 0; i < m_controllers.size(); ++i) {
+      if (m_controllers[i]->get_param() == param)
+	return (m_controllers.begin() + i);
+    }
+    return ctrls_end();
   }
 
   

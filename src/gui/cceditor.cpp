@@ -89,7 +89,7 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
   }
   
   for (unsigned i = 0; i < steps; ++i) {
-    const CCEvent* event = m_pat->get_controllers()[m_controller].get_event(i);
+    const CCEvent* event = m_pat->ctrls_find(m_controller)->get_event(i);
     if (event)
       draw_cc(i, event->get_value());
   }

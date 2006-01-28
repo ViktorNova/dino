@@ -79,6 +79,38 @@ namespace Dino {
     };
     
     
+    /** A class that can be used to turn an iterator for a pointer type to
+	an iterator for the corresponding object type. */
+    template <class T, class I> class ConstPointerIteratorWrapper {
+    public:
+      
+      ConstPointerIteratorWrapper() { }
+      ConstPointerIteratorWrapper(const I& iter) : m_iterator(iter) { }
+      
+      const T& operator*() const { return **m_iterator; }
+      const T* operator->() const { return &(**m_iterator); }
+      bool operator==(const ConstPointerIteratorWrapper& iter) const {
+	return (m_iterator == iter.m_iterator);
+      }
+      bool operator!=(const ConstPointerIteratorWrapper& iter) const {
+	return (m_iterator != iter.m_iterator);
+      }
+      ConstPointerIteratorWrapper& operator++() { ++m_iterator; return *this; }
+      
+    private:
+      
+      I m_iterator;
+    };
+    
+    
+    /** A ControllerIterator is a const_iterator type that can be used to
+	access data from controllers in the pattern. */
+    typedef 
+    ConstPointerIteratorWrapper<Controller, 
+				std::vector<Controller*>::const_iterator>
+    ControllerIterator;
+    
+    
     Pattern(const string& name, int length, int steps);
   
     ~Pattern();
@@ -96,6 +128,14 @@ namespace Dino {
     /** Return an iterator for the note with key @c value that is playing at
 	step @c step, or an invalid iterator if there is no such note. */
     NoteIterator find_note(unsigned int step, int value) const;
+    /** Return an iterator that refers to the first controller in the pattern.*/
+    ControllerIterator ctrls_begin() const;
+    /** Return an invalid iterator that can be used to check when an iterator
+	has passed the last controller in the pattern. */
+    ControllerIterator ctrls_end() const;
+    /** Return an iterator for the controller with parameter @c param, or an
+	invalid iterator if no such controller exists. */
+    ControllerIterator ctrls_find(unsigned long param) const;
     /** Return the number of steps per beat. */
     int get_steps() const;
     /** Return the length in beats. */
@@ -104,7 +144,6 @@ namespace Dino {
 	that have been changed since the last call to reset_dirty_rect(). */
     void get_dirty_rect(int* min_step, int* min_note, 
 			int* max_step, int* max_note) const;
-    const std::vector<Controller>& get_controllers() const;
     
     // mutators
     void set_name(const string& name);
@@ -112,9 +151,10 @@ namespace Dino {
     void delete_note(NoteIterator note);
     int resize_note(NoteIterator note, int length);
     void set_velocity(NoteIterator note, unsigned char velocity);
-    void add_cc(unsigned int controller, unsigned int step, 
-		unsigned char value);
-    void remove_cc(unsigned int controller, unsigned int step);
+    ControllerIterator add_controller(unsigned long param, int min, int max);
+    void remove_controller(ControllerIterator iter);
+    void add_cc(ControllerIterator iter, unsigned int step,unsigned char value);
+    void remove_cc(ControllerIterator iter, unsigned int step);
     void reset_dirty_rect();
     
     // XML I/O
@@ -153,8 +193,6 @@ namespace Dino {
 
   private:
     
-    //friend class Pattern::NoteIterator;
-    
     // no copying for now
     Pattern(const Pattern&) { }
     Pattern& operator=(const Pattern&) { return *this; }
@@ -172,7 +210,7 @@ namespace Dino {
     /** The note off events in the pattern */
     NoteEventList m_note_offs;
     /** The control change event lists */
-    std::vector<Controller> m_controllers;
+    std::vector<Controller*> m_controllers;
     
     mutable bool m_dirty;
   

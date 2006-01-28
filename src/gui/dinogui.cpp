@@ -685,7 +685,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
       }
     }
     m_pe.set_pattern(pattern);
-    m_cce.set_controller(pattern, 0);
+    m_cce.set_controller(pattern, 1);
     set_active_controller(-1);
     update_controller_combo();
   }

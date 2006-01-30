@@ -80,6 +80,7 @@ namespace Dino {
     : m_name(name),
       m_length(length),
       m_steps(steps),
+      m_controllers(new vector<Controller*>()),
       m_dirty(false) {
     
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
@@ -104,7 +105,7 @@ namespace Dino {
     c->set_event(14, 34);
     c->set_event(16, 95);
     c->set_event(24, 101);
-    m_controllers.push_back(c);
+    m_controllers->push_back(c);
   }
 
 
@@ -127,6 +128,11 @@ namespace Dino {
 	event = static_cast<NoteEvent*>(tmp->get_next());
       }
     }
+    
+    for (unsigned i = 0; i < m_controllers->size(); ++i)
+      delete (*m_controllers)[i];
+    delete m_controllers;
+    
   }
 
 
@@ -315,12 +321,54 @@ namespace Dino {
 
   Pattern::ControllerIterator Pattern::add_controller(unsigned long param, 
 						      int min, int max) {
-    return ctrls_end();
+    // find the place to insert the new controller
+    unsigned i;
+    for (i = 0; i < m_controllers->size(); ++i) {
+      unsigned long this_param = (*m_controllers)[i]->get_param();
+      if (this_param == param)
+	return ControllerIterator(m_controllers->begin() + i);
+      else if (this_param > param)
+	break;
+    }
+    
+    // make a copy of the controller vector and insert the new one
+    vector<Controller*>* new_vector = new vector<Controller*>(*m_controllers);
+    new_vector->insert(new_vector->begin() + i, 
+		       new Controller(m_steps * m_length, param, min, max));
+    
+    // delete the old vector
+    // XXX This needs to be done through a Deleter to be threadsafe
+    vector<Controller*>* tmp = m_controllers;
+    m_controllers = new_vector;
+    delete tmp;
+    
+    signal_controller_added(param);
+    return ControllerIterator(new_vector->begin() + i);
   }
   
   
   void Pattern::remove_controller(ControllerIterator iter) {
+    // find the element to erase
+    unsigned i;
+    for (i = 0; i < m_controllers->size(); ++i) {
+      if ((*m_controllers)[i] == &*iter)
+	break;
+    }
+    if (i >= m_controllers->size())
+      return;
     
+    // make a copy of the old vector
+    vector<Controller*>* new_vector = new vector<Controller*>(*m_controllers);
+    unsigned long param = (*m_controllers)[i]->get_param();
+    new_vector->erase(new_vector->begin() + i);
+    
+    // delete the old vector
+    // XXX This needs to be done through a Deleter to be threadsafe
+    vector<Controller*>* tmp = m_controllers;
+    m_controllers = new_vector;
+    delete tmp;
+    
+    signal_controller_removed(param);
   }
 
   
@@ -466,9 +514,9 @@ namespace Dino {
       }
       
       // controllers
-      for (unsigned i = 0; i < m_controllers.size(); ++i) {
-	if (m_controllers[i]->get_event(step)) {
-	  events[list_no] = m_controllers[i]->get_event(step);
+      for (unsigned i = 0; i < m_controllers->size(); ++i) {
+	if ((*m_controllers)[i]->get_event(step)) {
+	  events[list_no] = (*m_controllers)[i]->get_event(step);
 	  beats[list_no] = step / double(m_steps);
 	  ++list_no;
 	}
@@ -514,19 +562,19 @@ namespace Dino {
 
 
   Pattern::ControllerIterator Pattern::ctrls_begin() const {
-    return m_controllers.begin();
+    return ControllerIterator(m_controllers->begin());
   }
   
   
   Pattern::ControllerIterator Pattern::ctrls_end() const {
-    return m_controllers.end();
+    return ControllerIterator(m_controllers->end());
   }
   
   
   Pattern::ControllerIterator Pattern::ctrls_find(unsigned long param) const {
-    for (unsigned i = 0; i < m_controllers.size(); ++i) {
-      if (m_controllers[i]->get_param() == param)
-	return (m_controllers.begin() + i);
+    for (unsigned i = 0; i < m_controllers->size(); ++i) {
+      if ((*m_controllers)[i]->get_param() == param)
+	return ControllerIterator(m_controllers->begin() + i);
     }
     return ctrls_end();
   }

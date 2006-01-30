@@ -88,7 +88,7 @@ namespace Dino {
       ConstPointerIteratorWrapper(const I& iter) : m_iterator(iter) { }
       
       const T& operator*() const { return **m_iterator; }
-      const T* operator->() const { return &(**m_iterator); }
+      const T* operator->() const { return *m_iterator; }
       bool operator==(const ConstPointerIteratorWrapper& iter) const {
 	return (m_iterator == iter.m_iterator);
       }
@@ -146,15 +146,27 @@ namespace Dino {
 			int* max_step, int* max_note) const;
     
     // mutators
+    /** Set the name of this pattern. */
     void set_name(const string& name);
-    void add_note(unsigned step, int value, int velocity, int length);
+    /** Add a note at the given step with the given key, velocity, and length
+	(in steps). */
+    void add_note(unsigned step, int key, int velocity, int length);
+    /** Delete a note. */
     void delete_note(NoteIterator note);
+    /** Change the length of a note. */
     int resize_note(NoteIterator note, int length);
+    /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
+    /** Add a controller for this pattern. */
     ControllerIterator add_controller(unsigned long param, int min, int max);
+    /** Remove a controller. */
     void remove_controller(ControllerIterator iter);
+    /** Add a CC event to the given controller. */
     void add_cc(ControllerIterator iter, unsigned int step,unsigned char value);
+    /** Remove a CC event. */
     void remove_cc(ControllerIterator iter, unsigned int step);
+    /** Reset the "dirty rect".
+	@see get_dirty_rect(). */
     void reset_dirty_rect();
     
     // XML I/O
@@ -210,7 +222,7 @@ namespace Dino {
     /** The note off events in the pattern */
     NoteEventList m_note_offs;
     /** The control change event lists */
-    std::vector<Controller*> m_controllers;
+    std::vector<Controller*>* m_controllers;
     
     mutable bool m_dirty;
   

@@ -374,12 +374,18 @@ namespace Dino {
   
   void Pattern::add_cc(ControllerIterator iter, unsigned int step, 
 		       unsigned char value) {
-    
+    assert(step < m_length * m_steps);
+    (*iter.m_iterator)->set_event(step, value);
+    // XXX only if it has actually been added!
+    signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }
 
 
   void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
-    
+    assert(step < m_length * m_steps);
+    (*iter.m_iterator)->remove_event(step);
+    // XXX only if it has actually been removed!
+    signal_cc_removed((*iter.m_iterator)->get_param(), step);
   }
 
   

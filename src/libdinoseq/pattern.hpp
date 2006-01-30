@@ -79,37 +79,34 @@ namespace Dino {
     };
     
     
-    /** A class that can be used to turn an iterator for a pointer type to
-	an iterator for the corresponding object type. */
-    template <class T, class I> class ConstPointerIteratorWrapper {
+    /** A ControllerIterator is a const_iterator type that can be used to
+	access data from controllers in the pattern. */
+    class ControllerIterator {
     public:
       
-      ConstPointerIteratorWrapper() { }
-      ConstPointerIteratorWrapper(const I& iter) : m_iterator(iter) { }
+      ControllerIterator() { }
       
-      const T& operator*() const { return **m_iterator; }
-      const T* operator->() const { return *m_iterator; }
-      bool operator==(const ConstPointerIteratorWrapper& iter) const {
+      const Controller& operator*() const { return **m_iterator; }
+      const Controller* operator->() const { return *m_iterator; }
+      bool operator==(const ControllerIterator& iter) const {
 	return (m_iterator == iter.m_iterator);
       }
-      bool operator!=(const ConstPointerIteratorWrapper& iter) const {
+      bool operator!=(const ControllerIterator& iter) const {
 	return (m_iterator != iter.m_iterator);
       }
-      ConstPointerIteratorWrapper& operator++() { ++m_iterator; return *this; }
+      ControllerIterator& operator++() { ++m_iterator; return *this; }
       
     private:
       
-      I m_iterator;
+      friend class Pattern;
+
+      ControllerIterator(const std::vector<Controller*>::iterator& iter) 
+	: m_iterator(iter) { 
+      }
+      
+      std::vector<Controller*>::iterator m_iterator;
     };
-    
-    
-    /** A ControllerIterator is a const_iterator type that can be used to
-	access data from controllers in the pattern. */
-    typedef 
-    ConstPointerIteratorWrapper<Controller, 
-				std::vector<Controller*>::const_iterator>
-    ControllerIterator;
-    
+
     
     Pattern(const string& name, int length, int steps);
   

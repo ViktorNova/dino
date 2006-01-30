@@ -88,7 +88,8 @@ namespace Dino {
     Song();
     ~Song();
   
-    // accessors
+    /// @name Accessors
+    //@{
     const string& get_title() const;
     const string& get_author() const;
     const string& get_info() const;
@@ -103,8 +104,10 @@ namespace Dino {
     TrackIterator tracks_begin();
     TrackIterator tracks_end();
     TrackIterator find_track(int id);
+    //@}
 
-    // mutators
+    /// @name Mutators
+    //@{
     void set_title(const string& title);
     void set_author(const string& author);
     void set_info(const string& info);
@@ -113,22 +116,29 @@ namespace Dino {
     bool remove_track(const TrackIterator& iterator);
     void add_tempo_change(int beat, double bpm);
     void remove_tempo_change(int beat);
-  
-    // sequencing
+    //@}
+    
+    /// @name Sequencing
+    //@{
     void get_timebase_info(unsigned long frame, unsigned long frame_rate,
 			   double& bpm, int32_t& beat, int32_t& tick) const;
     double get_current_tempo(int beat, int tick);
     unsigned long bt2frame(double);
     pair<int, int> frame2bt(unsigned long frame);
-  
-    // XML I/O
+    //@}
+    
+    /// @name XML I/O
+    //@{
     bool is_dirty() const;
     bool write_file(const string& filename) const;
     bool load_file(const string& filename);
     void clear();
-  
+    //@}
+    
   public:
-  
+    
+    /// @name Signals
+    //@{
     mutable sigc::signal<void, const string&> signal_title_changed;
     mutable sigc::signal<void, const string&> signal_author_changed;
     mutable sigc::signal<void, const string&> signal_info_changed;
@@ -136,7 +146,8 @@ namespace Dino {
     mutable sigc::signal<void, int> signal_track_added;
     mutable sigc::signal<void, int> signal_track_removed;
     mutable sigc::signal<void> signal_tempo_changed;
-  
+    //@}
+    
   private:
   
     // non-copyable for now

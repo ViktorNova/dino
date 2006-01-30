@@ -47,7 +47,8 @@ namespace Dino {
   
     ~Track();
   
-    // accessors
+    /// @name Accessors
+    //@{
     int get_id() const;
     const string& get_name() const;
     map<int, Pattern*>& get_patterns();
@@ -57,8 +58,10 @@ namespace Dino {
     const SequenceEntry* get_seq_entry(unsigned int beat);
     int get_channel() const;
     unsigned int get_length() const;
-  
-    // mutators
+    //@}
+    
+    /// @name Mutators
+    //@{
     void set_name(const string& name);
     int add_pattern(const string& name, int length, int steps);
     void remove_pattern(int id);
@@ -67,19 +70,26 @@ namespace Dino {
     bool remove_sequence_entry(int beat);
     void set_length(int length);
     void set_channel(int channel);
-  
-    // XML I/O
+    //@}
+    
+    /// @name XML I/O
+    //@{
     bool is_dirty() const;
     void make_clean() const;
     bool fill_xml_node(Element* elt) const;
     bool parse_xml_node(const Element* elt);
-  
-    // sequencing
+    //@}
+    
+    /// @name Sequencing
+    //@{
     int get_events(double beat, double before_beat,
 		   const MIDIEvent** events, double* beats, int room) const;
+    //@}
     
   public:
-
+    
+    /// @name Signals
+    //@{
     signal<void, const string&> signal_name_changed;
     signal<void, int> signal_pattern_added; 
     signal<void, int> signal_pattern_removed;
@@ -87,7 +97,8 @@ namespace Dino {
     signal<void, int, int, int> signal_sequence_entry_changed;
     signal<void, int> signal_sequence_entry_removed;
     signal<void, int> signal_length_changed;
-  
+    //@}
+    
   private:
   
     int m_id;

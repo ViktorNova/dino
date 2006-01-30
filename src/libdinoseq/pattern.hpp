@@ -112,9 +112,8 @@ namespace Dino {
   
     ~Pattern();
   
-    typedef vector<NoteEvent*> NoteEventList;
-  
-    // accessors
+    /// @name Accessors
+    //@{
     /** Return the name of this pattern. */
     const string& get_name() const;
     /** Return an iterator that refers to the first note in the pattern. */
@@ -141,8 +140,10 @@ namespace Dino {
 	that have been changed since the last call to reset_dirty_rect(). */
     void get_dirty_rect(int* min_step, int* min_note, 
 			int* max_step, int* max_note) const;
+    //@}
     
-    // mutators
+    /// @name Mutators
+    //@{
     /** Set the name of this pattern. */
     void set_name(const string& name);
     /** Add a note at the given step with the given key, velocity, and length
@@ -165,18 +166,26 @@ namespace Dino {
     /** Reset the "dirty rect".
 	@see get_dirty_rect(). */
     void reset_dirty_rect();
+    //@}
     
-    // XML I/O
+    /// @name XML I/O
+    //@{
     bool is_dirty() const;
     void make_clean() const;
     bool fill_xml_node(Element* elt) const;
     bool parse_xml_node(const Element* elt);
+    //@}
     
-    // sequencing
+    /// @name Sequencing
+    //@{
     int get_events(double beat, double before_beat,
 		   const MIDIEvent** events, double* beats, int room) const;
+    //@}
+    
   public:
     
+    /// @name Signals
+    //@{
     /** Emitted when the pattern name has changed. */
     sigc::signal<void, string> signal_name_changed;
     /** Emitted when the length in beats has changed. */
@@ -199,9 +208,12 @@ namespace Dino {
     sigc::signal<void, int> signal_controller_added;
     /** Emitted when a whole controller has been removed. */
     sigc::signal<void, int> signal_controller_removed;
-
+    //@}
+    
   private:
     
+    typedef vector<NoteEvent*> NoteEventList;
+  
     // no copying for now
     Pattern(const Pattern&) { }
     Pattern& operator=(const Pattern&) { return *this; }

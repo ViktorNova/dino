@@ -39,17 +39,22 @@ namespace Dino {
 	@c client_name and the Song object @c song. */
     Sequencer(const string& client_name, Song& song);
     ~Sequencer();
-  
-    // transport functions
+    
+    /// @name Transport
+    //@{
     /** This starts the MIDI playback. */
     void play();
     /** This stops the MIDI playback. */
     void stop();
     /** This seeks to the given beat in the song. */
     void go_to_beat(double beat);
-  
+    //@}
+    
     /** Returns @c true if this Sequencer object is valid. */
     bool is_valid() const;
+    
+    /// @name Instrument control
+    //@{
     /** This returns a vector of all instruments that are available for
 	the sequencer to play. */
     vector<InstrumentInfo> get_instruments(int track = -1) const;
@@ -57,17 +62,22 @@ namespace Dino {
     void set_instrument(int track, const string& instrument);
     /** This creates new MIDI output ports for all tracks. */
     void reset_ports();
-  
+    //@}
+    
+    /// @name Signals
+    //@{
     sigc::signal<void, int> signal_beat_changed;
-  
+    //@}
+    
   private:
   
     bool beat_checker();
   
     /** This initialises the internal JACK client object. */
     bool init_jack(const string& client_name);
-  
-    // JACK callbacks
+    
+    /// @name JACK callbacks
+    //@{
     /** This function is called whenever the JACK daemon wants to know the
 	beat and tick for a given frame position. */
     void jack_timebase_callback(jack_transport_state_t state, 
@@ -79,8 +89,10 @@ namespace Dino {
     int jack_process_callback(jack_nframes_t nframes);
     /** This is called when the JACK daemon is being shut down. */
     void jack_shutdown_handler();
-  
-    // JACK callback wrappers
+    //@}
+    
+    /// @name JACK callback wrappers
+    //@{
     static void jack_timebase_callback_(jack_transport_state_t state,
 					jack_nframes_t nframes,
 					jack_position_t* pos, int new_pos,
@@ -94,7 +106,8 @@ namespace Dino {
     static void jack_shutdown_handler_(void* arg) {
       static_cast<Sequencer*>(arg)->jack_shutdown_handler();
     }
-  
+    //@}
+    
     /** This function should be called when a new track has been added to the
 	song. */
     void track_added(int track);

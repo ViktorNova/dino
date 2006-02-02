@@ -80,6 +80,7 @@ void DinoGUI::slot_file_save_as() {
 
 
 void DinoGUI::slot_file_quit() {
+  m_seq.stop();
   Main::quit();
 }
 

@@ -513,14 +513,14 @@ namespace Dino {
       if (step > 0 && m_note_offs[step-1] && m_steps * (beat + off_d) <= step) {
 	events[list_no] = m_note_offs[step - 1];
 	beats[list_no] = step / double(m_steps) - off_d;
-	++list_no;
+	if (++list_no == room) break;
       }
       
       // note on events on this step
       if (m_note_ons[step]) {
 	events[list_no] = m_note_ons[step];
 	beats[list_no] = step / double(m_steps);
-	++list_no;
+	if (++list_no == room) break;
       }
       
       // controllers
@@ -528,14 +528,16 @@ namespace Dino {
 	if ((*m_controllers)[i]->get_event(step)) {
 	  events[list_no] = (*m_controllers)[i]->get_event(step);
 	  beats[list_no] = step / double(m_steps);
-	  ++list_no;
+	  if (++list_no == room) break;
 	}
       }
+      if (list_no == room) break;
       
     }
     
     // note off events after the last step
-    if (m_steps * (before_beat + off_d) > step && m_note_offs[step - 1]) {
+    if (m_steps * (before_beat + off_d) > step && m_note_offs[step - 1] &&
+	list_no < room) {
       events[list_no] = m_note_offs[step - 1];
       beats[list_no] = step / double(m_steps) - off_d;
       ++list_no;

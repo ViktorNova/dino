@@ -558,7 +558,6 @@ namespace Dino {
     assert(before_beat >= beat);
     
     // XXX cut off notes that are playing at the end of a sequence entry
-    // XXX range check for the events!
     int event_start = 0;
     for (unsigned i = unsigned(beat); i < before_beat; ++i) {
       if (m_sequence[i] != NULL) {
@@ -574,6 +573,8 @@ namespace Dino {
 	for (int j = event_start; j < event_start + n; ++j)
 	  beats[j] += m_sequence[i]->start;
 	event_start += n;
+	if (event_start >= room)
+	  break;
 	i = m_sequence[i]->start + m_sequence[i]->length - 1;
       }
     }

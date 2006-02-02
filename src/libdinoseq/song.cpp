@@ -227,7 +227,7 @@ namespace Dino {
 
 
   void Song::set_length(int length) {
-    // XXX implement this - must be threadsafe since the sequencer uses it
+    // XXX Must be threadsafe since the sequencer uses it
     if (length != m_length) {
       map<int, Track*>::iterator iter;
       for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter)
@@ -245,7 +245,7 @@ namespace Dino {
       id = 1;
     else
       id = iter->first + 1;
-    // XXX Use insert()!
+    // XXX This needs to be threadsafe!
     m_tracks[id] = new Track(id, m_length, name);
     m_dirty = true;
     signal_track_added(id);

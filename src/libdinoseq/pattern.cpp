@@ -381,17 +381,19 @@ namespace Dino {
   void Pattern::add_cc(ControllerIterator iter, unsigned int step, 
 		       unsigned char value) {
     assert(step < m_length * m_steps);
+    const CCEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->set_event(step, value);
-    // XXX only if it has actually been added!
-    signal_cc_added((*iter.m_iterator)->get_param(), step, value);
+    if (!e || e->get_value() != value)
+      signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }
 
 
   void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
     assert(step < m_length * m_steps);
+    const CCEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->remove_event(step);
-    // XXX only if it has actually been removed!
-    signal_cc_removed((*iter.m_iterator)->get_param(), step);
+    if (e)
+      signal_cc_removed((*iter.m_iterator)->get_param(), step);
   }
 
   
@@ -502,10 +504,6 @@ namespace Dino {
     assert(before_beat <= m_length);
     
     int list_no = 0;
-    /* XXX This needs:
-     *      range checking for the events array
-     *      note off events!
-     */
     double off_d = 0.001;
     unsigned step;
     for (step = unsigned(ceil(beat * m_steps));

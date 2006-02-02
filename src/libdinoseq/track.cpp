@@ -359,6 +359,8 @@ namespace Dino {
     for (i = beat; i < beat + newLength; ++i)
       m_sequence[i] = se;
     
+    signal_sequence_entry_added(beat, 
+				m_sequence[i]->pattern->get_id(), newLength);
     return SequenceIterator(m_sequence.begin() + i, m_sequence);
   }
 
@@ -384,7 +386,7 @@ namespace Dino {
       for (int i = se->start + tmp - 1; i >= int(se->start + se->length); --i)
 	m_sequence[i] = NULL;
     }
-    // XXX signal here?
+    signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length);
   }
 
 
@@ -409,8 +411,7 @@ namespace Dino {
   /** Set the length of the track. Only the Song should do this. */
   void Track::set_length(int length) {
     assert(length > 0);
-    // XXX delete and shorten sequence entries to fit the new length
-    // and make sure that it's threadsafe!
+    // XXX Make sure that it's threadsafe!
     if (length != m_length) {
       for (unsigned i = length; i < m_sequence.size(); ++i) {
 	if (m_sequence[i]) {

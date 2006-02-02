@@ -185,9 +185,9 @@ namespace Dino {
     int m_id;
     string m_name;
     map<int, Pattern*> m_patterns;
-    int m_length;
+    //int m_length;
     volatile int m_channel;
-    vector<SequenceEntry*> m_sequence;
+    vector<SequenceEntry*>* volatile m_sequence;
   
     mutable bool m_dirty;
   

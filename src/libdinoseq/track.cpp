@@ -156,8 +156,7 @@ namespace Dino {
   Track::Track(int id, int length, const string& name) 
     : m_id(id),
       m_name(name),
-      m_length(length),
-      m_sequence(length),
+      m_sequence(new vector<SequenceEntry*>(length)),
       m_dirty(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
@@ -170,11 +169,12 @@ namespace Dino {
     for (iter = m_patterns.begin(); iter != m_patterns.end(); ++iter)
       delete iter->second;
     SequenceEntry* ptr = NULL;
-    for (unsigned int i = 0; i < m_sequence.size(); ++i) {
-      if (m_sequence[i] != ptr)
-	delete m_sequence[i];
-      ptr = m_sequence[i];
+    for (unsigned int i = 0; i < m_sequence->size(); ++i) {
+      if ((*m_sequence)[i] != ptr)
+	delete (*m_sequence)[i];
+      ptr = (*m_sequence)[i];
     }
+    delete m_sequence;
   }
 
 
@@ -245,23 +245,23 @@ namespace Dino {
 
   Track::SequenceIterator Track::seq_begin() const {
     std::vector<SequenceEntry*>::const_iterator iter;
-    for (iter = m_sequence.begin(); iter != m_sequence.end(); ++iter) {
+    for (iter = m_sequence->begin(); iter != m_sequence->end(); ++iter) {
       if (*iter != NULL)
 	break;
     }
-    return SequenceIterator(iter, m_sequence);
+    return SequenceIterator(iter, *m_sequence);
   }
   
   
   Track::SequenceIterator Track::seq_end() const {
-    return SequenceIterator(m_sequence.end(), m_sequence);
+    return SequenceIterator(m_sequence->end(), *m_sequence);
   }
   
   
   Track::SequenceIterator Track::seq_find(unsigned int beat) const {
-    if (m_sequence[beat] != NULL)
-      return SequenceIterator(m_sequence.begin() + beat, m_sequence);
-    return SequenceIterator(m_sequence.end(), m_sequence);
+    if ((*m_sequence)[beat] != NULL)
+      return SequenceIterator(m_sequence->begin() + beat, *m_sequence);
+    return SequenceIterator(m_sequence->end(), *m_sequence);
   }
 
   
@@ -272,7 +272,7 @@ namespace Dino {
 
 
   unsigned int Track::get_length() const {
-    return m_sequence.size();
+    return m_sequence->size();
   }
 
 
@@ -304,8 +304,8 @@ namespace Dino {
     map<int, Pattern*>::iterator iter = m_patterns.find(id);
     if (iter != m_patterns.end()) {
       
-      for (unsigned int i = 0; i < m_sequence.size(); ++i) {
-	if (m_sequence[i] && m_sequence[i]->pattern == iter->second)
+      for (unsigned int i = 0; i < m_sequence->size(); ++i) {
+	if ((*m_sequence)[i] && (*m_sequence)[i]->pattern == iter->second)
 	  remove_sequence_entry(seq_find(i));
       }
       
@@ -320,7 +320,7 @@ namespace Dino {
   Track::SequenceIterator Track::set_sequence_entry(int beat, 
 						    int pattern, int length) {
     assert(beat >= 0);
-    assert(beat < m_length);
+    assert(beat < int(m_sequence->size()));
     assert(m_patterns.find(pattern) != m_patterns.end());
     assert(length > 0 || length == -1);
     assert(length <= m_patterns.find(pattern)->second->get_length());
@@ -333,7 +333,7 @@ namespace Dino {
       newLength = length;
   
     // delete or shorten any sequence entry at this beat
-    SequenceEntry* se = m_sequence[beat];
+    SequenceEntry* se = (*m_sequence)[beat];
     if (se) {
       int stop = se->start + se->length;
       if (se->start == unsigned(beat))
@@ -341,12 +341,12 @@ namespace Dino {
       else
 	se->length = beat - se->start;
       for (int i = stop - 1; i >= beat; --i)
-	m_sequence[i] = NULL;
+	(*m_sequence)[i] = NULL;
     }
   
     // make sure the new sequence entry fits
     for (int i = beat; i < beat + newLength; ++i) {
-      if (m_sequence[i]) {
+      if ((*m_sequence)[i]) {
 	newLength = i - beat;
 	break;
       }
@@ -356,26 +356,27 @@ namespace Dino {
 			    beat, newLength);
     int i;
     for (i = beat; i < beat + newLength; ++i)
-      m_sequence[i] = se;
+      (*m_sequence)[i] = se;
     
     signal_sequence_entry_added(beat, 
-				m_sequence[beat]->pattern->get_id(), newLength);
-    return SequenceIterator(m_sequence.begin() + i, m_sequence);
+				(*m_sequence)[beat]->pattern->get_id(), 
+				newLength);
+    return SequenceIterator(m_sequence->begin() + i, *m_sequence);
   }
 
 
   void Track::set_seq_entry_length(SequenceIterator iter, unsigned int length) {
     unsigned beat = iter->start;
-    assert(m_sequence[beat]);
-    SequenceEntry* se = m_sequence[beat];
+    assert((*m_sequence)[beat]);
+    SequenceEntry* se = (*m_sequence)[beat];
     if (length == se->length)
       return;
     else if (length > se->length) {
       unsigned int i;
       for (i = se->start + se->length; i < se->start + length; ++i) {
-	if (m_sequence[i])
+	if ((*m_sequence)[i])
 	  break;
-	m_sequence[i] = se;
+	(*m_sequence)[i] = se;
       }
       se->length = i - se->start;
     }
@@ -383,7 +384,7 @@ namespace Dino {
       int tmp = se->length;
       se->length = length;
       for (int i = se->start + tmp - 1; i >= int(se->start + se->length); --i)
-	m_sequence[i] = NULL;
+	(*m_sequence)[i] = NULL;
     }
     signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length);
   }
@@ -394,11 +395,11 @@ namespace Dino {
       If no pattern is playing at that beat, return @c false. */
   bool Track::remove_sequence_entry(SequenceIterator iterator) {
     unsigned beat = iterator->start;
-    SequenceEntry* se = m_sequence[beat];
+    SequenceEntry* se = (*m_sequence)[beat];
     if (se) {
       int start = se->start;
       for (int i = se->start + se->length - 1; i >= int(se->start); --i)
-	m_sequence[i] = NULL;
+	(*m_sequence)[i] = NULL;
       Deleter::queue(se);
       signal_sequence_entry_removed(start);
       return true;
@@ -409,15 +410,14 @@ namespace Dino {
 
   /** Set the length of the track. Only the Song should do this. */
   void Track::set_length(int length) {
-    // XXX This needs to actually change the length of m_sequence!
     
     assert(length > 0);
-    if (length != m_length) {
-      for (unsigned i = length; i < m_sequence.size(); ++i) {
-	if (m_sequence[i]) {
-	  if (m_sequence[i]->start < (unsigned)length) {
-	    set_seq_entry_length(seq_find(m_sequence[i]->start), 
-				 length - m_sequence[i]->start);
+    if (length != int(m_sequence->size())) {
+      for (unsigned i = length; i < m_sequence->size(); ++i) {
+	if ((*m_sequence)[i]) {
+	  if ((*m_sequence)[i]->start < (unsigned)length) {
+	    set_seq_entry_length(seq_find((*m_sequence)[i]->start), 
+				 length - (*m_sequence)[i]->start);
 	  }
 	  else {
 	    remove_sequence_entry(seq_find(i));
@@ -425,8 +425,13 @@ namespace Dino {
 	}
       }
       
-      m_length = length;
-      signal_length_changed(m_length);
+      vector<SequenceEntry*>* new_seq = new vector<SequenceEntry*>(*m_sequence);
+      new_seq->resize(length);
+      vector<SequenceEntry*>* old_seq = m_sequence;
+      m_sequence = new_seq;
+      Deleter::queue(old_seq);
+      
+      signal_length_changed(m_sequence->size());
     }
   }
 
@@ -480,8 +485,8 @@ namespace Dino {
   
     // the sequence
     Element* seq_elt = elt->add_child("sequence");
-    for (unsigned int i = 0; i < m_sequence.size(); ++i) {
-      SequenceEntry* se = m_sequence[i];
+    for (unsigned int i = 0; i < m_sequence->size(); ++i) {
+      SequenceEntry* se = (*m_sequence)[i];
       if (se && se->start == i) {
 	Element* entry_elt = seq_elt->add_child("entry");
 	sprintf(tmp_txt, "%d", se->start);
@@ -559,27 +564,28 @@ namespace Dino {
     
     // iterate over all beats that intersects the interval [beat, before_beat)
     int event_start = 0;
+    const vector<SequenceEntry*>& sequence = *m_sequence;
     for (unsigned i = unsigned(beat); i < before_beat; ++i) {
-      if (m_sequence[i] != NULL) {
+      if (sequence[i] != NULL) {
 	
 	// compute start in pattern time
-	double start = beat - m_sequence[i]->start;
+	double start = beat - sequence[i]->start;
 	if (start < 0)
 	  start = 0;
 	
 	// compute end in pattern time
-	double end = before_beat - m_sequence[i]->start;
-	if (end > m_sequence[i]->length)
-	  end = m_sequence[i]->length;
+	double end = before_beat - sequence[i]->start;
+	if (end > sequence[i]->length)
+	  end = sequence[i]->length;
 	
 	// retrieve the pattern events
-	int n = m_sequence[i]->pattern->
-	  get_events(beat - m_sequence[i]->start, end, events + event_start, 
+	int n = sequence[i]->pattern->
+	  get_events(beat - sequence[i]->start, end, events + event_start, 
 		     beats + event_start, room - event_start);
 	
 	// convert timestamps to song time
 	for (int j = event_start; j < event_start + n; ++j)
-	  beats[j] += m_sequence[i]->start;
+	  beats[j] += sequence[i]->start;
 	
 	// check if there is room in the event buffer
 	event_start += n;
@@ -587,7 +593,7 @@ namespace Dino {
 	  break;
 	
 	// move forward to the end of this sequence entry
-	i = m_sequence[i]->start + m_sequence[i]->length - 1;
+	i = sequence[i]->start + sequence[i]->length - 1;
 	
 	// stop any notes playing in this sequence entry
 	// XXX This should probably be done in the pattern instead since we

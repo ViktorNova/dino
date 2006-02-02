@@ -231,11 +231,9 @@ namespace Dino {
 
 
   void Song::set_length(int length) {
-    // XXX Must be threadsafe since the sequencer uses it
     if (length != m_length) {
-      map<int, Track*>* tracks = const_cast<map<int, Track*>*>(m_tracks);
       map<int, Track*>::iterator iter;
-      for (iter = tracks->begin(); iter != tracks->end(); ++iter)
+      for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter)
 	iter->second->set_length(length);
       m_length = length;
       signal_length_changed(length);
@@ -253,10 +251,11 @@ namespace Dino {
       id = iter->first + 1;
     (*new_tracks)[id] = new Track(id, m_length, name);
     m_dirty = true;
+    
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
-    // XXX delete this in a threadsafe way
-    delete old_tracks;
+    Deleter::queue(old_tracks);
+    
     signal_track_added(id);
     return TrackIterator(m_tracks->find(id));
   }
@@ -271,10 +270,11 @@ namespace Dino {
     Deleter::queue(iter->second);
     new_tracks->erase(iter);
     m_dirty = true;
+    
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
-    // XXX delete this in a threadsafe way
-    delete old_tracks;
+    Deleter::queue(old_tracks);
+
     signal_track_removed(id);
     return true;
   }
@@ -435,9 +435,7 @@ namespace Dino {
     }
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
-
-    // XXX this needs to be done threadsafe
-    delete old_tracks;
+    Deleter::queue(old_tracks);
   
     return true;
   }
@@ -448,10 +446,11 @@ namespace Dino {
     m_author = "";
     m_info = "";
     m_length = 0;
+
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new map<int, Track*>();
-    // XXX this needs to be done in a threadsafe way
-    delete old_tracks;
+    Deleter::queue(old_tracks);
+    
     m_tempo_map = TempoMap();
   }
 

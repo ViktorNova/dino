@@ -343,10 +343,9 @@ namespace Dino {
 		       new Controller(m_steps * m_length, param, min, max));
     
     // delete the old vector
-    // XXX This needs to be done through a Deleter to be threadsafe
     vector<Controller*>* tmp = m_controllers;
     m_controllers = new_vector;
-    delete tmp;
+    Deleter::queue(tmp);
     
     signal_controller_added(param);
     return ControllerIterator(new_vector->begin() + i);
@@ -369,10 +368,9 @@ namespace Dino {
     new_vector->erase(new_vector->begin() + i);
     
     // delete the old vector
-    // XXX This needs to be done through a Deleter to be threadsafe
     vector<Controller*>* tmp = m_controllers;
     m_controllers = new_vector;
-    delete tmp;
+    Deleter::queue(tmp);
     
     signal_controller_removed(param);
   }

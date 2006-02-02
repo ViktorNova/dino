@@ -157,11 +157,10 @@ namespace Dino {
     : m_id(id),
       m_name(name),
       m_length(length),
+      m_sequence(length),
       m_dirty(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
-    for (int i = 0; i < 300; ++i)
-      m_sequence.push_back(NULL);
   }
 
 
@@ -410,8 +409,9 @@ namespace Dino {
 
   /** Set the length of the track. Only the Song should do this. */
   void Track::set_length(int length) {
+    // XXX This needs to actually change the length of m_sequence!
+    
     assert(length > 0);
-    // XXX Make sure that it's threadsafe!
     if (length != m_length) {
       for (unsigned i = length; i < m_sequence.size(); ++i) {
 	if (m_sequence[i]) {

@@ -561,21 +561,42 @@ namespace Dino {
     int event_start = 0;
     for (unsigned i = unsigned(beat); i < before_beat; ++i) {
       if (m_sequence[i] != NULL) {
+	
+	// compute start in pattern time
 	double start = beat - m_sequence[i]->start;
 	if (start < 0)
 	  start = 0;
+	
+	// compute end in pattern time
 	double end = before_beat - m_sequence[i]->start;
 	if (end > m_sequence[i]->length)
 	  end = m_sequence[i]->length;
+	
+	// retrieve the pattern events
 	int n = m_sequence[i]->pattern->
 	  get_events(beat - m_sequence[i]->start, end, events + event_start, 
 		     beats + event_start, room - event_start);
+	
+	// convert timestamps to song time
 	for (int j = event_start; j < event_start + n; ++j)
 	  beats[j] += m_sequence[i]->start;
+	
+	// check if there is room in the event buffer
 	event_start += n;
 	if (event_start >= room)
 	  break;
+	
+	// move forward to the end of this sequence entry
 	i = m_sequence[i]->start + m_sequence[i]->length - 1;
+	
+	// stop any notes playing in this sequence entry
+	// XXX This should probably be done in the pattern instead since we
+	// don't know if there are any events after end - 0.001
+	if (i + 1 < before_beat && event_start < room) {
+	  events[event_start] = &MIDIEvent::AllNotesOff;
+	  beats[event_start] = i + 1 - 0.001;
+	  ++event_start;
+	}
       }
     }
     

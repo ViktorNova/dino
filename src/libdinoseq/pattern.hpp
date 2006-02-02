@@ -10,7 +10,6 @@
 #include <libxml++/libxml++.h>
 
 #include "controller.hpp"
-#include "deletable.hpp"
 #include "note.hpp"
 #include "noteevent.hpp"
 #include "xmlserialisable.hpp"
@@ -28,7 +27,7 @@ namespace Dino {
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
       by the sequencer. */
-  class Pattern : public Deletable, public XMLSerialisable {
+  class Pattern : public XMLSerialisable {
   public:
     
     /** This class is used to access the note data in a Pattern.

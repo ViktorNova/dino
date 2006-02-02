@@ -5,7 +5,6 @@ noinst_LTLIBRARIES = libdinoseq.la
 libdinoseq_la_SOURCES = \
 	ccevent.cpp ccevent.hpp \
 	controller.cpp controller.hpp \
-	deletable.cpp deletable.hpp \
 	deleter.hpp \
 	midievent.hpp midievent.cpp \
 	note.cpp note.hpp \

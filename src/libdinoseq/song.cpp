@@ -143,7 +143,10 @@ namespace Dino {
   }
 
   
-  Song::Song() : m_length(32), m_dirty(false) {
+  Song::Song() 
+    : m_tracks(new map<int, Track*>()), 
+      m_length(32), 
+      m_dirty(false) {
   
     dbg1<<"Initialising song"<<endl;
   
@@ -156,44 +159,45 @@ namespace Dino {
 
   Song::~Song() {
     dbg1<<"Destroying song"<<endl;
+    map<int, Track*>* tracks = m_tracks;
     map<int, Track*>::iterator iter;
-    for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter)
+    for (iter = tracks->begin(); iter != tracks->end(); ++iter)
       delete iter->second;
   }
 
 
   Song::ConstTrackIterator Song::tracks_begin() const {
-    return ConstTrackIterator(m_tracks.begin());
+    return ConstTrackIterator(m_tracks->begin());
   }
   
   
   Song::TrackIterator Song::tracks_begin() {
-    return TrackIterator(m_tracks.begin());
+    return TrackIterator(m_tracks->begin());
   }
   
   
   Song::ConstTrackIterator Song::tracks_end() const {
-    return ConstTrackIterator(m_tracks.end());
+    return ConstTrackIterator(m_tracks->end());
   }
   
   
   Song::TrackIterator Song::tracks_end() {
-    return TrackIterator(m_tracks.end());
+    return TrackIterator(m_tracks->end());
   }
   
   
   Song::ConstTrackIterator Song::find_track(int id) const {
-    return ConstTrackIterator(m_tracks.find(id));
+    return ConstTrackIterator(m_tracks->find(id));
   }
   
   
   Song::TrackIterator Song::find_track(int id) {
-    return TrackIterator(m_tracks.find(id));
+    return TrackIterator(m_tracks->find(id));
   }
   
 
   const size_t Song::get_number_of_tracks() const {
-    return m_tracks.size();
+    return m_tracks->size();
   }
 
   
@@ -229,8 +233,9 @@ namespace Dino {
   void Song::set_length(int length) {
     // XXX Must be threadsafe since the sequencer uses it
     if (length != m_length) {
+      map<int, Track*>* tracks = const_cast<map<int, Track*>*>(m_tracks);
       map<int, Track*>::iterator iter;
-      for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter)
+      for (iter = tracks->begin(); iter != tracks->end(); ++iter)
 	iter->second->set_length(length);
       m_length = length;
       signal_length_changed(length);
@@ -239,28 +244,37 @@ namespace Dino {
 
 
   Song::TrackIterator Song::add_track(const string& name) {
-    map<int, Track*>::reverse_iterator iter = m_tracks.rbegin();
+    map<int, Track*>* new_tracks = new map<int, Track*>(*m_tracks);
+    map<int, Track*>::reverse_iterator iter = new_tracks->rbegin();
     int id;
-    if (iter == m_tracks.rend())
+    if (iter == new_tracks->rend())
       id = 1;
     else
       id = iter->first + 1;
-    // XXX This needs to be threadsafe!
-    m_tracks[id] = new Track(id, m_length, name);
+    (*new_tracks)[id] = new Track(id, m_length, name);
     m_dirty = true;
+    map<int, Track*>* old_tracks = m_tracks;
+    m_tracks = new_tracks;
+    // XXX delete this in a threadsafe way
+    delete old_tracks;
     signal_track_added(id);
-    return TrackIterator(m_tracks.find(id));
+    return TrackIterator(m_tracks->find(id));
   }
 
 
   bool Song::remove_track(const Song::TrackIterator& iterator) {
+    map<int, Track*>* new_tracks = new map<int, Track*>(*m_tracks);
     map<int, Track*>::iterator iter = iterator.m_iterator;
-    if (iter == m_tracks.end())
+    if (iter == new_tracks->end())
       return false;
     int id = iter->second->get_id();
-    iter->second->queue_deletion();
-    m_tracks.erase(iter);
+    Deleter::queue(iter->second);
+    new_tracks->erase(iter);
     m_dirty = true;
+    map<int, Track*>* old_tracks = m_tracks;
+    m_tracks = new_tracks;
+    // XXX delete this in a threadsafe way
+    delete old_tracks;
     signal_track_removed(id);
     return true;
   }
@@ -320,8 +334,8 @@ namespace Dino {
   bool Song::is_dirty() const {
     if (m_dirty)
       return true;
-    for (map<int, Track*>::const_iterator iter = m_tracks.begin(); 
-	 iter != m_tracks.end(); ++iter) {
+    for (map<int, Track*>::const_iterator iter = m_tracks->begin(); 
+	 iter != m_tracks->end(); ++iter) {
       if (iter->second->is_dirty())
 	return true;
     }
@@ -357,7 +371,7 @@ namespace Dino {
   
     // write all tracks
     map<int, Track*>::const_iterator iter;
-    for (iter = m_tracks.begin(); iter != m_tracks.end(); ++iter) {
+    for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter) {
       Element* track_elt = dino_elt->add_child("track");
       char id_txt[10];
       sprintf(id_txt, "%d", iter->first);
@@ -410,14 +424,20 @@ namespace Dino {
   
     // parse all tracks
     nodes = dino_elt->get_children("track");
+    map<int, Track*>* new_tracks = new map<int, Track*>();
     for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
       const Element* track_elt = dynamic_cast<const Element*>(*iter);
       int id;
       sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
-      m_tracks[id] = new Track(m_length);
-      m_tracks[id]->parse_xml_node(track_elt);
+      (*new_tracks)[id] = new Track(id, m_length);
+      (*new_tracks)[id]->parse_xml_node(track_elt);
       signal_track_added(id);
     }
+    map<int, Track*>* old_tracks = m_tracks;
+    m_tracks = new_tracks;
+
+    // XXX this needs to be done threadsafe
+    delete old_tracks;
   
     return true;
   }
@@ -428,7 +448,10 @@ namespace Dino {
     m_author = "";
     m_info = "";
     m_length = 0;
-    m_tracks.clear();
+    map<int, Track*>* old_tracks = m_tracks;
+    m_tracks = new map<int, Track*>();
+    // XXX this needs to be done in a threadsafe way
+    delete old_tracks;
     m_tempo_map = TempoMap();
   }
 

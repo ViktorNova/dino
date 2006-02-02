@@ -310,7 +310,7 @@ namespace Dino {
 	  remove_sequence_entry(seq_find(i));
       }
       
-      iter->second->queue_deletion();
+      Deleter::queue(iter->second);
       m_patterns.erase(iter);
       signal_pattern_removed(id);
     }
@@ -400,7 +400,7 @@ namespace Dino {
       int start = se->start;
       for (int i = se->start + se->length - 1; i >= int(se->start); --i)
 	m_sequence[i] = NULL;
-      se->queue_deletion();
+      Deleter::queue(se);
       signal_sequence_entry_removed(start);
       return true;
     }
@@ -557,7 +557,7 @@ namespace Dino {
     assert(beat >= 0);
     assert(before_beat >= beat);
     
-    // XXX cut off notes that are playing at the end of a sequence entry
+    // iterate over all beats that intersects the interval [beat, before_beat)
     int event_start = 0;
     for (unsigned i = unsigned(beat); i < before_beat; ++i) {
       if (m_sequence[i] != NULL) {

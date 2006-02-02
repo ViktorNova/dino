@@ -108,7 +108,7 @@ namespace Dino {
     // let's hope that pointer assignment is atomic
     m_frame2tc = tmp;
     // we can't actually delete here, needs to be taken care of in the Deleter
-    tmp2->queue_deletion();
+    Deleter::queue(tmp2);
   
     // END OF CRITICAL SECTION
   
@@ -157,7 +157,7 @@ namespace Dino {
     // let's hope that pointer assignment is atomic
     m_frame2tc = tmp;
     // we can't actually delete here, needs to be taken care of in the Deleter
-    tmp2->queue_deletion();
+    Deleter::queue(tmp2);
   
     // END OF CRITICAL SECTION
   

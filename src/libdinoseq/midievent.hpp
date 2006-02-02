@@ -27,8 +27,6 @@
 #define NULL 0
 #endif
 
-#include "deletable.hpp"
-
 
 namespace Dino {
 
@@ -38,7 +36,7 @@ namespace Dino {
       of events to the sequencer). This class defines the interface that
       the sequencer will use for all MIDI events, but the Pattern class uses
       other event classes internally (which are subclasses of MIDIEvent). */
-  class MIDIEvent : public Deletable {
+  class MIDIEvent {
   public:
   
     MIDIEvent(unsigned char type, unsigned char data1, unsigned char data2) 

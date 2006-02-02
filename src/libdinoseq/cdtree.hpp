@@ -4,8 +4,6 @@
 #include <cmath>
 #include <cassert>
 
-#include "deletable.hpp"
-
 
 namespace Dino {
 
@@ -230,7 +228,7 @@ namespace Dino {
       its elements, but uses much less memory for sparse lists than a
       vector would do. */
   template <class T>
-  class CDTree : public Deletable {
+  class CDTree {
   public:
   
     /** This constructor creates a new CDTree object with room for @c size

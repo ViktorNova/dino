@@ -264,8 +264,8 @@ namespace Dino {
     
     // delete the note object and queue the events for deletion
     signal_note_removed(note->get_step(), note->get_key());
-    note->m_note_on->queue_deletion();
-    note->m_note_off->queue_deletion();
+    Deleter::queue(note->m_note_on);
+    Deleter::queue(note->m_note_off);
     delete note;
     
   }

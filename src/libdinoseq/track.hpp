@@ -7,7 +7,6 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
-#include "deletable.hpp"
 #include "xmlserialisable.hpp"
 
 
@@ -27,12 +26,12 @@ namespace Dino {
       and how that instrument is played. It has a list of patterns, and a
       sequence that says when those patterns are played. 
   */
-  class Track : public Deletable, public XMLSerialisable {
+  class Track : public XMLSerialisable {
   public:
     
     /** This struct contains information about a sequence entry, i.e. a
 	scheduled start and length for a pattern. */
-    struct SequenceEntry : public Deletable {
+    struct SequenceEntry {
       SequenceEntry(int patID, Pattern* patPtr, 
 		    unsigned int st, unsigned int len) 
 	: pattern_id(patID), pattern(patPtr), start(st), length(len) { }

@@ -42,7 +42,7 @@ namespace Dino {
       friend class Song;
       friend class ConstTrackIterator;
       
-      TrackIterator(const std::map<int, Track*>::iterator& iter);
+      explicit TrackIterator(const std::map<int, Track*>::iterator& iter);
       
       std::map<int, Track*>::iterator m_iterator;
     };
@@ -64,7 +64,8 @@ namespace Dino {
       
       friend class Song;
 
-      ConstTrackIterator(const std::map<int, Track*>::const_iterator& iter);
+      explicit ConstTrackIterator(const std::map<int, Track*>::const_iterator&
+				  iter);
       
       std::map<int, Track*>::const_iterator m_iterator;
     };
@@ -169,8 +170,8 @@ namespace Dino {
     string m_title;
     string m_author;
     string m_info;
-    map<int, Track*> m_tracks;
-    int m_length;
+    map<int, Track*>* volatile m_tracks;
+    volatile int m_length;
   
     TempoMap m_tempo_map;
   

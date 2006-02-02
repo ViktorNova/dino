@@ -360,7 +360,7 @@ namespace Dino {
       m_sequence[i] = se;
     
     signal_sequence_entry_added(beat, 
-				m_sequence[i]->pattern->get_id(), newLength);
+				m_sequence[beat]->pattern->get_id(), newLength);
     return SequenceIterator(m_sequence.begin() + i, m_sequence);
   }
 

@@ -99,26 +99,25 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   Pango::FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
   char tmp[10];
-  for (unsigned int i = 0; i < m_track->get_length(); ++i) {
-    Track::SequenceIterator se = m_track->seq_find(i);
-    if (se != m_track->seq_end() || se->start != i)
-      continue;
+  Track::SequenceIterator se;
+  for (se = m_track->seq_begin(); se != m_track->seq_end(); ++se) {
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
     int length = se->length;
-    win->draw_rectangle(m_gc, true, i * m_col_width, 4, 
+    win->draw_rectangle(m_gc, true, se->start * m_col_width, 4, 
 			length * m_col_width, height - 1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, i * m_col_width, 4,
+    win->draw_rectangle(m_gc, false, se->start * m_col_width, 4,
 			length * m_col_width, height - 1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
     sprintf(tmp, "%03d", se->pattern_id);
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Gdk::Rectangle textBounds(i * m_col_width, 0, 
+    Gdk::Rectangle textBounds(se->start * m_col_width, 0, 
 			      length * m_col_width, height - 1);
     m_gc->set_clip_rectangle(textBounds);
-    win->draw_layout(m_gc, i * m_col_width + 2, 4 + (height - lHeight)/2, l);
+    win->draw_layout(m_gc, se->start * m_col_width + 2, 
+		     4 + (height - lHeight)/2, l);
   }
   
   return true;

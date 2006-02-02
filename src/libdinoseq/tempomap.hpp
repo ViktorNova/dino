@@ -62,7 +62,7 @@ namespace Dino {
     TempoMap(unsigned long frame_rate = 48000); 
     
     /** Add a new tempo change. */
-    void add_tempo_change(unsigned long beat, unsigned int bpm);
+    TempoChange* add_tempo_change(unsigned long beat, unsigned int bpm);
     /** Remove any tempo change that occurs at the given beat. */
     void remove_tempo_change(unsigned long beat);
     

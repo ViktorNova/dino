@@ -12,6 +12,147 @@
 namespace Dino {
 
 
+  Track::SequenceIterator::SequenceIterator() : m_vector(NULL) {
+
+  }
+  
+  
+  const Track::SequenceEntry* Track::SequenceIterator::operator->() const {
+    return *m_iter;
+  }
+  
+  
+  const Track::SequenceEntry& Track::SequenceIterator::operator*() const {
+    return **m_iter;
+  }
+  
+  
+  bool Track::SequenceIterator::operator==(const SequenceIterator& iter) const {
+    return (m_iter == iter.m_iter);
+  }
+  
+  
+  bool Track::SequenceIterator::operator!=(const SequenceIterator& iter) const {
+    return (m_iter != iter.m_iter);
+  }
+  
+  
+  Track::SequenceIterator& Track::SequenceIterator::operator++() {
+    const SequenceEntry* old_ptr = *m_iter;
+    do {
+      ++m_iter;
+    } while (m_iter != m_vector->end() && 
+	     (*m_iter == old_ptr || *m_iter == NULL));
+    return *this;
+  }
+  
+
+  Track::SequenceIterator::SequenceIterator(const 
+					    std::vector<SequenceEntry*>::
+					    const_iterator& 
+					    iter,
+					    const std::vector<SequenceEntry*>&
+					    vec) 
+    : m_iter(iter),
+      m_vector(&vec) {
+    
+  }
+
+
+  Track::ConstPatternIterator::ConstPatternIterator() {
+
+  }
+  
+  
+  const Pattern* Track::ConstPatternIterator::operator->() const {
+    return m_iter->second;
+  }
+  
+  
+  const Pattern& Track::ConstPatternIterator::operator*() const {
+    return *m_iter->second;
+  }
+
+  
+  bool Track::ConstPatternIterator::operator==(const ConstPatternIterator& iter)
+    const {
+    return (m_iter == iter.m_iter);
+  }
+  
+  
+  bool Track::ConstPatternIterator::operator!=(const ConstPatternIterator& iter)
+    const {
+    return (m_iter != iter.m_iter);
+  }
+  
+  
+  Track::ConstPatternIterator& Track::ConstPatternIterator::operator++() {
+    ++m_iter;
+    return *this;
+  }
+  
+  
+  Track::ConstPatternIterator::ConstPatternIterator(const PatternIterator& iter)
+    : m_iter(iter.m_iter) {
+
+  }
+  
+  
+  Track::ConstPatternIterator::
+  ConstPatternIterator(const std::map<int, Pattern*>::const_iterator& iter)
+    : m_iter(iter) {
+
+  }
+
+
+  Track::PatternIterator::PatternIterator() {
+
+  }
+  
+  
+  const Pattern* Track::PatternIterator::operator->() const {
+    return m_iter->second;
+  }
+  
+  
+  const Pattern& Track::PatternIterator::operator*() const {
+    return *m_iter->second;
+  }
+  
+  
+  Pattern* Track::PatternIterator::operator->() {
+    return m_iter->second;
+  }
+  
+  
+  Pattern& Track::PatternIterator::operator*() {
+    return *m_iter->second;
+  }
+  
+  
+  bool Track::PatternIterator::operator==(const PatternIterator& iter) const {
+    return (m_iter == iter.m_iter);
+  }
+  
+  
+  bool Track::PatternIterator::operator!=(const PatternIterator& iter) const {
+    return (m_iter != iter.m_iter);
+  }
+  
+  
+  Track::PatternIterator& Track::PatternIterator::operator++() {
+    ++m_iter;
+    return *this;
+  }
+      
+
+  Track::PatternIterator::
+  PatternIterator(const std::map<int, Pattern*>::iterator& iter)
+    : m_iter(iter) {
+
+  }
+
+
   Track::Track(int id, int length, const string& name) 
     : m_id(id),
       m_name(name),
@@ -49,10 +190,11 @@ namespace Dino {
     return m_name;
   }
 
-
+  
   /** Returns a map of the patterns in this track. This map can be changed
       by the user, and we have no way of knowing how it's changed - this will
       probably be replaced by higher level functions in the future. */
+  /*
   map<int, Pattern*>& Track::get_patterns() {
     return m_patterns;
   }
@@ -69,21 +211,61 @@ namespace Dino {
       return iter->second;
     return NULL;
   }
-
-
-  /** Returns the sequence as a map of ints indexed by ints. This will probably
-      be removed or made const in the future. */
-  /*const vector<Track::SequenceEntry*>& Track::get_sequence() const {
-    return vector<const SequenceEntry*>(m_sequence);
-    }
   */
+  
 
-  const Track::SequenceEntry* Track::get_seq_entry(unsigned int beat) {
-    assert(beat < m_sequence.size());
-    return m_sequence[beat];
+  Track::ConstPatternIterator Track::pat_begin() const {
+    return ConstPatternIterator(m_patterns.begin());
+  }
+  
+  
+  Track::ConstPatternIterator Track::pat_end() const {
+    return ConstPatternIterator(m_patterns.end());
+  }
+  
+  
+  Track::ConstPatternIterator Track::pat_find(int id) const {
+    return ConstPatternIterator(m_patterns.find(id));
   }
 
 
+  Track::PatternIterator Track::pat_begin() {
+    return PatternIterator(m_patterns.begin());
+  }
+  
+  
+  Track::PatternIterator Track::pat_end() {
+    return PatternIterator(m_patterns.end());
+  }
+  
+  
+  Track::PatternIterator Track::pat_find(int id) {
+    return PatternIterator(m_patterns.find(id));
+  }
+
+
+  Track::SequenceIterator Track::seq_begin() const {
+    std::vector<SequenceEntry*>::const_iterator iter;
+    for (iter = m_sequence.begin(); iter != m_sequence.end(); ++iter) {
+      if (*iter != NULL)
+	break;
+    }
+    return SequenceIterator(iter, m_sequence);
+  }
+  
+  
+  Track::SequenceIterator Track::seq_end() const {
+    return SequenceIterator(m_sequence.end(), m_sequence);
+  }
+  
+  
+  Track::SequenceIterator Track::seq_find(unsigned int beat) const {
+    if (m_sequence[beat] != NULL)
+      return SequenceIterator(m_sequence.begin() + beat, m_sequence);
+    return SequenceIterator(m_sequence.end(), m_sequence);
+  }
+
+  
   /** Returns the MIDI channel for this track. */
   int Track::get_channel() const {
     return m_channel;
@@ -112,7 +294,7 @@ namespace Dino {
       id = m_patterns.rbegin()->first + 1;
     else
       id = 1;
-    m_patterns[id] = new Pattern(name, length, steps);
+    m_patterns[id] = new Pattern(id, name, length, steps);
     signal_pattern_added(id);
     return id;
   }
@@ -125,7 +307,7 @@ namespace Dino {
       
       for (unsigned int i = 0; i < m_sequence.size(); ++i) {
 	if (m_sequence[i] && m_sequence[i]->pattern == iter->second)
-	  remove_sequence_entry(i);
+	  remove_sequence_entry(seq_find(i));
       }
       
       iter->second->queue_deletion();
@@ -136,7 +318,8 @@ namespace Dino {
 
 
   /** Set the sequency entry at the given beat to the given pattern and length.*/
-  void Track::set_sequence_entry(int beat, int pattern, int length) {
+  Track::SequenceIterator Track::set_sequence_entry(int beat, 
+						    int pattern, int length) {
     assert(beat >= 0);
     assert(beat < m_length);
     assert(m_patterns.find(pattern) != m_patterns.end());
@@ -172,14 +355,16 @@ namespace Dino {
   
     se  = new SequenceEntry(pattern, m_patterns.find(pattern)->second, 
 			    beat, newLength);
-    for (int i = beat; i < beat + newLength; ++i)
+    int i;
+    for (i = beat; i < beat + newLength; ++i)
       m_sequence[i] = se;
+    
+    return SequenceIterator(m_sequence.begin() + i, m_sequence);
   }
 
 
-  void Track::set_seq_entry_length(unsigned int beat, unsigned int length) {
-    assert(beat < m_sequence.size());
-    assert(beat + length <= m_sequence.size());
+  void Track::set_seq_entry_length(SequenceIterator iter, unsigned int length) {
+    unsigned beat = iter->start;
     assert(m_sequence[beat]);
     SequenceEntry* se = m_sequence[beat];
     if (length == se->length)
@@ -206,9 +391,8 @@ namespace Dino {
 
   /** Remove the sequence entry (pattern) that is playing at the given beat.
       If no pattern is playing at that beat, return @c false. */
-  bool Track::remove_sequence_entry(int beat) {
-    assert(beat >= 0);
-    assert(beat < m_length);
+  bool Track::remove_sequence_entry(SequenceIterator iterator) {
+    unsigned beat = iterator->start;
     SequenceEntry* se = m_sequence[beat];
     if (se) {
       int start = se->start;
@@ -231,11 +415,11 @@ namespace Dino {
       for (unsigned i = length; i < m_sequence.size(); ++i) {
 	if (m_sequence[i]) {
 	  if (m_sequence[i]->start < (unsigned)length) {
-	    set_seq_entry_length(m_sequence[i]->start, 
+	    set_seq_entry_length(seq_find(m_sequence[i]->start), 
 				 length - m_sequence[i]->start);
 	  }
 	  else {
-	    remove_sequence_entry(i);
+	    remove_sequence_entry(seq_find(i));
 	  }
 	}
       }
@@ -336,7 +520,7 @@ namespace Dino {
       sscanf(pat_elt->get_attribute("steps")->get_value().c_str(), 
 	     "%d", &steps);
       string name = pat_elt->get_attribute("name")->get_value();
-      m_patterns[id] = new Pattern(name, length, steps);
+      m_patterns[id] = new Pattern(id, name, length, steps);
       m_patterns[id]->parse_xml_node(pat_elt);
     }
   

@@ -99,8 +99,7 @@ PatternRuler::PatternRuler(const Song& song)
 
 void PatternRuler::set_pattern(int track, int pattern) {
   if (track != -1 && pattern != -1) {
-    const Pattern* pat(m_song.find_track(track)->
-		       get_patterns().find(pattern)->second);
+    const Pattern* pat = &*m_song.find_track(track)->pat_find(pattern);
     set_length(pat->get_length());
     set_subdivisions(pat->get_steps());
     set_interval(1);

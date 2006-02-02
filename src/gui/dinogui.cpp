@@ -183,8 +183,8 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
     Song::TrackIterator iter = m_song.find_track(m_active_track);
     assert(iter != m_song.tracks_end());
-    Pattern* pat = iter->get_pattern(m_active_pattern);
-    assert(pat != NULL);
+    Track::PatternIterator pat = iter->pat_find(m_active_pattern);
+    assert(pat != iter->pat_end());
 
     m_dlgpat_ent_name->set_text(pat->get_name());
     m_dlgpat_sbn_length->set_value(pat->get_length());
@@ -319,15 +319,14 @@ void DinoGUI::update_pattern_combo() {
   if (trackID >= 0) {
     Song::ConstTrackIterator trk = m_song.find_track(trackID);
     m_cmb_pattern.clear();
-    map<int, Pattern*>::const_iterator iter;
+    Track::ConstPatternIterator iter;
     char tmp[10];
-    for (iter = trk->get_patterns().begin(); 
-	 iter != trk->get_patterns().end(); ++iter) {
-      sprintf(tmp, "%03d ", iter->first);
-      m_cmb_pattern.append_text(string(tmp) + iter->second->get_name(), 
-				iter->first);
+    for (iter = trk->pat_begin(); iter != trk->pat_end(); ++iter) {
+      sprintf(tmp, "%03d ", iter->get_id());
+      m_cmb_pattern.append_text(string(tmp) + iter->get_name(), 
+				iter->get_id());
       if (newActive == -1)
-	newActive = iter->first;
+	newActive = iter->get_id();
     }
   }
   
@@ -674,8 +673,9 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     Pattern* pattern = NULL;
     Song::TrackIterator trk = m_song.find_track(m_active_track);
     if (trk != m_song.tracks_end()) {
-      pattern = trk->get_pattern(m_active_pattern);
-      if (pattern != NULL) {
+      Track::PatternIterator iter = trk->pat_find(m_active_pattern);
+      if (iter != trk->pat_end()) {
+	pattern = &*iter;
 	slot<void> u_slot = 
 	  mem_fun(*this, &DinoGUI::update_controller_combo);
 	m_conn_cont_added = 

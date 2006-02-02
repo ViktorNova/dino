@@ -108,12 +108,13 @@ namespace Dino {
     };
 
     
-    Pattern(const string& name, int length, int steps);
+    Pattern(int id, const string& name, int length, int steps);
   
     ~Pattern();
   
     /// @name Accessors
     //@{
+    int get_id() const;
     /** Return the name of this pattern. */
     const string& get_name() const;
     /** Return an iterator that refers to the first note in the pattern. */
@@ -220,6 +221,7 @@ namespace Dino {
     
     NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
     
+    int m_id;
     /** The name of the pattern */
     string m_name;
     /** Pattern length in beats */

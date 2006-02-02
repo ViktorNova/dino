@@ -27,61 +27,71 @@ namespace Dino {
     
     class ConstTrackIterator;
     
+    /** An iterator class that is used to access the tracks in the song. */
     class TrackIterator {
     public:      
-      const Track& operator*() const { return *(m_iterator->second); }
-      Track& operator*() { return *(m_iterator->second); }
-      const Track* operator->() const { return m_iterator->second; }
-      Track* operator->() { return m_iterator->second; }
-      bool operator==(const TrackIterator& iter) const { 
-	return (m_iterator == iter.m_iterator);
-      }
-      bool operator!=(const TrackIterator& iter) const { 
-	return (m_iterator != iter.m_iterator);
-      }
-      
-      TrackIterator& operator++() { ++m_iterator; return *this; }
-      
+      const Track& operator*() const;
+      Track& operator*();
+      const Track* operator->() const;
+      Track* operator->();
+      bool operator==(const TrackIterator& iter) const;
+      bool operator!=(const TrackIterator& iter) const;      
+      TrackIterator& operator++();
     private:
       
       friend class Song;
       friend class ConstTrackIterator;
       
-      TrackIterator(const std::map<int, Track*>::iterator& iter)
-	: m_iterator(iter) {
-      }
+      TrackIterator(const std::map<int, Track*>::iterator& iter);
       
       std::map<int, Track*>::iterator m_iterator;
     };
 
 
+    /** An iterator class that is used to access the tracks in the song, 
+	without changing them. */
     class ConstTrackIterator {
     public:
-      ConstTrackIterator() { }
-      ConstTrackIterator(const TrackIterator& iter) 
-	: m_iterator(iter.m_iterator) {
-      }
-      
-      const Track& operator*() const { return *(m_iterator->second); }
-      const Track* operator->() const { return m_iterator->second; }
-      bool operator==(const ConstTrackIterator& iter) const { 
-	return (m_iterator == iter.m_iterator);
-      }
-      bool operator!=(const ConstTrackIterator& iter) const { 
-	return (m_iterator != iter.m_iterator);
-      }
-      
-      ConstTrackIterator& operator++() { ++m_iterator; return *this; }
+      ConstTrackIterator();
+      ConstTrackIterator(const TrackIterator& iter);
+      const Track& operator*() const;
+      const Track* operator->() const;
+      bool operator==(const ConstTrackIterator& iter) const;
+      bool operator!=(const ConstTrackIterator& iter) const;
+      ConstTrackIterator& operator++();
       
     private:
       
       friend class Song;
-      
-      ConstTrackIterator(const std::map<int, Track*>::const_iterator& iter)
-	: m_iterator(iter) {
-      }
+
+      ConstTrackIterator(const std::map<int, Track*>::const_iterator& iter);
       
       std::map<int, Track*>::const_iterator m_iterator;
+    };
+    
+    
+    /** An iterator class that is used to access the tempo changes in the song.
+	It is a read-only iterator, you have to use the member functions in 
+	Song to modify the tempo map.
+	@see Song::add_tempo_change(), Song::remove_tempo_change()
+    */
+    class TempoIterator {
+    public:
+
+      TempoIterator();
+      const TempoMap::TempoChange& operator*() const;
+      const TempoMap::TempoChange* operator->() const;
+      bool operator==(const TempoIterator& iter) const;
+      bool operator!=(const TempoIterator& iter) const;
+      TempoIterator& operator++();
+      
+    private:
+      
+      TempoIterator(const TempoMap::TempoChange* tempo);
+      
+      friend class Song;
+
+      const TempoMap::TempoChange* m_tempo;
     };
     
     
@@ -96,9 +106,11 @@ namespace Dino {
     ConstTrackIterator tracks_begin() const;
     ConstTrackIterator tracks_end() const;
     ConstTrackIterator find_track(int id) const;
+    TempoIterator tempo_begin() const;
+    TempoIterator tempo_end() const;
+    TempoIterator tempo_find(int beat) const;
     const size_t get_number_of_tracks() const;
     int get_length() const;
-    const TempoMap::TempoChange* get_tempo_changes() const;
     
     // non-const accessors
     TrackIterator tracks_begin();
@@ -114,8 +126,8 @@ namespace Dino {
     void set_length(int length);
     TrackIterator add_track(const string& name = "");
     bool remove_track(const TrackIterator& iterator);
-    void add_tempo_change(int beat, double bpm);
-    void remove_tempo_change(int beat);
+    TempoIterator add_tempo_change(int beat, double bpm);
+    void remove_tempo_change(TempoIterator& iter);
     //@}
     
     /// @name Sequencing

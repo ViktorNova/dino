@@ -44,7 +44,8 @@ namespace Dino {
   }
 
 
-  void TempoMap::add_tempo_change(unsigned long beat, unsigned int bpm) {
+  TempoMap::TempoChange* TempoMap::add_tempo_change(unsigned long beat, 
+						    unsigned int bpm) {
     TempoChange* tc = NULL;
     TempoChange* iter;
   
@@ -54,7 +55,7 @@ namespace Dino {
     for (iter = m_tc_list; iter != NULL; iter = iter->next) {
       if (iter->beat == beat) {
 	if (iter->bpm == bpm)
-	  return;
+	  return iter;
 	tc = iter;
 	tc->bpm = bpm;
 	is_new = false;
@@ -115,7 +116,8 @@ namespace Dino {
       signal_tempochange_added(beat);
     else
       signal_tempochange_changed(beat);
-  
+    
+    return tc;
   }
 
 

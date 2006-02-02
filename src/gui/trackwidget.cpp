@@ -100,8 +100,8 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   get_pango_context()->set_font_description(fd);
   char tmp[10];
   for (unsigned int i = 0; i < m_track->get_length(); ++i) {
-    const Track::SequenceEntry* se = m_track->get_seq_entry(i);
-    if (!se || se->start != i)
+    Track::SequenceIterator se = m_track->seq_find(i);
+    if (se != m_track->seq_end() || se->start != i)
       continue;
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
@@ -133,14 +133,13 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   switch (event->button) {
   case 1: {
     char tmp[10];
-    std::map<int, Pattern*>::const_iterator iter
-      = m_track->get_patterns().begin();
+    Track::ConstPatternIterator iter = m_track->pat_begin();
     m_pattern_menu.items().clear();
-    for ( ; iter != m_track->get_patterns().end(); ++iter) {
-      sprintf(tmp, "%03d", iter->first);
+    for ( ; iter != m_track->pat_end(); ++iter) {
+      sprintf(tmp, "%03d", iter->get_id());
       Menu_Helpers::MenuElem
 	elem(tmp, bind(bind(mem_fun(*this, &TrackWidget::slot_insert_pattern), 
-			    beat), iter->first));
+			    beat), iter->get_id()));
       m_pattern_menu.items().push_back(elem);
     }
     if (m_pattern_menu.items().size() == 0) {
@@ -152,18 +151,18 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 2: {
-    const Track::SequenceEntry* se;
-    if ((se = m_track->get_seq_entry(beat))) {
+    Track::SequenceIterator se = m_track->seq_find(beat);
+    if (se != m_track->seq_end()) {
       m_drag_beat = se->start;
       m_drag_pattern = se->pattern_id;
-      m_track->set_seq_entry_length(beat, beat - se->start);
+      m_track->set_seq_entry_length(se, beat - se->start);
       update();
     }
     return true;
   }
     
   case 3:
-    m_track->remove_sequence_entry(beat);
+    m_track->remove_sequence_entry(m_track->seq_find(beat));
     update();
     return true;
   } 
@@ -185,7 +184,7 @@ bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
   if ((event->state & GDK_BUTTON2_MASK) && m_drag_beat != -1 &&
       beat >= m_drag_beat && 
       beat - m_drag_beat + 1 <= 
-      m_track->get_patterns()[m_drag_pattern]->get_length()) {
+      m_track->pat_find(m_drag_pattern)->get_length()) {
     m_track->set_sequence_entry(m_drag_beat, m_drag_pattern, 
 				beat - m_drag_beat + 1);
     update();
@@ -197,7 +196,7 @@ bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
 
 
 void TrackWidget::slot_insert_pattern(int pattern, int position) {
-  int length = m_track->get_patterns()[pattern]->get_length();
+  int length = m_track->pat_find(pattern)->get_length();
   m_track->set_sequence_entry(position, pattern, length);
   update();
 }

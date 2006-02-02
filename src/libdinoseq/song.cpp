@@ -17,6 +17,132 @@ using namespace xmlpp;
 namespace Dino {
 
 
+  const Track& Song::TrackIterator::operator*() const { 
+    return *(m_iterator->second);
+  }
+  
+  
+  Track& Song::TrackIterator::operator*() { 
+    return *(m_iterator->second);
+  }
+  
+  
+  const Track* Song::TrackIterator::operator->() const { 
+    return m_iterator->second;
+  }
+  
+  
+  Track* Song::TrackIterator::operator->() { 
+    return m_iterator->second;
+  }
+  
+  
+  bool Song::TrackIterator::operator==(const TrackIterator& iter) const { 
+    return (m_iterator == iter.m_iterator);
+  }
+  
+  
+  bool Song::TrackIterator::operator!=(const TrackIterator& iter) const { 
+    return (m_iterator != iter.m_iterator);
+  }
+  
+
+  Song::TrackIterator& Song::TrackIterator::operator++() { 
+    ++m_iterator; 
+    return *this;
+  }
+
+
+  Song::TrackIterator::
+  TrackIterator(const std::map<int, Track*>::iterator& iter)
+    : m_iterator(iter) {
+    
+  }
+
+
+  Song::ConstTrackIterator::ConstTrackIterator() { 
+
+  }
+  
+  
+  Song::ConstTrackIterator::ConstTrackIterator(const TrackIterator& iter) 
+    : m_iterator(iter.m_iterator) {
+
+  }
+  
+  
+  const Track& Song::ConstTrackIterator::operator*() const { 
+    return *(m_iterator->second); 
+  }
+  
+  
+  const Track* Song::ConstTrackIterator::operator->() const { 
+    return m_iterator->second; 
+  }
+  
+  
+  bool 
+  Song::ConstTrackIterator::operator==(const ConstTrackIterator& iter) const { 
+    return (m_iterator == iter.m_iterator);
+  }
+   
+  
+  bool 
+  Song::ConstTrackIterator::operator!=(const ConstTrackIterator& iter) const { 
+    return (m_iterator != iter.m_iterator);
+  }
+  
+  
+  Song::ConstTrackIterator& Song::ConstTrackIterator::operator++() { 
+    ++m_iterator; 
+    return *this; 
+  }
+  
+  
+  Song::ConstTrackIterator::
+  ConstTrackIterator(const std::map<int, Track*>::const_iterator& iter)
+    : m_iterator(iter) {
+    
+  }
+  
+  
+  Song::TempoIterator::TempoIterator() {
+  
+  }
+      
+  
+  const TempoMap::TempoChange& Song::TempoIterator::operator*() const {
+    return *m_tempo;
+  }
+  
+      
+  const TempoMap::TempoChange* Song::TempoIterator::operator->() const {
+    return m_tempo;
+  }
+  
+  
+  bool Song::TempoIterator::operator==(const TempoIterator& iter) const {
+    return (m_tempo == iter.m_tempo);
+  }
+  
+  
+  bool Song::TempoIterator::operator!=(const TempoIterator& iter) const {
+    return (m_tempo != iter.m_tempo);
+  }
+  
+  
+  Song::TempoIterator& Song::TempoIterator::operator++() {
+    m_tempo = m_tempo->next;
+    return *this;
+  }
+  
+  
+  Song::TempoIterator::TempoIterator(const TempoMap::TempoChange* tempo) 
+    : m_tempo(tempo) { 
+  
+  }
+
+  
   Song::Song() : m_length(32), m_dirty(false) {
   
     dbg1<<"Initialising song"<<endl;
@@ -140,13 +266,14 @@ namespace Dino {
   }
 
 
-  void Song::add_tempo_change(int beat, double bpm) {
-    m_tempo_map.add_tempo_change(beat, int(bpm));
+  Song::TempoIterator Song::add_tempo_change(int beat, double bpm) {
+    return TempoIterator(m_tempo_map.add_tempo_change(beat, int(bpm)));
   }
 
 
-  void Song::remove_tempo_change(int beat) {
-    m_tempo_map.remove_tempo_change(beat);
+  void Song::remove_tempo_change(TempoIterator& iter) {
+    assert(iter != tempo_end());
+    m_tempo_map.remove_tempo_change(iter->beat);
   }
 
 
@@ -165,40 +292,26 @@ namespace Dino {
   }
   
   
-  /*
-  const map<int, Track*>& Song::get_tracks() const {
-    return m_tracks;
-  }
-
-
-  map<int, Track*>& Song::get_tracks() {
-    return m_tracks;
-  }
-
-
-  const Track* Song::get_track(int id) const {
-    return get_track(id);
-  }
-  
-  
-  Track* Song::get_track(int id) {
-    map<int, Track*>::iterator iter = m_tracks.find(id);
-    assert(iter != m_tracks.end());
-    return iter->second;
-  }
-  */
-  
-
   int Song::get_length() const {
     return m_length;
   }
 
-
-  const TempoMap::TempoChange* Song::get_tempo_changes() const {
-    return m_tempo_map.get_changes(0);
+  
+  Song::TempoIterator Song::tempo_begin() const {
+    return TempoIterator(m_tempo_map.get_changes(0));
   }
-
-
+  
+  
+  Song::TempoIterator Song::tempo_end() const {
+    return TempoIterator(NULL);
+  }
+  
+  
+  Song::TempoIterator Song::tempo_find(int beat) const {
+    return TempoIterator(m_tempo_map.get_changes(beat));
+  }
+  
+  
   double Song::get_current_tempo(int beat, int tick) {
     return double(m_tempo_map.get_changes(beat)->bpm);
   }

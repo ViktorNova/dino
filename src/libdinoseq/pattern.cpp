@@ -76,8 +76,9 @@ namespace Dino {
   }
 
   
-  Pattern::Pattern(const string& name, int length, int steps) 
-    : m_name(name),
+  Pattern::Pattern(int id, const string& name, int length, int steps) 
+    : m_id(id),
+      m_name(name),
       m_length(length),
       m_steps(steps),
       m_controllers(new vector<Controller*>()),
@@ -134,7 +135,12 @@ namespace Dino {
     delete m_controllers;
     
   }
-
+  
+  
+  int Pattern::get_id() const {
+    return m_id;
+  }
+  
 
   const string& Pattern::get_name() const {
     return m_name;

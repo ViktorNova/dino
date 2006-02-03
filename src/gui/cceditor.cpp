@@ -16,7 +16,7 @@ CCEditor::CCEditor()
     m_grid_colour("#9C9C9C"),
     m_edge_colour("#000000"),
     m_fg_colour("#008000"),
-    m_step_width(10),
+    m_step_width(8),
     m_pat(NULL) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();
@@ -25,13 +25,29 @@ CCEditor::CCEditor()
   cmap->alloc_color(m_grid_colour);
   cmap->alloc_color(m_edge_colour);
   cmap->alloc_color(m_fg_colour);
-  
+
+  add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
 }
 
 
 void CCEditor::set_controller(Dino::Pattern* pat, unsigned controller) {
   m_pat = pat;
   m_controller = controller;
+  if (m_pat) {
+    set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width,
+		     -1);
+    queue_draw();
+    slot<void> draw = mem_fun(*this, &CCEditor::queue_draw);
+    m_pat->signal_cc_added.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
+    m_pat->signal_cc_changed.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
+    m_pat->signal_cc_removed.connect(sigc::hide(sigc::hide(draw)));
+  }
+}
+
+
+void CCEditor::set_step_width(int width) {
+  assert(width > 0);
+  m_step_width = width;
   if (m_pat) {
     set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width, 
 		     -1);
@@ -41,7 +57,29 @@ void CCEditor::set_controller(Dino::Pattern* pat, unsigned controller) {
 
 
 bool CCEditor::on_button_press_event(GdkEventButton* event) {
-  return false;
+  if (!m_pat)
+    return false;
+  
+  // add a CC event
+  if (event->button == 1 || event->button == 2) {
+    int step;
+    if ((step = xpix2step(int(event->x))) < 
+	m_pat->get_length() * m_pat->get_steps()) {
+      int value = ypix2value(int(event->y));
+      m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
+    }
+  }
+  
+  // remove a CC event
+  else if (event->button == 3) {
+    int step;
+    if ((step = xpix2step(int(event->x))) < 
+	m_pat->get_length() * m_pat->get_steps()) {
+      m_pat->remove_cc(m_pat->ctrls_find(m_controller), step);
+    }
+  }
+
+  return true;
 }
 
 
@@ -117,4 +155,14 @@ int CCEditor::value2ypix(int value) {
 
 int CCEditor::ypix2value(int y) { 
   return 128 - int(129.0 / get_height() * y);
+}
+
+
+int CCEditor::step2xpix(int value) {
+  return value * m_step_width;
+}
+
+
+int CCEditor::xpix2step(int value) {
+  return value / m_step_width;
 }

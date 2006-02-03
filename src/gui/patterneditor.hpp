@@ -12,8 +12,8 @@ class PatternEditor : public Gtk::DrawingArea {
 public:
   PatternEditor();
   
-  //void set_pattern(int track, int pattern);
   void set_pattern(Dino::Pattern* pattern);
+  void set_step_width(int width);
   
 protected:
   

@@ -17,6 +17,7 @@ public:
   CCEditor();
   
   void set_controller(Dino::Pattern* pat, unsigned controller);
+  void set_step_width(int width);
   
 protected:
   
@@ -30,6 +31,8 @@ protected:
   
   int value2ypix(int value);
   int ypix2value(int value);
+  int step2xpix(int value);
+  int xpix2step(int value);
   
   Glib::RefPtr<Gdk::GC> m_gc;
   Gdk::Color m_bg_colour1, m_bg_colour2, m_grid_colour, 

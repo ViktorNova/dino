@@ -81,6 +81,8 @@ namespace Dino {
       m_name(name),
       m_length(length),
       m_steps(steps),
+      m_note_ons(length * steps),
+      m_note_offs(length * steps),
       m_controllers(new vector<Controller*>()),
       m_dirty(false) {
     
@@ -93,20 +95,6 @@ namespace Dino {
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
-    
-    for (unsigned i = 0; i < m_length * m_steps; ++i) {
-      m_note_ons.push_back(NULL);
-      m_note_offs.push_back(NULL);
-    }
-    
-    // debugging
-    Controller* c = new Controller(m_length * m_steps, 1, 0, 128);
-    c->set_event(0, 64);
-    c->set_event(3, 3);
-    c->set_event(14, 34);
-    c->set_event(16, 95);
-    c->set_event(24, 101);
-    m_controllers->push_back(c);
   }
 
 

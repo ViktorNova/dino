@@ -16,9 +16,13 @@ using namespace Dino;
 
 
 PatternEditor::PatternEditor() 
-  : m_drag_operation(NoOperation), m_row_height(8), 
-    m_col_width(8), m_max_note(128), m_drag_y(-1), 
-    m_drag_start_vel(-1), m_pat(NULL) {
+  : m_drag_operation(NoOperation), 
+    m_row_height(8), 
+    m_col_width(8), 
+    m_max_note(128), 
+    m_drag_y(-1), 
+    m_drag_start_vel(-1), 
+    m_pat(NULL) {
   
   // initialise colours
   m_colormap = Colormap::get_system();
@@ -61,7 +65,6 @@ void PatternEditor::set_pattern(Pattern* pattern) {
     m_pat = pattern;
     if (m_pat) {
       int s = m_pat->get_steps();
-      m_col_width = 8;
       m_pat->signal_note_added.
 	connect(sigc::hide(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)))));
       m_pat->signal_note_removed.
@@ -74,6 +77,17 @@ void PatternEditor::set_pattern(Pattern* pattern) {
     }
     else
       set_size_request();
+  }
+}
+
+
+void PatternEditor::set_step_width(int width) {
+  assert(width > 0);
+  m_col_width = width;
+  if (m_pat) {
+    set_size_request(m_pat->get_length() * m_pat->get_steps() * m_col_width + 1,
+		     m_max_note * m_row_height + 1);
+    queue_draw();
   }
 }
 
@@ -272,14 +286,14 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   
   // draw notes
-  Pattern::NoteIterator iterator = m_pat->notes_begin();
-  for ( ; iterator != m_pat->notes_end(); ++iterator)
-    draw_note(iterator);
+  Pattern::NoteIterator iter;
+  for (iter = m_pat->notes_begin() ; iter != m_pat->notes_end(); ++iter)
+    draw_note(iter);
   
   // draw box for editing note velocity
   if (m_drag_operation == ChangingNoteVelocity) {
-    Pattern::NoteIterator iterator = m_pat->find_note(m_drag_step, m_drag_note);
-    draw_velocity_box(iterator);
+    iter = m_pat->find_note(m_drag_step, m_drag_note);
+    draw_velocity_box(iter);
   }
   
   /*

@@ -288,6 +288,9 @@ namespace Dino {
 
   /** Creates and adds a new pattern in this track with the given parameters.*/
   int Track::add_pattern(const string& name, int length, int steps) {
+    /* This does not actually need to be threadsafe since the sequencer
+       never accesses the patterns through the map, only through the 
+       sequence entries. */
     int id;
     if (m_patterns.rbegin() != m_patterns.rend())
       id = m_patterns.rbegin()->first + 1;
@@ -301,6 +304,9 @@ namespace Dino {
   
   /** Removes the pattern with the given ID. */
   void Track::remove_pattern(int id) {
+    /* Changing the map itself does not need to be threadsafe since the 
+       sequencer never accesses patterns through the map, but actually
+       deleting the pattern must be done in a threadsafe way. */
     map<int, Pattern*>::iterator iter = m_patterns.find(id);
     if (iter != m_patterns.end()) {
       
@@ -336,12 +342,12 @@ namespace Dino {
     SequenceEntry* se = (*m_sequence)[beat];
     if (se) {
       int stop = se->start + se->length;
-      if (se->start == unsigned(beat))
-	delete se;
-      else
-	se->length = beat - se->start;
       for (int i = stop - 1; i >= beat; --i)
 	(*m_sequence)[i] = NULL;
+      if (se->start == unsigned(beat))
+	Deleter::queue(se);
+      else
+	se->length = beat - se->start;
     }
   
     // make sure the new sequence entry fits
@@ -358,8 +364,7 @@ namespace Dino {
     for (i = beat; i < beat + newLength; ++i)
       (*m_sequence)[i] = se;
     
-    signal_sequence_entry_added(beat, 
-				(*m_sequence)[beat]->pattern->get_id(), 
+    signal_sequence_entry_added(beat, (*m_sequence)[beat]->pattern->get_id(), 
 				newLength);
     return SequenceIterator(m_sequence->begin() + i, *m_sequence);
   }

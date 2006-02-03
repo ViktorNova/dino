@@ -46,6 +46,9 @@ namespace Dino {
 
   TempoMap::TempoChange* TempoMap::add_tempo_change(unsigned long beat, 
 						    unsigned int bpm) {
+    
+    // XXX I don't understand how this works any more, it probably needs to be
+    //     rewritten
     TempoChange* tc = NULL;
     TempoChange* iter;
   
@@ -122,6 +125,9 @@ namespace Dino {
 
 
   void TempoMap::remove_tempo_change(unsigned long beat) {
+    // XXX I don't understand how this works any more, it probably needs to be
+    //     rewritten
+
     if (beat == 0)
       return;
   

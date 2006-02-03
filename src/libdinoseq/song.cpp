@@ -232,10 +232,10 @@ namespace Dino {
 
   void Song::set_length(int length) {
     if (length != m_length) {
+      m_length = length;
       map<int, Track*>::iterator iter;
       for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter)
 	iter->second->set_length(length);
-      m_length = length;
       signal_length_changed(length);
     }
   }
@@ -262,19 +262,23 @@ namespace Dino {
 
 
   bool Song::remove_track(const Song::TrackIterator& iterator) {
-    map<int, Track*>* new_tracks = new map<int, Track*>(*m_tracks);
     map<int, Track*>::iterator iter = iterator.m_iterator;
-    if (iter == new_tracks->end())
+    if (iter == m_tracks->end())
       return false;
-    int id = iter->second->get_id();
-    Deleter::queue(iter->second);
-    new_tracks->erase(iter);
-    m_dirty = true;
     
+    // prepare a modified copy of the track map
+    map<int, Track*>* new_tracks = new map<int, Track*>(*m_tracks);
+    int id = iter->second->get_id();
+    Track* trk = iter->second;
+    new_tracks->erase(new_tracks->find(id));
+    
+    // swap the track map and delete the old map and the removed track
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
     Deleter::queue(old_tracks);
+    Deleter::queue(trk);
 
+    m_dirty = true;
     signal_track_removed(id);
     return true;
   }

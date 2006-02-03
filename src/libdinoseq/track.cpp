@@ -330,7 +330,7 @@ namespace Dino {
     assert(m_patterns.find(pattern) != m_patterns.end());
     assert(length > 0 || length == -1);
     assert(length <= m_patterns.find(pattern)->second->get_length());
-  
+    
     // if length is -1, get it from the pattern
     int newLength;
     if (length == -1)
@@ -352,7 +352,7 @@ namespace Dino {
   
     // make sure the new sequence entry fits
     for (int i = beat; i < beat + newLength; ++i) {
-      if ((*m_sequence)[i]) {
+      if (i >= int(m_sequence->size()) || (*m_sequence)[i]) {
 	newLength = i - beat;
 	break;
       }

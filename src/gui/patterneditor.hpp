@@ -55,7 +55,6 @@ private:
   int m_drag_y;
   int m_drag_start_vel;
   
-  Glib::RefPtr<Gdk::Pixmap> m_pix;
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Dino::Pattern* m_pat;
   Glib::RefPtr<Pango::Layout> m_layout;

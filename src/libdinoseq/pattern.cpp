@@ -266,7 +266,7 @@ namespace Dino {
     signal_note_removed(note->get_step(), note->get_key());
     Deleter::queue(note->m_note_on);
     Deleter::queue(note->m_note_off);
-    delete note;
+    Deleter::queue(note);
     
   }
 

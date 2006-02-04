@@ -15,6 +15,7 @@
 #include "tempolabel.hpp"
 #include "tempowidget.hpp"
 #include "track.hpp"
+#include "trackdialog.hpp"
 #include "tracklabel.hpp"
 #include "trackwidget.hpp"
 
@@ -41,6 +42,12 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   
   m_window = w<Gtk::Window>("main_window");
   m_about_dialog = w<Dialog>("dlg_about");
+  
+  TrackDialog* tdlg = NULL;
+  tdlg = xml->get_widget_derived("dlg_track_properties", tdlg);
+  tdlg->show_all();
+  m_seq.signal_instruments_changed.
+    connect(bind(mem_fun(*tdlg, &TrackDialog::update_ports), &m_seq));
   
   init_pattern_editor();
   init_sequence_editor();
@@ -111,23 +118,16 @@ void DinoGUI::slot_edit_delete() {
 
 
 void DinoGUI::slot_edit_add_track() {
-  m_dlgtrack_ent_name->set_text("Untitled");
-  update_port_combo();
-  m_dlgtrack_sbn_channel->set_value(1);
-  m_dlgtrack_cmb_port.set_active_id(-1);
-  m_dlg_track_properties->show_all();
-  if (m_dlg_track_properties->run() == RESPONSE_OK) {
-    Song::TrackIterator iter =m_song.add_track(m_dlgtrack_ent_name->get_text());
-    iter->set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
-    int instrument = m_dlgtrack_cmb_port.get_active_id();
-    if (instrument == -1)
-      m_seq.set_instrument(iter->get_id(), "None");
-    else
-      m_seq.set_instrument(iter->get_id(), 
-			   m_dlgtrack_cmb_port.get_active_text());
+  m_dlg_track->set_name("Untitled");
+  m_dlg_track->set_channel(1);
+  m_dlg_track->show_all();
+  if (m_dlg_track->run() == RESPONSE_OK) {
+    Song::TrackIterator iter = m_song.add_track(m_dlg_track->get_name());
+    iter->set_channel(m_dlg_track->get_channel() - 1);
+    m_seq.set_instrument(iter->get_id(), m_dlg_track->get_port());
     set_active_track(iter->get_id());
   }
-  m_dlg_track_properties->hide();
+  m_dlg_track->hide();
 }
  
 
@@ -141,22 +141,16 @@ void DinoGUI::slot_edit_delete_track() {
 void DinoGUI::slot_edit_edit_track_properties() {
   if (m_active_track >= 0) {
     Track t = *(m_song.find_track(m_active_track));
-    m_dlgtrack_ent_name->set_text(t.get_name());
-    update_port_combo();
-    m_dlgtrack_sbn_channel->set_value(t.get_channel() + 1);
-    m_dlg_track_properties->show_all();
-    if (m_dlg_track_properties->run() == RESPONSE_OK) {
-      t.set_name(m_dlgtrack_ent_name->get_text());
-      t.set_channel(m_dlgtrack_sbn_channel->get_value_as_int() - 1);
-      int instrument = m_dlgtrack_cmb_port.get_active_id();
-      if (instrument == -1)
-	m_seq.set_instrument(m_active_track, "None");
-      else
-	m_seq.set_instrument(m_active_track, 
-			     m_dlgtrack_cmb_port.get_active_text());
+    m_dlg_track->set_name(t.get_name());
+    m_dlg_track->set_channel(t.get_channel() + 1);
+    m_dlg_track->show_all();
+    if (m_dlg_track->run() == RESPONSE_OK) {
+      t.set_name(m_dlg_track->get_name());
+      t.set_channel(m_dlg_track->get_channel() - 1);
+      m_seq.set_instrument(m_active_track, m_dlg_track->get_port());
     }
   }
-  m_dlg_track_properties->hide();
+  m_dlg_track->hide();
 }
 
 
@@ -374,21 +368,6 @@ void DinoGUI::update_editor_widgets() {
 }
 
 
-void DinoGUI::update_port_combo() {
-  m_dlgtrack_cmb_port.clear();
-  m_dlgtrack_cmb_port.append_text("None", -1);
-  vector<Sequencer::InstrumentInfo> instruments = 
-    m_seq.get_instruments(m_active_track);
-  int connected = -1;
-  for (size_t i = 0; i < instruments.size(); ++i) {
-    m_dlgtrack_cmb_port.append_text(instruments[i].name, i);
-    if (instruments[i].connected)
-      connected = i;
-  }
-  m_dlgtrack_cmb_port.set_active_id(connected);
-}
-
-
 void DinoGUI::slot_cc_number_changed() {
   // XXX what is this?
 }
@@ -541,10 +520,9 @@ void DinoGUI::init_sequence_editor() {
   
   
   // setup the track properties dialog
-  m_dlg_track_properties = w<Dialog>("dlg_track_properties");
-  m_dlgtrack_ent_name = w<Entry>("dlgtrack_ent_name");
-  m_dlgtrack_sbn_channel = w<SpinButton>("dlgtrack_sbn_channel");
-  w<VBox>("dlgtrack_vbx_port")->pack_start(m_dlgtrack_cmb_port);
+  m_dlg_track = m_xml->get_widget_derived("dlg_track_properties", m_dlg_track);
+  m_seq.signal_instruments_changed.
+    connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
 }
 
 

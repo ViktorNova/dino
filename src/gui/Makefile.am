@@ -13,6 +13,7 @@ dino_SOURCES = \
 	singletextcombo.cpp singletextcombo.hpp \
 	tempolabel.cpp tempolabel.hpp \
 	tempowidget.cpp tempowidget.hpp \
+	trackdialog.cpp trackdialog.hpp \
 	tracklabel.hpp tracklabel.cpp \
 	trackwidget.cpp trackwidget.hpp
 

@@ -18,9 +18,16 @@ extern "C" {
 namespace Dino {
 
   Sequencer::Sequencer(const string& client_name, Song& song) 
-    : m_client_name(client_name), m_song(song), m_valid(false),
-      m_last_beat(0), m_last_tick(0), m_sent_all_off(false),
-      m_current_beat(0), m_old_current_beat(-1) {
+    : m_client_name(client_name), 
+      m_song(song), 
+      m_valid(false),
+      m_last_beat(0), 
+      m_last_tick(0), 
+      m_sent_all_off(false),
+      m_current_beat(0), 
+      m_old_current_beat(-1),
+      m_ports_changed(0),
+      m_old_ports_changed(0) {
   
     dbg1<<"Initialising sequencer"<<endl;
   
@@ -36,7 +43,8 @@ namespace Dino {
     m_song.signal_track_removed.
       connect(mem_fun(*this, &Sequencer::track_removed));
 
-    Glib::signal_timeout().connect(mem_fun(*this, &Sequencer::beat_checker), 20);
+    Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::beat_checker), 20);
+    Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::ports_checker),20);
     reset_ports();
   }
 
@@ -157,7 +165,11 @@ namespace Dino {
 					 &Sequencer::jack_process_callback_,
 					 this)) != 0)
       return false;
-
+    if ((err = jack_set_port_registration_callback(m_jack_client,
+						   &Sequencer::jack_port_registration_callback_,
+						   this)) != 0)
+      return false;
+    
     jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
   
     if ((err = jack_activate(m_jack_client)) != 0)
@@ -261,6 +273,18 @@ namespace Dino {
   void Sequencer::jack_shutdown_handler() {
     cerr<<"JACK SHUT DOWN!"<<endl;
   }
+  
+
+  void Sequencer::jack_port_registration_callback(jack_port_id_t port, int m) {
+    if (m == 0)
+      m_ports_changed = m_ports_changed + 1;
+    else {
+      int flags = jack_port_flags(jack_port_by_id(m_jack_client, port));
+      const char* type = jack_port_type(jack_port_by_id(m_jack_client, port));
+      if ((flags & JackPortIsInput) && !strcmp(type, JACK_DEFAULT_MIDI_TYPE))
+	m_ports_changed = m_ports_changed + 1;
+    }
+  }
 
 
   void Sequencer::sequence_midi(jack_transport_state_t state, 
@@ -323,9 +347,20 @@ namespace Dino {
 
 
   bool Sequencer::beat_checker() {
-    if (m_current_beat != m_old_current_beat) {
-      m_old_current_beat = m_current_beat;
+    int current_beat = m_current_beat;
+    if (current_beat != m_old_current_beat) {
+      m_old_current_beat = current_beat;
       signal_beat_changed(const_cast<int&>(m_current_beat));
+    }
+    return true;
+  }
+  
+  
+  bool Sequencer::ports_checker() {
+    int ports_changed = m_ports_changed;
+    if (ports_changed != m_old_ports_changed) {
+      m_old_ports_changed = ports_changed;
+      signal_instruments_changed();
     }
     return true;
   }

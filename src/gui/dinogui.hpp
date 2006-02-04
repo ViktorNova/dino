@@ -16,6 +16,9 @@
 #include "song.hpp"
 
 
+class TrackDialog;
+
+
 /** This is the main class. It connects our custom widgets to the rest of the
     GUI and sets up all signals and initial values. */
 class DinoGUI {
@@ -24,7 +27,10 @@ public:
   
   Gtk::Window* get_window();
   
-  // menu and toolbutton callbacks
+private:
+
+  /// @name Menu and toolbutton callbacks
+  //@{
   void slot_file_new();
   void slot_file_open();
   void slot_file_save();
@@ -50,8 +56,7 @@ public:
   void slot_transport_go_to_start();
   
   void slot_help_about_dino();
-  
-private:
+  //@}
   
   /** This is a convenience function that returns a pointer of type @c T* to
       the widget with name @c name. If there is no widget in @c xml with that
@@ -72,7 +77,6 @@ private:
   void update_pattern_combo();
   void update_controller_combo();
   void update_editor_widgets();
-  void update_port_combo();
   void init_pattern_editor();
   void init_sequence_editor();
   void init_info_editor();
@@ -123,10 +127,10 @@ private:
   Gtk::Entry* m_ent_author;
   Gtk::TextView* m_text_info;
   
-  Gtk::Dialog* m_dlg_track_properties;
-  Gtk::Entry* m_dlgtrack_ent_name;
-  SingleTextCombo m_dlgtrack_cmb_port;
-  Gtk::SpinButton* m_dlgtrack_sbn_channel;
+  TrackDialog* m_dlg_track;
+  //Gtk::Entry* m_dlgtrack_ent_name;
+  //SingleTextCombo m_dlgtrack_cmb_port;
+  //Gtk::SpinButton* m_dlgtrack_sbn_channel;
   
   Gtk::Dialog* m_dlg_pattern_properties;
   Gtk::Entry* m_dlgpat_ent_name;

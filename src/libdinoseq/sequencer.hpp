@@ -67,12 +67,14 @@ namespace Dino {
     /// @name Signals
     //@{
     sigc::signal<void, int> signal_beat_changed;
+    sigc::signal<void> signal_instruments_changed;
     //@}
     
   private:
   
     bool beat_checker();
-  
+    bool ports_checker();
+    
     /** This initialises the internal JACK client object. */
     bool init_jack(const string& client_name);
     
@@ -89,6 +91,8 @@ namespace Dino {
     int jack_process_callback(jack_nframes_t nframes);
     /** This is called when the JACK daemon is being shut down. */
     void jack_shutdown_handler();
+    /** This is called when ports are registered or unregistered. */
+    void jack_port_registration_callback(jack_port_id_t port, int m);
     //@}
     
     /// @name JACK callback wrappers
@@ -105,6 +109,10 @@ namespace Dino {
     }
     static void jack_shutdown_handler_(void* arg) {
       static_cast<Sequencer*>(arg)->jack_shutdown_handler();
+    }
+    static void jack_port_registration_callback_(jack_port_id_t port, int m,
+						 void* arg) {
+      static_cast<Sequencer*>(arg)->jack_port_registration_callback(port, m);
     }
     //@}
     
@@ -143,6 +151,8 @@ namespace Dino {
     
     volatile int m_current_beat;
     volatile int m_old_current_beat;
+    volatile int m_ports_changed;
+    int m_old_ports_changed;
   };
 
 

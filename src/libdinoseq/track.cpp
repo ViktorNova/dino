@@ -156,7 +156,7 @@ namespace Dino {
   Track::Track(int id, int length, const string& name) 
     : m_id(id),
       m_name(name),
-      m_sequence(new vector<SequenceEntry*>(length)),
+      m_sequence(new vector<SequenceEntry*>(length, (SequenceEntry*)NULL)),
       m_dirty(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
@@ -566,10 +566,15 @@ namespace Dino {
 			int room) const {
     assert(beat >= 0);
     assert(before_beat >= beat);
+
+    const vector<SequenceEntry*>& sequence = *m_sequence;
+    if (beat >= sequence.size())
+      return 0;
+    if (before_beat > sequence.size())
+      before_beat = sequence.size();
     
     // iterate over all beats that intersects the interval [beat, before_beat)
     int event_start = 0;
-    const vector<SequenceEntry*>& sequence = *m_sequence;
     for (unsigned i = unsigned(beat); i < before_beat; ++i) {
       if (sequence[i] != NULL) {
 	

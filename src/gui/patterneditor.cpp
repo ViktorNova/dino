@@ -287,7 +287,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   
   // draw notes
   Pattern::NoteIterator iter;
-  for (iter = m_pat->notes_begin() ; iter != m_pat->notes_end(); ++iter)
+  for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter)
     draw_note(iter);
   
   // draw box for editing note velocity

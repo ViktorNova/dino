@@ -89,7 +89,29 @@ bool CCEditor::on_button_release_event(GdkEventButton* event) {
 
 
 bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
-  return false;
+  if (!m_pat)
+    return false;
+  
+  // add a CC event
+  if (event->state & GDK_BUTTON1_MASK || event->state & GDK_BUTTON2_MASK) {
+    int step;
+    if ((step = xpix2step(int(event->x))) < 
+	m_pat->get_length() * m_pat->get_steps()) {
+      int value = ypix2value(int(event->y));
+      m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
+    }
+  }
+  
+  // remove a CC event
+  else if (event->state & GDK_BUTTON3_MASK) {
+    int step;
+    if ((step = xpix2step(int(event->x))) < 
+	m_pat->get_length() * m_pat->get_steps()) {
+      m_pat->remove_cc(m_pat->ctrls_find(m_controller), step);
+    }
+  }
+
+  return true;
 }
 
 

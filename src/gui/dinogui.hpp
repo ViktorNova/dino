@@ -135,7 +135,8 @@ private:
   
   Gtk::Dialog* m_dlg_controller_properties;
   Gtk::Entry* m_dlgcont_ent_name;
-  SingleTextCombo m_dlgcont_cmb_controller;
+  //SingleTextCombo m_dlgcont_cmb_controller;
+  Gtk::SpinButton* m_dlgcont_sbn_controller;
   
   static char* cc_descriptions[];
   

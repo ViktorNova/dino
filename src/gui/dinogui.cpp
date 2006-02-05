@@ -43,12 +43,6 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   m_window = w<Gtk::Window>("main_window");
   m_about_dialog = w<Dialog>("dlg_about");
   
-  TrackDialog* tdlg = NULL;
-  tdlg = xml->get_widget_derived("dlg_track_properties", tdlg);
-  tdlg->show_all();
-  m_seq.signal_instruments_changed.
-    connect(bind(mem_fun(*tdlg, &TrackDialog::update_ports), &m_seq));
-  
   init_pattern_editor();
   init_sequence_editor();
   init_info_editor();

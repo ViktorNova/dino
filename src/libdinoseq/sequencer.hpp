@@ -8,6 +8,8 @@
 #include <sigc++/signal.h>
 #include <jack/jack.h>
 
+#include "debug.hpp"
+
 
 using namespace std;
 
@@ -113,6 +115,10 @@ namespace Dino {
     static void jack_port_registration_callback_(jack_port_id_t port, int m,
 						 void* arg) {
       static_cast<Sequencer*>(arg)->jack_port_registration_callback(port, m);
+    }
+    static void jack_error_function(const char* msg) {
+      using namespace Dino;
+      dbg0<<"JACK: "<<msg<<std::endl;
     }
     //@}
     

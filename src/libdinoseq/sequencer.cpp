@@ -153,6 +153,7 @@ namespace Dino {
   
     dbg1<<"Initialising JACK client"<<endl;
   
+    jack_set_error_function(&Sequencer::jack_error_function);
     m_jack_client = jack_client_new(client_name.c_str());
     if (!m_jack_client)
       return false;
@@ -171,7 +172,7 @@ namespace Dino {
       return false;
     
     jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
-  
+    
     if ((err = jack_activate(m_jack_client)) != 0)
       return false;
   

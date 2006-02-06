@@ -16,6 +16,7 @@
 #include "song.hpp"
 
 
+class PatternDialog;
 class TrackDialog;
 
 
@@ -128,14 +129,8 @@ private:
   Gtk::TextView* m_text_info;
   
   TrackDialog* m_dlg_track;
-  //Gtk::Entry* m_dlgtrack_ent_name;
-  //SingleTextCombo m_dlgtrack_cmb_port;
-  //Gtk::SpinButton* m_dlgtrack_sbn_channel;
   
-  Gtk::Dialog* m_dlg_pattern_properties;
-  Gtk::Entry* m_dlgpat_ent_name;
-  Gtk::SpinButton* m_dlgpat_sbn_length;
-  Gtk::SpinButton* m_dlgpat_sbn_steps;
+  PatternDialog* m_dlg_pattern;
   
   Gtk::Dialog* m_dlg_controller_properties;
   Gtk::Entry* m_dlgcont_ent_name;

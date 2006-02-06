@@ -9,6 +9,7 @@ dino_SOURCES = \
 	evilscrolledwindow.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterneditor.cpp patterneditor.hpp \
+	patterndialog.cpp patterndialog.hpp \
 	ruler.cpp ruler.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
 	tempolabel.cpp tempolabel.hpp \

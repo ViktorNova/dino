@@ -10,6 +10,7 @@
 #include "dinogui.hpp"
 #include "evilscrolledwindow.hpp"
 #include "pattern.hpp"
+#include "patterndialog.hpp"
 #include "ruler.hpp"
 #include "song.hpp"
 #include "tempolabel.hpp"
@@ -150,17 +151,17 @@ void DinoGUI::slot_edit_edit_track_properties() {
 
 void DinoGUI::slot_edit_add_pattern() {
   if (m_active_track >= 0) {
-    m_dlgpat_ent_name->set_text("Untitled");
-    m_dlgpat_sbn_length->set_value(4);
-    m_dlgpat_sbn_steps->set_value(4);
-    m_dlg_pattern_properties->show_all();
-    if (m_dlg_pattern_properties->run() == RESPONSE_OK) {
+    m_dlg_pattern->set_name("Untitled");
+    m_dlg_pattern->set_length(4);
+    m_dlg_pattern->set_steps(4);
+    m_dlg_pattern->show_all();
+    if (m_dlg_pattern->run() == RESPONSE_OK) {
       m_song.find_track(m_active_track)->
-	add_pattern(m_dlgpat_ent_name->get_text(),
-		    m_dlgpat_sbn_length->get_value_as_int(),
-		    m_dlgpat_sbn_steps->get_value_as_int());
+	add_pattern(m_dlg_pattern->get_name(),
+		    m_dlg_pattern->get_length(),
+		    m_dlg_pattern->get_steps());
     }
-    m_dlg_pattern_properties->hide();
+    m_dlg_pattern->hide();
   }
 }
  
@@ -180,16 +181,16 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
     Track::PatternIterator pat = iter->pat_find(m_active_pattern);
     assert(pat != iter->pat_end());
 
-    m_dlgpat_ent_name->set_text(pat->get_name());
-    m_dlgpat_sbn_length->set_value(pat->get_length());
-    m_dlgpat_sbn_steps->set_value(pat->get_steps());
+    m_dlg_pattern->set_name(pat->get_name());
+    m_dlg_pattern->set_length(pat->get_length());
+    m_dlg_pattern->set_steps(pat->get_steps());
 
-    m_dlg_pattern_properties->show_all();
-    if (m_dlg_pattern_properties->run() == RESPONSE_OK) {
+    m_dlg_pattern->show_all();
+    if (m_dlg_pattern->run() == RESPONSE_OK) {
       // XXX actually change the pattern properties here
-      pat->set_name(m_dlgpat_ent_name->get_text());
+      pat->set_name(m_dlg_pattern->get_name());
     }
-    m_dlg_pattern_properties->hide();
+    m_dlg_pattern->hide();
   }
 }
 
@@ -449,10 +450,8 @@ void DinoGUI::init_pattern_editor() {
   m_song.signal_track_removed.connect(hide(update_t_combo));
   
   // setup the pattern properties dialog
-  m_dlg_pattern_properties = w<Dialog>("dlg_pattern_properties");
-  m_dlgpat_ent_name = w<Entry>("dlgpat_ent_name");
-  m_dlgpat_sbn_length = w<SpinButton>("dlgpat_sbn_length");
-  m_dlgpat_sbn_steps = w<SpinButton>("dlgpat_sbn_steps");
+  m_dlg_pattern = m_xml->get_widget_derived("dlg_pattern_properties", 
+					    m_dlg_pattern);
 
   // setup the controller properties dialog
   m_dlg_controller_properties = w<Dialog>("dlg_controller_properties");

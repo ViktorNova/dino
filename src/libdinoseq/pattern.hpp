@@ -146,6 +146,10 @@ namespace Dino {
     //@{
     /** Set the name of this pattern. */
     void set_name(const string& name);
+    /** Change the length in beats. */
+    void set_length(unsigned int length);
+    /** Change the number of steps per beat. */
+    void set_steps(unsigned int steps);
     /** Add a note at the given step with the given key, velocity, and length
 	(in steps). */
     void add_note(unsigned step, int key, int velocity, int length);
@@ -235,10 +239,6 @@ namespace Dino {
     std::vector<Controller*>* m_controllers;
     
     mutable bool m_dirty;
-  
-    mutable unsigned long m_last_beat;
-    mutable unsigned long m_last_tick;
-    mutable bool m_already_returned;
   
     // dirty rect
     int m_min_step, m_min_note, m_max_step, m_max_note;

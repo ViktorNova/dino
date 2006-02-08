@@ -159,6 +159,18 @@ namespace Dino {
   }
 
 
+  void Pattern::set_length(unsigned int length) {
+    assert(length > 0);
+    // XXX Implement this!
+  }
+
+
+  void Pattern::set_steps(unsigned int steps) {
+    assert(steps > 0);
+    // XXX Implement this!
+  }
+
+
   /** This function tries to add a new note with the given parameters. If 
       there is another note starting at the same step and with the same value,
       the old note will be deleted. If there is a note that is playing at that

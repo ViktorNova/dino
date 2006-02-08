@@ -36,12 +36,12 @@ void CCEditor::set_controller(Dino::Pattern* pat, unsigned controller) {
   if (m_pat) {
     set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width,
 		     -1);
-    queue_draw();
     slot<void> draw = mem_fun(*this, &CCEditor::queue_draw);
     m_pat->signal_cc_added.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
     m_pat->signal_cc_changed.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
     m_pat->signal_cc_removed.connect(sigc::hide(sigc::hide(draw)));
   }
+  queue_draw();
 }
 
 

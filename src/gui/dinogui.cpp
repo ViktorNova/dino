@@ -211,12 +211,17 @@ void DinoGUI::slot_edit_add_controller() {
 
 
 void DinoGUI::slot_edit_delete_controller() {
-  // XXX this must be implemented
+  if (m_active_track >= 0 && m_active_pattern >= 0 && 
+      m_active_controller >= 0) {
+    Pattern* pat = &*m_song.find_track(m_active_track)->
+      pat_find(m_active_pattern);
+    pat->remove_controller(pat->ctrls_find(m_active_controller));
+    set_active_controller(-1);
+  }
 }
 
 
 void DinoGUI::slot_edit_set_song_length(int song_length) {
-  // XXX this must be properly implemented
   m_song.set_length(song_length);
 }
 
@@ -253,7 +258,6 @@ void DinoGUI::reset_gui() {
   update_track_combo();
   update_pattern_combo();
   update_controller_combo();
-  update_editor_widgets();
   update_track_widgets();
   m_ent_title->set_text(m_song.get_title());
   m_ent_author->set_text(m_song.get_author());
@@ -343,7 +347,6 @@ void DinoGUI::update_pattern_combo() {
 
 
 void DinoGUI::update_controller_combo() {
-  // XXX this must be implemented
   if (m_active_track >= 0 && m_active_pattern >= 0) {
     Track::PatternIterator p_iter = 
       m_song.find_track(m_active_track)->pat_find(m_active_pattern);
@@ -355,21 +358,6 @@ void DinoGUI::update_controller_combo() {
       m_cmb_controller.append_text(string(tmp), iter->get_param());
     }
   }
-}
-
-
-void DinoGUI::update_editor_widgets() {
-
-}
-
-
-void DinoGUI::slot_cc_number_changed() {
-  // XXX what is this?
-}
-
-
-void DinoGUI::slot_cc_editor_size_changed() {
-  // XXX should be removed or changed
 }
 
 
@@ -683,9 +671,11 @@ void DinoGUI::set_active_pattern(int active_pattern) {
 
 
 void DinoGUI::set_active_controller(int active_controller) {
-  if (m_active_track >= 0 && m_active_pattern >= 0 && active_controller >= 0) {
+  m_active_controller = active_controller;
+  if (m_active_track >= 0 && m_active_pattern >= 0 && 
+      m_active_controller >= 0) {
     m_cce.set_controller(&*(m_song.find_track(m_active_track)->
-			    pat_find(m_active_pattern)), active_controller);
+			    pat_find(m_active_pattern)), m_active_controller);
   }
   else
     m_cce.set_controller(NULL, 0);

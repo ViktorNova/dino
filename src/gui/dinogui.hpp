@@ -77,7 +77,6 @@ private:
   void update_track_combo();
   void update_pattern_combo();
   void update_controller_combo();
-  void update_editor_widgets();
   void init_pattern_editor();
   void init_sequence_editor();
   void init_info_editor();
@@ -85,8 +84,6 @@ private:
   bool init_lash(int argc, char** argv);
   
   // internal callbacks
-  void slot_cc_number_changed();
-  void slot_cc_editor_size_changed();
   bool slot_check_ladcca_events();
   void set_active_track(int active_track);
   void set_active_pattern(int active_pattern);
@@ -118,8 +115,6 @@ private:
   sigc::connection m_conn_pat_removed;
   sigc::connection m_conn_cont_added;
   sigc::connection m_conn_cont_removed;
-  //SpinButton* m_sb_cc_number;
-  //Label* m_lb_cc_description;
   Gtk::SpinButton* m_sb_cc_editor_size;
   Ruler m_sequence_ruler;
   PatternRuler m_pattern_ruler_1;
@@ -134,7 +129,6 @@ private:
   
   Gtk::Dialog* m_dlg_controller_properties;
   Gtk::Entry* m_dlgcont_ent_name;
-  //SingleTextCombo m_dlgcont_cmb_controller;
   Gtk::SpinButton* m_dlgcont_sbn_controller;
   
   static char* cc_descriptions[];

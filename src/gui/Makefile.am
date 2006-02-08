@@ -5,6 +5,7 @@ bin_PROGRAMS = dino
 dino_SOURCES = \
 	main.cpp \
 	cceditor.cpp cceditor.hpp \
+	controllerdialog.cpp controllerdialog.hpp \
 	dinogui.cpp dinogui.hpp \
 	evilscrolledwindow.hpp \
 	octavelabel.cpp octavelabel.hpp \

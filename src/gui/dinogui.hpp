@@ -16,6 +16,7 @@
 #include "song.hpp"
 
 
+class ControllerDialog;
 class PatternDialog;
 class TrackDialog;
 
@@ -124,12 +125,8 @@ private:
   Gtk::TextView* m_text_info;
   
   TrackDialog* m_dlg_track;
-  
   PatternDialog* m_dlg_pattern;
-  
-  Gtk::Dialog* m_dlg_controller_properties;
-  Gtk::Entry* m_dlgcont_ent_name;
-  Gtk::SpinButton* m_dlgcont_sbn_controller;
+  ControllerDialog* m_dlg_controller;
   
   static char* cc_descriptions[];
   

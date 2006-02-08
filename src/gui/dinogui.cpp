@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "cceditor.hpp"
+#include "controllerdialog.hpp"
 #include "deleter.hpp"
 #include "dinogui.hpp"
 #include "evilscrolledwindow.hpp"
@@ -156,10 +157,11 @@ void DinoGUI::slot_edit_add_pattern() {
     m_dlg_pattern->set_steps(4);
     m_dlg_pattern->show_all();
     if (m_dlg_pattern->run() == RESPONSE_OK) {
-      m_song.find_track(m_active_track)->
+      Track::PatternIterator iter = m_song.find_track(m_active_track)->
 	add_pattern(m_dlg_pattern->get_name(),
 		    m_dlg_pattern->get_length(),
 		    m_dlg_pattern->get_steps());
+      m_cmb_pattern.set_active_id(iter->get_id());
     }
     m_dlg_pattern->hide();
   }
@@ -197,15 +199,16 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
 
 void DinoGUI::slot_edit_add_controller() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
-    m_dlgcont_ent_name->set_text("Untitled");
-    m_dlgcont_sbn_controller->set_value(1);
-    m_dlg_controller_properties->show_all();
-    if (m_dlg_controller_properties->run() == RESPONSE_OK) {
-      m_song.find_track(m_active_track)->pat_find(m_active_pattern)->
-	add_controller(m_dlgcont_sbn_controller->get_value_as_int(),
-		       0, 127);
+    m_dlg_controller->set_name("Untitled");
+    m_dlg_controller->set_controller(1);
+    m_dlg_controller->show_all();
+    if (m_dlg_controller->run() == RESPONSE_OK) {
+      Pattern::ControllerIterator iter;
+      iter = m_song.find_track(m_active_track)->pat_find(m_active_pattern)->
+	add_controller(m_dlg_controller->get_controller(), 0, 127);
+      m_cmb_controller.set_active_id(iter->get_param());
     }
-    m_dlg_controller_properties->hide();
+    m_dlg_controller->hide();
   }
 }
 
@@ -343,21 +346,31 @@ void DinoGUI::update_pattern_combo() {
     m_cmb_pattern.append_text("No patterns");
   m_pattern_combo_connection.unblock();
   m_cmb_pattern.set_active_id(newActive);
+  m_cmb_pattern.set_sensitive(m_active_track != -1);
 }
 
 
 void DinoGUI::update_controller_combo() {
-  if (m_active_track >= 0 && m_active_pattern >= 0) {
-    Track::PatternIterator p_iter = 
-      m_song.find_track(m_active_track)->pat_find(m_active_pattern);
-    m_cmb_controller.clear();
-    Pattern::ControllerIterator iter;
-    char tmp[10];
-    for (iter = p_iter->ctrls_begin(); iter != p_iter->ctrls_end(); ++iter) {
-      sprintf(tmp, "%03lu ", iter->get_param());
-      m_cmb_controller.append_text(string(tmp), iter->get_param());
+  m_cmb_controller.clear();
+  int new_active = m_active_controller;
+  Song::TrackIterator t_iter = m_song.find_track(m_active_track);
+  if (t_iter != m_song.tracks_end()) {
+    Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
+    if (p_iter != t_iter->pat_end()) {
+      Pattern::ControllerIterator iter;
+      char tmp[10];
+      for (iter = p_iter->ctrls_begin(); iter != p_iter->ctrls_end(); ++iter) {
+	sprintf(tmp, "%03lu ", iter->get_param());
+	m_cmb_controller.append_text(string(tmp), iter->get_param());
+	if (new_active == -1)
+	  new_active = iter->get_param();
+      }
     }
   }
+  if (new_active == -1)
+    m_cmb_controller.append_text("No controllers");
+  m_cmb_controller.set_active_id(new_active);
+  m_cmb_controller.set_sensitive(m_active_pattern != -1);
 }
 
 
@@ -437,14 +450,11 @@ void DinoGUI::init_pattern_editor() {
   m_song.signal_track_added.connect(hide(update_t_combo));
   m_song.signal_track_removed.connect(hide(update_t_combo));
   
-  // setup the pattern properties dialog
+  // get the dialogs
   m_dlg_pattern = m_xml->get_widget_derived("dlg_pattern_properties", 
 					    m_dlg_pattern);
-
-  // setup the controller properties dialog
-  m_dlg_controller_properties = w<Dialog>("dlg_controller_properties");
-  m_dlgcont_ent_name = w<Entry>("dlgcont_ent_name");
-  m_dlgcont_sbn_controller = w<SpinButton>("dlgcont_sbn_controller");
+  m_dlg_controller = m_xml->get_widget_derived("dlg_controller_properties",
+					       m_dlg_controller);
 }
 
 

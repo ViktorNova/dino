@@ -287,7 +287,8 @@ namespace Dino {
 
 
   /** Creates and adds a new pattern in this track with the given parameters.*/
-  int Track::add_pattern(const string& name, int length, int steps) {
+  Track::PatternIterator Track::add_pattern(const string& name, int length, 
+					    int steps) {
     /* This does not actually need to be threadsafe since the sequencer
        never accesses the patterns through the map, only through the 
        sequence entries. */
@@ -298,7 +299,7 @@ namespace Dino {
       id = 1;
     m_patterns[id] = new Pattern(id, name, length, steps);
     signal_pattern_added(id);
-    return id;
+    return PatternIterator(m_patterns.find(id));
   }
 
   

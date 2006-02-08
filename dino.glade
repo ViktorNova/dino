@@ -334,6 +334,7 @@
 		  <child>
 		    <widget class="GtkToolButton" id="tbn_delete_track">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="tooltip" translatable="yes">Delete the active track</property>
 		      <property name="label" translatable="yes">Delete</property>
 		      <property name="use_underline">True</property>
@@ -351,6 +352,7 @@
 		  <child>
 		    <widget class="GtkToolButton" id="tbn_duplicate_track">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="tooltip" translatable="yes">Duplicate the active track</property>
 		      <property name="label" translatable="yes">Duplicate</property>
 		      <property name="use_underline">True</property>
@@ -368,6 +370,7 @@
 		  <child>
 		    <widget class="GtkToolButton" id="tbn_edit_track_properties">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="tooltip" translatable="yes">Set the properties for the active track</property>
 		      <property name="label" translatable="yes">Properties</property>
 		      <property name="use_underline">True</property>
@@ -696,6 +699,7 @@
 		  <child>
 		    <widget class="GtkToolButton" id="tbn_add_pattern">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="tooltip" translatable="yes">Add a new pattern</property>
 		      <property name="label" translatable="yes">Add</property>
 		      <property name="use_underline">True</property>
@@ -713,6 +717,7 @@
 		  <child>
 		    <widget class="GtkToolButton" id="tbn_delete_pattern">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="tooltip" translatable="yes">Delete the active pattern</property>
 		      <property name="label" translatable="yes">Delete</property>
 		      <property name="use_underline">True</property>
@@ -730,6 +735,7 @@
 		  <child>
 		    <widget class="GtkToolButton" id="tbn_duplicate_pattern">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="tooltip" translatable="yes">Duplicate the active pattern</property>
 		      <property name="label" translatable="yes">Duplicate</property>
 		      <property name="use_underline">True</property>
@@ -747,6 +753,74 @@
 		  <child>
 		    <widget class="GtkToolButton" id="tbn_set_pattern_properties">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
+		      <property name="tooltip" translatable="yes">Change the properties for the active pattern</property>
+		      <property name="label" translatable="yes">Properties</property>
+		      <property name="use_underline">True</property>
+		      <property name="stock_id">gtk-properties</property>
+		      <property name="visible_horizontal">True</property>
+		      <property name="visible_vertical">True</property>
+		      <property name="is_important">False</property>
+		    </widget>
+		    <packing>
+		      <property name="expand">False</property>
+		      <property name="homogeneous">True</property>
+		    </packing>
+		  </child>
+
+		  <child>
+		    <widget class="GtkSeparatorToolItem" id="separatortoolitem3">
+		      <property name="visible">True</property>
+		      <property name="draw">True</property>
+		      <property name="visible_horizontal">True</property>
+		      <property name="visible_vertical">True</property>
+		    </widget>
+		    <packing>
+		      <property name="expand">False</property>
+		      <property name="homogeneous">False</property>
+		    </packing>
+		  </child>
+
+		  <child>
+		    <widget class="GtkToolButton" id="tbn_add_controller">
+		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
+		      <property name="tooltip" translatable="yes">Add a new pattern</property>
+		      <property name="label" translatable="yes">Add</property>
+		      <property name="use_underline">True</property>
+		      <property name="stock_id">gtk-add</property>
+		      <property name="visible_horizontal">True</property>
+		      <property name="visible_vertical">True</property>
+		      <property name="is_important">False</property>
+		    </widget>
+		    <packing>
+		      <property name="expand">False</property>
+		      <property name="homogeneous">True</property>
+		    </packing>
+		  </child>
+
+		  <child>
+		    <widget class="GtkToolButton" id="tbn_delete_controller">
+		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
+		      <property name="tooltip" translatable="yes">Delete the active pattern</property>
+		      <property name="label" translatable="yes">Delete</property>
+		      <property name="use_underline">True</property>
+		      <property name="stock_id">gtk-delete</property>
+		      <property name="visible_horizontal">True</property>
+		      <property name="visible_vertical">True</property>
+		      <property name="is_important">False</property>
+		    </widget>
+		    <packing>
+		      <property name="expand">False</property>
+		      <property name="homogeneous">True</property>
+		    </packing>
+		  </child>
+
+		  <child>
+		    <widget class="GtkToolButton" id="tbn_set_controller_properties">
+		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="tooltip" translatable="yes">Change the properties for the active pattern</property>
 		      <property name="label" translatable="yes">Properties</property>
 		      <property name="use_underline">True</property>
@@ -1537,7 +1611,6 @@
 </widget>
 
 <widget class="GtkDialog" id="dlg_track_properties">
-  <property name="visible">False</property>
   <property name="title" translatable="yes">Track properties</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>

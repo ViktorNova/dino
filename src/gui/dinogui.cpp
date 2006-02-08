@@ -219,7 +219,6 @@ void DinoGUI::slot_edit_delete_controller() {
     Pattern* pat = &*m_song.find_track(m_active_track)->
       pat_find(m_active_pattern);
     pat->remove_controller(pat->ctrls_find(m_active_controller));
-    set_active_controller(-1);
   }
 }
 
@@ -330,7 +329,8 @@ void DinoGUI::update_pattern_combo() {
   int trackID = m_cmb_track.get_active_id();
   if (trackID >= 0) {
     Song::ConstTrackIterator trk = m_song.find_track(trackID);
-    //m_cmb_pattern.clear();
+    if (trk->pat_find(newActive) == trk->pat_end())
+      newActive = -1;
     Track::ConstPatternIterator iter;
     char tmp[10];
     for (iter = trk->pat_begin(); iter != trk->pat_end(); ++iter) {
@@ -346,7 +346,6 @@ void DinoGUI::update_pattern_combo() {
     m_cmb_pattern.append_text("No patterns");
   m_pattern_combo_connection.unblock();
   m_cmb_pattern.set_active_id(newActive);
-  m_cmb_pattern.set_sensitive(m_active_track != -1);
 }
 
 
@@ -358,6 +357,8 @@ void DinoGUI::update_controller_combo() {
     Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
     if (p_iter != t_iter->pat_end()) {
       Pattern::ControllerIterator iter;
+      if (p_iter->ctrls_find(new_active) == p_iter->ctrls_end())
+	new_active = -1;
       char tmp[10];
       for (iter = p_iter->ctrls_begin(); iter != p_iter->ctrls_end(); ++iter) {
 	sprintf(tmp, "%03lu ", iter->get_param());
@@ -370,7 +371,6 @@ void DinoGUI::update_controller_combo() {
   if (new_active == -1)
     m_cmb_controller.append_text("No controllers");
   m_cmb_controller.set_active_id(new_active);
-  m_cmb_controller.set_sensitive(m_active_pattern != -1);
 }
 
 
@@ -552,8 +552,13 @@ void DinoGUI::init_menus() {
   
   // and toolbuttons
   map<string, void (DinoGUI::*)(void)> toolSlots;
+  toolSlots["tbn_add_controller"] = &DinoGUI::slot_edit_add_controller;
+  toolSlots["tbn_delete_controller"] = &DinoGUI::slot_edit_delete_controller;
   toolSlots["tbn_add_pattern"] = &DinoGUI::slot_edit_add_pattern;
   toolSlots["tbn_delete_pattern"] = &DinoGUI::slot_edit_delete_pattern;
+  toolSlots["tbn_duplicate_pattern"] = &DinoGUI::slot_edit_delete_pattern;
+  toolSlots["tbn_set_pattern_properties"] = 
+    &DinoGUI::slot_edit_edit_pattern_properties;
   toolSlots["tbn_add_track"] = &DinoGUI::slot_edit_add_track;
   toolSlots["tbn_delete_track"] = &DinoGUI::slot_edit_delete_track;
   toolSlots["tbn_edit_track_properties"] = 
@@ -562,7 +567,8 @@ void DinoGUI::init_menus() {
   toolSlots["tbn_stop"] = &DinoGUI::slot_transport_stop;
   toolSlots["tbn_go_to_start"] = &DinoGUI::slot_transport_go_to_start;
   for (iter = toolSlots.begin(); iter != toolSlots.end(); ++iter) {
-    w<ToolButton>(iter->first)->signal_clicked().
+    m_toolbuttons[iter->first] = w<ToolButton>(iter->first);
+    m_toolbuttons[iter->first]->signal_clicked().
       connect(mem_fun(*this, iter->second));
   }
 }
@@ -648,6 +654,11 @@ void DinoGUI::set_active_track(int active_track) {
     }
     set_active_pattern(-1);
     signal_active_track_changed(m_active_track);
+    bool active = (m_active_track != -1);
+    m_cmb_pattern.set_sensitive(active);
+    m_toolbuttons["tbn_delete_track"]->set_sensitive(active);
+    m_toolbuttons["tbn_edit_track_properties"]->set_sensitive(active);
+    m_toolbuttons["tbn_add_pattern"]->set_sensitive(active);
   }
 }
 
@@ -676,6 +687,11 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     m_cce.set_controller(NULL, 0);
     set_active_controller(-1);
     update_controller_combo();
+    bool active = (m_active_pattern != -1);
+    m_cmb_controller.set_sensitive(active);
+    m_toolbuttons["tbn_delete_pattern"]->set_sensitive(active);
+    m_toolbuttons["tbn_set_pattern_properties"]->set_sensitive(active);
+    m_toolbuttons["tbn_add_controller"]->set_sensitive(active);
   }
 }
 
@@ -689,6 +705,8 @@ void DinoGUI::set_active_controller(int active_controller) {
   }
   else
     m_cce.set_controller(NULL, 0);
+  bool active = (m_active_controller != -1);
+  m_toolbuttons["tbn_delete_controller"]->set_sensitive(active);
 }
 
 

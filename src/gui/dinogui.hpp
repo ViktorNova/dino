@@ -110,6 +110,7 @@ private:
   SingleTextCombo m_cmb_track;
   SingleTextCombo m_cmb_pattern;
   SingleTextCombo m_cmb_controller;
+  std::map<std::string, Gtk::ToolButton*> m_toolbuttons;
   sigc::connection m_track_combo_connection;
   sigc::connection m_pattern_combo_connection;
   sigc::connection m_conn_pat_added;

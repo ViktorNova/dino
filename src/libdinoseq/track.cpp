@@ -312,7 +312,7 @@ namespace Dino {
     if (iter != m_patterns.end()) {
       
       for (unsigned int i = 0; i < m_sequence->size(); ++i) {
-	if ((*m_sequence)[i] && (*m_sequence)[i]->pattern == iter->second)
+	if ((*m_sequence)[i] != 0 && (*m_sequence)[i]->pattern == iter->second)
 	  remove_sequence_entry(seq_find(i));
       }
       

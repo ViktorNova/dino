@@ -20,6 +20,8 @@ TrackDialog::TrackDialog(BaseObjectType* obj, const RefPtr<Xml>& xml)
   
   manage(m_ent_name);
   manage(m_sbn_channel);
+  
+  update_ports();
 }
 
 
@@ -49,10 +51,12 @@ void TrackDialog::set_channel(int channel) {
 
 
 void TrackDialog::update_ports(const Dino::Sequencer* seq) {
-  vector<Sequencer::InstrumentInfo> info = seq->get_instruments();
   m_cmb_port.clear();
   m_cmb_port.append_text("None", -1);
-  for (size_t i = 0; i < info.size(); ++i) {
-    m_cmb_port.append_text(info[i].name, i);
+  m_cmb_port.set_active_id(-1);
+  if (seq != 0) {
+    vector<Sequencer::InstrumentInfo> info = seq->get_instruments();
+    for (size_t i = 0; i < info.size(); ++i)
+      m_cmb_port.append_text(info[i].name, i);
   }
 }

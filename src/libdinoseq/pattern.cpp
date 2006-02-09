@@ -64,8 +64,8 @@ namespace Dino {
     else {
       for (int i = m_note->get_step() + 1;
 	   i < m_pattern->get_length() * m_pattern->get_steps(); ++i) {
-	if ((*m_pattern->m_note_ons)[i]) {
-	  m_note = (*m_pattern->m_note_ons)[i]->get_note();
+	if ((*m_pattern->m_sd->ons)[i]) {
+	  m_note = (*m_pattern->m_sd->ons)[i]->get_note();
 	  return *this;
 	}
       }
@@ -79,19 +79,21 @@ namespace Dino {
   Pattern::Pattern(int id, const string& name, int length, int steps) 
     : m_id(id),
       m_name(name),
-      m_length(length),
-      m_steps(steps),
-      m_note_ons(new NoteEventList(length * steps)),
-      m_note_offs(new NoteEventList(length * steps)),
+      //m_length(length),
+      //m_steps(steps),
+      //m_note_ons(new NoteEventList(length * steps)),
+      //m_note_offs(new NoteEventList(length * steps)),
       m_controllers(new vector<Controller*>()),
+      m_sd(new SeqData(new NoteEventList(length * steps),
+		       new NoteEventList(length * steps), length, steps)),
       m_dirty(false) {
     
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
     
-    assert(m_steps > 0);
-    assert(m_length > 0);
+    assert(m_sd->steps > 0);
+    assert(m_sd->length > 0);
     
-    m_min_step = m_length * m_steps;
+    m_min_step = m_sd->length * m_sd->steps;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
@@ -103,7 +105,7 @@ namespace Dino {
     NoteEventList::iterator iter;
     
     // delete all note on events
-    for (iter = m_note_ons->begin(); iter != m_note_ons->end(); ++iter) {
+    for (iter = m_sd->ons->begin(); iter != m_sd->ons->end(); ++iter) {
       NoteEvent* event = *iter;
       while (event) {
 	NoteEvent* tmp = event;
@@ -111,10 +113,9 @@ namespace Dino {
 	event = static_cast<NoteEvent*>(tmp->get_next());
       }
     }
-    delete m_note_ons;
     
     // delete all note off events
-    for (iter = m_note_offs->begin(); iter != m_note_offs->end(); ++iter) {
+    for (iter = m_sd->offs->begin(); iter != m_sd->offs->end(); ++iter) {
       NoteEvent* event = *iter;
       while (event) {
 	NoteEvent* tmp = event;
@@ -122,13 +123,13 @@ namespace Dino {
 	event = static_cast<NoteEvent*>(tmp->get_next());
       }
     }
-    delete m_note_ons;
     
     // delete the controllers
     for (unsigned i = 0; i < m_controllers->size(); ++i)
       delete (*m_controllers)[i];
     delete m_controllers;
-    
+
+    delete m_sd;
   }
   
   
@@ -143,9 +144,9 @@ namespace Dino {
 
 
   Pattern::NoteIterator Pattern::notes_begin() const {
-    for (unsigned i = 0; i < m_length * m_steps; ++i) {
-      if ((*m_note_ons)[i])
-	return NoteIterator(this, (*m_note_ons)[i]->get_note());
+    for (unsigned i = 0; i < m_sd->length * m_sd->steps; ++i) {
+      if ((*m_sd->ons)[i])
+	return NoteIterator(this, (*m_sd->ons)[i]->get_note());
     }
     return notes_end();
   }
@@ -170,40 +171,37 @@ namespace Dino {
     assert(length > 0);
     
     // no change
-    if (length == m_length)
+    if (length == m_sd->length)
       return;
     
     // the new length is shorter, we may have to delete and resize notes
-    if (length < m_length) {
-      for (unsigned i = length * m_steps; i < m_length * m_steps; ++i) {
-	while ((*m_note_ons)[i] != 0)
-	  delete_note((*m_note_ons)[i]->get_note());
+    if (length < m_sd->length) {
+      for (unsigned i = length * m_sd->steps; 
+	   i < m_sd->length * m_sd->steps; ++i) {
+	while ((*m_sd->ons)[i] != 0)
+	  delete_note((*m_sd->ons)[i]->get_note());
       }
-      for (unsigned i = length * m_steps; i < m_length * m_steps; ++i) {
-	while ((*m_note_offs)[i] != 0) {
-	  Note* note = (*m_note_offs)[i]->get_note();
-	  resize_note(note, length * m_steps - note->get_step());
+      for (unsigned i = length * m_sd->steps; 
+	   i < m_sd->length * m_sd->steps; ++i) {
+	while ((*m_sd->offs)[i] != 0) {
+	  Note* note = (*m_sd->offs)[i]->get_note();
+	  resize_note(note, length * m_sd->steps - note->get_step());
 	}
       }
     }
     
-    NoteEventList* new_note_ons = new NoteEventList(*m_note_ons);
-    NoteEventList* new_note_offs = new NoteEventList(*m_note_offs);
-    new_note_ons->resize(length * m_steps);
-    new_note_offs->resize(length * m_steps);
+    NoteEventList* new_note_ons = new NoteEventList(*m_sd->ons);
+    NoteEventList* new_note_offs = new NoteEventList(*m_sd->offs);
+    new_note_ons->resize(length * m_sd->steps);
+    new_note_offs->resize(length * m_sd->steps);
     
-    // XXX This is not really threadsafe
-    NoteEventList* old_note_ons = m_note_ons;
-    NoteEventList* old_note_offs = m_note_offs;
-    m_length = length;
-    m_note_ons = new_note_ons;
-    m_note_offs = new_note_offs;
-    Deleter::queue(old_note_ons);
-    Deleter::queue(old_note_offs);
-    
+    SeqData* old_sd = m_sd;
+    m_sd = new SeqData(new_note_ons, new_note_offs, length, old_sd->steps);
+    Deleter::queue(old_sd);
+
     // XXX resize the controllers too!
     
-    signal_length_changed(m_length);
+    signal_length_changed(m_sd->length);
   }
 
 
@@ -211,26 +209,21 @@ namespace Dino {
     assert(steps > 0);
     // XXX Implement this!
     
-    if (steps == m_steps)
+    if (steps == m_sd->steps)
       return;
     
-    NoteEventList* new_note_ons = new NoteEventList(steps * m_length);
-    NoteEventList* new_note_offs = new NoteEventList(steps * m_length);
+    NoteEventList* new_note_ons = new NoteEventList(steps * m_sd->length);
+    NoteEventList* new_note_offs = new NoteEventList(steps * m_sd->length);
     (void)new_note_ons;
     (void)new_note_offs;
     
-    // XXX This is not really threadsafe
-    NoteEventList* old_note_ons = m_note_ons;
-    NoteEventList* old_note_offs = m_note_offs;
-    m_steps = steps;
-    m_note_ons = new_note_ons;
-    m_note_offs = new_note_offs;
-    Deleter::queue(old_note_ons);
-    Deleter::queue(old_note_offs);
+    SeqData* old_sd = m_sd;
+    m_sd = new SeqData(new_note_ons, new_note_offs, old_sd->length, steps);
+    Deleter::queue(old_sd);
     
     // XXX resize the controllers too!
 
-    signal_length_changed(m_length);
+    signal_steps_changed(m_sd->length);
     
   }
 
@@ -243,10 +236,10 @@ namespace Dino {
   */
   void Pattern::add_note(unsigned step, int key, int velocity, 
 			 int note_length) {
-    assert(step < m_length * m_steps);
+    assert(step < m_sd->length * m_sd->steps);
     assert(key < 128);
     assert(velocity < 128);
-    assert(step + note_length <= m_length * m_steps);
+    assert(step + note_length <= m_sd->length * m_sd->steps);
     
     // check if the same key is already playing at this step, if so, 
     // shorten it (or delete it if it starts at this step)
@@ -276,16 +269,16 @@ namespace Dino {
     // this must be done in a safe way since the sequencer could be sequencing
     // this pattern right now!
     // let's hope that pointer assignments are atomic...
-    NoteEvent* old_note_off = (*m_note_offs)[step + new_length - 1];
+    NoteEvent* old_note_off = (*m_sd->offs)[step + new_length - 1];
     note_off->set_next(old_note_off);
     if (old_note_off)
       old_note_off->set_previous(note_off);
-    (*m_note_offs)[step + new_length - 1] = note_off;
-    NoteEvent* old_note_on = (*m_note_ons)[step];
+    (*m_sd->offs)[step + new_length - 1] = note_off;
+    NoteEvent* old_note_on = (*m_sd->ons)[step];
     note_on->set_next(old_note_on);
     if (old_note_on)
       old_note_on->set_previous(note_on);
-    (*m_note_ons)[step] = note_on;
+    (*m_sd->ons)[step] = note_on;
     
     signal_note_added(step, key, new_length);
   }
@@ -317,7 +310,7 @@ namespace Dino {
     if (previous)
       previous->set_next(next);
     else
-      (*m_note_offs)[note->m_note_off->get_step()] = next;
+      (*m_sd->offs)[note->m_note_off->get_step()] = next;
     
     // then the note on event
     // must be threadsafe!
@@ -328,7 +321,7 @@ namespace Dino {
     if (previous)
       previous->set_next(next);
     else
-      (*m_note_ons)[note->m_note_on->get_step()] = next;
+      (*m_sd->ons)[note->m_note_on->get_step()] = next;
     
     // delete the note object and queue the events for deletion
     signal_note_removed(note->get_step(), note->get_key());
@@ -341,7 +334,7 @@ namespace Dino {
   int Pattern::resize_note(NoteIterator iterator, int length) {
     assert(iterator);
     assert(iterator.m_pattern == this);
-    assert(iterator->get_step() + length <= m_length * m_steps);
+    assert(iterator->get_step() + length <= m_sd->length * m_sd->steps);
     
     return resize_note(iterator.m_note, length);
   }
@@ -367,16 +360,16 @@ namespace Dino {
     if (previous)
       previous->set_next(next);
     else
-      (*m_note_offs)[note->m_note_off->get_step()] = next;
+      (*m_sd->offs)[note->m_note_off->get_step()] = next;
     
     // insert the note off event at the new position
     // must be threadsafe!
     note->m_note_off->set_step(note->get_step() + new_length - 1);
-    NoteEvent* old_note_off = (*m_note_offs)[note->get_step() + new_length - 1];
+    NoteEvent* old_note_off = (*m_sd->offs)[note->get_step() + new_length - 1];
     note->m_note_off->set_next(old_note_off);
     if (old_note_off)
       old_note_off->set_previous(note->m_note_off);
-    (*m_note_offs)[note->get_step() + new_length - 1] = note->m_note_off;
+    (*m_sd->offs)[note->get_step() + new_length - 1] = note->m_note_off;
     
     signal_note_changed(note->get_step(), note->get_key(),
 			note->get_length());
@@ -413,7 +406,7 @@ namespace Dino {
     // make a copy of the controller vector and insert the new one
     vector<Controller*>* new_vector = new vector<Controller*>(*m_controllers);
     new_vector->insert(new_vector->begin() + i, 
-		       new Controller(name, m_steps * m_length, 
+		       new Controller(name, m_sd->steps * m_sd->length, 
 				      param, min, max));
     
     // delete the old vector
@@ -452,7 +445,7 @@ namespace Dino {
   
   void Pattern::add_cc(ControllerIterator iter, unsigned int step, 
 		       unsigned char value) {
-    assert(step < m_length * m_steps);
+    assert(step < m_sd->length * m_sd->steps);
     const CCEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->set_event(step, value);
     if (!e || e->get_value() != value)
@@ -461,7 +454,7 @@ namespace Dino {
 
 
   void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
-    assert(step < m_length * m_steps);
+    assert(step < m_sd->length * m_sd->steps);
     const CCEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->remove_event(step);
     if (e)
@@ -470,12 +463,12 @@ namespace Dino {
 
   
   int Pattern::get_steps() const {
-    return m_steps;
+    return m_sd->steps;
   }
 
 
   int Pattern::get_length() const {
-    return m_length;
+    return m_sd->length;
   }
   
 
@@ -493,7 +486,7 @@ namespace Dino {
   
   
   void Pattern::reset_dirty_rect() {
-    m_min_step = m_length * m_steps;
+    m_min_step = m_sd->length * m_sd->steps;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
@@ -572,27 +565,31 @@ namespace Dino {
   int Pattern::get_events(double beat, double before_beat,
 			  const MIDIEvent** events, double* beats, 
 			  int room) const {
-    assert(beat < m_length);
-    assert(before_beat <= m_length);
+    // we need a local copy of the SeqData pointer so the other thread
+    // doesn't change it before we are done
+    SeqData* sd = m_sd;
+    
+    assert(beat < sd->length);
+    assert(before_beat <= sd->length);
     
     int list_no = 0;
     double off_d = 0.001;
     unsigned step;
-    for (step = unsigned(ceil(beat * m_steps));
-	 step < before_beat * m_steps; ++step) {
+    for (step = unsigned(ceil(beat * sd->steps));
+	 step < before_beat * sd->steps; ++step) {
       
       // note off events just before this step
-      if (step > 0 && (*m_note_offs)[step-1] && 
-	  m_steps * (beat + off_d) <= step) {
-	events[list_no] = (*m_note_offs)[step - 1];
-	beats[list_no] = step / double(m_steps) - off_d;
+      if (step > 0 && (*sd->offs)[step-1] && 
+	  sd->steps * (beat + off_d) <= step) {
+	events[list_no] = (*sd->offs)[step - 1];
+	beats[list_no] = step / double(sd->steps) - off_d;
 	if (++list_no == room) break;
       }
       
       // note on events on this step
-      if ((*m_note_ons)[step]) {
-	events[list_no] = (*m_note_ons)[step];
-	beats[list_no] = step / double(m_steps);
+      if ((*sd->ons)[step]) {
+	events[list_no] = (*sd->ons)[step];
+	beats[list_no] = step / double(sd->steps);
 	if (++list_no == room) break;
       }
       
@@ -600,7 +597,7 @@ namespace Dino {
       for (unsigned i = 0; i < m_controllers->size(); ++i) {
 	if ((*m_controllers)[i]->get_event(step)) {
 	  events[list_no] = (*m_controllers)[i]->get_event(step);
-	  beats[list_no] = step / double(m_steps);
+	  beats[list_no] = step / double(sd->steps);
 	  if (++list_no == room) break;
 	}
       }
@@ -609,10 +606,10 @@ namespace Dino {
     }
     
     // note off events after the last step
-    if (m_steps * (before_beat + off_d) > step && (*m_note_offs)[step - 1] &&
+    if (sd->steps * (before_beat + off_d) > step && (*sd->offs)[step - 1] &&
 	list_no < room) {
-      events[list_no] = (*m_note_offs)[step - 1];
-      beats[list_no] = step / double(m_steps) - off_d;
+      events[list_no] = (*sd->offs)[step - 1];
+      beats[list_no] = step / double(sd->steps) - off_d;
       ++list_no;
     }
     
@@ -621,12 +618,12 @@ namespace Dino {
   
 
   Pattern::NoteIterator Pattern::find_note(unsigned step, int value) const {
-    assert(step < m_length * m_steps);
+    assert(step < m_sd->length * m_sd->steps);
     assert(value < 128);
     
     // iterate backwards until we find a note on event
     for (int i = step; i >= 0; --i) {
-      NoteEvent* note_on = (*m_note_ons)[i];
+      NoteEvent* note_on = (*m_sd->ons)[i];
       
       // look for a note on event with the right key
       while (note_on) {
@@ -668,7 +665,7 @@ namespace Dino {
   Pattern::NoteIterator Pattern::find_note_on(unsigned start, unsigned end, 
 					      unsigned char key) {
     for (unsigned i = start; i < end; ++i) {
-      NoteEvent* note_on = (*m_note_ons)[i];
+      NoteEvent* note_on = (*m_sd->ons)[i];
       while (note_on) {
 	if (note_on->get_key() == key)
 	  return NoteIterator(this, note_on->get_note());

@@ -223,6 +223,8 @@ namespace Dino {
     Pattern& operator=(const Pattern&) { return *this; }
     
     NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
+    void delete_note(Note* note);
+    int resize_note(Note* note, int length);
     
     int m_id;
     /** The name of the pattern */
@@ -232,9 +234,9 @@ namespace Dino {
     /** Number of steps per beat */
     unsigned int m_steps;
     /** The note on events in the pattern */
-    NoteEventList m_note_ons;
+    NoteEventList* m_note_ons;
     /** The note off events in the pattern */
-    NoteEventList m_note_offs;
+    NoteEventList* m_note_offs;
     /** The control change event lists */
     std::vector<Controller*>* m_controllers;
     

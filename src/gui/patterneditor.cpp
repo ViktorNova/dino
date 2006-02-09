@@ -71,6 +71,8 @@ void PatternEditor::set_pattern(Pattern* pattern) {
 	connect(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw))));
       m_pat->signal_note_changed.
 	connect(sigc::hide(sigc::hide(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)))));
+      m_pat->signal_length_changed.connect(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)));
+      m_pat->signal_steps_changed.connect(sigc::hide(mem_fun(*this, &PatternEditor::queue_draw)));
       set_size_request(m_pat->get_length() * s * m_col_width + 1, 
 		       m_max_note * m_row_height + 1);
       queue_draw();

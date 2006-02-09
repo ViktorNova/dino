@@ -64,8 +64,8 @@ namespace Dino {
     else {
       for (int i = m_note->get_step() + 1;
 	   i < m_pattern->get_length() * m_pattern->get_steps(); ++i) {
-	if (m_pattern->m_note_ons[i]) {
-	  m_note = m_pattern->m_note_ons[i]->get_note();
+	if ((*m_pattern->m_note_ons)[i]) {
+	  m_note = (*m_pattern->m_note_ons)[i]->get_note();
 	  return *this;
 	}
       }
@@ -81,8 +81,8 @@ namespace Dino {
       m_name(name),
       m_length(length),
       m_steps(steps),
-      m_note_ons(length * steps),
-      m_note_offs(length * steps),
+      m_note_ons(new NoteEventList(length * steps)),
+      m_note_offs(new NoteEventList(length * steps)),
       m_controllers(new vector<Controller*>()),
       m_dirty(false) {
     
@@ -101,23 +101,30 @@ namespace Dino {
   Pattern::~Pattern() {
     dbg1<<"Destroying pattern \""<<m_name<<"\""<<endl;
     NoteEventList::iterator iter;
-    for (iter = m_note_ons.begin(); iter != m_note_ons.end(); ++iter) {
-      NoteEvent* event = *iter;
-      while (event) {
-	NoteEvent* tmp = event;
-	delete event;
-	event = static_cast<NoteEvent*>(tmp->get_next());
-      }
-    }
-    for (iter = m_note_offs.begin(); iter != m_note_offs.end(); ++iter) {
-      NoteEvent* event = *iter;
-      while (event) {
-	NoteEvent* tmp = event;
-	delete event;
-	event = static_cast<NoteEvent*>(tmp->get_next());
-      }
-    }
     
+    // delete all note on events
+    for (iter = m_note_ons->begin(); iter != m_note_ons->end(); ++iter) {
+      NoteEvent* event = *iter;
+      while (event) {
+	NoteEvent* tmp = event;
+	delete event;
+	event = static_cast<NoteEvent*>(tmp->get_next());
+      }
+    }
+    delete m_note_ons;
+    
+    // delete all note off events
+    for (iter = m_note_offs->begin(); iter != m_note_offs->end(); ++iter) {
+      NoteEvent* event = *iter;
+      while (event) {
+	NoteEvent* tmp = event;
+	delete event;
+	event = static_cast<NoteEvent*>(tmp->get_next());
+      }
+    }
+    delete m_note_ons;
+    
+    // delete the controllers
     for (unsigned i = 0; i < m_controllers->size(); ++i)
       delete (*m_controllers)[i];
     delete m_controllers;
@@ -137,8 +144,8 @@ namespace Dino {
 
   Pattern::NoteIterator Pattern::notes_begin() const {
     for (unsigned i = 0; i < m_length * m_steps; ++i) {
-      if (m_note_ons[i])
-	return NoteIterator(this, m_note_ons[i]->get_note());
+      if ((*m_note_ons)[i])
+	return NoteIterator(this, (*m_note_ons)[i]->get_note());
     }
     return notes_end();
   }
@@ -162,6 +169,40 @@ namespace Dino {
   void Pattern::set_length(unsigned int length) {
     assert(length > 0);
     // XXX Implement this!
+    
+    // no change
+    if (length == m_length)
+      return;
+    
+    // the new length is shorter, we may have to delete and resize notes
+    if (length < m_length) {
+      for (unsigned i = length * m_steps; i < m_length * m_steps; ++i) {
+	while ((*m_note_ons)[i] != 0)
+	  delete_note((*m_note_ons)[i]->get_note());
+      }
+      for (unsigned i = length * m_steps; i < m_length * m_steps; ++i) {
+	while ((*m_note_offs)[i] != 0) {
+	  Note* note = (*m_note_offs)[i]->get_note();
+	  resize_note(note, length * m_steps - note->get_step());
+	}
+      }
+    }
+    
+    NoteEventList* new_note_ons = new NoteEventList(*m_note_ons);
+    NoteEventList* new_note_offs = new NoteEventList(*m_note_offs);
+    new_note_ons->resize(length * m_steps);
+    new_note_offs->resize(length * m_steps);
+    
+    // XXX This is not really threadsafe
+    NoteEventList* old_note_ons = m_note_ons;
+    NoteEventList* old_note_offs = m_note_offs;
+    m_length = length;
+    m_note_ons = new_note_ons;
+    m_note_offs = new_note_offs;
+    Deleter::queue(old_note_ons);
+    Deleter::queue(old_note_offs);
+    
+    signal_length_changed(m_length);
   }
 
 
@@ -212,16 +253,16 @@ namespace Dino {
     // this must be done in a safe way since the sequencer could be sequencing
     // this pattern right now!
     // let's hope that pointer assignments are atomic...
-    NoteEvent* old_note_off = m_note_offs[step + new_length - 1];
+    NoteEvent* old_note_off = (*m_note_offs)[step + new_length - 1];
     note_off->set_next(old_note_off);
     if (old_note_off)
       old_note_off->set_previous(note_off);
-    m_note_offs[step + new_length - 1] = note_off;
-    NoteEvent* old_note_on = m_note_ons[step];
+    (*m_note_offs)[step + new_length - 1] = note_off;
+    NoteEvent* old_note_on = (*m_note_ons)[step];
     note_on->set_next(old_note_on);
     if (old_note_on)
       old_note_on->set_previous(note_on);
-    m_note_ons[step] = note_on;
+    (*m_note_ons)[step] = note_on;
     
     signal_note_added(step, key, new_length);
   }
@@ -236,7 +277,11 @@ namespace Dino {
     assert(iterator);
     assert(iterator.m_pattern == this);
     
-    Note* note = iterator.m_note;
+    delete_note(iterator.m_note);
+  }
+
+
+  void Pattern::delete_note(Note* note) {
     NoteEvent* previous;
     NoteEvent* next;
     
@@ -249,7 +294,7 @@ namespace Dino {
     if (previous)
       previous->set_next(next);
     else
-      m_note_offs[note->m_note_off->get_step()] = next;
+      (*m_note_offs)[note->m_note_off->get_step()] = next;
     
     // then the note on event
     // must be threadsafe!
@@ -260,14 +305,13 @@ namespace Dino {
     if (previous)
       previous->set_next(next);
     else
-      m_note_ons[note->m_note_on->get_step()] = next;
+      (*m_note_ons)[note->m_note_on->get_step()] = next;
     
     // delete the note object and queue the events for deletion
     signal_note_removed(note->get_step(), note->get_key());
     Deleter::queue(note->m_note_on);
     Deleter::queue(note->m_note_off);
     Deleter::queue(note);
-    
   }
 
 
@@ -276,18 +320,23 @@ namespace Dino {
     assert(iterator.m_pattern == this);
     assert(iterator->get_step() + length <= m_length * m_steps);
     
+    return resize_note(iterator.m_note, length);
+  }
+
+
+  int Pattern::resize_note(Note* note, int length) {
+    
     // check if there is room for a note of the wanted length or if
     // it has to be shortened
     int new_length = length;
     NoteIterator iter;
-    if (iter = find_note_on(iterator->get_step() + 1, 
-			    iterator->get_step() + length, 
-			    iterator->get_key()))
-      new_length = iter->get_step() - iterator->get_step();
+    if (iter = find_note_on(note->get_step() + 1, 
+			    note->get_step() + length, 
+			    note->get_key()))
+      new_length = iter->get_step() - note->get_step();
     
     // remove the note off event
     // must be threadsafe!
-    Note* note = iterator.m_note;
     NoteEvent* previous = note->m_note_off->get_previous();
     NoteEvent* next = static_cast<NoteEvent*>(note->m_note_off->get_next());
     if (next)
@@ -295,21 +344,21 @@ namespace Dino {
     if (previous)
       previous->set_next(next);
     else
-      m_note_offs[note->m_note_off->get_step()] = next;
+      (*m_note_offs)[note->m_note_off->get_step()] = next;
     
     // insert the note off event at the new position
     // must be threadsafe!
     note->m_note_off->set_step(note->get_step() + new_length - 1);
-    NoteEvent* old_note_off = m_note_offs[note->get_step() + new_length - 1];
+    NoteEvent* old_note_off = (*m_note_offs)[note->get_step() + new_length - 1];
     note->m_note_off->set_next(old_note_off);
     if (old_note_off)
       old_note_off->set_previous(note->m_note_off);
-    m_note_offs[iterator->get_step() + new_length - 1] = note->m_note_off;
+    (*m_note_offs)[note->get_step() + new_length - 1] = note->m_note_off;
     
-    signal_note_changed(iterator->get_step(), iterator->get_key(),
-			iterator->get_length());
+    signal_note_changed(note->get_step(), note->get_key(),
+			note->get_length());
     
-    return iterator->get_length();
+    return note->get_length();
   }
 
 
@@ -508,15 +557,16 @@ namespace Dino {
 	 step < before_beat * m_steps; ++step) {
       
       // note off events just before this step
-      if (step > 0 && m_note_offs[step-1] && m_steps * (beat + off_d) <= step) {
-	events[list_no] = m_note_offs[step - 1];
+      if (step > 0 && (*m_note_offs)[step-1] && 
+	  m_steps * (beat + off_d) <= step) {
+	events[list_no] = (*m_note_offs)[step - 1];
 	beats[list_no] = step / double(m_steps) - off_d;
 	if (++list_no == room) break;
       }
       
       // note on events on this step
-      if (m_note_ons[step]) {
-	events[list_no] = m_note_ons[step];
+      if ((*m_note_ons)[step]) {
+	events[list_no] = (*m_note_ons)[step];
 	beats[list_no] = step / double(m_steps);
 	if (++list_no == room) break;
       }
@@ -534,9 +584,9 @@ namespace Dino {
     }
     
     // note off events after the last step
-    if (m_steps * (before_beat + off_d) > step && m_note_offs[step - 1] &&
+    if (m_steps * (before_beat + off_d) > step && (*m_note_offs)[step - 1] &&
 	list_no < room) {
-      events[list_no] = m_note_offs[step - 1];
+      events[list_no] = (*m_note_offs)[step - 1];
       beats[list_no] = step / double(m_steps) - off_d;
       ++list_no;
     }
@@ -551,7 +601,7 @@ namespace Dino {
     
     // iterate backwards until we find a note on event
     for (int i = step; i >= 0; --i) {
-      NoteEvent* note_on = m_note_ons[i];
+      NoteEvent* note_on = (*m_note_ons)[i];
       
       // look for a note on event with the right key
       while (note_on) {
@@ -593,7 +643,7 @@ namespace Dino {
   Pattern::NoteIterator Pattern::find_note_on(unsigned start, unsigned end, 
 					      unsigned char key) {
     for (unsigned i = start; i < end; ++i) {
-      NoteEvent* note_on = m_note_ons[i];
+      NoteEvent* note_on = (*m_note_ons)[i];
       while (note_on) {
 	if (note_on->get_key() == key)
 	  return NoteIterator(this, note_on->get_note());

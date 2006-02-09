@@ -191,6 +191,8 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
     if (m_dlg_pattern->run() == RESPONSE_OK) {
       // XXX actually change the pattern properties here
       pat->set_name(m_dlg_pattern->get_name());
+      pat->set_length(m_dlg_pattern->get_length());
+      pat->set_steps(m_dlg_pattern->get_steps());
     }
     m_dlg_pattern->hide();
   }

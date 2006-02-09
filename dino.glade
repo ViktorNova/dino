@@ -2017,7 +2017,7 @@
 <widget class="GtkAboutDialog" id="dlg_about">
   <property name="destroy_with_parent">False</property>
   <property name="name" translatable="yes">Dino</property>
-  <property name="copyright" translatable="yes">© 2005 Lars Luthman</property>
+  <property name="copyright" translatable="yes">© CR_YEAR Lars Luthman</property>
   <property name="comments" translatable="yes">A pattern based MIDI sequencer for GNU/Linux</property>
   <property name="license" translatable="yes">		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991

@@ -131,7 +131,7 @@ private:
   
   static char* cc_descriptions[];
   
-  Gtk::Dialog* m_about_dialog;
+  Gtk::AboutDialog* m_about_dialog;
   
   Dino::Sequencer m_seq;
   

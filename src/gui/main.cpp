@@ -40,10 +40,11 @@ using namespace Dino;
 
 static void print_version() {
   cout<<"Dino "<<VERSION<<endl
-      <<"Copyright (C) 2005 Lars Luthman <larsl@users.sourceforge.net>"<<endl
+      <<"Copyright (C) "<<CR_YEAR<<" Lars Luthman <larsl@users.sf.net>"<<endl
       <<"This program comes with ABSOLUTELY NO WARRANTY."<<endl
       <<"This is free software, and you are welcome to redistribute it"<<endl
-      <<"under certain conditions; see the file COPYING for details."<<endl;
+      <<"under certain conditions; see the file COPYING or the "<<endl
+      <<"\"About Dino\" dialog in the \"Help\" menu for details."<<endl;
 }
 
 
@@ -80,7 +81,12 @@ int main(int argc, char** argv) {
   dbg1<<"Initialising gtkmm"<<endl;
   Main kit(argc, argv);
   dbg1<<"Loading GUI"<<endl;
-  RefPtr<Xml> refXml = Xml::create("dino.glade");
+  RefPtr<Xml> refXml;
+  string filename = "dino.glade";
+  if (!file_test(filename, FILE_TEST_EXISTS))
+    filename = DATA_DIR "/dino.glade";
+  refXml = Xml::create(filename);
+    
   DinoGUI dino(argc, argv, refXml);
   
   // setup a signal handler and a timeout function that will let us
@@ -104,9 +110,7 @@ int main(int argc, char** argv) {
     return 1;
   }
   
+  dbg1<<"Dino "<<VERSION<<" exiting"<<endl;
+  
   return 0;
 }
-
-
-
-

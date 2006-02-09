@@ -43,7 +43,13 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   init_lash(argc, argv);
   
   m_window = w<Gtk::Window>("main_window");
-  m_about_dialog = w<Dialog>("dlg_about");
+  m_about_dialog = w<AboutDialog>("dlg_about");
+  string copyright = m_about_dialog->get_copyright();
+  size_t n = copyright.find("CR_YEAR");
+  if (n != string::npos) {
+    copyright.replace(n, strlen("CR_YEAR"), CR_YEAR);
+    m_about_dialog->set_copyright(copyright);
+  }
   
   init_pattern_editor();
   init_sequence_editor();

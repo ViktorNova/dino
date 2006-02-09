@@ -142,6 +142,7 @@ void DinoGUI::slot_edit_edit_track_properties() {
     Track t = *(m_song.find_track(m_active_track));
     m_dlg_track->set_name(t.get_name());
     m_dlg_track->set_channel(t.get_channel() + 1);
+    m_dlg_track->refocus();
     m_dlg_track->show_all();
     if (m_dlg_track->run() == RESPONSE_OK) {
       t.set_name(m_dlg_track->get_name());
@@ -190,7 +191,8 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
     m_dlg_pattern->set_name(pat->get_name());
     m_dlg_pattern->set_length(pat->get_length());
     m_dlg_pattern->set_steps(pat->get_steps());
-
+    
+    m_dlg_pattern->refocus();
     m_dlg_pattern->show_all();
     if (m_dlg_pattern->run() == RESPONSE_OK) {
       // XXX actually change the pattern properties here

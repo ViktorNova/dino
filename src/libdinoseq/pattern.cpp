@@ -83,9 +83,10 @@ namespace Dino {
       //m_steps(steps),
       //m_note_ons(new NoteEventList(length * steps)),
       //m_note_offs(new NoteEventList(length * steps)),
-      m_controllers(new vector<Controller*>()),
+      //m_controllers(new vector<Controller*>()),
       m_sd(new SeqData(new NoteEventList(length * steps),
-		       new NoteEventList(length * steps), length, steps)),
+		       new NoteEventList(length * steps),
+		       new vector<Controller*>(), length, steps)),
       m_dirty(false) {
     
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
@@ -125,10 +126,10 @@ namespace Dino {
     }
     
     // delete the controllers
-    for (unsigned i = 0; i < m_controllers->size(); ++i)
-      delete (*m_controllers)[i];
-    delete m_controllers;
-
+    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i)
+      delete (*m_sd->ctrls)[i];
+    
+    // delete all containers
     delete m_sd;
   }
   
@@ -192,11 +193,26 @@ namespace Dino {
     
     NoteEventList* new_note_ons = new NoteEventList(*m_sd->ons);
     NoteEventList* new_note_offs = new NoteEventList(*m_sd->offs);
+    vector<Controller*>* new_controllers = new vector<Controller*>();
     new_note_ons->resize(length * m_sd->steps);
     new_note_offs->resize(length * m_sd->steps);
+    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
+      const Controller* c = (*m_sd->ctrls)[i];
+      Controller* new_c = new Controller(c->get_name(), length * m_sd->steps,
+					 c->get_param(), 
+					 c->get_min(), c->get_max());
+      new_controllers->push_back(new_c);
+      for (unsigned j = 0; j < length * m_sd->steps && 
+	     j < m_sd->length * m_sd->steps; ++j) {
+	const CCEvent* cce = c->get_event(j);
+	if (cce)
+	  new_c->set_event(j, cce->get_value());
+      }
+    }
     
     SeqData* old_sd = m_sd;
-    m_sd = new SeqData(new_note_ons, new_note_offs, length, old_sd->steps);
+    m_sd = new SeqData(new_note_ons, new_note_offs, new_controllers,
+		       length, old_sd->steps);
     Deleter::queue(old_sd);
 
     // XXX resize the controllers too!
@@ -218,7 +234,8 @@ namespace Dino {
     (void)new_note_offs;
     
     SeqData* old_sd = m_sd;
-    m_sd = new SeqData(new_note_ons, new_note_offs, old_sd->length, steps);
+    m_sd = new SeqData(new_note_ons, new_note_offs, old_sd->ctrls, 
+		       old_sd->length, steps);
     Deleter::queue(old_sd);
     
     // XXX resize the controllers too!
@@ -395,23 +412,23 @@ namespace Dino {
 						      int min, int max) {
     // find the place to insert the new controller
     unsigned i;
-    for (i = 0; i < m_controllers->size(); ++i) {
-      unsigned long this_param = (*m_controllers)[i]->get_param();
+    for (i = 0; i < m_sd->ctrls->size(); ++i) {
+      unsigned long this_param = (*m_sd->ctrls)[i]->get_param();
       if (this_param == param)
-	return ControllerIterator(m_controllers->begin() + i);
+	return ControllerIterator(m_sd->ctrls->begin() + i);
       else if (this_param > param)
 	break;
     }
     
     // make a copy of the controller vector and insert the new one
-    vector<Controller*>* new_vector = new vector<Controller*>(*m_controllers);
+    vector<Controller*>* new_vector = new vector<Controller*>(*m_sd->ctrls);
     new_vector->insert(new_vector->begin() + i, 
 		       new Controller(name, m_sd->steps * m_sd->length, 
 				      param, min, max));
     
     // delete the old vector
-    vector<Controller*>* tmp = m_controllers;
-    m_controllers = new_vector;
+    vector<Controller*>* tmp = m_sd->ctrls;
+    m_sd->ctrls = new_vector;
     Deleter::queue(tmp);
     
     signal_controller_added(param);
@@ -422,21 +439,21 @@ namespace Dino {
   void Pattern::remove_controller(ControllerIterator iter) {
     // find the element to erase
     unsigned i;
-    for (i = 0; i < m_controllers->size(); ++i) {
-      if ((*m_controllers)[i] == &*iter)
+    for (i = 0; i < m_sd->ctrls->size(); ++i) {
+      if ((*m_sd->ctrls)[i] == &*iter)
 	break;
     }
-    if (i >= m_controllers->size())
+    if (i >= m_sd->ctrls->size())
       return;
     
     // make a copy of the old vector
-    vector<Controller*>* new_vector = new vector<Controller*>(*m_controllers);
-    unsigned long param = (*m_controllers)[i]->get_param();
+    vector<Controller*>* new_vector = new vector<Controller*>(*m_sd->ctrls);
+    unsigned long param = (*m_sd->ctrls)[i]->get_param();
     new_vector->erase(new_vector->begin() + i);
     
     // delete the old vector
-    vector<Controller*>* tmp = m_controllers;
-    m_controllers = new_vector;
+    vector<Controller*>* tmp = m_sd->ctrls;
+    m_sd->ctrls = new_vector;
     Deleter::queue(tmp);
     
     signal_controller_removed(param);
@@ -594,9 +611,9 @@ namespace Dino {
       }
       
       // controllers
-      for (unsigned i = 0; i < m_controllers->size(); ++i) {
-	if ((*m_controllers)[i]->get_event(step)) {
-	  events[list_no] = (*m_controllers)[i]->get_event(step);
+      for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
+	if ((*m_sd->ctrls)[i]->get_event(step)) {
+	  events[list_no] = (*m_sd->ctrls)[i]->get_event(step);
 	  beats[list_no] = step / double(sd->steps);
 	  if (++list_no == room) break;
 	}
@@ -644,19 +661,19 @@ namespace Dino {
 
 
   Pattern::ControllerIterator Pattern::ctrls_begin() const {
-    return ControllerIterator(m_controllers->begin());
+    return ControllerIterator(m_sd->ctrls->begin());
   }
   
   
   Pattern::ControllerIterator Pattern::ctrls_end() const {
-    return ControllerIterator(m_controllers->end());
+    return ControllerIterator(m_sd->ctrls->end());
   }
   
   
   Pattern::ControllerIterator Pattern::ctrls_find(unsigned long param) const {
-    for (unsigned i = 0; i < m_controllers->size(); ++i) {
-      if ((*m_controllers)[i]->get_param() == param)
-	return ControllerIterator(m_controllers->begin() + i);
+    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
+      if ((*m_sd->ctrls)[i]->get_param() == param)
+	return ControllerIterator(m_sd->ctrls->begin() + i);
     }
     return ctrls_end();
   }

@@ -40,6 +40,7 @@ void CCEditor::set_controller(Dino::Pattern* pat, unsigned controller) {
     m_pat->signal_cc_added.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
     m_pat->signal_cc_changed.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
     m_pat->signal_cc_removed.connect(sigc::hide(sigc::hide(draw)));
+    m_pat->signal_length_changed.connect(sigc::hide(draw));
   }
   queue_draw();
 }

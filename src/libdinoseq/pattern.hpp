@@ -221,19 +221,26 @@ namespace Dino {
     
     struct SeqData {
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
+	      std::vector<Controller*>* controllers,
 	      unsigned int l, unsigned int s)
-	: ons(note_ons), offs(note_offs), length(l), steps(s) {
+	: ons(note_ons), offs(note_offs), ctrls(controllers),
+	  length(l), steps(s) {
 	assert(ons != 0);
 	assert(offs != 0);
+	assert(ctrls != 0);
 	assert(length > 0);
 	assert(steps > 0);
       }
       ~SeqData() {
-	delete(ons);
-	delete(offs);
+	delete ons;
+	delete offs;
+	for (unsigned i = 0; i < ctrls->size(); ++i)
+	  delete (*ctrls)[i];
+	delete ctrls;
       }
       NoteEventList* ons;
       NoteEventList* offs;
+      std::vector<Controller*>* ctrls;
       unsigned int length;
       unsigned int steps;
     };
@@ -249,20 +256,12 @@ namespace Dino {
     int m_id;
     /** The name of the pattern */
     string m_name;
-    /** Pattern length in beats */
-    //unsigned int m_length;
-    /** Number of steps per beat */
-    //unsigned int m_steps;
-    /** The note on events in the pattern */
-    //NoteEventList* m_note_ons;
-    /** The note off events in the pattern */
-    //NoteEventList* m_note_offs;
     // XXX the controller list should also be in the SeqData structure
     /** The control change event lists */
-    std::vector<Controller*>* m_controllers;
+    //std::vector<Controller*>* m_controllers;
     /** The data used by the sequencing functions need to be stored in a
 	single structure so we can modify it in a lock-free way by swapping 
-	a pointer. */
+	a single pointer. */
     SeqData* volatile m_sd;
     
     mutable bool m_dirty;

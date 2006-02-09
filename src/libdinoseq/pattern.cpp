@@ -168,7 +168,6 @@ namespace Dino {
 
   void Pattern::set_length(unsigned int length) {
     assert(length > 0);
-    // XXX Implement this!
     
     // no change
     if (length == m_length)
@@ -202,6 +201,8 @@ namespace Dino {
     Deleter::queue(old_note_ons);
     Deleter::queue(old_note_offs);
     
+    // XXX resize the controllers too!
+    
     signal_length_changed(m_length);
   }
 
@@ -209,6 +210,28 @@ namespace Dino {
   void Pattern::set_steps(unsigned int steps) {
     assert(steps > 0);
     // XXX Implement this!
+    
+    if (steps == m_steps)
+      return;
+    
+    NoteEventList* new_note_ons = new NoteEventList(steps * m_length);
+    NoteEventList* new_note_offs = new NoteEventList(steps * m_length);
+    (void)new_note_ons;
+    (void)new_note_offs;
+    
+    // XXX This is not really threadsafe
+    NoteEventList* old_note_ons = m_note_ons;
+    NoteEventList* old_note_offs = m_note_offs;
+    m_steps = steps;
+    m_note_ons = new_note_ons;
+    m_note_offs = new_note_offs;
+    Deleter::queue(old_note_ons);
+    Deleter::queue(old_note_offs);
+    
+    // XXX resize the controllers too!
+
+    signal_length_changed(m_length);
+    
   }
 
 

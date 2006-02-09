@@ -17,6 +17,8 @@ public:
   void set_name(const std::string& name);
   void set_controller(int controller);
   
+  void refocus();
+  
 protected:
 
   Gtk::Entry* m_ent_name;

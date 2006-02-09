@@ -23,6 +23,8 @@ public:
   void set_name(const std::string& name);
   void set_channel(int channel);
   void update_ports(const Dino::Sequencer* seq = 0);
+
+  void refocus();
   
 protected:
 

@@ -98,6 +98,8 @@ bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
     if ((step = xpix2step(int(event->x))) < 
 	m_pat->get_length() * m_pat->get_steps()) {
       int value = ypix2value(int(event->y));
+      value = (value < 0 ? 0 : value);
+      value = (value >127 ? 127 : value);
       m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
     }
   }

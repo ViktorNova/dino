@@ -35,3 +35,8 @@ void ControllerDialog::set_controller(int controller) {
   m_sbn_controller->set_value(controller);
 }
 
+
+void ControllerDialog::refocus() {
+  m_ent_name->select_region(0, -1);
+  m_ent_name->grab_focus();
+}

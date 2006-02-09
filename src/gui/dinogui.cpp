@@ -118,6 +118,7 @@ void DinoGUI::slot_edit_delete() {
 void DinoGUI::slot_edit_add_track() {
   m_dlg_track->set_name("Untitled");
   m_dlg_track->set_channel(1);
+  m_dlg_track->refocus();
   m_dlg_track->show_all();
   if (m_dlg_track->run() == RESPONSE_OK) {
     Song::TrackIterator iter = m_song.add_track(m_dlg_track->get_name());
@@ -157,6 +158,7 @@ void DinoGUI::slot_edit_add_pattern() {
     m_dlg_pattern->set_name("Untitled");
     m_dlg_pattern->set_length(4);
     m_dlg_pattern->set_steps(4);
+    m_dlg_pattern->refocus();
     m_dlg_pattern->show_all();
     if (m_dlg_pattern->run() == RESPONSE_OK) {
       Track::PatternIterator iter = m_song.find_track(m_active_track)->
@@ -205,11 +207,13 @@ void DinoGUI::slot_edit_add_controller() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
     m_dlg_controller->set_name("Untitled");
     m_dlg_controller->set_controller(1);
+    m_dlg_controller->refocus();
     m_dlg_controller->show_all();
     if (m_dlg_controller->run() == RESPONSE_OK) {
       Pattern::ControllerIterator iter;
       iter = m_song.find_track(m_active_track)->pat_find(m_active_pattern)->
-	add_controller(m_dlg_controller->get_controller(), 0, 127);
+	add_controller(m_dlg_controller->get_name(),
+		       m_dlg_controller->get_controller(), 0, 127);
       m_cmb_controller.set_active_id(iter->get_param());
     }
     m_dlg_controller->hide();
@@ -366,7 +370,8 @@ void DinoGUI::update_controller_combo() {
       char tmp[10];
       for (iter = p_iter->ctrls_begin(); iter != p_iter->ctrls_end(); ++iter) {
 	sprintf(tmp, "%03lu ", iter->get_param());
-	m_cmb_controller.append_text(string(tmp), iter->get_param());
+	m_cmb_controller.append_text(string(tmp) + iter->get_name(),
+				     iter->get_param());
 	if (new_active == -1)
 	  new_active = iter->get_param();
       }

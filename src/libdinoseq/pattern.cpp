@@ -397,7 +397,8 @@ namespace Dino {
   }
 
 
-  Pattern::ControllerIterator Pattern::add_controller(unsigned long param, 
+  Pattern::ControllerIterator Pattern::add_controller(const std::string& name,
+						      unsigned long param, 
 						      int min, int max) {
     // find the place to insert the new controller
     unsigned i;
@@ -412,7 +413,8 @@ namespace Dino {
     // make a copy of the controller vector and insert the new one
     vector<Controller*>* new_vector = new vector<Controller*>(*m_controllers);
     new_vector->insert(new_vector->begin() + i, 
-		       new Controller(m_steps * m_length, param, min, max));
+		       new Controller(name, m_steps * m_length, 
+				      param, min, max));
     
     // delete the old vector
     vector<Controller*>* tmp = m_controllers;

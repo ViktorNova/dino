@@ -46,3 +46,8 @@ void PatternDialog::set_steps(int steps) {
   m_sbn_steps->set_value(steps);
 }
 
+
+void PatternDialog::refocus() {
+  m_ent_name->select_region(0, -1);
+  m_ent_name->grab_focus();
+}

@@ -60,3 +60,9 @@ void TrackDialog::update_ports(const Dino::Sequencer* seq) {
       m_cmb_port.append_text(info[i].name, i);
   }
 }
+
+
+void TrackDialog::refocus() {
+  m_ent_name->select_region(0, -1);
+  m_ent_name->grab_focus();
+}

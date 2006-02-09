@@ -20,6 +20,8 @@ public:
   void set_name(const std::string& name);
   void set_length(int length);
   void set_steps(int length);
+
+  void refocus();
   
 protected:
 

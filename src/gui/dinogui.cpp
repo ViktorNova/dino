@@ -559,6 +559,7 @@ void DinoGUI::init_menus() {
     MenuItem* mi = w<MenuItem>(iter->first);
     assert(mi);
     mi->signal_activate().connect(mem_fun(*this, iter->second));
+    m_menuitems[iter->first] = mi;
   }
   
   // and toolbuttons
@@ -670,6 +671,9 @@ void DinoGUI::set_active_track(int active_track) {
     m_toolbuttons["tbn_delete_track"]->set_sensitive(active);
     m_toolbuttons["tbn_edit_track_properties"]->set_sensitive(active);
     m_toolbuttons["tbn_add_pattern"]->set_sensitive(active);
+    m_menuitems["delete_track1"]->set_sensitive(active);
+    m_menuitems["edit_track_properties1"]->set_sensitive(active);
+    m_menuitems["add_pattern1"]->set_sensitive(active);
   }
 }
 
@@ -703,6 +707,9 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     m_toolbuttons["tbn_delete_pattern"]->set_sensitive(active);
     m_toolbuttons["tbn_set_pattern_properties"]->set_sensitive(active);
     m_toolbuttons["tbn_add_controller"]->set_sensitive(active);
+    m_menuitems["delete_pattern1"]->set_sensitive(active);
+    m_menuitems["edit_pattern_properties1"]->set_sensitive(active);
+    m_menuitems["add_controller1"]->set_sensitive(active);
   }
 }
 
@@ -718,6 +725,7 @@ void DinoGUI::set_active_controller(int active_controller) {
     m_cce.set_controller(NULL, 0);
   bool active = (m_active_controller != -1);
   m_toolbuttons["tbn_delete_controller"]->set_sensitive(active);
+  m_menuitems["delete_controller1"]->set_sensitive(active);
 }
 
 

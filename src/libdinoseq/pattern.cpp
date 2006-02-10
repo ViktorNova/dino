@@ -223,7 +223,7 @@ namespace Dino {
 
   void Pattern::set_steps(unsigned int steps) {
     assert(steps > 0);
-    // XXX Implement this!
+    // XXX Copy note events to the new note event lists!
     
     if (steps == m_sd->steps)
       return;
@@ -231,12 +231,26 @@ namespace Dino {
     NoteEventList* new_note_ons = new NoteEventList(steps * m_sd->length);
     NoteEventList* new_note_offs = new NoteEventList(steps * m_sd->length);
     vector<Controller*>* new_controllers = new vector<Controller*>();
+    
+    // iterate over all controllers in the old controller list
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
       const Controller* c = (*m_sd->ctrls)[i];
+      
+      // create a new controller with the same settings but different size
       Controller* new_c = new Controller(c->get_name(), m_sd->length * steps,
 					 c->get_param(), 
 					 c->get_min(), c->get_max());
       new_controllers->push_back(new_c);
+      
+      // copy the events from the old controller to the new controller
+      // this may not be a 1 to 1 copy since the step resolutions differ
+      for (unsigned j = 0; j < m_sd->length * m_sd->steps; ++j) {
+	const CCEvent* e = c->get_event(j);
+	if (e != 0) {
+	  new_c->set_event(unsigned(steps * j / double(m_sd->steps)), 
+			   e->get_value());
+	}
+      }
     }
     
     SeqData* old_sd = m_sd;

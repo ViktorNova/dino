@@ -7,7 +7,7 @@ Should be done before 0.2:
  [X] Creating and deleting tracks
  [X] Changing track properties (label, MIDI port, MIDI channel)
  [X] Creating and deleting patterns
- [/] Changing pattern properties (label, length, note resolution)
+ [X] Changing pattern properties (label, length, note resolution)
  [X] Editing note events in patterns
  [/] Editing CC and pitch bend events in patterns
  [X] Arrange patterns

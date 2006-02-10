@@ -41,6 +41,7 @@ void CCEditor::set_controller(Dino::Pattern* pat, unsigned controller) {
     m_pat->signal_cc_changed.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
     m_pat->signal_cc_removed.connect(sigc::hide(sigc::hide(draw)));
     m_pat->signal_length_changed.connect(sigc::hide(draw));
+    m_pat->signal_steps_changed.connect(sigc::hide(draw));
   }
   queue_draw();
 }
@@ -67,6 +68,8 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
     if ((step = xpix2step(int(event->x))) < 
 	m_pat->get_length() * m_pat->get_steps()) {
       int value = ypix2value(int(event->y));
+      value = (value < 0 ? 0 : value);
+      value = (value >127 ? 127 : value);
       m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
     }
   }

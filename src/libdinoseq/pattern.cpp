@@ -230,18 +230,21 @@ namespace Dino {
     
     NoteEventList* new_note_ons = new NoteEventList(steps * m_sd->length);
     NoteEventList* new_note_offs = new NoteEventList(steps * m_sd->length);
-    (void)new_note_ons;
-    (void)new_note_offs;
+    vector<Controller*>* new_controllers = new vector<Controller*>();
+    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
+      const Controller* c = (*m_sd->ctrls)[i];
+      Controller* new_c = new Controller(c->get_name(), m_sd->length * steps,
+					 c->get_param(), 
+					 c->get_min(), c->get_max());
+      new_controllers->push_back(new_c);
+    }
     
     SeqData* old_sd = m_sd;
-    m_sd = new SeqData(new_note_ons, new_note_offs, old_sd->ctrls, 
+    m_sd = new SeqData(new_note_ons, new_note_offs, new_controllers, 
 		       old_sd->length, steps);
     Deleter::queue(old_sd);
     
-    // XXX resize the controllers too!
-
     signal_steps_changed(m_sd->length);
-    
   }
 
 

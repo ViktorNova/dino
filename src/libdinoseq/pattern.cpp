@@ -229,14 +229,31 @@ namespace Dino {
 
   void Pattern::set_steps(unsigned int steps) {
     assert(steps > 0);
-    // XXX Copy note events to the new note event lists!
     
     if (steps == m_sd->steps)
       return;
     
+    // allocate new data structures
     NoteEventList* new_note_ons = new NoteEventList(steps * m_sd->length);
     NoteEventList* new_note_offs = new NoteEventList(steps * m_sd->length);
     vector<Controller*>* new_controllers = new vector<Controller*>();
+    
+    // copy information about the notes
+    NoteIterator iter;
+    vector<int> starts;
+    vector<int> lengths;
+    vector<int> keys;
+    vector<int> velocities;
+    for (iter = notes_begin(); iter != notes_end(); ) {
+      starts.push_back(int(steps * iter->get_step() / double(m_sd->steps))); 
+      lengths.push_back(int(steps * iter->get_length() / double(m_sd->steps))); 
+      keys.push_back(iter->get_key());
+      velocities.push_back(iter->get_velocity());
+      NoteIterator diter = iter;
+      ++iter;
+      delete_note(diter);
+    }
+    
     
     // iterate over all controllers in the old controller list
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
@@ -265,6 +282,10 @@ namespace Dino {
 		       old_sd->length, steps);
     Deleter::queue(old_sd);
     
+    // add the notes using the new event lists
+    for (unsigned i = 0; i < starts.size(); ++i)
+      add_note(starts[i], keys[i], velocities[i], lengths[i]);
+    
     signal_steps_changed(m_sd->length);
   }
 
@@ -281,6 +302,7 @@ namespace Dino {
     assert(key < 128);
     assert(velocity < 128);
     assert(step + note_length <= m_sd->length * m_sd->steps);
+    assert(note_length > 0);
     
     // check if the same key is already playing at this step, if so, 
     // shorten it (or delete it if it starts at this step)

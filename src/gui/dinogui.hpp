@@ -132,8 +132,6 @@ private:
   PatternDialog* m_dlg_pattern;
   ControllerDialog* m_dlg_controller;
   
-  static char* cc_descriptions[];
-  
   Gtk::AboutDialog* m_about_dialog;
   
   Dino::Sequencer m_seq;

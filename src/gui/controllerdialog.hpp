@@ -4,6 +4,8 @@
 #include <gtkmm.h>
 #include <libglademm.h>
 
+#include "singletextcombo.hpp"
+
 
 class ControllerDialog : public Gtk::Dialog {
 public:
@@ -20,10 +22,13 @@ public:
   void refocus();
   
 protected:
-
+  
+  void update_entry();
+  
   Gtk::Entry* m_ent_name;
-  Gtk::SpinButton* m_sbn_controller;
+  SingleTextCombo m_cmb_controller;
 
+  static std::string m_cc_desc[];
 };
 
 

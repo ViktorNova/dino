@@ -194,14 +194,21 @@ namespace Dino {
     NoteEventList* new_note_ons = new NoteEventList(*m_sd->ons);
     NoteEventList* new_note_offs = new NoteEventList(*m_sd->offs);
     vector<Controller*>* new_controllers = new vector<Controller*>();
+    
     new_note_ons->resize(length * m_sd->steps);
     new_note_offs->resize(length * m_sd->steps);
+    
+    // iterate over all controllers
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
       const Controller* c = (*m_sd->ctrls)[i];
+      
+      // create a new controller with the same settings but different size
       Controller* new_c = new Controller(c->get_name(), length * m_sd->steps,
 					 c->get_param(), 
 					 c->get_min(), c->get_max());
       new_controllers->push_back(new_c);
+      
+      // copy all the controller events that fit into the new size
       for (unsigned j = 0; j < length * m_sd->steps && 
 	     j < m_sd->length * m_sd->steps; ++j) {
 	const CCEvent* cce = c->get_event(j);
@@ -210,13 +217,12 @@ namespace Dino {
       }
     }
     
+    // swap the SeqData pointer
     SeqData* old_sd = m_sd;
     m_sd = new SeqData(new_note_ons, new_note_offs, new_controllers,
 		       length, old_sd->steps);
     Deleter::queue(old_sd);
 
-    // XXX resize the controllers too!
-    
     signal_length_changed(m_sd->length);
   }
 
@@ -253,6 +259,7 @@ namespace Dino {
       }
     }
     
+    // swap the SeqData pointer
     SeqData* old_sd = m_sd;
     m_sd = new SeqData(new_note_ons, new_note_offs, new_controllers, 
 		       old_sd->length, steps);

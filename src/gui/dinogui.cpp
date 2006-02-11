@@ -5,6 +5,8 @@
 #include <sstream>
 #include <utility>
 
+#include <config.hpp>
+
 #include "cceditor.hpp"
 #include "controllerdialog.hpp"
 #include "deleter.hpp"

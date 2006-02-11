@@ -4,7 +4,11 @@
 AC_PREREQ(2.59)
 
 # Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.1.169)
+AC_INIT(dino, 0.1.170)
+AC_CONFIG_HEADERS([src/config.hpp])
+AC_DEFINE([CR_YEAR], ["2006"], [The copyright year])
+AC_DEFINE([DATA_DIR], ["$pkgdatadir"], [The directory for data files])
+
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src/gui/main.cpp])
 AM_INIT_AUTOMAKE
@@ -31,11 +35,6 @@ else
 fi
 AC_SUBST(DEBUG_CFLAGS)
 AC_MSG_RESULT($debug)
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDBOOL
-AC_C_CONST
-AC_C_INLINE
 
 # Output
 AC_CONFIG_FILES([

@@ -16,6 +16,11 @@ namespace Dino {
   }
 
 
+  unsigned char CCEvent::get_value() const {
+    return m_data[2];
+  }
+  
+  
   CCEvent* CCEvent::get_earlier() {
     return m_earlier;
   }
@@ -31,6 +36,11 @@ namespace Dino {
   }
   
   
+  void CCEvent::set_value(unsigned char value) {
+    m_data[2] = value;
+  }
+
+
   void CCEvent::set_earlier(CCEvent* event) {
     m_earlier = event;
   }

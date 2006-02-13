@@ -50,18 +50,6 @@ namespace Dino {
 	masked out. If the event is a Note Off 0x80 will be returned, if it
 	is a Tune Request 0xF6 will be returned etc. */
     unsigned char get_type() const;
-    /** Return the second data byte of this event. For a note event this will
-	be the MIDI note number, between 0 and 127. */
-    unsigned char get_key() const;
-    /** Return the low nibble of the status byte. For channel specific events
-	like note events and controllers, this will be the MIDI channel. */
-    unsigned char get_channel() const;
-    /** Return the third data byte of this event. For a note event this will be
-	the key velocity, between 0 and 127. */
-    unsigned char get_velocity() const;
-    /** Return the third data byte of this event. For a controller event this
-	will be the controller value. */
-    unsigned char get_value() const;
     /** Return a pointer to next event, which is used to pass linked lists
 	of MIDI events to the sequencer. */
     MIDIEvent* get_next() const;
@@ -73,18 +61,6 @@ namespace Dino {
     
     /** Set the status byte of this event. */
     void set_type(unsigned char type);
-    /** Set the low nibble of the status byte. For channel specific events
-	this is the MIDI channel. */
-    void set_channel(unsigned char channel);
-    /** Set the second byte of the event. For note events this is the MIDI
-	note number (from 0 to 127). */
-    void set_key(unsigned char note);
-    /** Set the third byte of the event. For note events this is the key
-	velocity (from 0 to 127). */
-    void set_velocity(unsigned char vel);
-    /** Set the third byte of the event. For controller events this is the
-	controller value. */
-    void set_value(unsigned char value);
     /** Set the pointer to next MIDI event. This is used to build linked lists
 	of events to be passed to the sequencer. */
     void set_next(MIDIEvent* event);

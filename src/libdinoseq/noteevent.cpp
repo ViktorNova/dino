@@ -26,6 +26,16 @@ namespace Dino {
   }
    
   
+  unsigned char NoteEvent::get_key() const {
+    return m_data[1];
+  }
+
+  
+  unsigned char NoteEvent::get_velocity() const {
+    return m_data[2];
+  }
+  
+
   unsigned int NoteEvent::get_step() const {
     return m_step;
   }
@@ -46,6 +56,16 @@ namespace Dino {
   }
 
   
+  void NoteEvent::set_key(unsigned char note) {
+    m_data[1] = note;
+  }
+
+  
+  void NoteEvent::set_velocity(unsigned char vel) {
+    m_data[2] = vel;
+  }
+  
+
   void NoteEvent::set_step(unsigned int step) {
     m_step = step; 
   }

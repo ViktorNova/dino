@@ -36,6 +36,11 @@ namespace Dino {
   }
 
 
+  NoteEvent* NoteEvent::get_next() const {
+    return static_cast<NoteEvent*>(MIDIEvent::get_next());
+  }
+  
+
   Note* NoteEvent::get_note() {
     return m_note;
   }

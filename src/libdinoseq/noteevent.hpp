@@ -51,6 +51,10 @@ namespace Dino {
     unsigned int get_step() const;
     /** Return a pointer to the previous event at the same pattern step. */
     NoteEvent* get_previous() const;
+    /** Return a pointer to the next note event at the same pattern step.
+	This is overridden from MIDIEvent so we don't have to static_cast
+	the returned event pointer to a NoteEvent* every time. */
+    NoteEvent* get_next() const;
     /** Return a pointer to the Note object that owns this event. */
     Note* get_note();
     

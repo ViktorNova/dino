@@ -57,8 +57,7 @@ namespace Dino {
     assert(m_note);
     
     if (m_note->get_note_on()->get_next()) {
-      m_note = static_cast<NoteEvent*>(m_note->get_note_on()->get_next())
-	->get_note();
+      m_note = m_note->get_note_on()->get_next()->get_note();
       return *this;
     }
     else {
@@ -111,7 +110,7 @@ namespace Dino {
       while (event) {
 	NoteEvent* tmp = event;
 	delete event;
-	event = static_cast<NoteEvent*>(tmp->get_next());
+	event = tmp->get_next();
       }
     }
     
@@ -121,7 +120,7 @@ namespace Dino {
       while (event) {
 	NoteEvent* tmp = event;
 	delete event;
-	event = static_cast<NoteEvent*>(tmp->get_next());
+	event = tmp->get_next();
       }
     }
     
@@ -367,7 +366,7 @@ namespace Dino {
     // remove the note off event first
     // must be threadsafe!
     previous = note->m_note_off->get_previous();
-    next = static_cast<NoteEvent*>(note->m_note_off->get_next());
+    next = note->m_note_off->get_next();
     if (next)
       next->set_previous(previous);
     if (previous)
@@ -378,7 +377,7 @@ namespace Dino {
     // then the note on event
     // must be threadsafe!
     previous = note->m_note_on->get_previous();
-    next = static_cast<NoteEvent*>(note->m_note_on->get_next());
+    next = note->m_note_on->get_next();
     if (next)
       next->set_previous(previous);
     if (previous)
@@ -417,7 +416,7 @@ namespace Dino {
     // remove the note off event
     // must be threadsafe!
     NoteEvent* previous = note->m_note_off->get_previous();
-    NoteEvent* next = static_cast<NoteEvent*>(note->m_note_off->get_next());
+    NoteEvent* next = note->m_note_off->get_next();
     if (next)
       next->set_previous(previous);
     if (previous)
@@ -697,7 +696,7 @@ namespace Dino {
 	  else
 	    return NoteIterator(this, NULL);
 	}
-	note_on = static_cast<NoteEvent*>(note_on->get_next());
+	note_on = note_on->get_next();
       }
       
     }
@@ -732,7 +731,7 @@ namespace Dino {
       while (note_on) {
 	if (note_on->get_key() == key)
 	  return NoteIterator(this, note_on->get_note());
-	note_on = static_cast<NoteEvent*>(note_on->get_next());
+	note_on = note_on->get_next();
       }
     }
     

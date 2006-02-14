@@ -6,7 +6,8 @@ libdinoseq_la_SOURCES = \
 	ccevent.cpp ccevent.hpp \
 	controller.cpp controller.hpp \
 	deleter.hpp \
-	midievent.hpp midievent.cpp \
+	interpolatedevent.cpp interpolatedevent.hpp \
+	midievent.cpp midievent.hpp \
 	note.cpp note.hpp \
 	noteevent.cpp noteevent.hpp \
 	pattern.cpp pattern.hpp \

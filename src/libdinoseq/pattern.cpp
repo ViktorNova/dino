@@ -625,8 +625,8 @@ namespace Dino {
 
 
   int Pattern::get_events(double beat, double before_beat,
-			  const MIDIEvent** events, double* beats, 
-			  int room) const {
+			  const MIDIEvent** events, double* beats, int room,
+			  const InterpolatedEvent**, double*, int) const {
     // we need a local copy of the SeqData pointer so the other thread
     // doesn't change it before we are done
     SeqData* sd = m_sd;

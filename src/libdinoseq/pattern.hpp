@@ -22,7 +22,10 @@ using namespace xmlpp;
 
 
 namespace Dino {
-
+  
+  
+  class InterpolatedEvent;
+  
 
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
@@ -184,7 +187,9 @@ namespace Dino {
     /// @name Sequencing
     //@{
     int get_events(double beat, double before_beat,
-		   const MIDIEvent** events, double* beats, int room) const;
+		   const MIDIEvent** events, double* beats, int room,
+		   const InterpolatedEvent** ip_events, 
+		   double* ip_beats, int ip_room) const;
     //@}
     
   public:

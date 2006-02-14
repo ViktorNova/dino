@@ -328,7 +328,7 @@ namespace Dino {
 
 	// add events in buffer
 	int n = iter->get_events(start, end, m_event_buffer, m_timestamp_buffer,
-				 m_event_buffer_size);
+				 m_event_buffer_size, NULL, NULL, 0);
 	for (int i = 0; i < n; ++i) {
 	  const MIDIEvent* event;
 	  jack_nframes_t frame_offset = 

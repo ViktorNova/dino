@@ -563,8 +563,8 @@ namespace Dino {
 
 
   int Track::get_events(double beat, double before_beat,
-			const MIDIEvent** events, double* beats, 
-			int room) const {
+			const MIDIEvent** events, double* beats, int room,
+			const InterpolatedEvent**, double*, int) const {
     assert(beat >= 0);
     assert(before_beat >= beat);
 
@@ -592,7 +592,8 @@ namespace Dino {
 	// retrieve the pattern events
 	int n = sequence[i]->pattern->
 	  get_events(beat - sequence[i]->start, end, events + event_start, 
-		     beats + event_start, room - event_start);
+		     beats + event_start, room - event_start,
+		     NULL, NULL, 0);
 	
 	// convert timestamps to song time
 	for (int j = event_start; j < event_start + n; ++j)

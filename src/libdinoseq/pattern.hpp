@@ -187,9 +187,9 @@ namespace Dino {
     /// @name Sequencing
     //@{
     int get_events(double beat, double before_beat,
-		   const MIDIEvent** events, double* beats, int room,
+		   const MIDIEvent** events, double* beats, int& room,
 		   const InterpolatedEvent** ip_events, 
-		   double* ip_beats, int ip_room) const;
+		   double* ip_beats, int& ip_room) const;
     //@}
     
   public:

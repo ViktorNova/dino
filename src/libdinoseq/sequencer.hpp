@@ -17,6 +17,7 @@ using namespace std;
 namespace Dino {
 
 
+  class InterpolatedEvent;
   class MIDIEvent;
   class Song;
 
@@ -154,6 +155,8 @@ namespace Dino {
     static const int m_event_buffer_size = 1024;
     const MIDIEvent* m_event_buffer[m_event_buffer_size];
     double m_timestamp_buffer[m_event_buffer_size];
+    const InterpolatedEvent* m_ip_event_buffer[m_event_buffer_size];
+    double m_ip_timestamp_buffer[m_event_buffer_size];
     
     volatile int m_current_beat;
     volatile int m_old_current_beat;

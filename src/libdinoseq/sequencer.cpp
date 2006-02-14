@@ -272,6 +272,7 @@ namespace Dino {
 
 
   void Sequencer::jack_shutdown_handler() {
+    // XXX do something useful here
     cerr<<"JACK SHUT DOWN!"<<endl;
   }
   
@@ -317,7 +318,8 @@ namespace Dino {
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
       pos.tick / double(pos.ticks_per_beat);
     double end = start + pos.beats_per_minute * nframes / (60 * pos.frame_rate);
-    
+    int room = m_event_buffer_size;
+    int ip_room = m_event_buffer_size;
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
 
       // get the MIDI buffer
@@ -328,7 +330,8 @@ namespace Dino {
 
 	// add events in buffer
 	int n = iter->get_events(start, end, m_event_buffer, m_timestamp_buffer,
-				 m_event_buffer_size, NULL, NULL, 0);
+				 room, m_ip_event_buffer, m_ip_timestamp_buffer,
+				 ip_room);
 	for (int i = 0; i < n; ++i) {
 	  const MIDIEvent* event;
 	  jack_nframes_t frame_offset = 

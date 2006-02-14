@@ -563,8 +563,9 @@ namespace Dino {
 
 
   int Track::get_events(double beat, double before_beat,
-			const MIDIEvent** events, double* beats, int room,
-			const InterpolatedEvent**, double*, int) const {
+			const MIDIEvent** events, double* beats, int& room,
+			const InterpolatedEvent** ip_events, double* ip_beats, 
+			int& ip_room) const {
     assert(beat >= 0);
     assert(before_beat >= beat);
 
@@ -592,17 +593,12 @@ namespace Dino {
 	// retrieve the pattern events
 	int n = sequence[i]->pattern->
 	  get_events(beat - sequence[i]->start, end, events + event_start, 
-		     beats + event_start, room - event_start,
-		     NULL, NULL, 0);
+		     beats + event_start, room, ip_events, ip_beats, ip_room);
 	
 	// convert timestamps to song time
 	for (int j = event_start; j < event_start + n; ++j)
 	  beats[j] += sequence[i]->start;
-	
-	// check if there is room in the event buffer
 	event_start += n;
-	if (event_start >= room)
-	  break;
 	
 	// move forward to the end of this sequence entry
 	i = sequence[i]->start + sequence[i]->length - 1;
@@ -618,6 +614,7 @@ namespace Dino {
       }
     }
     
+    room -= event_start;
     return event_start;
   }
 

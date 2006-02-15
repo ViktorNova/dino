@@ -340,7 +340,7 @@ namespace Dino {
 			   pos.beats_per_minute);
 	  for (event = m_event_buffer[i]; event; event = event->get_next()) {
 	    jack_midi_event_write(port_buf, frame_offset, 
-				  const_cast<jack_midi_data_t*>(event->get_data()),
+				  (jack_midi_data_t*)(event->get_data()),
 				  event->get_size(), nframes);
 	  }
 	}

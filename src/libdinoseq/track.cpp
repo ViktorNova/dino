@@ -245,11 +245,12 @@ namespace Dino {
 
   Track::SequenceIterator Track::seq_begin() const {
     std::vector<SequenceEntry*>::const_iterator iter;
-    for (iter = m_sequence->begin(); iter != m_sequence->end(); ++iter) {
-      if (*iter != NULL)
+    unsigned i;
+    for (i = 0; i < m_sequence->size(); ++i) {
+      if ((*m_sequence)[i] != NULL)
 	break;
     }
-    return SequenceIterator(iter, *m_sequence);
+    return SequenceIterator(m_sequence->begin() + i, *m_sequence);
   }
   
   

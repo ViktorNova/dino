@@ -508,19 +508,15 @@ namespace Dino {
   void Pattern::add_cc(ControllerIterator iter, unsigned int step, 
 		       unsigned char value) {
     assert(step < m_sd->length * m_sd->steps);
-    const InterpolatedEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->add_point(step, value);
-    if (!e || e->get_start() != value)
-      signal_cc_added((*iter.m_iterator)->get_param(), step, value);
+    signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }
 
 
   void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
     assert(step < m_sd->length * m_sd->steps);
-    const InterpolatedEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->remove_point(step);
-    if (e && e->get_step() == step)
-      signal_cc_removed((*iter.m_iterator)->get_param(), step);
+    signal_cc_removed((*iter.m_iterator)->get_param(), step);
   }
 
   

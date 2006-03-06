@@ -154,7 +154,6 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
 		   (i + 1) * m_step_width, get_height());
   }
   
-  
   for (unsigned i = 0; i < steps; ++i) {
     const InterpolatedEvent* event = 
       m_pat->ctrls_find(m_controller)->get_event(i);
@@ -167,18 +166,6 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
   }
   
   return true;
-}
-
-
-void CCEditor::draw_cc(unsigned step, int value) {
-  m_gc->set_foreground(m_fg_colour);
-  get_window()->draw_rectangle(m_gc, true, 
-			       m_step_width * step, value2ypix(value), 
-			       m_step_width, 4);
-  m_gc->set_foreground(m_edge_colour);
-  get_window()->draw_rectangle(m_gc, false, 
-			       m_step_width * step, value2ypix(value), 
-			       m_step_width, 4);
 }
 
 

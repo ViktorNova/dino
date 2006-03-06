@@ -27,8 +27,6 @@ protected:
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
   
-  void draw_cc(unsigned step, int value);
-  
   int value2ypix(int value);
   int ypix2value(int value);
   int step2xpix(int value);

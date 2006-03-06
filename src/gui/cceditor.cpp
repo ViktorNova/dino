@@ -162,6 +162,12 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
       win->draw_line(m_gc, m_step_width * i, value2ypix(event->get_start()),
 		     m_step_width * (i + event->get_length()),
 		     value2ypix(event->get_end()));
+      m_gc->set_foreground(m_fg_colour);
+      win->draw_rectangle(m_gc, true, m_step_width * i - 2, 
+			  value2ypix(event->get_start()) - 2, 5, 5);
+      m_gc->set_foreground(m_edge_colour);
+      win->draw_rectangle(m_gc, false, m_step_width * i - 2, 
+			  value2ypix(event->get_start()) - 2, 5, 5);
     }
   }
   

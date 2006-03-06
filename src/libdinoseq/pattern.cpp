@@ -212,7 +212,7 @@ namespace Dino {
 	     j < m_sd->length * m_sd->steps; ++j) {
 	const InterpolatedEvent* cce = c->get_event(j);
 	if (cce)
-	  new_c->set_event(j, cce->get_start());
+	  new_c->add_point(j, cce->get_start());
       }
     }
     
@@ -269,7 +269,7 @@ namespace Dino {
       for (unsigned j = 0; j < m_sd->length * m_sd->steps; ++j) {
 	const InterpolatedEvent* e = c->get_event(j);
 	if (e != 0) {
-	  new_c->set_event(unsigned(steps * j / double(m_sd->steps)), 
+	  new_c->add_point(unsigned(steps * j / double(m_sd->steps)), 
 			   e->get_start());
 	}
       }
@@ -509,7 +509,7 @@ namespace Dino {
 		       unsigned char value) {
     assert(step < m_sd->length * m_sd->steps);
     const InterpolatedEvent* e = (*iter.m_iterator)->get_event(step);
-    (*iter.m_iterator)->set_event(step, value);
+    (*iter.m_iterator)->add_point(step, value);
     if (!e || e->get_start() != value)
       signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }
@@ -518,8 +518,8 @@ namespace Dino {
   void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
     assert(step < m_sd->length * m_sd->steps);
     const InterpolatedEvent* e = (*iter.m_iterator)->get_event(step);
-    (*iter.m_iterator)->remove_event(step);
-    if (e)
+    (*iter.m_iterator)->remove_point(step);
+    if (e && e->get_step() == step)
       signal_cc_removed((*iter.m_iterator)->get_param(), step);
   }
 

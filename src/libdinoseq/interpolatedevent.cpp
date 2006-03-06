@@ -4,10 +4,13 @@
 namespace Dino {
 
 
-  InterpolatedEvent::InterpolatedEvent(int param, int value, int step) 
+  InterpolatedEvent::InterpolatedEvent(int param, int start, int end, 
+				       unsigned step, unsigned length) 
     : m_param(param),
-      m_start(value),
-      m_step(step) {
+      m_start(start),
+      m_end(end),
+      m_step(step),
+      m_length(length) {
 
   }
   
@@ -17,12 +20,12 @@ namespace Dino {
   }
   
   
-  int InterpolatedEvent::get_step() const {
+  unsigned InterpolatedEvent::get_step() const {
     return m_step;
   }
   
   
-  int InterpolatedEvent::get_length() const {
+  unsigned InterpolatedEvent::get_length() const {
     return m_length;
   }
 
@@ -36,5 +39,25 @@ namespace Dino {
     return m_end;
   }
   
+
+  void InterpolatedEvent::set_step(unsigned int step) {
+    m_step = step;
+  }
+  
+  
+  void InterpolatedEvent::set_length(unsigned int length) {
+    m_length = length;
+  }
+
+
+  void InterpolatedEvent::set_start(int start) {
+    m_start = start;
+  }
+  
+  
+  void InterpolatedEvent::set_end(int end) {
+    m_end = end;
+  }
+
   
 }

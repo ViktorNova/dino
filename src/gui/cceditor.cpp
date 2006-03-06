@@ -154,13 +154,17 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
 		   (i + 1) * m_step_width, get_height());
   }
   
-  /*
+  
   for (unsigned i = 0; i < steps; ++i) {
-    const CCEvent* event = m_pat->ctrls_find(m_controller)->get_event(i);
-    if (event)
-      draw_cc(i, event->get_value());
+    const InterpolatedEvent* event = 
+      m_pat->ctrls_find(m_controller)->get_event(i);
+    if (event && event->get_step() == i) {
+      m_gc->set_foreground(m_edge_colour);
+      win->draw_line(m_gc, m_step_width * i, value2ypix(event->get_start()),
+		     m_step_width * (i + event->get_length()),
+		     value2ypix(event->get_end()));
+    }
   }
-  */
   
   return true;
 }

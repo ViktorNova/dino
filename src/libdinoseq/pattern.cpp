@@ -124,10 +124,6 @@ namespace Dino {
       }
     }
     
-    // delete the controllers
-    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i)
-      delete (*m_sd->ctrls)[i];
-    
     // delete all containers
     delete m_sd;
   }

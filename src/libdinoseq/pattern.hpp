@@ -225,6 +225,7 @@ namespace Dino {
     typedef vector<NoteEvent*> NoteEventList;
     
     struct SeqData {
+      
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
 	      std::vector<Controller*>* controllers,
 	      unsigned int l, unsigned int s)
@@ -236,6 +237,7 @@ namespace Dino {
 	assert(length > 0);
 	assert(steps > 0);
       }
+      
       ~SeqData() {
 	delete ons;
 	delete offs;
@@ -243,11 +245,13 @@ namespace Dino {
 	  delete (*ctrls)[i];
 	delete ctrls;
       }
+      
       NoteEventList* ons;
       NoteEventList* offs;
       std::vector<Controller*>* ctrls;
       unsigned int length;
       unsigned int steps;
+      
     };
     
     // no copying for now

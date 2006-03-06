@@ -154,12 +154,14 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
 		   (i + 1) * m_step_width, get_height());
   }
   
+  /*
   for (unsigned i = 0; i < steps; ++i) {
     const CCEvent* event = m_pat->ctrls_find(m_controller)->get_event(i);
     if (event)
       draw_cc(i, event->get_value());
   }
-
+  */
+  
   return true;
 }
 

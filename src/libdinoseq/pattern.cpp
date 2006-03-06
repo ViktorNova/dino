@@ -210,9 +210,9 @@ namespace Dino {
       // copy all the controller events that fit into the new size
       for (unsigned j = 0; j < length * m_sd->steps && 
 	     j < m_sd->length * m_sd->steps; ++j) {
-	const CCEvent* cce = c->get_event(j);
+	const InterpolatedEvent* cce = c->get_event(j);
 	if (cce)
-	  new_c->set_event(j, cce->get_value());
+	  new_c->set_event(j, cce->get_start());
       }
     }
     
@@ -267,10 +267,10 @@ namespace Dino {
       // copy the events from the old controller to the new controller
       // this may not be a 1 to 1 copy since the step resolutions differ
       for (unsigned j = 0; j < m_sd->length * m_sd->steps; ++j) {
-	const CCEvent* e = c->get_event(j);
+	const InterpolatedEvent* e = c->get_event(j);
 	if (e != 0) {
 	  new_c->set_event(unsigned(steps * j / double(m_sd->steps)), 
-			   e->get_value());
+			   e->get_start());
 	}
       }
     }
@@ -508,16 +508,16 @@ namespace Dino {
   void Pattern::add_cc(ControllerIterator iter, unsigned int step, 
 		       unsigned char value) {
     assert(step < m_sd->length * m_sd->steps);
-    const CCEvent* e = (*iter.m_iterator)->get_event(step);
+    const InterpolatedEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->set_event(step, value);
-    if (!e || e->get_value() != value)
+    if (!e || e->get_start() != value)
       signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }
 
 
   void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
     assert(step < m_sd->length * m_sd->steps);
-    const CCEvent* e = (*iter.m_iterator)->get_event(step);
+    const InterpolatedEvent* e = (*iter.m_iterator)->get_event(step);
     (*iter.m_iterator)->remove_event(step);
     if (e)
       signal_cc_removed((*iter.m_iterator)->get_param(), step);
@@ -656,6 +656,7 @@ namespace Dino {
       }
       
       // controllers
+      /*
       for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
 	if ((*m_sd->ctrls)[i]->get_event(step)) {
 	  events[list_no] = (*m_sd->ctrls)[i]->get_event(step);
@@ -664,7 +665,7 @@ namespace Dino {
 	}
       }
       if (list_no == room) break;
-      
+      */
     }
     
     // note off events after the last step

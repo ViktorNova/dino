@@ -99,8 +99,6 @@ namespace Dino {
       for (unsigned j = step + 1; j < i; ++j)
 	m_events[j] = m_events[step];
     }
-    
-    //XXX do this properly
   }
 
 

@@ -1110,7 +1110,7 @@
 
 		  <child>
 		    <widget class="GtkHBox" id="box_cc_editor">
-		      <property name="height_request">132</property>
+		      <property name="height_request">68</property>
 		      <property name="visible">True</property>
 		      <property name="homogeneous">False</property>
 		      <property name="spacing">0</property>

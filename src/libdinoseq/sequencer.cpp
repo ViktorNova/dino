@@ -329,9 +329,12 @@ namespace Dino {
 	jack_midi_clear_buffer(port_buf, nframes);
 
 	// add events in buffer
+	int k = ip_room;
+	(void)k;
 	int n = iter->get_events(start, end, m_event_buffer, m_timestamp_buffer,
 				 room, m_ip_event_buffer, m_ip_timestamp_buffer,
 				 ip_room);
+
 	for (int i = 0; i < n; ++i) {
 	  const MIDIEvent* event;
 	  jack_nframes_t frame_offset = 

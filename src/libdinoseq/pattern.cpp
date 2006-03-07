@@ -618,7 +618,8 @@ namespace Dino {
 
   int Pattern::get_events(double beat, double before_beat,
 			  const MIDIEvent** events, double* beats, int& room,
-			  const InterpolatedEvent**, double*, int&) const {
+			  const InterpolatedEvent** ip_events, 
+			  double* ip_beats, int& ip_room) const {
     // we need a local copy of the SeqData pointer so the other thread
     // doesn't change it before we are done
     SeqData* sd = m_sd;
@@ -667,8 +668,27 @@ namespace Dino {
       beats[list_no] = step / double(sd->steps) - off_d;
       ++list_no;
     }
-    
     room -= list_no;
+    
+    // controllers
+    list_no = 0;
+    for (step = unsigned(ceil(beat * sd->steps));
+	 step < before_beat * sd->steps; ++step) {
+      for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
+	if (list_no == ip_room)
+	  break;
+	const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
+	if (event && event->get_step() == step) {
+	  ip_events[list_no] = event;
+	  ip_beats[list_no] = step / double(sd->steps);
+	  ++list_no;
+	}
+      }
+      if (list_no == ip_room)
+	break;
+    }
+    ip_room -= list_no;
+    
     return list_no;
   }
   

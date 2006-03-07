@@ -578,6 +578,7 @@ namespace Dino {
     
     // iterate over all beats that intersects the interval [beat, before_beat)
     int event_start = 0;
+    int ip_event_start = 0;
     for (unsigned i = unsigned(beat); i < before_beat; ++i) {
       if (sequence[i] != NULL) {
 	
@@ -592,14 +593,20 @@ namespace Dino {
 	  end = sequence[i]->length;
 	
 	// retrieve the pattern events
+	int old_ip_room = ip_room;
 	int n = sequence[i]->pattern->
 	  get_events(beat - sequence[i]->start, end, events + event_start, 
-		     beats + event_start, room, ip_events, ip_beats, ip_room);
+		     beats + event_start, room, ip_events + ip_event_start, 
+		     ip_beats + ip_event_start, ip_room);
+	int k = old_ip_room - ip_room;
 	
 	// convert timestamps to song time
 	for (int j = event_start; j < event_start + n; ++j)
 	  beats[j] += sequence[i]->start;
 	event_start += n;
+	for (int j = ip_event_start; j < ip_event_start + k; ++j)
+	  ip_beats[j] += sequence[i]->start;
+	ip_event_start += k;
 	
 	// move forward to the end of this sequence entry
 	i = sequence[i]->start + sequence[i]->length - 1;

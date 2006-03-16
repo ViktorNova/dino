@@ -659,6 +659,23 @@ namespace Dino {
 	}
       }
       
+      // write CCs
+      for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
+	const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
+	if (event) {
+	  unsigned char* data = buffer.
+	    reserve(offset + step / double(sd->steps), 3);
+	  if (data) {
+	    data[0] = 0xB0;
+	    data[1] = event->get_param();
+	    data[2] = (unsigned char)(event->get_start() + 
+				      (step - event->get_step()) * 
+				      (event->get_end() - event->get_start()) / 
+				      double(event->get_length()));
+	  }
+	}
+      }
+      
     }
     
   }

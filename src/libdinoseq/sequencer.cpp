@@ -323,37 +323,12 @@ namespace Dino {
 
       // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->get_id()];
-      
-      
       if (port) {
 	void* port_buf = jack_port_get_buffer(port, nframes);
 	jack_midi_clear_buffer(port_buf, nframes);
 	MIDIBuffer buffer(port_buf);
 	buffer.set_period_size(nframes);
-	
-	// add events in buffer
 	iter->sequence(buffer, start, end);
-	
-	// old sequencing code
-	/*
-	  int k = ip_room;
-	  (void)k;
-	  int n = iter->get_events(start, end, m_event_buffer, m_timestamp_buffer,
-	  room, m_ip_event_buffer, m_ip_timestamp_buffer,
-	  ip_room);
-	  
-	  for (int i = 0; i < n; ++i) {
-	  const MIDIEvent* event;
-	  jack_nframes_t frame_offset = 
-	  jack_nframes_t(60 * pos.frame_rate * 
-	  (m_timestamp_buffer[i] - start) / 
-	  pos.beats_per_minute);
-	  for (event = m_event_buffer[i]; event; event = event->get_next()) {
-	  jack_midi_event_write(port_buf, frame_offset, 
-	  (jack_midi_data_t*)(event->get_data()),
-	  event->get_size(), nframes);
-	  }
-	  }*/
       }
     }
 

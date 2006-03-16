@@ -617,83 +617,6 @@ namespace Dino {
   }
 
 
-  int Pattern::get_events(double beat, double before_beat,
-			  const MIDIEvent** events, double* beats, int& room,
-			  const InterpolatedEvent** ip_events, 
-			  double* ip_beats, int& ip_room) const {
-    // we need a local copy of the SeqData pointer so the other thread
-    // doesn't change it before we are done
-    SeqData* sd = m_sd;
-    
-    assert(beat < sd->length);
-    assert(before_beat <= sd->length);
-    
-    int list_no = 0;
-    double off_d = 0.001;
-    unsigned step;
-    for (step = unsigned(ceil(beat * sd->steps));
-	 step < before_beat * sd->steps; ++step) {
-      
-      // note off events just before this step
-      if (step > 0 && (*sd->offs)[step-1] && 
-	  sd->steps * (beat + off_d) <= step) {
-	events[list_no] = (*sd->offs)[step - 1];
-	beats[list_no] = step / double(sd->steps) - off_d;
-	if (++list_no == room) break;
-      }
-      
-      // note on events on this step
-      if ((*sd->ons)[step]) {
-	events[list_no] = (*sd->ons)[step];
-	beats[list_no] = step / double(sd->steps);
-	if (++list_no == room) break;
-      }
-      
-      // controllers
-      /*
-      for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-	if ((*m_sd->ctrls)[i]->get_event(step)) {
-	  events[list_no] = (*m_sd->ctrls)[i]->get_event(step);
-	  beats[list_no] = step / double(sd->steps);
-	  if (++list_no == room) break;
-	}
-      }
-      if (list_no == room) break;
-      */
-    }
-    
-    // note off events after the last step
-    if (sd->steps * (before_beat + off_d) > step && (*sd->offs)[step - 1] &&
-	list_no < room) {
-      events[list_no] = (*sd->offs)[step - 1];
-      beats[list_no] = step / double(sd->steps) - off_d;
-      ++list_no;
-    }
-    room -= list_no;
-    
-    // controllers
-    list_no = 0;
-    for (step = unsigned(ceil(beat * sd->steps));
-	 step < before_beat * sd->steps; ++step) {
-      for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
-	if (list_no == ip_room)
-	  break;
-	const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
-	if (event && event->get_step() == step) {
-	  ip_events[list_no] = event;
-	  ip_beats[list_no] = step / double(sd->steps);
-	  ++list_no;
-	}
-      }
-      if (list_no == ip_room)
-	break;
-    }
-    ip_room -= list_no;
-    
-    return list_no;
-  }
-
-  
   void Pattern::sequence(MIDIBuffer& buffer, double from, 
 			 double to, double offset) const {
     
@@ -727,11 +650,13 @@ namespace Dino {
       }
       
       // write note offs
-      event = (*sd->offs)[step];
-      while (event) {
-	buffer.write(offset + step / double(sd->steps) + 1 - off_d, 
-		     event->get_data(), event->get_size());
-	event = event->get_next();
+      if (step / double(sd->steps) + 1 - off_d < to) {
+	event = (*sd->offs)[step];
+	while (event) {
+	  buffer.write(offset + step / double(sd->steps) + 1 - off_d, 
+		       event->get_data(), event->get_size());
+	  event = event->get_next();
+	}
       }
       
     }

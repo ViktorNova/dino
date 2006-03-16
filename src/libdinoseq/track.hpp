@@ -19,6 +19,7 @@ using namespace xmlpp;
 namespace Dino {
 
   class InterpolatedEvent;
+  class MIDIBuffer;
   class MIDIEvent;
   class Pattern;
 
@@ -168,6 +169,7 @@ namespace Dino {
 		   const MIDIEvent** events, double* beats, int& room,
 		   const InterpolatedEvent** ip_events, double* ip_beats,
 		   int& ip_room) const;
+    void sequence(MIDIBuffer& buffer, double from, double to) const;
     //@}
     
   public:

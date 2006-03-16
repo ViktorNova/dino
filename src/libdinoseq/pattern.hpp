@@ -25,7 +25,8 @@ namespace Dino {
   
   
   class InterpolatedEvent;
-  
+  class MIDIBuffer;
+
 
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
@@ -190,6 +191,8 @@ namespace Dino {
 		   const MIDIEvent** events, double* beats, int& room,
 		   const InterpolatedEvent** ip_events, 
 		   double* ip_beats, int& ip_room) const;
+    void sequence(MIDIBuffer& buffer, double from, 
+		  double to, double offset) const;
     //@}
     
   public:

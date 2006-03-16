@@ -525,6 +525,7 @@ void DinoGUI::init_sequence_editor() {
   m_dlg_track = m_xml->get_widget_derived("dlg_track_properties", m_dlg_track);
   m_seq.signal_instruments_changed.
     connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
+  m_dlg_track->update_ports(&m_seq);
 }
 
 

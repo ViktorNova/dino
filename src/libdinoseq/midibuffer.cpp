@@ -23,9 +23,11 @@ namespace Dino {
   }
     
   
-  int MIDIBuffer::write(double beat, unsigned char* data, size_t data_size) {
+  int MIDIBuffer::write(double beat, const 
+			unsigned char* data, size_t data_size) {
     // XXX compute timestamp here
-    return jack_midi_event_write(m_buffer, 0, data, data_size, m_nframes);
+    return jack_midi_event_write(m_buffer, 0, (jack_midi_data_t*)data, 
+				 data_size, m_nframes);
   }
 
 

@@ -627,4 +627,30 @@ namespace Dino {
   }
 
 
+  void Track::sequence(MIDIBuffer& buffer, double from, double to) const {
+    assert(from >= 0);
+    assert(to >= 0);
+    
+    const vector<SequenceEntry*>& sequence = *m_sequence;
+    if (from >= sequence.size())
+      return;
+    if (to > sequence.size())
+      to = sequence.size();
+    
+    // iterate over all beats in the interval [from, to]
+    unsigned beat = unsigned(from);
+    while (beat < to) {
+      if (sequence[beat]) {
+	SequenceEntry* const& se = sequence[beat];
+	se->pattern->sequence(buffer, from - se->start, 
+			      to - se->start, se->start);
+	beat += sequence[beat]->start + sequence[beat]->length - beat;
+      }
+      else
+	++beat;
+    }
+
+  }
+
+
 }

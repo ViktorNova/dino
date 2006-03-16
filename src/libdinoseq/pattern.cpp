@@ -8,6 +8,7 @@
 
 #include "debug.hpp"
 #include "deleter.hpp"
+#include "midibuffer.hpp"
 #include "noteevent.hpp"
 #include "pattern.hpp"
 
@@ -690,6 +691,51 @@ namespace Dino {
     ip_room -= list_no;
     
     return list_no;
+  }
+
+  
+  void Pattern::sequence(MIDIBuffer& buffer, double from, 
+			 double to, double offset) const {
+    
+    // need to copy this because the editing thread might change it
+    SeqData* sd = m_sd;
+    
+    unsigned start = unsigned(ceil(from * sd->steps));
+    unsigned end = unsigned(ceil(to * sd->steps));
+    end = (end > sd->length * sd->steps ? sd->length * sd->steps : end);
+    double off_d = 0.001;
+    
+    // note off just before the first tick?
+    if (start > 0 && (*sd->offs)[start - 1] && 
+	start - from * sd->steps > 0.001 * sd->steps) {
+      NoteEvent* event = (*sd->offs)[start - 1];
+      while (event) {
+	buffer.write(start / double(sd->steps) - off_d, event->get_data(),
+		     event->get_size());
+	event = event->get_next();
+      }
+    }
+    
+    for (unsigned step = start; step < end; ++step) {
+      
+      // write note ons
+      NoteEvent* event = (*sd->ons)[step];
+      while (event) {
+	buffer.write(offset + step / double(sd->steps), 
+		     event->get_data(), event->get_size());
+	event = event->get_next();
+      }
+      
+      // write note offs
+      event = (*sd->offs)[step];
+      while (event) {
+	buffer.write(offset + step / double(sd->steps) + 1 - off_d, 
+		     event->get_data(), event->get_size());
+	event = event->get_next();
+      }
+      
+    }
+    
   }
   
 

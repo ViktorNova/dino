@@ -579,7 +579,7 @@ namespace Dino {
       if (sequence[beat]) {
 	SequenceEntry* const& se = sequence[beat];
 	se->pattern->sequence(buffer, from - se->start, 
-			      to - se->start, se->start);
+			      to - se->start, se->start, m_channel);
 	beat += sequence[beat]->start + sequence[beat]->length - beat;
       }
       else

@@ -618,7 +618,7 @@ namespace Dino {
 
 
   void Pattern::sequence(MIDIBuffer& buffer, double from, 
-			 double to, double offset) const {
+			 double to, double offset, int channel) const {
     
     // need to copy this because the editing thread might change it
     SeqData* sd = m_sd;
@@ -633,8 +633,12 @@ namespace Dino {
 	start - from * sd->steps > 0.001 * sd->steps) {
       NoteEvent* event = (*sd->offs)[start - 1];
       while (event) {
-	buffer.write(start / double(sd->steps) - off_d, event->get_data(),
-		     event->get_size());
+	unsigned char* data = buffer.reserve(start / double(sd->steps) - off_d,
+					     event->get_size());
+	if (data) {
+	  memcpy(data, event->get_data(), event->get_size());
+	  data[0] |= (unsigned char)channel;
+	}
 	event = event->get_next();
       }
     }
@@ -644,8 +648,12 @@ namespace Dino {
       // write note ons
       NoteEvent* event = (*sd->ons)[step];
       while (event) {
-	buffer.write(offset + step / double(sd->steps), 
-		     event->get_data(), event->get_size());
+	unsigned char* data = buffer.reserve(offset + step / double(sd->steps),
+					     event->get_size());
+	if (data) {
+	  memcpy(data, event->get_data(), event->get_size());
+	  data[0] |= (unsigned char)channel;
+	}
 	event = event->get_next();
       }
       
@@ -653,8 +661,13 @@ namespace Dino {
       if (step / double(sd->steps) + 1 - off_d < to) {
 	event = (*sd->offs)[step];
 	while (event) {
-	  buffer.write(offset + step / double(sd->steps) + 1 - off_d, 
-		       event->get_data(), event->get_size());
+	  unsigned char* data = 
+	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 
+			   event->get_size());
+	  if (data) {
+	    memcpy(data, event->get_data(), event->get_size());
+	    data[0] |= (unsigned char)channel;
+	  }
 	  event = event->get_next();
 	}
       }
@@ -666,12 +679,12 @@ namespace Dino {
 	  unsigned char* data = buffer.
 	    reserve(offset + step / double(sd->steps), 3);
 	  if (data) {
-	    data[0] = 0xB0;
+	    data[0] = 0xB0 | (unsigned char)channel;
 	    data[1] = event->get_param();
 	    data[2] = (unsigned char)(event->get_start() + 
 				      (step - event->get_step()) * 
-				      (event->get_end() - event->get_start()) / 
-				      double(event->get_length()));
+				      ((event->get_end() - event->get_start()) /
+				       double(event->get_length())));
 	  }
 	}
       }

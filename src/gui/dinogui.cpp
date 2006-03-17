@@ -141,7 +141,7 @@ void DinoGUI::slot_edit_delete_track() {
 
 void DinoGUI::slot_edit_edit_track_properties() {
   if (m_active_track >= 0) {
-    Track t = *(m_song.find_track(m_active_track));
+    Track& t = *(m_song.find_track(m_active_track));
     m_dlg_track->set_name(t.get_name());
     m_dlg_track->set_channel(t.get_channel() + 1);
     m_dlg_track->refocus();

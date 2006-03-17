@@ -188,7 +188,7 @@ namespace Dino {
     /// @name Sequencing
     //@{
     void sequence(MIDIBuffer& buffer, double from, 
-		  double to, double offset) const;
+		  double to, double offset, int channel) const;
     //@}
     
   public:

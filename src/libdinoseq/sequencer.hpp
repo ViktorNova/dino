@@ -61,7 +61,10 @@ namespace Dino {
     /** This returns a vector of all instruments that are available for
 	the sequencer to play. */
     vector<InstrumentInfo> get_instruments(int track = -1) const;
-    /** This assigns the given instrument to the given track. */
+    /** This assigns the given instrument to the given track, i.e. connects
+	the track's output port to the instruments input port. This is not
+	saved in the .dino file since all connections are supposed to be
+	restored by LASH. */
     void set_instrument(int track, const string& instrument);
     /** This creates new MIDI output ports for all tracks. */
     void reset_ports();
@@ -149,15 +152,12 @@ namespace Dino {
     jack_client_t* m_jack_client;
     map<int, jack_port_t*> m_output_ports;
     jack_port_t* m_input_port;
+    
+    double m_cc_resolution;
     int m_last_beat;
     int m_last_tick;
+
     bool m_sent_all_off;
-    static const int m_event_buffer_size = 1024;
-    const MIDIEvent* m_event_buffer[m_event_buffer_size];
-    double m_timestamp_buffer[m_event_buffer_size];
-    const InterpolatedEvent* m_ip_event_buffer[m_event_buffer_size];
-    double m_ip_timestamp_buffer[m_event_buffer_size];
-    
     volatile int m_current_beat;
     volatile int m_old_current_beat;
     volatile int m_ports_changed;

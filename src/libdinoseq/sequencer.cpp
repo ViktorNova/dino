@@ -22,6 +22,7 @@ namespace Dino {
     : m_client_name(client_name), 
       m_song(song), 
       m_valid(false),
+      m_cc_resolution(0.01),
       m_last_beat(0), 
       m_last_tick(0), 
       m_sent_all_off(false),

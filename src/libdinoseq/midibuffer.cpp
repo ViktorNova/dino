@@ -15,6 +15,16 @@ namespace Dino {
   void MIDIBuffer::set_period_size(unsigned long nframes) {
     m_nframes = nframes;
   }
+
+
+  void MIDIBuffer::set_cc_resolution(double beats) {
+    m_cc_resolution = beats;
+  }
+
+
+  double MIDIBuffer::get_cc_resolution() const {
+    return m_cc_resolution;
+  }
   
   
   unsigned char* MIDIBuffer::reserve(double beat, size_t data_size) {

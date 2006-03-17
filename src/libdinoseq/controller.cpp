@@ -14,7 +14,7 @@ namespace Dino {
       m_param(param),
       m_min(min),
       m_max(max) {
-    assert(m_param < 128);
+    assert(m_param <= 128);
   }
   
   

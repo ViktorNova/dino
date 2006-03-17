@@ -17,8 +17,6 @@ using namespace std;
 namespace Dino {
 
 
-  class InterpolatedEvent;
-  class MIDIEvent;
   class Song;
 
 
@@ -154,6 +152,7 @@ namespace Dino {
     jack_port_t* m_input_port;
     
     double m_cc_resolution;
+    double m_time_to_next_cc;
     int m_last_beat;
     int m_last_tick;
 

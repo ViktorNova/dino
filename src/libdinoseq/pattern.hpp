@@ -169,7 +169,7 @@ namespace Dino {
     /** Remove a controller. */
     void remove_controller(ControllerIterator iter);
     /** Add a CC event to the given controller. */
-    void add_cc(ControllerIterator iter, unsigned int step,unsigned char value);
+    void add_cc(ControllerIterator iter, unsigned int step, int value);
     /** Remove a CC event. */
     void remove_cc(ControllerIterator iter, unsigned int step);
     /** Reset the "dirty rect".

@@ -23,6 +23,7 @@ namespace Dino {
       m_song(song), 
       m_valid(false),
       m_cc_resolution(0.01),
+      m_time_to_next_cc(0),
       m_last_beat(0), 
       m_last_tick(0), 
       m_sent_all_off(false),
@@ -329,6 +330,7 @@ namespace Dino {
 	jack_midi_clear_buffer(port_buf, nframes);
 	MIDIBuffer buffer(port_buf);
 	buffer.set_period_size(nframes);
+	buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
 	iter->sequence(buffer, start, end);
       }
     }

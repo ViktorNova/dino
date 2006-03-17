@@ -502,8 +502,7 @@ namespace Dino {
   }
 
   
-  void Pattern::add_cc(ControllerIterator iter, unsigned int step, 
-		       unsigned char value) {
+  void Pattern::add_cc(ControllerIterator iter, unsigned int step, int value) {
     assert(step < m_sd->length * m_sd->steps);
     (*iter.m_iterator)->add_point(step, value);
     signal_cc_added((*iter.m_iterator)->get_param(), step, value);
@@ -619,46 +618,67 @@ namespace Dino {
 
   void Pattern::sequence(MIDIBuffer& buffer, double from, 
 			 double to, double offset, int channel) const {
+    unsigned long cc_steps = 0;
     
     // need to copy this because the editing thread might change it
     SeqData* sd = m_sd;
     
-    unsigned start = unsigned(ceil(from * sd->steps));
+    unsigned start = unsigned(floor(from * sd->steps));
     unsigned end = unsigned(ceil(to * sd->steps));
     end = (end > sd->length * sd->steps ? sd->length * sd->steps : end);
     double off_d = 0.001;
-    
-    // note off just before the first tick?
-    if (start > 0 && (*sd->offs)[start - 1] && 
-	start - from * sd->steps > 0.001 * sd->steps) {
-      NoteEvent* event = (*sd->offs)[start - 1];
-      while (event) {
-	unsigned char* data = buffer.reserve(start / double(sd->steps) - off_d,
-					     event->get_size());
-	if (data) {
-	  memcpy(data, event->get_data(), event->get_size());
-	  data[0] |= (unsigned char)channel;
-	}
-	event = event->get_next();
-      }
-    }
+    double cc_pos = from;
     
     for (unsigned step = start; step < end; ++step) {
       
       // write note ons
       NoteEvent* event = (*sd->ons)[step];
-      while (event) {
-	unsigned char* data = buffer.reserve(offset + step / double(sd->steps),
-					     event->get_size());
-	if (data) {
-	  memcpy(data, event->get_data(), event->get_size());
-	  data[0] |= (unsigned char)channel;
+      if (step / double(sd->steps) >= from) {
+	while (event) {
+	  unsigned char* data = buffer.reserve(offset+ step / double(sd->steps),
+					       event->get_size());
+	  if (data) {
+	    memcpy(data, event->get_data(), event->get_size());
+	    data[0] |= (unsigned char)channel;
+	  }
+	  event = event->get_next();
 	}
-	event = event->get_next();
+      }
+      
+      // write CCs
+      //cerr<<"cc_pos = "<<cc_pos<<", step = "<<step<<endl;
+      for ( ; cc_pos < (step + 1) / double(sd->steps) && cc_pos < to; 
+	    cc_pos += buffer.get_cc_resolution()) {
+	++cc_steps;
+	for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
+	  const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
+	  if (event) {
+	    unsigned char* data = buffer.
+	      reserve(offset + cc_pos, 3);
+	    if (data && event->get_param() < 128) {
+	      data[0] = 0xB0 | (unsigned char)channel;
+	      data[1] = event->get_param();
+	      data[2] = (unsigned char)
+		(event->get_start() + (cc_pos * sd->steps - event->get_step()) *
+		 ((event->get_end() - event->get_start()) /
+		  double(event->get_length())));
+	    }
+	    else if (data && event->get_param() == 128) {
+	      data[0] = 0xE0 | (unsigned char)channel;
+	      int value = int(event->get_start() + 
+			      (cc_pos * sd->steps - event->get_step()) *
+			      ((event->get_end() - event->get_start()) /
+			       double(event->get_length())));
+	      data[1] = (value + 8192) & 0x7F;
+	      data[2] = ((value + 8192) >> 7) & 0x7F;
+	    }
+	  }
+	}
       }
       
       // write note offs
-      if (step / double(sd->steps) + 1 - off_d < to) {
+      if ((step / double(sd->steps) + 1 - off_d < to) &&
+	  (step / double(sd->steps) + 1 - off_d >= from)){
 	event = (*sd->offs)[step];
 	while (event) {
 	  unsigned char* data = 
@@ -669,23 +689,6 @@ namespace Dino {
 	    data[0] |= (unsigned char)channel;
 	  }
 	  event = event->get_next();
-	}
-      }
-      
-      // write CCs
-      for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
-	const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
-	if (event) {
-	  unsigned char* data = buffer.
-	    reserve(offset + step / double(sd->steps), 3);
-	  if (data) {
-	    data[0] = 0xB0 | (unsigned char)channel;
-	    data[1] = event->get_param();
-	    data[2] = (unsigned char)(event->get_start() + 
-				      (step - event->get_step()) * 
-				      ((event->get_end() - event->get_start()) /
-				       double(event->get_length())));
-	  }
 	}
       }
       

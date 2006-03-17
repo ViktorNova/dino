@@ -68,8 +68,10 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
     if ((step = xpix2step(int(event->x))) < 
 	m_pat->get_length() * m_pat->get_steps()) {
       int value = ypix2value(int(event->y));
-      value = (value < 0 ? 0 : value);
-      value = (value >127 ? 127 : value);
+      int min = m_pat->ctrls_find(m_controller)->get_min();
+      int max = m_pat->ctrls_find(m_controller)->get_max();
+      value = (value < min ? min : value);
+      value = (value > max ? max : value);
       m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
     }
   }
@@ -102,8 +104,10 @@ bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
     if ((step = xpix2step(int(event->x))) < 
 	m_pat->get_length() * m_pat->get_steps()) {
       int value = ypix2value(int(event->y));
-      value = (value < 0 ? 0 : value);
-      value = (value >127 ? 127 : value);
+      int min = m_pat->ctrls_find(m_controller)->get_min();
+      int max = m_pat->ctrls_find(m_controller)->get_max();
+      value = (value < min ? min : value);
+      value = (value > max ? max : value);
       m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
     }
   }
@@ -185,12 +189,22 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
 
 
 int CCEditor::value2ypix(int value) {
-  return int((127 - value) * (get_height() - 4) / 128.0);
+  if (m_pat) {
+    int max = m_pat->ctrls_find(m_controller)->get_max();
+    int min = m_pat->ctrls_find(m_controller)->get_min();
+    return get_height() - int(get_height() * (value - min) / double(max - min));
+  }
+  return 0;
 }
 
 
 int CCEditor::ypix2value(int y) { 
-  return 128 - int(129.0 / get_height() * y);
+  if (m_pat) {
+    int max = m_pat->ctrls_find(m_controller)->get_max();
+    int min = m_pat->ctrls_find(m_controller)->get_min();
+    return min + int((get_height() - y) * (max - min) / double(get_height()));
+  }
+  return 0;
 }
 
 

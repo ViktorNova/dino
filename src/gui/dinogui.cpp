@@ -213,9 +213,14 @@ void DinoGUI::slot_edit_add_controller() {
     m_dlg_controller->show_all();
     if (m_dlg_controller->run() == RESPONSE_OK) {
       Pattern::ControllerIterator iter;
+      int min = 0, max = 127;
+      if (m_dlg_controller->get_controller() == 128) {
+	min = -8192;
+	max = 8191;
+      }
       iter = m_song.find_track(m_active_track)->pat_find(m_active_pattern)->
 	add_controller(m_dlg_controller->get_name(),
-		       m_dlg_controller->get_controller(), 0, 127);
+		       m_dlg_controller->get_controller(), min, max);
       m_cmb_controller.set_active_id(iter->get_param());
     }
     m_dlg_controller->hide();

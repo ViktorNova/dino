@@ -21,6 +21,8 @@ ControllerDialog::ControllerDialog(BaseObjectType* obj,
     m_cmb_controller.append_text(oss.str(), i);
     oss.str("");
   }
+  m_cmb_controller.append_text("Pitchbend", 128);
+  
   m_cmb_controller.signal_changed().
     connect(mem_fun(*this, &ControllerDialog::update_entry));
   m_ent_name->select_region(0, -1);
@@ -59,7 +61,10 @@ void ControllerDialog::update_entry() {
   int a, b;
   m_ent_name->get_selection_bounds(a, b);
   if (a == 0 && b == (int)m_ent_name->get_text().size()) {
-    m_ent_name->set_text(m_cc_desc[m_cmb_controller.get_active_id()]);
+    if (m_cmb_controller.get_active_id() < 128)
+      m_ent_name->set_text(m_cc_desc[m_cmb_controller.get_active_id()]);
+    else if (m_cmb_controller.get_active_id() == 128)
+      m_ent_name->set_text("Pitchbend");
     m_ent_name->select_region(0, -1);
   }
 }

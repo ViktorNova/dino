@@ -139,8 +139,10 @@ namespace Dino {
       }
     
       // connect the new instrument
-      jack_connect(m_jack_client, 
-		   jack_port_name(iter->second), instrument.c_str());
+      if (instrument != "None") {
+	jack_connect(m_jack_client, 
+		     jack_port_name(iter->second), instrument.c_str());
+      }
     }
   }
 

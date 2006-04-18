@@ -40,6 +40,8 @@ protected:
   
   Dino::Pattern* m_pat;
   unsigned int m_controller;
+  
+  int m_drag_step;
 };
 
 

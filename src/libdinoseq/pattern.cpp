@@ -507,7 +507,7 @@ namespace Dino {
 
   
   void Pattern::add_cc(ControllerIterator iter, unsigned int step, int value) {
-    assert(step < m_sd->length * m_sd->steps);
+    assert(step <= m_sd->length * m_sd->steps);
     (*iter.m_iterator)->add_point(step, value);
     signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }

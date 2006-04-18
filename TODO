@@ -9,13 +9,13 @@ Should be done before 0.2:
  [X] Creating and deleting patterns
  [X] Changing pattern properties (label, length, note resolution)
  [X] Editing note events in patterns
- [/] Editing CC and pitch bend events in patterns
+ [X] Editing CC and pitch bend events in patterns
  [X] Arrange patterns
  [X] Add, edit, and delete tempo changes
  [X] Play MIDI note events
  [X] Loading and saving files
  [X] Support for CCA events Save_File, Restore_File, and Quit
- [/] Playing MIDI CC and pitch bend events
+ [X] Playing MIDI CC and pitch bend events
  [ ] Duplicate patterns
 
 Later (before 0.4?):

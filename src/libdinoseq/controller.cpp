@@ -60,10 +60,17 @@ namespace Dino {
   
   
   void Controller::add_point(unsigned int step, int value) {
-    assert(step < m_events.size());
+    assert(step <= m_events.size());
     assert(value >= m_min);
     assert(value <= m_max);
     
+    // change the last point in the controller if there is an event
+    if (step == m_events.size() && m_events[step - 1]) {
+      m_events[step - 1]->set_end(value);
+      return;
+    }
+      
+    // if an old event is going on at this step, handle it
     InterpolatedEvent* old_event = m_events[step];
     if (old_event != 0) {
       if (old_event->get_step() == step) {
@@ -85,6 +92,8 @@ namespace Dino {
 	  m_events[i] = m_events[step];
       }
     }
+    
+    // if not, we are the first event
     else {
       unsigned i;
       for (i = step; i < m_events.size() && m_events[i] == 0; ++i);

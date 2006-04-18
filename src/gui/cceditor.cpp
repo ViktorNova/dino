@@ -17,7 +17,8 @@ CCEditor::CCEditor()
     m_edge_colour("#000000"),
     m_fg_colour("#008000"),
     m_step_width(8),
-    m_pat(NULL) {
+    m_pat(NULL),
+    m_drag_step(-1) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();
   cmap->alloc_color(m_bg_colour1);
@@ -64,15 +65,18 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
   
   // add a CC event
   if (event->button == 1 || event->button == 2) {
-    int step;
-    if ((step = xpix2step(int(event->x))) < 
-	m_pat->get_length() * m_pat->get_steps()) {
+    int step = xpix2step(int(event->x));
+    if (step <= m_pat->get_length() * m_pat->get_steps()) {
       int value = ypix2value(int(event->y));
       int min = m_pat->ctrls_find(m_controller)->get_min();
       int max = m_pat->ctrls_find(m_controller)->get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
       m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
+      if (event->button == 2)
+	m_drag_step = step;
+      else
+	m_drag_step = -1;
     }
   }
   
@@ -100,9 +104,10 @@ bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
   
   // add a CC event
   if (event->state & GDK_BUTTON1_MASK || event->state & GDK_BUTTON2_MASK) {
-    int step;
-    if ((step = xpix2step(int(event->x))) < 
-	m_pat->get_length() * m_pat->get_steps()) {
+    int step = m_drag_step;
+    if (step == -1)
+      step = xpix2step(int(event->x));
+    if (step <= m_pat->get_length() * m_pat->get_steps()) {
       int value = ypix2value(int(event->y));
       int min = m_pat->ctrls_find(m_controller)->get_min();
       int max = m_pat->ctrls_find(m_controller)->get_max();

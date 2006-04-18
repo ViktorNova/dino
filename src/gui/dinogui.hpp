@@ -37,6 +37,7 @@ private:
   void slot_file_open();
   void slot_file_save();
   void slot_file_save_as();
+  void slot_file_clear_all();
   void slot_file_quit();
   
   void slot_edit_cut();

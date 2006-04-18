@@ -5,6 +5,8 @@
 #include <sstream>
 #include <utility>
 
+#include <gtkmm/messagedialog.h>
+
 #include <config.hpp>
 
 #include "cceditor.hpp"
@@ -43,7 +45,18 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
     m_octave_label(20, 8),
     m_seq("Dino", m_song) {
   
-  init_lash(argc, argv);
+  if (!m_seq.is_valid()) {
+    MessageDialog dlg("Could not initialise the sequencer! You will not be "
+		      "able to play anything.", false, MESSAGE_WARNING);
+    dlg.run();
+  }
+  
+  if (!init_lash(argc, argv)) {
+    MessageDialog dlg("Could not initialise LASH! You will not be able "
+		      "to save your session.", false, MESSAGE_WARNING);
+    dlg.run();
+  }
+    
   
   m_window = w<Gtk::Window>("main_window");
   m_about_dialog = w<AboutDialog>("dlg_about");
@@ -89,6 +102,13 @@ void DinoGUI::slot_file_save() {
 
 void DinoGUI::slot_file_save_as() {
   m_song.write_file("output.dino");
+}
+
+
+void DinoGUI::slot_file_clear_all() {
+  m_song.clear();
+  m_song.set_length(32);
+  reset_gui();
 }
 
 
@@ -267,12 +287,15 @@ void DinoGUI::slot_help_about_dino() {
 
 
 void DinoGUI::reset_gui() {
-  m_active_track = -1;
-  m_active_pattern = -1;
-  m_active_controller = -1;
-  signal_active_track_changed(m_active_track);
-  signal_active_pattern_changed(m_active_track, m_active_pattern);
-  signal_active_controller_changed(m_active_controller);
+  set_active_track(-1);
+  set_active_pattern(-1);
+  set_active_controller(-1);
+  //m_active_track = -1;
+  //m_active_pattern = -1;
+  //m_active_controller = -1;
+  //signal_active_track_changed(m_active_track);
+  //signal_active_pattern_changed(m_active_track, m_active_pattern);
+  //signal_active_controller_changed(m_active_controller);
   update_track_combo();
   update_pattern_combo();
   update_controller_combo();
@@ -544,10 +567,11 @@ void DinoGUI::init_sequence_editor() {
 void DinoGUI::init_menus() {
   // connect menu signals
   map<string, void (DinoGUI::*)(void)> menuSlots;
-  menuSlots["new1"] = &DinoGUI::slot_file_new;
-  menuSlots["open1"] = &DinoGUI::slot_file_open;
-  menuSlots["save1"] = &DinoGUI::slot_file_save;
-  menuSlots["save_as1"] = &DinoGUI::slot_file_save_as;
+  //menuSlots["new1"] = &DinoGUI::slot_file_new;
+  //menuSlots["open1"] = &DinoGUI::slot_file_open;
+  //menuSlots["save1"] = &DinoGUI::slot_file_save;
+  //menuSlots["save_as1"] = &DinoGUI::slot_file_save_as;
+  menuSlots["clear_all1"] = &DinoGUI::slot_file_clear_all;
   menuSlots["quit1"] = &DinoGUI::slot_file_quit;
   menuSlots["cut1"] = &DinoGUI::slot_edit_cut;
   menuSlots["copy1"] = &DinoGUI::slot_edit_copy;

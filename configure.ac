@@ -4,10 +4,9 @@
 AC_PREREQ(2.59)
 
 # Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.1.195)
+AC_INIT(dino, 0.1.196)
 AC_CONFIG_HEADERS([src/config.hpp])
 AC_DEFINE([CR_YEAR], ["2006"], [The copyright year])
-AC_DEFINE([DATA_DIR], ["$pkgdatadir"], [The directory for data files])
 
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src/gui/main.cpp])

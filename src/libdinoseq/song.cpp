@@ -453,6 +453,9 @@ namespace Dino {
 
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new map<int, Track*>();
+    map<int, Track*>::iterator iter;
+    for (iter = old_tracks->begin(); iter != old_tracks->end(); ++iter)
+      Deleter::queue(iter->second);
     Deleter::queue(old_tracks);
     
     m_tempo_map = TempoMap();

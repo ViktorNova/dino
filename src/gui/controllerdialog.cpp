@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "controller_numbers.hpp"
 #include "controllerdialog.hpp"
 
 using namespace Glib;
@@ -15,13 +16,15 @@ ControllerDialog::ControllerDialog(BaseObjectType* obj,
   m_ent_name = dynamic_cast<Entry*>(xml->get_widget("dlgcont_ent_name"));
   Box* box = dynamic_cast<Box*>(xml->get_widget("dlgcont_box_controller"));
   box->pack_start(m_cmb_controller);
+
+  m_cmb_controller.append_text("Pitchbend", Dino::make_pbend());
+
   ostringstream oss;
   for (unsigned i = 0; i < 128; ++i) {
-    oss<<setw(3)<<setfill('0')<<i<<" "<<m_cc_desc[i];
-    m_cmb_controller.append_text(oss.str(), i);
+    oss<<"CC"<<setw(3)<<setfill('0')<<i<<": "<<m_cc_desc[i];
+    m_cmb_controller.append_text(oss.str(), Dino::make_cc(i));
     oss.str("");
   }
-  m_cmb_controller.append_text("Pitchbend", 128);
   
   m_cmb_controller.signal_changed().
     connect(mem_fun(*this, &ControllerDialog::update_entry));
@@ -36,7 +39,7 @@ std::string ControllerDialog::get_name() const {
 }
 
 
-int ControllerDialog::get_controller() const {
+long ControllerDialog::get_controller() const {
   return m_cmb_controller.get_active_id();
 }
   
@@ -46,7 +49,7 @@ void ControllerDialog::set_name(const std::string& name) {
 }
 
 
-void ControllerDialog::set_controller(int controller) {
+void ControllerDialog::set_controller(long controller) {
   m_cmb_controller.set_active_id(controller);
 }
 
@@ -61,9 +64,10 @@ void ControllerDialog::update_entry() {
   int a, b;
   m_ent_name->get_selection_bounds(a, b);
   if (a == 0 && b == (int)m_ent_name->get_text().size()) {
-    if (m_cmb_controller.get_active_id() < 128)
-      m_ent_name->set_text(m_cc_desc[m_cmb_controller.get_active_id()]);
-    else if (m_cmb_controller.get_active_id() == 128)
+    if (Dino::is_cc(m_cmb_controller.get_active_id()))
+      m_ent_name->
+	set_text(m_cc_desc[Dino::cc_number(m_cmb_controller.get_active_id())]);
+    else if (Dino::is_pbend(m_cmb_controller.get_active_id()))
       m_ent_name->set_text("Pitchbend");
     m_ent_name->select_region(0, -1);
   }

@@ -135,7 +135,7 @@ namespace Dino {
     ControllerIterator ctrls_end() const;
     /** Return an iterator for the controller with parameter @c param, or an
 	invalid iterator if no such controller exists. */
-    ControllerIterator ctrls_find(unsigned long param) const;
+    ControllerIterator ctrls_find(long param) const;
     /** Return the number of steps per beat. */
     int get_steps() const;
     /** Return the length in beats. */
@@ -164,8 +164,8 @@ namespace Dino {
     /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
     /** Add a controller for this pattern. */
-    ControllerIterator add_controller(const std::string& name, 
-				      unsigned long param, int min, int max);
+    ControllerIterator add_controller(const std::string& name, long param, 
+				      int min, int max);
     /** Remove a controller. */
     void remove_controller(ControllerIterator iter);
     /** Add a CC event to the given controller. */

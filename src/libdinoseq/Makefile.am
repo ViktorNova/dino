@@ -3,6 +3,7 @@ AM_CPPFLAGS = @LIBXMLPP_CFLAGS@ @JACK_CFLAGS@ @DEBUG_CFLAGS@
 noinst_LTLIBRARIES = libdinoseq.la
 
 libdinoseq_la_SOURCES = \
+	controller_numbers.hpp \
 	controller.cpp controller.hpp \
 	deleter.hpp \
 	interpolatedevent.cpp interpolatedevent.hpp \

@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include "controller_numbers.hpp"
 #include "controller.hpp"
 #include "deleter.hpp"
 
@@ -8,13 +9,13 @@ namespace Dino {
 
 
   Controller::Controller(const std::string& name, unsigned int size, 
-			 unsigned long param, int min, int max) 
+			 long param, int min, int max) 
     : m_name(name),
       m_events(size, 0),
       m_param(param),
       m_min(min),
       m_max(max) {
-    assert(m_param <= 128);
+    assert(controller_is_set(m_param));
   }
   
   
@@ -43,7 +44,7 @@ namespace Dino {
   }
 
 
-  unsigned long Controller::get_param() const {
+  long Controller::get_param() const {
     return m_param;
   }
   

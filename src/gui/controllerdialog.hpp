@@ -14,10 +14,10 @@ public:
 		   const Glib::RefPtr<Gnome::Glade::Xml>& xml);
   
   std::string get_name() const;
-  int get_controller() const;
+  long get_controller() const;
   
   void set_name(const std::string& name);
-  void set_controller(int controller);
+  void set_controller(long controller);
   
   void refocus();
   

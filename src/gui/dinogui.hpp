@@ -98,7 +98,7 @@ private:
   Dino::Song m_song;
   int m_active_track;
   int m_active_pattern;
-  int m_active_controller;
+  long m_active_controller;
   
   Glib::RefPtr<Gnome::Glade::Xml> m_xml;
   Gtk::Window* m_window;

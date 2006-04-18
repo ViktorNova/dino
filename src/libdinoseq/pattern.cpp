@@ -450,12 +450,12 @@ namespace Dino {
 
 
   Pattern::ControllerIterator Pattern::add_controller(const std::string& name,
-						      unsigned long param, 
+						      long param, 
 						      int min, int max) {
     // find the place to insert the new controller
     unsigned i;
     for (i = 0; i < m_sd->ctrls->size(); ++i) {
-      unsigned long this_param = (*m_sd->ctrls)[i]->get_param();
+      long this_param = (*m_sd->ctrls)[i]->get_param();
       if (this_param == param)
 	return ControllerIterator(m_sd->ctrls->begin() + i);
       else if (this_param > param)
@@ -472,6 +472,8 @@ namespace Dino {
     vector<Controller*>* tmp = m_sd->ctrls;
     m_sd->ctrls = new_vector;
     Deleter::queue(tmp);
+    
+    dbg1<<"Added controller \""<<name<<"\" with parameter "<<param<<endl;
     
     signal_controller_added(param);
     return ControllerIterator(new_vector->begin() + i);
@@ -490,7 +492,7 @@ namespace Dino {
     
     // make a copy of the old vector
     vector<Controller*>* new_vector = new vector<Controller*>(*m_sd->ctrls);
-    unsigned long param = (*m_sd->ctrls)[i]->get_param();
+    long param = (*m_sd->ctrls)[i]->get_param();
     new_vector->erase(new_vector->begin() + i);
     
     // delete the old vector
@@ -498,6 +500,8 @@ namespace Dino {
     m_sd->ctrls = new_vector;
     Deleter::queue(tmp);
     
+    dbg1<<"Removed controller"<<endl;
+
     signal_controller_removed(param);
   }
 
@@ -733,7 +737,7 @@ namespace Dino {
   }
   
   
-  Pattern::ControllerIterator Pattern::ctrls_find(unsigned long param) const {
+  Pattern::ControllerIterator Pattern::ctrls_find(long param) const {
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
       if ((*m_sd->ctrls)[i]->get_param() == param)
 	return ControllerIterator(m_sd->ctrls->begin() + i);

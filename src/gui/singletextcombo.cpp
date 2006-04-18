@@ -18,7 +18,7 @@ SingleTextCombo::SingleTextCombo() {
 }
 
 
-void SingleTextCombo::append_text(const ustring& text, int id) {
+void SingleTextCombo::append_text(const ustring& text, long id) {
   TreeModel::iterator iter = m_store->append();
   TreeModel::Row row = *iter;
   row[m_text_columns.m_text] = text;
@@ -26,15 +26,15 @@ void SingleTextCombo::append_text(const ustring& text, int id) {
 }
 
 
-void SingleTextCombo::prepend_text(const ustring& text, int id) {
+void SingleTextCombo::prepend_text(const ustring& text, long id) {
   TreeModel::iterator iter = m_store->prepend();
   TreeModel::Row row = *iter;
   row[m_text_columns.m_text] = text;
 }
 
 
-int SingleTextCombo::get_active_id() const {
-  int result = -1;
+long SingleTextCombo::get_active_id() const {
+  long result = -1;
   TreeModel::iterator activeRow = get_active();
   if(activeRow) {
     TreeModel::Row row = *activeRow;
@@ -49,12 +49,12 @@ void SingleTextCombo::clear() {
 }
 
 
-bool SingleTextCombo::set_active_id(int ID) {
+bool SingleTextCombo::set_active_id(long ID) {
   RefPtr<TreeModel> model = get_model();
   if(model) {
     for(TreeModel::iterator iter = model->children().begin(); 
 	iter != model->children().end(); ++iter) {
-      int thisID = (*iter)[m_text_columns.m_id];
+      long thisID = (*iter)[m_text_columns.m_id];
       if(thisID == ID) {
         set_active(iter);
         return true;

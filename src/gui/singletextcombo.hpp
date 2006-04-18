@@ -18,16 +18,16 @@ public:
   SingleTextCombo();
   
   /** Add a string at the end of the combo box with the ID number @c id. */
-  void append_text(const Glib::ustring& text, int id = -1);
+  void append_text(const Glib::ustring& text, long id = -1);
   /** Add a string at the beginning of the combo box with the ID number 
       @c id. */
-  void prepend_text(const Glib::ustring& text, int id = -1);
+  void prepend_text(const Glib::ustring& text, long id = -1);
   
   /** Returns the ID number for the active entry. */
-  int get_active_id() const;
+  long get_active_id() const;
   /** Set the active entry to the one with ID number @c id. If there is no
       such entry, return @c false. */
-  bool set_active_id(int id);
+  bool set_active_id(long id);
   /** Returns the text for the active entry. */
   std::string get_active_text() const;
   
@@ -43,7 +43,7 @@ protected:
   public:
     TextModelColumns() { add(m_text); add(m_id); }
     Gtk::TreeModelColumn<Glib::ustring> m_text;
-    Gtk::TreeModelColumn<int> m_id;
+    Gtk::TreeModelColumn<long> m_id;
   };
 
   TextModelColumns m_text_columns;

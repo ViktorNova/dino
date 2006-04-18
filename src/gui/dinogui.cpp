@@ -8,6 +8,7 @@
 #include <config.hpp>
 
 #include "cceditor.hpp"
+#include "controller_numbers.hpp"
 #include "controllerdialog.hpp"
 #include "deleter.hpp"
 #include "dinogui.hpp"
@@ -208,19 +209,19 @@ void DinoGUI::slot_edit_edit_pattern_properties() {
 
 void DinoGUI::slot_edit_add_controller() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
-    m_dlg_controller->set_controller(1);
+    m_dlg_controller->set_controller(make_cc(1));
     m_dlg_controller->refocus();
     m_dlg_controller->show_all();
     if (m_dlg_controller->run() == RESPONSE_OK) {
       Pattern::ControllerIterator iter;
       int min = 0, max = 127;
-      if (m_dlg_controller->get_controller() == 128) {
+      long controller = m_dlg_controller->get_controller();
+      if (is_pbend(controller)) {
 	min = -8192;
 	max = 8191;
       }
       iter = m_song.find_track(m_active_track)->pat_find(m_active_pattern)->
-	add_controller(m_dlg_controller->get_name(),
-		       m_dlg_controller->get_controller(), min, max);
+	add_controller(m_dlg_controller->get_name(), controller, min, max);
       m_cmb_controller.set_active_id(iter->get_param());
     }
     m_dlg_controller->hide();
@@ -366,7 +367,7 @@ void DinoGUI::update_pattern_combo() {
 
 void DinoGUI::update_controller_combo() {
   m_cmb_controller.clear();
-  int new_active = m_active_controller;
+  long new_active = m_active_controller;
   Song::TrackIterator t_iter = m_song.find_track(m_active_track);
   if (t_iter != m_song.tracks_end()) {
     Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
@@ -376,11 +377,17 @@ void DinoGUI::update_controller_combo() {
 	new_active = -1;
       char tmp[10];
       for (iter = p_iter->ctrls_begin(); iter != p_iter->ctrls_end(); ++iter) {
-	sprintf(tmp, "%03lu ", iter->get_param());
-	m_cmb_controller.append_text(string(tmp) + iter->get_name(),
-				     iter->get_param());
+	long param = iter->get_param();
+	string name = iter->get_name();
+	if (is_cc(param))
+	  sprintf(tmp, "CC%03ld: ", cc_number(param));
+	else if (is_nrpn(param))
+	  sprintf(tmp, "NRPN%03ld: ", nrpn_number(param));
+	else if (is_pbend(param))
+	  tmp[0] = '\0';
+	m_cmb_controller.append_text(string(tmp) + name, param);
 	if (new_active == -1)
-	  new_active = iter->get_param();
+	  new_active = param;
       }
     }
   }

@@ -16,7 +16,7 @@ Should be done before 0.2:
  [X] Loading and saving files
  [X] Support for CCA events Save_File, Restore_File, and Quit
  [X] Playing MIDI CC and pitch bend events
- [ ] Duplicate patterns
+ [X] Duplicate patterns
 
 Later (before 0.4?):
 

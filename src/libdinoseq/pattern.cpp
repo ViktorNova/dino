@@ -101,6 +101,51 @@ namespace Dino {
   }
 
 
+  Pattern::Pattern(int id, const Pattern& pat) 
+    : m_id(id),
+      m_name(pat.get_name()),
+      m_sd(new SeqData(new NoteEventList(pat.get_length() * pat.get_steps()),
+		       new NoteEventList(pat.get_length() * pat.get_steps()),
+		       new vector<Controller*>(), 
+		       pat.get_length(), pat.get_steps())),
+      m_dirty(false) {
+
+    dbg1<<"Duplicating pattern \""<<pat.get_name()<<"\""<<endl;
+    
+    assert(m_sd->steps > 0);
+    assert(m_sd->length > 0);
+    
+    m_min_step = m_sd->length * m_sd->steps;
+    m_max_step = -1;
+    m_min_note = 128;
+    m_max_note = -1;
+    
+    // copy all notes
+    NoteIterator iter;
+    for (iter = pat.notes_begin(); iter != pat.notes_end(); ++iter) {
+      add_note(iter->get_step(), iter->get_key(), 
+	       iter->get_velocity(), iter->get_length());
+    }
+    
+    // copy all controllers with data
+    ControllerIterator citer;
+    for (citer = pat.ctrls_begin(); citer != pat.ctrls_end(); ++citer) {
+      ControllerIterator nctrl = add_controller(citer->get_name(),
+						citer->get_param(),
+						citer->get_min(), 
+						citer->get_max());
+      for (unsigned i = 0; i < citer->get_size(); ++i) {
+	const InterpolatedEvent* evt = citer->get_event(i);
+	if (evt && evt->get_step() == i)
+	  add_cc(nctrl, i, evt->get_start());
+      }
+      if (nctrl->get_event(nctrl->get_size() - 1))
+	add_cc(nctrl, nctrl->get_size(), 
+	       citer->get_event(nctrl->get_size() - 1)->get_end());
+    }
+  }
+
+
   Pattern::~Pattern() {
     dbg1<<"Destroying pattern \""<<m_name<<"\""<<endl;
     NoteEventList::iterator iter;

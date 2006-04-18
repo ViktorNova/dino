@@ -303,6 +303,25 @@ namespace Dino {
     return PatternIterator(m_patterns.find(id));
   }
 
+
+  Track::PatternIterator Track::duplicate_pattern(ConstPatternIterator iter) {
+    /* This does not need to be threadsafe since the sequencer thread
+       never accesses the patterns through the map, only through the sequencer
+       entries. */
+    
+    if (iter == pat_end())
+      return pat_end();
+    
+    int id;
+    if (m_patterns.rbegin() != m_patterns.rend())
+      id = m_patterns.rbegin()->first + 1;
+    else
+      id = 1;
+    m_patterns[id] = new Pattern(id, *iter.m_iter->second);
+    signal_pattern_added(id);
+    return PatternIterator(m_patterns.find(id));
+  }
+
   
   /** Removes the pattern with the given ID. */
   void Track::remove_pattern(int id) {

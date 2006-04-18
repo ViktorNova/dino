@@ -204,6 +204,14 @@ void DinoGUI::slot_edit_delete_pattern() {
 }
 
 
+void DinoGUI::slot_edit_duplicate_pattern() {
+  if (m_active_track < 0 || m_active_pattern < 0)
+    return;
+  Track& trk = *(m_song.find_track(m_active_track));
+  trk.duplicate_pattern(trk.pat_find(m_active_pattern));
+}
+
+
 void DinoGUI::slot_edit_edit_pattern_properties() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
     Song::TrackIterator iter = m_song.find_track(m_active_track);
@@ -605,7 +613,7 @@ void DinoGUI::init_menus() {
   toolSlots["tbn_delete_controller"] = &DinoGUI::slot_edit_delete_controller;
   toolSlots["tbn_add_pattern"] = &DinoGUI::slot_edit_add_pattern;
   toolSlots["tbn_delete_pattern"] = &DinoGUI::slot_edit_delete_pattern;
-  toolSlots["tbn_duplicate_pattern"] = &DinoGUI::slot_edit_delete_pattern;
+  toolSlots["tbn_duplicate_pattern"] = &DinoGUI::slot_edit_duplicate_pattern;
   toolSlots["tbn_set_pattern_properties"] = 
     &DinoGUI::slot_edit_edit_pattern_properties;
   toolSlots["tbn_add_track"] = &DinoGUI::slot_edit_add_track;
@@ -742,6 +750,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     bool active = (m_active_pattern != -1);
     m_cmb_controller.set_sensitive(active);
     m_toolbuttons["tbn_delete_pattern"]->set_sensitive(active);
+    m_toolbuttons["tbn_duplicate_pattern"]->set_sensitive(active);
     m_toolbuttons["tbn_set_pattern_properties"]->set_sensitive(active);
     m_toolbuttons["tbn_add_controller"]->set_sensitive(active);
     m_menuitems["delete_pattern1"]->set_sensitive(active);

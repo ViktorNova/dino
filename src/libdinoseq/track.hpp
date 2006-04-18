@@ -147,6 +147,7 @@ namespace Dino {
     //@{
     void set_name(const string& name);
     PatternIterator add_pattern(const string& name, int length, int steps);
+    PatternIterator duplicate_pattern(ConstPatternIterator iterator);
     void remove_pattern(int id);
     SequenceIterator set_sequence_entry(int beat, int pattern, int length = -1);
     void set_seq_entry_length(SequenceIterator iterator, unsigned int length);

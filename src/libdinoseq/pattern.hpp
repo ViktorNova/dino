@@ -112,6 +112,7 @@ namespace Dino {
 
     
     Pattern(int id, const string& name, int length, int steps);
+    Pattern(int id, const Pattern& pat);
   
     ~Pattern();
   

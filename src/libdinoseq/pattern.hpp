@@ -87,16 +87,22 @@ namespace Dino {
     class ControllerIterator {
     public:
       
+      /** Create an invalid iterator. */
       ControllerIterator() { }
       
+      /** Dereference the iterator to get a constant Controller reference. */
       const Controller& operator*() const { return **m_iterator; }
+      /** Dereference the iterator to get a constant Controller pointer. */
       const Controller* operator->() const { return *m_iterator; }
+      /** Returns @c true if the two iterators refer to the same Controller. */
       bool operator==(const ControllerIterator& iter) const {
 	return (m_iterator == iter.m_iterator);
       }
+      /** Returns @c false if the two iterators refer to the same Controller. */
       bool operator!=(const ControllerIterator& iter) const {
 	return (m_iterator != iter.m_iterator);
       }
+      /** Advances the iterator to the next controller. */
       ControllerIterator& operator++() { ++m_iterator; return *this; }
       
     private:
@@ -110,10 +116,11 @@ namespace Dino {
       std::vector<Controller*>::iterator m_iterator;
     };
 
-    
+    /** Create a new pattern. */
     Pattern(int id, const string& name, int length, int steps);
+    /** Create a new pattern as a copy of @c pat. */
     Pattern(int id, const Pattern& pat);
-  
+    
     ~Pattern();
   
     /// @name Accessors

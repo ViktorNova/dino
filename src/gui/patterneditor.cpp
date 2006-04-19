@@ -22,6 +22,7 @@ PatternEditor::PatternEditor()
     m_max_note(128), 
     m_drag_y(-1), 
     m_drag_start_vel(-1), 
+    m_last_note_length(1),
     m_pat(NULL) {
   
   // initialise colours
@@ -111,7 +112,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       
       // button 1 adds notes
     case 1: {
-      m_pat->add_note(step, note, 64, 1);
+      m_pat->add_note(step, note, 64, m_last_note_length);
       m_added_note = make_pair(step, note);
       m_drag_operation = ChangingNoteLength;
       break;
@@ -128,6 +129,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
 	}
 	else {
 	  m_pat->resize_note(iterator, step - iterator->get_step() + 1);
+	  m_last_note_length = step - iterator->get_step() + 1;
 	  m_added_note = make_pair(iterator->get_step(), note);
 	  m_drag_operation = ChangingNoteLength;
 	}
@@ -160,12 +162,14 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
     int step = int(event->x) / m_col_width;
     if (step < m_added_note.first)
       step = m_added_note.first;
-    else if (step >= m_pat->get_length() * m_pat->get_steps())
-      step = m_pat->get_length() * m_pat->get_steps() - 1;
-    Pattern::NoteIterator iterator = 
-      m_pat->find_note(m_added_note.first, m_added_note.second);
-    m_pat->resize_note(iterator, step - m_added_note.first + 1);
-    m_added_note = make_pair(-1, -1);
+    if (step != m_drag_step) {
+      if (step >= m_pat->get_length() * m_pat->get_steps())
+	step = m_pat->get_length() * m_pat->get_steps() - 1;
+      Pattern::NoteIterator iterator = 
+	m_pat->find_note(m_added_note.first, m_added_note.second);
+      m_pat->resize_note(iterator, step - m_added_note.first + 1);
+      m_added_note = make_pair(-1, -1);
+    }
   }
   
   if (m_drag_operation == ChangingNoteVelocity) {
@@ -202,15 +206,16 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
     int note = m_max_note - int(event->y) / m_row_height - 1;
     
     // or changing the note length
-    if (step == m_drag_step && note == m_drag_note)
-      return true;
     if (step < m_added_note.first)
       step = m_added_note.first;
+    if (step == m_drag_step)
+      return true;
     else if (step >= m_pat->get_length() * m_pat->get_steps())
       step = m_pat->get_length() * m_pat->get_steps() - 1;
     Pattern::NoteIterator iterator = 
       m_pat->find_note(m_added_note.first, m_added_note.second);
     m_pat->resize_note(iterator, step - m_added_note.first + 1);
+    m_last_note_length = step - m_added_note.first + 1;
     
     m_drag_step = step;
     m_drag_note = note;

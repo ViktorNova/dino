@@ -54,6 +54,7 @@ private:
   int m_drag_note;
   int m_drag_y;
   int m_drag_start_vel;
+  int m_last_note_length;
   
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Dino::Pattern* m_pat;

@@ -172,15 +172,12 @@ namespace Dino {
   }
 
 
-  void TempoMap::get_bbt(unsigned long frame, unsigned long ticks_per_beat,
-			 double& bpm, int32_t& beat, int32_t& tick) const {
-    ticks_per_beat = 10000;
+  void TempoMap::get_beat(unsigned long frame, double& bpm, double& beat) const {
     TempoChange* tc = const_cast<CDTree<TempoChange*>*>(m_frame2tc)->get(frame);
     bpm = double(tc->bpm);
-    double beat_d = 
-      tc->beat + bpm * double(frame - tc->frame) / (60 * m_frame_rate);
-    beat = int32_t(beat_d);
-    tick = int32_t((beat_d - int(beat_d)) * ticks_per_beat);
+    beat = tc->beat + bpm * double(frame - tc->frame) / (60 * m_frame_rate);
+    //beat = int32_t(beat_d);
+    //tick = int32_t((beat_d - int(beat_d)) * ticks_per_beat);
   }
  
 

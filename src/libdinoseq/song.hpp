@@ -134,7 +134,8 @@ namespace Dino {
     /// @name Sequencing
     //@{
     void get_timebase_info(unsigned long frame, unsigned long frame_rate,
-			   double& bpm, int32_t& beat, int32_t& tick) const;
+			   double ticks_per_beat, double& bpm, int32_t& beat, 
+			   int32_t& tick, double& frame_offset) const;
     double get_current_tempo(int beat, int tick);
     unsigned long bt2frame(double);
     pair<int, int> frame2bt(unsigned long frame);

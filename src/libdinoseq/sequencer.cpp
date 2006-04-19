@@ -218,17 +218,22 @@ namespace Dino {
 					 jack_nframes_t nframes, 
 					 jack_position_t* pos, 
 					 int new_pos) {
-    int32_t beat, tick;
-    m_song.get_timebase_info(pos->frame, pos->frame_rate, pos->beats_per_minute, 
-			     beat, tick);
-
     pos->beats_per_bar = 4;
     pos->ticks_per_beat = 10000;
-  
+    
+    
+    int32_t beat, tick;
+    m_song.get_timebase_info(pos->frame, pos->frame_rate, pos->ticks_per_beat,
+			     pos->beats_per_minute, beat, tick, 
+			     pos->bar_start_tick);
+
+    // if we are standing still or if we just relocated, calculate 
+    // the new position
     if (new_pos || state != JackTransportRolling) {
       pos->beat = beat;
       pos->tick = tick;
     }
+    // otherwise, just increase the BBT by a period
     else {
       double db = nframes * pos->beats_per_minute / (pos->frame_rate * 60.0);
       pos->beat = m_last_beat + int32_t(db);
@@ -243,7 +248,7 @@ namespace Dino {
     m_last_tick = pos->tick;
 
     pos->bar = int32_t(pos->beat / pos->beats_per_bar);
-    pos->beat %= 4;
+    pos->beat %= int(pos->beats_per_bar);
     pos->valid = JackPositionBBT;
   }
 
@@ -278,7 +283,7 @@ namespace Dino {
 
   void Sequencer::jack_shutdown_handler() {
     // XXX do something useful here
-    cerr<<"JACK SHUT DOWN!"<<endl;
+    dbg0<<"JACK has shut down!"<<endl;
   }
   
 
@@ -318,11 +323,14 @@ namespace Dino {
       return;
     }
     m_sent_all_off = false;
-  
+    
     // if we are rolling, sequence MIDI
+    double offset = pos.bar_start_tick * pos.beats_per_minute / 
+      (pos.frame_rate * 60);
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
-      pos.tick / double(pos.ticks_per_beat);
-    double end = start + pos.beats_per_minute * nframes / (60 * pos.frame_rate);
+      pos.tick / double(pos.ticks_per_beat) + offset;
+    double end = start + pos.beats_per_minute * nframes / 
+      (60 * pos.frame_rate) + offset;
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
 
       // get the MIDI buffer

@@ -469,16 +469,24 @@ namespace Dino {
 
 
   pair<int, int> Song::frame2bt(unsigned long frame) {
-    double bpm;
-    int32_t beat, tick;
-    m_tempo_map.get_bbt(frame, 48000, bpm, beat, tick);
+    //double bpm;
+    int32_t beat = 0, tick = 0;
+    //m_tempo_map.get_bbt(frame, 48000, bpm, beat, tick);
     return make_pair<int, int>(beat, tick);
   }
 
 
   void Song::get_timebase_info(unsigned long frame, unsigned long framerate,
-			       double& bpm, int32_t& beat, int32_t& tick) const {
-    m_tempo_map.get_bbt(frame, framerate, bpm, beat, tick);
+			       double ticks_per_beat, double& bpm, 
+			       int32_t& beat, int32_t& tick,
+			       double& frame_offset) const {
+    double beat_d;
+    m_tempo_map.get_beat(frame, bpm, beat_d);
+    beat = int32_t(beat_d);
+    double tick_d = (beat_d - beat) * ticks_per_beat;
+    tick = int32_t(tick_d);
+    double frames_per_tick = framerate * 60 / (bpm * ticks_per_beat);
+    frame_offset = (tick_d - tick) * frames_per_tick;
   }
 
 

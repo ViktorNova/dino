@@ -125,7 +125,7 @@ namespace Dino {
     
       map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
       if (iter == m_output_ports.end()) {
-	cerr<<"Trying to connect nonexistant output port "<<track
+	dbg0<<"Trying to connect nonexistant output port "<<track
 	    <<" to instrument "<<instrument<<endl;
 	return;
       }

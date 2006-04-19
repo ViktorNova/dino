@@ -180,8 +180,8 @@ void DinoGUI::slot_edit_edit_track_properties() {
 void DinoGUI::slot_edit_add_pattern() {
   if (m_active_track >= 0) {
     m_dlg_pattern->set_name("Untitled");
-    m_dlg_pattern->set_length(4);
-    m_dlg_pattern->set_steps(4);
+    m_dlg_pattern->set_length(8);
+    m_dlg_pattern->set_steps(8);
     m_dlg_pattern->refocus();
     m_dlg_pattern->show_all();
     if (m_dlg_pattern->run() == RESPONSE_OK) {

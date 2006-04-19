@@ -13,7 +13,6 @@ extern "C" {
 #include "song.hpp"
 #include "track.hpp"
 #include "midibuffer.hpp"
-#include "midievent.hpp"
 
 
 namespace Dino {
@@ -311,12 +310,9 @@ namespace Dino {
 	if (port) {
 	  void* port_buf = jack_port_get_buffer(port, nframes);
 	  jack_midi_clear_buffer(port_buf, nframes);
-	  MIDIEvent& e = MIDIEvent::AllNotesOff;
-	  if (!m_sent_all_off) {
-	    jack_midi_event_write(port_buf, 0,  
-				  const_cast<jack_midi_data_t*>(e.get_data()),
-				  e.get_size(), nframes);
-	  }
+	  unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+	  if (!m_sent_all_off)
+	    jack_midi_event_write(port_buf, 0, all_notes_off, 3, nframes);
 	}
 	m_sent_all_off = true;
       }

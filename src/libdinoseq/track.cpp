@@ -4,7 +4,6 @@
 
 #include "debug.hpp"
 #include "deleter.hpp"
-#include "midievent.hpp"
 #include "pattern.hpp"
 #include "track.hpp"
 

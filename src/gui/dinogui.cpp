@@ -497,6 +497,7 @@ void DinoGUI::init_pattern_editor() {
   scbVertical->set_adjustment(*scwNoteEditor->get_vadjustment());
   scwCCEditor->set_hadjustment(*scwNoteEditor->get_hadjustment());
   scwOctaveLabel->set_vadjustment(*scwNoteEditor->get_vadjustment());
+  m_pe.set_vadjustment(scwNoteEditor->get_vadjustment());
 
   // connect external signals
   slot<void> update_t_combo = mem_fun(*this, &DinoGUI::update_track_combo);

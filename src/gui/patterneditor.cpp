@@ -23,7 +23,8 @@ PatternEditor::PatternEditor()
     m_drag_y(-1), 
     m_drag_start_vel(-1), 
     m_last_note_length(1),
-    m_pat(NULL) {
+    m_pat(0),
+    m_vadj(0) {
   
   // initialise colours
   m_colormap = Colormap::get_system();
@@ -54,7 +55,8 @@ PatternEditor::PatternEditor()
 
   m_layout = Layout::create(get_pango_context());
   m_layout->set_text("127");
-  add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
+  add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | 
+	     BUTTON_MOTION_MASK | SCROLL_MASK);
   
   m_added_note = make_pair(-1, -1);
   m_drag_step = -1;
@@ -90,6 +92,11 @@ void PatternEditor::set_step_width(int width) {
 		     m_max_note * m_row_height + 1);
     queue_draw();
   }
+}
+
+
+void PatternEditor::set_vadjustment(Gtk::Adjustment* adj) {
+  m_vadj = adj;
 }
 
 
@@ -242,6 +249,28 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
     break;
   }
 
+  return true;
+}
+
+
+bool PatternEditor::on_scroll_event(GdkEventScroll* event) {
+  
+  if (!m_vadj)
+    return true;
+  
+  double value = m_vadj->get_value();
+  if (event->direction == GDK_SCROLL_UP) {
+    value -= m_vadj->get_step_increment();
+    if (value < m_vadj->get_lower())
+      value = m_vadj->get_lower();
+  }
+  else if (event->direction == GDK_SCROLL_DOWN) {
+    value += m_vadj->get_step_increment();
+    if (value > m_vadj->get_upper() - m_vadj->get_page_size())
+      value = m_vadj->get_upper() - m_vadj->get_page_size();
+  }
+  m_vadj->set_value(value);
+    
   return true;
 }
 

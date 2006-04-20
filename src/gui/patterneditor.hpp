@@ -14,6 +14,7 @@ public:
   
   void set_pattern(Dino::Pattern* pattern);
   void set_step_width(int width);
+  void set_vadjustment(Gtk::Adjustment* adj);
   
 protected:
   
@@ -21,9 +22,10 @@ protected:
   virtual bool on_button_press_event(GdkEventButton* event);
   virtual bool on_button_release_event(GdkEventButton* event);
   virtual bool on_motion_notify_event(GdkEventMotion* event);
-  virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
-  
+  virtual bool on_scroll_event(GdkEventScroll* event);
+  virtual void on_realize();
+
   void draw_note(Dino::Pattern::NoteIterator iterator);
   void draw_velocity_box(Dino::Pattern::NoteIterator iterator);
   void update();
@@ -59,6 +61,7 @@ private:
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Dino::Pattern* m_pat;
   Glib::RefPtr<Pango::Layout> m_layout;
+  Gtk::Adjustment* m_vadj;
 };
 
 

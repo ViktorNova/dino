@@ -26,6 +26,7 @@
 #include <gtkmm.h>
 
 #include "pattern.hpp"
+#include "patternselection.hpp"
 
 
 class PatternEditor : public Gtk::DrawingArea {
@@ -46,8 +47,9 @@ protected:
   virtual bool on_scroll_event(GdkEventScroll* event);
   virtual void on_realize();
 
-  void draw_note(Dino::Pattern::NoteIterator iterator);
-  void draw_velocity_box(Dino::Pattern::NoteIterator iterator);
+  void draw_note(Dino::Pattern::NoteIterator iterator, bool selected = false);
+  void draw_velocity_box(Dino::Pattern::NoteIterator iterator, 
+			 bool selected = false);
   void update();
   
 private:
@@ -67,6 +69,7 @@ private:
   Gdk::Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 
     m_edge_color, m_hl_color;
   Gdk::Color m_note_colors[16];
+  Gdk::Color m_selected_note_colors[16];
   int m_row_height;
   int m_col_width;
   int m_max_note;
@@ -77,6 +80,7 @@ private:
   int m_drag_y;
   int m_drag_start_vel;
   int m_last_note_length;
+  Dino::PatternSelection m_selection;
   
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Dino::Pattern* m_pat;

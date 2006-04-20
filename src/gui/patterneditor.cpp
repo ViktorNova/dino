@@ -25,6 +25,7 @@
 #include "noteevent.hpp"
 #include "pattern.hpp"
 #include "patterneditor.hpp"
+#include "patternselection.hpp"
 #include "song.hpp"
 #include "track.hpp"
 
@@ -58,10 +59,15 @@ PatternEditor::PatternEditor()
   // initialise note colours for different velocities
   gushort red1 = 40000, green1 = 45000, blue1 = 40000;
   gushort red2 = 0, green2 = 30000, blue2 = 0;
-  for (int i = 0; i < 16; ++i)
+  for (int i = 0; i < 16; ++i) {
     m_note_colors[i].set_rgb(gushort((red1 * (15 - i) + red2 * i) / 15.0),
 			     gushort((green1 * (15 - i) + green2 * i) / 15.0),
 			     gushort((blue1 * (15 - i) + blue2 * i) / 15.0));
+    m_selected_note_colors[i].
+      set_rgb(gushort((green1 * (15 - i) + green2 * i) / 15.0),
+	      gushort((red1 * (15 - i) + red2 * i) / 15.0),
+	      gushort((blue1 * (15 - i) + blue2 * i) / 15.0));
+  }
   
   // allocate all colours
   m_colormap->alloc_color(m_bg_color);
@@ -70,9 +76,10 @@ PatternEditor::PatternEditor()
   m_colormap->alloc_color(m_grid_color);
   m_colormap->alloc_color(m_edge_color);
   m_colormap->alloc_color(m_hl_color);
-  for (int i = 0; i < 16; ++i)
+  for (int i = 0; i < 16; ++i) {
     m_colormap->alloc_color(m_note_colors[i]);
-
+    m_colormap->alloc_color(m_selected_note_colors[i]);
+  }
   m_layout = Layout::create(get_pango_context());
   m_layout->set_text("127");
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | 
@@ -87,11 +94,14 @@ void PatternEditor::set_pattern(Pattern* pattern) {
   if (pattern != m_pat) {
     m_pat = pattern;
     if (m_pat) {
+      
+      m_selection = PatternSelection(m_pat);
+      
       namespace s = sigc;
       sigc::slot<void> draw = mem_fun(*this, &PatternEditor::queue_draw);
-      m_pat->signal_note_added.connect(s::hide(s::hide(s::hide(draw))));
-      m_pat->signal_note_removed.connect(s::hide(s::hide(draw)));
-      m_pat->signal_note_changed.connect(s::hide(s::hide(s::hide(draw))));
+      m_pat->signal_note_added.connect(s::hide(draw));
+      m_pat->signal_note_removed.connect(s::hide(draw));
+      m_pat->signal_note_changed.connect(s::hide(draw));
       m_pat->signal_length_changed.connect(s::hide(draw));
       m_pat->signal_steps_changed.connect(s::hide(draw));
       set_size_request(m_pat->get_length() * m_pat->get_steps() * 
@@ -137,18 +147,30 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
     switch (event->button) {
       
-      // button 1 adds notes
+      // button 1 adds or selects notes
     case 1: {
-      m_pat->add_note(step, note, 64, m_last_note_length);
-      m_added_note = make_pair(step, note);
-      m_drag_operation = ChangingNoteLength;
+      if (event->state & GDK_CONTROL_MASK) {
+	Pattern::NoteIterator iterator = m_pat->find_note(step, note);
+	if (iterator != m_pat->notes_end()) {
+	  if (m_selection.find(iterator) == m_selection.end())
+	    m_selection.add_note(iterator);
+	  else
+	    m_selection.remove_note(iterator);
+	}
+	queue_draw();
+      }
+      else {
+	m_pat->add_note(step, note, 64, m_last_note_length);
+	m_added_note = make_pair(step, note);
+	m_drag_operation = ChangingNoteLength;
+      }
       break;
     }
     
     // button 2 changes the velocity or length
     case 2: {
       Pattern::NoteIterator iterator = m_pat->find_note(step, note);
-      if (iterator) {
+      if (iterator != m_pat->notes_end()) {
 	if (event->state & GDK_CONTROL_MASK) {
 	  m_drag_operation = ChangingNoteVelocity;
 	  m_drag_start_vel = iterator->get_velocity();
@@ -169,7 +191,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       Pattern::NoteIterator iterator = 
 	m_pat->find_note(int(event->x) / m_col_width, 
 			 m_max_note - int(event->y) / m_row_height - 1);
-      if (iterator)
+      if (iterator != m_pat->notes_end())
 	m_pat->delete_note(iterator);
       m_drag_operation = DeletingNotes;
       break;
@@ -218,7 +240,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
 
   case ChangingNoteVelocity: {
     Pattern::NoteIterator iterator = m_pat->find_note(m_drag_step, m_drag_note);
-    if (iterator) {
+    if (iterator != m_pat->notes_end()) {
       double dy = m_drag_y - int(event->y);
       int velocity = int(m_drag_start_vel + dy);
       velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
@@ -257,7 +279,7 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
     if (step >= 0 && step < m_pat->get_length() * m_pat->get_steps() &&
 	note >= 0 && note < m_max_note) {
       Pattern::NoteIterator iter = m_pat->find_note(step, note);
-      if (iter)
+      if (iter != m_pat->notes_end())
 	m_pat->delete_note(iter);
       m_drag_step = step;
       m_drag_note = note;
@@ -344,10 +366,15 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter)
     draw_note(iter);
   
+  // draw selected notes
+  PatternSelection::Iterator iter2;
+  for (iter2 = m_selection.begin(); iter2 != m_selection.end(); ++iter2)
+    draw_note(iter2, true);
+  
   // draw box for editing note velocity
   if (m_drag_operation == ChangingNoteVelocity) {
     iter = m_pat->find_note(m_drag_step, m_drag_note);
-    draw_velocity_box(iter);
+    draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
   }
   
   /*
@@ -360,12 +387,15 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
 }
 
 
-void PatternEditor::draw_note(Pattern::NoteIterator iterator) {
+void PatternEditor::draw_note(Pattern::NoteIterator iterator, bool selected) {
 
   RefPtr<Gdk::Window> win = get_window();
   
   int i = iterator->get_step();
-  m_gc->set_foreground(m_note_colors[int(iterator->get_velocity() / 8)]);
+  if (!selected)
+    m_gc->set_foreground(m_note_colors[int(iterator->get_velocity() / 8)]);
+  else
+    m_gc->set_foreground(m_selected_note_colors[int(iterator->get_velocity() / 8)]);
   win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
 		      (m_max_note - iterator->get_key()- 1) * m_row_height + 1, 
 		      iterator->get_length() * m_col_width, m_row_height - 1);
@@ -376,7 +406,8 @@ void PatternEditor::draw_note(Pattern::NoteIterator iterator) {
 }
 
 
-void PatternEditor::draw_velocity_box(Pattern::NoteIterator iterator) {
+void PatternEditor::draw_velocity_box(Pattern::NoteIterator iterator,
+				      bool selected) {
   RefPtr<Gdk::Window> win = get_window();
   m_gc->set_foreground(m_edge_color);
   int box_height = m_layout->get_pixel_logical_extents().get_height() + 6;
@@ -388,7 +419,10 @@ void PatternEditor::draw_velocity_box(Pattern::NoteIterator iterator) {
 		      int((m_max_note - iterator->get_key() - 0.5) * 
 			  m_row_height - box_height / 2), 
 		      box_width, box_height);
-  m_gc->set_foreground(m_note_colors[iterator->get_velocity() / 8]);
+  if (!selected)
+    m_gc->set_foreground(m_note_colors[iterator->get_velocity() / 8]);
+  else
+    m_gc->set_foreground(m_selected_note_colors[iterator->get_velocity() / 8]);
   win->draw_rectangle(m_gc, true, iterator->get_step() * m_col_width - 1, 
 		      int((m_max_note - iterator->get_key() - 0.5) * 
 			  m_row_height - box_height / 2) + 1, 

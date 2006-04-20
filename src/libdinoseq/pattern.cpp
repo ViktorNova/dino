@@ -73,6 +73,13 @@ namespace Dino {
   }
   
   
+  bool Pattern::NoteIterator::operator<(const NoteIterator& iter) const {
+    return (m_note->get_step() < iter->get_step()) || 
+      ((m_note->get_step() == iter->get_step()) && 
+       (m_note->get_key() < iter->get_key()));
+  }
+
+
   Pattern::NoteIterator& Pattern::NoteIterator::operator++() {
     assert(m_pattern);
     assert(m_note);
@@ -362,13 +369,12 @@ namespace Dino {
     assert(step < m_sd->length * m_sd->steps);
     assert(key < 128);
     assert(velocity < 128);
-    assert(step + note_length <= m_sd->length * m_sd->steps);
     assert(note_length > 0);
     
     // check if the same key is already playing at this step, if so, 
     // shorten it (or delete it if it starts at this step)
     NoteIterator iter;
-    if (iter = find_note(step, key)) {
+    if ((iter = find_note(step, key)) != notes_end()) {
       if (iter->get_step() == step)
 	delete_note(iter);
       else
@@ -378,8 +384,12 @@ namespace Dino {
     // check if there is room for a note of the wanted length or if
     // it has to be shortened
     int new_length = note_length;
-    if (iter = find_note_on(step + 1, step + note_length, key))
+    if (step + new_length > m_sd->length * m_sd->steps)
+      new_length = m_sd->length * m_sd->steps - step;
+    if ((iter = find_note_on(step + 1, step + new_length, key)) != notes_end())
       new_length = iter->get_step() - step;
+
+
     
     // create the new objects
     NoteEvent* note_on = new NoteEvent(MIDIEvent::NoteOn, step, key, velocity);
@@ -404,7 +414,7 @@ namespace Dino {
       old_note_on->set_previous(note_on);
     (*m_sd->ons)[step] = note_on;
     
-    signal_note_added(step, key, new_length);
+    signal_note_added(*note);
   }
 
 
@@ -414,7 +424,7 @@ namespace Dino {
       note map. It will return the step that the deleted note started on,
       or -1 if no note was deleted. */
   void Pattern::delete_note(NoteIterator iterator) {
-    assert(iterator);
+    assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
     
     delete_note(iterator.m_note);
@@ -448,7 +458,7 @@ namespace Dino {
       (*m_sd->ons)[note->m_note_on->get_step()] = next;
     
     // delete the note object and queue the events for deletion
-    signal_note_removed(note->get_step(), note->get_key());
+    signal_note_removed(*note);
     Deleter::queue(note->m_note_on);
     Deleter::queue(note->m_note_off);
     Deleter::queue(note);
@@ -456,7 +466,7 @@ namespace Dino {
 
 
   int Pattern::resize_note(NoteIterator iterator, int length) {
-    assert(iterator);
+    assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
     assert(iterator->get_step() + length <= m_sd->length * m_sd->steps);
     
@@ -470,10 +480,10 @@ namespace Dino {
     // it has to be shortened
     int new_length = length;
     NoteIterator iter;
-    if (iter = find_note_on(note->get_step() + 1, 
-			    note->get_step() + length, 
-			    note->get_key()))
-      new_length = iter->get_step() - note->get_step();
+    if ((iter = find_note_on(note->get_step() + 1, 
+			     note->get_step() + length, 
+			     note->get_key())) != notes_end())
+	new_length = iter->get_step() - note->get_step();
     
     // remove the note off event
     // must be threadsafe!
@@ -495,22 +505,20 @@ namespace Dino {
       old_note_off->set_previous(note->m_note_off);
     (*m_sd->offs)[note->get_step() + new_length - 1] = note->m_note_off;
     
-    signal_note_changed(note->get_step(), note->get_key(),
-			note->get_length());
+    signal_note_changed(*note);
     
     return note->get_length();
   }
 
 
   void Pattern::set_velocity(NoteIterator iterator, unsigned char velocity) {
-    assert(iterator);
+    assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
     assert(velocity < 128);
     
     iterator.m_note->m_note_on->set_velocity(velocity);
     
-    signal_note_changed(iterator->get_step(), iterator->get_key(),
-			iterator->get_length());
+    signal_note_changed(**iterator);
   }
 
 

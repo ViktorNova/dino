@@ -12,6 +12,7 @@ libdinoseq_la_SOURCES = \
 	note.cpp note.hpp \
 	noteevent.cpp noteevent.hpp \
 	pattern.cpp pattern.hpp \
+	patternselection.cpp patternselection.hpp \
 	track.cpp track.hpp \
 	song.cpp song.hpp \
 	ringbuffer.hpp \

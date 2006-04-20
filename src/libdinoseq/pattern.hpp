@@ -82,14 +82,18 @@ namespace Dino {
       /** Returns @c true if the two iterators does not refer to the 
 	  same note. */
       bool operator!=(const NoteIterator& iter) const;
+      /** Returns @c true if the (step, key) pair for the first iterator
+	  is smaller than the pair for the second iterator. Needed for storing
+	  this class in std::sets. */
+      bool operator<(const NoteIterator& iter) const;
       /** Advances the iterator to the next note. */
       NoteIterator& operator++();
       /** If the iterator is definitely invalid, this will return @c false.
 	  However, it might return @c true for an iterator that has been 
 	  invalidated by removing the note it refers to, for example. */
-      operator bool() const {
+      /*operator bool() const {
 	return (m_pattern != NULL && m_note != NULL);
-      }
+	}*/
 	  
     private:
       
@@ -230,11 +234,11 @@ namespace Dino {
     /** Emitted when the number of steps per beat has changed. */
     sigc::signal<void, int> signal_steps_changed;
     /** Emitted when a note has been added. */
-    sigc::signal<void, int, int, int> signal_note_added;
+    sigc::signal<void, Note const&> signal_note_added;
     /** Emitted when an existing note has been changed. */
-    sigc::signal<void, int, int, int> signal_note_changed;
+    sigc::signal<void, Note const&> signal_note_changed;
     /** Emitted when a note has been removed. */
-    sigc::signal<void, int, int> signal_note_removed;
+    sigc::signal<void, Note const&> signal_note_removed;
     /** Emitted when a CC control point has been added. */
     sigc::signal<void, int, int, int> signal_cc_added;
     /** Emitted when the value for a CC control point has changed. */

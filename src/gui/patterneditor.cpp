@@ -101,6 +101,7 @@ void PatternEditor::set_pattern(Pattern* pattern) {
       sigc::slot<void> draw = mem_fun(*this, &PatternEditor::queue_draw);
       m_pat->signal_note_added.connect(s::hide(draw));
       m_pat->signal_note_removed.connect(s::hide(draw));
+      //m_pat->signal_note_removed.connect(mem_fun(m_selection, &PatternSelection::remove_note_internal));
       m_pat->signal_note_changed.connect(s::hide(draw));
       m_pat->signal_length_changed.connect(s::hide(draw));
       m_pat->signal_steps_changed.connect(s::hide(draw));
@@ -160,7 +161,11 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
 	queue_draw();
       }
       else {
-	m_pat->add_note(step, note, 64, m_last_note_length);
+	Pattern::NoteIterator iter = m_pat->add_note(step, note, 64, 
+						     m_last_note_length);
+	m_selection.clear();
+	if (iter != m_pat->notes_end())
+	  m_selection.add_note(iter);
 	m_added_note = make_pair(step, note);
 	m_drag_operation = ChangingNoteLength;
       }
@@ -364,12 +369,7 @@ bool PatternEditor::on_expose_event(GdkEventExpose* event) {
   // draw notes
   Pattern::NoteIterator iter;
   for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter)
-    draw_note(iter);
-  
-  // draw selected notes
-  PatternSelection::Iterator iter2;
-  for (iter2 = m_selection.begin(); iter2 != m_selection.end(); ++iter2)
-    draw_note(iter2, true);
+    draw_note(iter, m_selection.find(iter) != m_selection.end());
   
   // draw box for editing note velocity
   if (m_drag_operation == ChangingNoteVelocity) {

@@ -57,6 +57,8 @@ namespace Dino {
     };
     
     PatternSelection(Pattern* pat = 0);
+    PatternSelection(const PatternSelection& sel);
+    PatternSelection& operator=(const PatternSelection& sel);
     
     Iterator begin() const;
     Iterator end() const;
@@ -64,6 +66,7 @@ namespace Dino {
     
     Iterator add_note(const Pattern::NoteIterator& iter);
     void remove_note(const Pattern::NoteIterator& iter);
+    void clear();
     
     void printall();
     
@@ -72,6 +75,8 @@ namespace Dino {
     void remove_note_internal(const Note& note);
     
     std::set<Pattern::NoteIterator> m_data;
+    
+    Pattern* m_pat;
     
   };
 

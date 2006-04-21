@@ -364,8 +364,8 @@ namespace Dino {
       step with the same value, the old note will be shortened so it ends just
       before @c step. 
   */
-  void Pattern::add_note(unsigned step, int key, int velocity, 
-			 int note_length) {
+  Pattern::NoteIterator Pattern::add_note(unsigned step, int key, int velocity, 
+					  int note_length) {
     assert(step < m_sd->length * m_sd->steps);
     assert(key < 128);
     assert(velocity < 128);
@@ -415,6 +415,8 @@ namespace Dino {
     (*m_sd->ons)[step] = note_on;
     
     signal_note_added(*note);
+    
+    return NoteIterator(this, note);
   }
 
 

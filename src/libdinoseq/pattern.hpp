@@ -188,7 +188,7 @@ namespace Dino {
     void set_steps(unsigned int steps);
     /** Add a note at the given step with the given key, velocity, and length
 	(in steps). */
-    void add_note(unsigned step, int key, int velocity, int length);
+    NoteIterator add_note(unsigned step, int key, int velocity, int length);
     /** Delete a note. */
     void delete_note(NoteIterator note);
     /** Change the length of a note. */

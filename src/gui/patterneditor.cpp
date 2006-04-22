@@ -54,14 +54,16 @@ PatternEditor::PatternEditor()
   // initialise note colours for different velocities
   gushort red1 = 40000, green1 = 45000, blue1 = 40000;
   gushort red2 = 0, green2 = 30000, blue2 = 0;
+  gushort red3 = 50000, green3 = 40000, blue3 = 40000;
+  gushort red4 = 60000, green4 = 0, blue4 = 0;
   for (int i = 0; i < 16; ++i) {
     m_note_colors[i].set_rgb(gushort((red1 * (15 - i) + red2 * i) / 15.0),
 			     gushort((green1 * (15 - i) + green2 * i) / 15.0),
 			     gushort((blue1 * (15 - i) + blue2 * i) / 15.0));
     m_selected_note_colors[i].
-      set_rgb(gushort((green1 * (15 - i) + green2 * i) / 15.0),
-	      gushort((red1 * (15 - i) + red2 * i) / 15.0),
-	      gushort((blue1 * (15 - i) + blue2 * i) / 15.0));
+      set_rgb(gushort((red3 * (15 - i) + red4 * i) / 15.0),
+	      gushort((green3 * (15 - i) + green4 * i) / 15.0),
+	      gushort((blue3 * (15 - i) + blue4 * i) / 15.0));
   }
   
   // allocate all colours
@@ -178,10 +180,9 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       if (iterator != m_pat->notes_end()) {
 	
 	// if shift isn't pressed the selection is set to this single note
-	if (!(event->state & GDK_SHIFT_MASK)) {
+	if (!(event->state & GDK_SHIFT_MASK))
 	  m_selection.clear();
-	  m_selection.add_note(iterator);
-	}
+	m_selection.add_note(iterator);
 	
 	if (event->state & GDK_CONTROL_MASK) {
 	  m_drag_operation = ChangingNoteVelocity;
@@ -213,10 +214,9 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       if (iterator != m_pat->notes_end()) {
 	
 	// if shift isn't pressed the selection is set to this single note
-	if (!(event->state & GDK_SHIFT_MASK)) {
+	if (!(event->state & GDK_SHIFT_MASK))
 	  m_selection.clear();
-	  m_selection.add_note(iterator);
-	}
+	m_selection.add_note(iterator);
 	
 	PatternSelection::Iterator iter1, iter2;
 	iter1 = m_selection.begin();

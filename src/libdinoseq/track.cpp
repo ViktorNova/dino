@@ -417,6 +417,9 @@ namespace Dino {
   /** Remove the sequence entry (pattern) that is playing at the given beat.
       If no pattern is playing at that beat, return @c false. */
   bool Track::remove_sequence_entry(SequenceIterator iterator) {
+    if (iterator == seq_end())
+      return false;
+    
     unsigned beat = iterator->start;
     SequenceEntry* se = (*m_sequence)[beat];
     if (se) {

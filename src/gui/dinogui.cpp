@@ -358,6 +358,7 @@ void DinoGUI::update_track_widgets() {
     m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
     signal_active_track_changed.
       connect(mem_fun(*tl, &TrackLabel::set_active_track));
+    tl->set_active_track(m_active_track);
   }
   m_vbx_track_editor->show_all();
   m_vbx_track_labels->show_all();

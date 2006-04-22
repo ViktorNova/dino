@@ -246,11 +246,6 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
       PatternSelection::Iterator iter;
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
 	m_pat->resize_note(iter, new_size);
-      /*
-      Pattern::NoteIterator iterator = 
-	m_pat->find_note(m_added_note.first, m_added_note.second);
-      m_pat->resize_note(iterator, step - m_added_note.first + 1);
-      */
       m_added_note = make_pair(-1, -1);
     }
   }
@@ -300,9 +295,6 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
     PatternSelection::Iterator iter;
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
       m_pat->resize_note(iter, new_size);
-    /*
-    m_pat->resize_note(iterator, step - m_added_note.first + 1);
-    */
     m_last_note_length = step - m_added_note.first + 1;
     
     m_drag_step = step;

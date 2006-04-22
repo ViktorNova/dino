@@ -23,9 +23,7 @@ Later (before 0.4?):
  [ ] Record MIDI note events
  [ ] Record MIDI CC and pitch bend events
  [ ] Play loops, set loop points
- [ ] Control the sequencer with OSC commands
- [ ] Edit the song with OSC commands
- [ ] Write a Python wrapper for OSC control or embed Python directly
+ [ ] Embed a Python interpreter
  
 Crazy ideas:
 
@@ -51,3 +49,7 @@ Crazy ideas:
    notes that are still playing at the end of the sequence entry. Maybe not so
    crazy, it is probably required to let notes portamento across sequence entry
    boundaries.
+
+ * Control the sequencer with OSC commands
+
+ * Edit the song with OSC commands

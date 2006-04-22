@@ -86,8 +86,7 @@ namespace Dino {
 	int end = old_event->get_end();
 	old_event->set_length(step - old_event->get_step());
 	old_event->set_end(value);
-	m_events[step] = new InterpolatedEvent(m_param, value, 
-					       end, step, length);
+	m_events[step] = new InterpolatedEvent(value, end, step, length);
 	for (unsigned i = step + 1; i < step + length; ++i)
 	  m_events[i] = m_events[step];
       }
@@ -104,8 +103,7 @@ namespace Dino {
 	m_events[step - 1]->set_end(value);
 	m_events[step - 1]->set_length(step - m_events[step - 1]->get_step());
       }
-      m_events[step] = new InterpolatedEvent(m_param, value, 
-					     end, step, i - step);
+      m_events[step] = new InterpolatedEvent(value, end, step, i - step);
       for (unsigned j = step + 1; j < i; ++j)
 	m_events[j] = m_events[step];
     }

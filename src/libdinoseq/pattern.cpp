@@ -748,15 +748,15 @@ namespace Dino {
 	  if (event) {
 	    unsigned char* data = buffer.
 	      reserve(offset + cc_pos, 3);
-	    if (data && is_cc(event->get_param())) {
+	    if (data && is_cc((*sd->ctrls)[c]->get_param())) {
 	      data[0] = 0xB0 | (unsigned char)channel;
-	      data[1] = cc_number(event->get_param());
+	      data[1] = cc_number((*sd->ctrls)[c]->get_param());
 	      data[2] = (unsigned char)
 		(event->get_start() + (cc_pos * sd->steps - event->get_step()) *
 		 ((event->get_end() - event->get_start()) /
 		  double(event->get_length())));
 	    }
-	    else if (data && is_pbend(event->get_param())) {
+	    else if (data && is_pbend((*sd->ctrls)[c]->get_param())) {
 	      data[0] = 0xE0 | (unsigned char)channel;
 	      int value = int(event->get_start() + 
 			      (cc_pos * sd->steps - event->get_step()) *

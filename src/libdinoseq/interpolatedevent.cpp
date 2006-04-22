@@ -24,19 +24,13 @@
 namespace Dino {
 
 
-  InterpolatedEvent::InterpolatedEvent(int param, int start, int end, 
+  InterpolatedEvent::InterpolatedEvent(int start, int end, 
 				       unsigned step, unsigned length) 
-    : m_param(param),
-      m_start(start),
+    : m_start(start),
       m_end(end),
       m_step(step),
       m_length(length) {
 
-  }
-  
-  
-  int InterpolatedEvent::get_param() const {
-    return m_param;
   }
   
   

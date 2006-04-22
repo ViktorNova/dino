@@ -31,11 +31,8 @@ namespace Dino {
   class InterpolatedEvent {
   public:
     
-    InterpolatedEvent(int param, int start, int end, 
-		      unsigned step, unsigned length);
+    InterpolatedEvent(int start, int end, unsigned step, unsigned length);
     
-    // XXX is the param really needed ?
-    int get_param() const;
     unsigned get_step() const;
     unsigned get_length() const;
     int get_start() const;
@@ -48,7 +45,6 @@ namespace Dino {
     
   protected:
     
-    int m_param;
     int m_start;
     int m_end;
     unsigned m_step;

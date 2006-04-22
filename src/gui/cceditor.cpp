@@ -37,7 +37,7 @@ CCEditor::CCEditor()
     m_edge_colour("#000000"),
     m_fg_colour("#008000"),
     m_step_width(8),
-    m_pat(NULL),
+    m_pat(0),
     m_drag_step(-1) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();

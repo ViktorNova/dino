@@ -32,7 +32,7 @@ namespace Dino {
   NoteEvent::NoteEvent(unsigned char type, int stp, int val, int vel) 
     : MIDIEvent(type, val, vel),
       m_step(stp), 
-      m_previous(NULL) {
+      m_previous(0) {
     
   }
   
@@ -41,7 +41,7 @@ namespace Dino {
 		       unsigned char data2) 
     : MIDIEvent(type, data1, data2),
       m_step(stp),
-      m_previous(NULL) {
+      m_previous(0) {
       
   }
    

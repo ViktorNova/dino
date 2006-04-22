@@ -84,12 +84,12 @@ private:
   
   /** This is a convenience function that returns a pointer of type @c T* to
       the widget with name @c name. If there is no widget in @c xml with that
-      name it returns NULL. */
+      name it returns 0. */
   template <class T>
   inline T* w(const string& name) {
     using namespace Dino;
     T* widget = dynamic_cast<T*>(m_xml->get_widget(name));
-    if (widget == NULL)
+    if (widget == 0)
       dbg0<<"Could not load widget "<<name<<" of type "
 	  <<demangle(typeid(T).name())<<endl;
     return widget;

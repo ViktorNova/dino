@@ -33,7 +33,7 @@ namespace Dino {
 class TrackWidget : public Gtk::DrawingArea {
 public:
   
-  TrackWidget(const Dino::Song* song = NULL);
+  TrackWidget(const Dino::Song* song = 0);
   
   void set_track(Dino::Track* track);
 

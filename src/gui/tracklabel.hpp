@@ -35,7 +35,7 @@ namespace Dino {
 class TrackLabel : public Gtk::DrawingArea {
 public:
   
-  TrackLabel(const Dino::Song* song = NULL);
+  TrackLabel(const Dino::Song* song = 0);
   
   void set_track(int id, Dino::Track* track);
   

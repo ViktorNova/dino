@@ -92,7 +92,7 @@ namespace Dino {
 	  However, it might return @c true for an iterator that has been 
 	  invalidated by removing the note it refers to, for example. */
       /*operator bool() const {
-	return (m_pattern != NULL && m_note != NULL);
+	return (m_pattern != 0 && m_note != 0);
 	}*/
 	  
     private:

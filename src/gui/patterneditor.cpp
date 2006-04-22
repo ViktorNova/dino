@@ -193,12 +193,25 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
     // button 3 deletes
     case 3: {
-      Pattern::NoteIterator iterator = 
-	m_pat->find_note(int(event->x) / m_col_width, 
-			 m_max_note - int(event->y) / m_row_height - 1);
-      if (iterator != m_pat->notes_end())
-	m_pat->delete_note(iterator);
-      m_drag_operation = DeletingNotes;
+      if (event->state & GDK_SHIFT_MASK) {
+	PatternSelection::Iterator iter1, iter2;
+	iter1 = m_selection.begin();
+	iter2 = iter1;
+	for (iter1 = m_selection.begin(), iter2 = iter1; 
+	     iter2 != m_selection.end(); ) {
+	  m_pat->delete_note(iter2);
+	  iter2 = iter1;
+	}
+	  
+      }
+      else {
+	Pattern::NoteIterator iterator = 
+	  m_pat->find_note(int(event->x) / m_col_width, 
+			   m_max_note - int(event->y) / m_row_height - 1);
+	if (iterator != m_pat->notes_end())
+	  m_pat->delete_note(iterator);
+	m_drag_operation = DeletingNotes;
+      }
       break;
     }
     }

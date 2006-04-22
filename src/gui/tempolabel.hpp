@@ -32,7 +32,7 @@ namespace Dino {
 class TempoLabel : public Gtk::DrawingArea {
 public:
   
-  TempoLabel(const Dino::Song* song = NULL);
+  TempoLabel(const Dino::Song* song = 0);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);

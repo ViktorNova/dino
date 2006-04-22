@@ -23,10 +23,6 @@
 #ifndef NOTEEVENT_HPP
 #define NOTEEVENT_HPP
 
-#ifndef NULL
-#define NULL 0
-#endif
-
 #include "midievent.hpp"
 
 

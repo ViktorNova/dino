@@ -40,8 +40,8 @@ namespace Dino {
   
   
   Pattern::NoteIterator::NoteIterator() 
-    : m_pattern(NULL),
-      m_note(NULL) {
+    : m_pattern(0),
+      m_note(0) {
 
   }
   
@@ -98,7 +98,7 @@ namespace Dino {
       }
     }
     
-    m_note = NULL;
+    m_note = 0;
     return *this;
   }
 
@@ -222,7 +222,7 @@ namespace Dino {
 
   
   Pattern::NoteIterator Pattern::notes_end() const {
-    return NoteIterator(this, NULL);
+    return NoteIterator(this, 0);
   }
 
   
@@ -791,14 +791,14 @@ namespace Dino {
 	  if (note_on->get_note()->m_note_off->get_step() >= step)
 	    return NoteIterator(this, note_on->get_note());
 	  else
-	    return NoteIterator(this, NULL);
+	    return NoteIterator(this, 0);
 	}
 	note_on = note_on->get_next();
       }
       
     }
     
-    return NoteIterator(this, NULL);
+    return NoteIterator(this, 0);
   }
 
 
@@ -832,7 +832,7 @@ namespace Dino {
       }
     }
     
-    return NoteIterator(this, NULL);
+    return NoteIterator(this, 0);
   }
   
 

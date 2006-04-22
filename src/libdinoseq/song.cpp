@@ -341,7 +341,7 @@ namespace Dino {
   
   
   Song::TempoIterator Song::tempo_end() const {
-    return TempoIterator(NULL);
+    return TempoIterator(0);
   }
   
   
@@ -384,7 +384,7 @@ namespace Dino {
     // write the tempomap
     const TempoMap::TempoChange* tc = m_tempo_map.get_changes(0);
     Element* tmap_elt = dino_elt->add_child("tempomap");
-    for ( ; tc != NULL; tc = tc->next) {
+    for ( ; tc != 0; tc = tc->next) {
       Element* tc_elt = tmap_elt->add_child("tempochange");
       char tmp_txt[10];
       sprintf(tmp_txt, "%d", int(tc->beat));
@@ -428,7 +428,7 @@ namespace Dino {
     Node::NodeList nodes = dino_elt->get_children("info");
     if (nodes.begin() != nodes.end()) {
       const Element* elt = dynamic_cast<Element*>(*nodes.begin());
-      if (elt && (text_node = elt->get_child_text()) != NULL)
+      if (elt && (text_node = elt->get_child_text()) != 0)
 	set_info(text_node->get_content());
     }
   

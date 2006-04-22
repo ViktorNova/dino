@@ -57,7 +57,7 @@ namespace Dino {
     /** A node is prunable for a given value if all its children have the
 	same value. */
     bool is_prunable(const T& data) const;
-    /** Helper function to delete the data and set the data pointer to NULL. */
+    /** Helper function to delete the data and set the data pointer to 0. */
     void delete_data();
     /** Helper function to delete all child nodes. */
     void delete_children();
@@ -86,7 +86,7 @@ namespace Dino {
     : m_depth(depth), 
       m_size(children), 
       m_segmentsize(int(pow(float(children), int(depth - 1)))),
-      m_children(NULL),
+      m_children(0),
       m_data(new T()) {
   
   }
@@ -228,7 +228,7 @@ namespace Dino {
   template <class T>
   void CDTreeNode<T>::delete_data() {
     delete m_data;
-    m_data = NULL;
+    m_data = 0;
   }
 
 
@@ -238,7 +238,7 @@ namespace Dino {
       for (unsigned int i = 0; i < m_size; ++i)
 	delete m_children[i];
       delete [] m_children;
-      m_children = NULL;
+      m_children = 0;
     }
   }
 

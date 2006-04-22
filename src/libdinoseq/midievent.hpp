@@ -23,10 +23,6 @@
 #ifndef MIDIEVENT_HPP
 #define MIDIEVENT_HPP
 
-#ifndef NULL
-#define NULL 0
-#endif
-
 
 namespace Dino {
 
@@ -40,7 +36,7 @@ namespace Dino {
   public:
   
     MIDIEvent(unsigned char type, unsigned char data1, unsigned char data2) 
-      : m_next(NULL) {
+      : m_next(0) {
       m_data[0] = type;
       m_data[1] = data1;
       m_data[2] = data2;

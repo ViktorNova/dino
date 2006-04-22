@@ -31,7 +31,7 @@
 namespace Dino {
 
 
-  Track::SequenceIterator::SequenceIterator() : m_vector(NULL) {
+  Track::SequenceIterator::SequenceIterator() : m_vector(0) {
 
   }
   
@@ -61,7 +61,7 @@ namespace Dino {
     do {
       ++m_iter;
     } while (m_iter != m_vector->end() && 
-	     (*m_iter == old_ptr || *m_iter == NULL));
+	     (*m_iter == old_ptr || *m_iter == 0));
     return *this;
   }
   
@@ -175,7 +175,7 @@ namespace Dino {
   Track::Track(int id, int length, const string& name) 
     : m_id(id),
       m_name(name),
-      m_sequence(new vector<SequenceEntry*>(length, (SequenceEntry*)NULL)),
+      m_sequence(new vector<SequenceEntry*>(length, (SequenceEntry*)0)),
       m_dirty(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
@@ -187,7 +187,7 @@ namespace Dino {
     map<int, Pattern*>::iterator iter;
     for (iter = m_patterns.begin(); iter != m_patterns.end(); ++iter)
       delete iter->second;
-    SequenceEntry* ptr = NULL;
+    SequenceEntry* ptr = 0;
     for (unsigned int i = 0; i < m_sequence->size(); ++i) {
       if ((*m_sequence)[i] != ptr)
 	delete (*m_sequence)[i];
@@ -227,7 +227,7 @@ namespace Dino {
     map<int, Pattern*>::iterator iter = m_patterns.find(id);
     if (iter != m_patterns.end())
       return iter->second;
-    return NULL;
+    return 0;
   }
   */
   
@@ -266,7 +266,7 @@ namespace Dino {
     std::vector<SequenceEntry*>::const_iterator iter;
     unsigned i;
     for (i = 0; i < m_sequence->size(); ++i) {
-      if ((*m_sequence)[i] != NULL)
+      if ((*m_sequence)[i] != 0)
 	break;
     }
     return SequenceIterator(m_sequence->begin() + i, *m_sequence);
@@ -279,7 +279,7 @@ namespace Dino {
   
   
   Track::SequenceIterator Track::seq_find(unsigned int beat) const {
-    if ((*m_sequence)[beat] != NULL)
+    if ((*m_sequence)[beat] != 0)
       return SequenceIterator(m_sequence->begin() + beat, *m_sequence);
     return SequenceIterator(m_sequence->end(), *m_sequence);
   }
@@ -383,7 +383,7 @@ namespace Dino {
     if (se) {
       int stop = se->start + se->length;
       for (int i = stop - 1; i >= beat; --i)
-	(*m_sequence)[i] = NULL;
+	(*m_sequence)[i] = 0;
       if (se->start == unsigned(beat))
 	Deleter::queue(se);
       else
@@ -429,7 +429,7 @@ namespace Dino {
       int tmp = se->length;
       se->length = length;
       for (int i = se->start + tmp - 1; i >= int(se->start + se->length); --i)
-	(*m_sequence)[i] = NULL;
+	(*m_sequence)[i] = 0;
     }
     signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length);
   }
@@ -444,7 +444,7 @@ namespace Dino {
     if (se) {
       int start = se->start;
       for (int i = se->start + se->length - 1; i >= int(se->start); --i)
-	(*m_sequence)[i] = NULL;
+	(*m_sequence)[i] = 0;
       Deleter::queue(se);
       signal_sequence_entry_removed(start);
       return true;

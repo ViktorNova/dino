@@ -32,7 +32,7 @@ namespace Dino {
 class TempoWidget : public Gtk::DrawingArea {
 public:
   
-  TempoWidget(Dino::Song* song = NULL);
+  TempoWidget(Dino::Song* song = 0);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);

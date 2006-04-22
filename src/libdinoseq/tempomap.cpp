@@ -34,7 +34,7 @@ namespace Dino {
 
 
   TempoMap::TempoMap(unsigned long frame_rate) 
-    : m_tc_list(new TempoChange(0, 0, 100, NULL, NULL)),
+    : m_tc_list(new TempoChange(0, 0, 100, 0, 0)),
       m_frame2tc(new CDTree<TempoChange*>(400000000)),
       m_frame_rate(frame_rate) {
   
@@ -49,13 +49,13 @@ namespace Dino {
     
     // XXX I don't understand how this works any more, it probably needs to be
     //     rewritten
-    TempoChange* tc = NULL;
+    TempoChange* tc = 0;
     TempoChange* iter;
   
     bool is_new = true;
   
     // insert the new tempo change
-    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+    for (iter = m_tc_list; iter != 0; iter = iter->next) {
       if (iter->beat == beat) {
 	if (iter->bpm == bpm)
 	  return iter;
@@ -68,7 +68,7 @@ namespace Dino {
 	unsigned long frame;
 	frame = (unsigned long)(iter->frame + (beat - iter->beat) * 
 				m_frame_rate * 60 / double(iter->bpm));
-	tc = new TempoChange(frame, beat, bpm, iter, NULL);
+	tc = new TempoChange(frame, beat, bpm, iter, 0);
 	tc->prev->next = tc;
 	break;
       }
@@ -88,14 +88,14 @@ namespace Dino {
       unsigned long dframe = 
 	(unsigned long)(tc->frame + (tc->next->beat - beat) * 
 			m_frame_rate * 60 / double(tc->bpm)) - tc->next->frame;
-      for (iter = tc->next; iter != NULL; iter = iter->next)
+      for (iter = tc->next; iter != 0; iter = iter->next)
 	iter->frame += dframe;
     }
   
     // update the framenumber->TempoChange mapping
     CDTree<TempoChange*>* tmp = new CDTree<TempoChange*>(400000000);
     unsigned long a, b;
-    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+    for (iter = m_tc_list; iter != 0; iter = iter->next) {
       a = iter->frame;
       if (iter->next)
 	b = iter->next->frame;
@@ -133,7 +133,7 @@ namespace Dino {
   
     bool removed = false;
     TempoChange* iter;
-    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+    for (iter = m_tc_list; iter != 0; iter = iter->next) {
       if (iter->beat == beat) {
 	if (iter->prev)
 	  iter->prev->next = iter->next;
@@ -147,7 +147,7 @@ namespace Dino {
     // update the framenumber->TempoChange mapping
     CDTree<TempoChange*>* tmp = new CDTree<TempoChange*>(400000000);
     unsigned long a, b;
-    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+    for (iter = m_tc_list; iter != 0; iter = iter->next) {
       a = iter->frame;
       if (iter->next)
 	b = iter->next->frame;
@@ -184,7 +184,7 @@ namespace Dino {
   unsigned long TempoMap::get_frame(int32_t beat, int32_t tick,
 				    unsigned long ticks_per_beat) const {
     TempoChange* iter;
-    for (iter = m_tc_list; iter != NULL; iter = iter->next) {
+    for (iter = m_tc_list; iter != 0; iter = iter->next) {
       if (!iter->next || iter->next->beat > (unsigned)beat)
 	break;
     }
@@ -196,7 +196,7 @@ namespace Dino {
 
   const TempoMap::TempoChange* TempoMap::get_changes(unsigned long beat) const {
     const TempoChange* iter = m_tc_list;
-    for ( ; iter != NULL; iter = iter->next) {
+    for ( ; iter != 0; iter = iter->next) {
       if (!iter->next || iter->next->beat > beat)
 	break;
     }

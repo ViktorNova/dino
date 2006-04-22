@@ -35,7 +35,7 @@ using namespace Glib;
 
 
 TempoWidget::TempoWidget(Song* song) 
-  : m_song(song), m_col_width(20), m_drag_beat(-1), m_active_tempo(NULL) {
+  : m_song(song), m_col_width(20), m_drag_beat(-1), m_active_tempo(0) {
   assert(song);
   
   // initialise colours
@@ -184,7 +184,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
       update();
     }
     else
-      m_active_tempo = NULL;
+      m_active_tempo = 0;
     return true;
   }
     
@@ -202,7 +202,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
 bool TempoWidget::on_button_release_event(GdkEventButton* event) {
   if ((event->button == 2 || event->button == 1)&& m_active_tempo) {
     m_song->add_tempo_change(m_active_tempo->beat, m_editing_bpm);
-    m_active_tempo = NULL;
+    m_active_tempo = 0;
     update();
   }
   return true;

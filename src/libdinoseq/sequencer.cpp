@@ -122,7 +122,7 @@ namespace Dino {
 	free(connected);
       }
     
-      const char** ports = jack_get_ports(m_jack_client, NULL, 
+      const char** ports = jack_get_ports(m_jack_client, 0, 
 					  JACK_DEFAULT_MIDI_TYPE, 
 					  JackPortIsInput);
       if (ports) {

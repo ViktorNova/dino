@@ -308,7 +308,7 @@ void DinoGUI::slot_transport_go_to_start() {
 
 
 void DinoGUI::slot_help_about_dino() {
-  assert(m_about_dialog != NULL);
+  assert(m_about_dialog != 0);
   m_about_dialog->run();
   m_about_dialog->hide();
 }
@@ -683,7 +683,7 @@ bool DinoGUI::init_lash(int argc, char** argv) {
   }
   else
     dbg0<<"Could not initialise LASH!"<<endl;
-  return (m_lash_client != NULL);
+  return (m_lash_client != 0);
 }
 
 
@@ -750,7 +750,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
     signal_active_pattern_changed(m_active_track, m_active_pattern);
     m_conn_cont_added.disconnect();
     m_conn_cont_removed.disconnect();
-    Pattern* pattern = NULL;
+    Pattern* pattern = 0;
     Song::TrackIterator trk = m_song.find_track(m_active_track);
     if (trk != m_song.tracks_end()) {
       Track::PatternIterator iter = trk->pat_find(m_active_pattern);
@@ -765,7 +765,7 @@ void DinoGUI::set_active_pattern(int active_pattern) {
       }
     }
     m_pe.set_pattern(pattern);
-    m_cce.set_controller(NULL, 0);
+    m_cce.set_controller(0, 0);
     set_active_controller(-1);
     update_controller_combo();
     bool active = (m_active_pattern != -1);
@@ -789,7 +789,7 @@ void DinoGUI::set_active_controller(int active_controller) {
 			    pat_find(m_active_pattern)), m_active_controller);
   }
   else
-    m_cce.set_controller(NULL, 0);
+    m_cce.set_controller(0, 0);
   bool active = (m_active_controller != -1);
   m_toolbuttons["tbn_delete_controller"]->set_sensitive(active);
   m_menuitems["delete_controller1"]->set_sensitive(active);

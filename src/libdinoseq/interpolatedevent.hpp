@@ -25,12 +25,16 @@
 namespace Dino {
   
   
+  /** This class represents segments in Controllers, with a start value and
+      start step and an end value and end step. The sequencer should 
+      use linear interpolation to get the intermediate values. */
   class InterpolatedEvent {
   public:
     
     InterpolatedEvent(int param, int start, int end, 
 		      unsigned step, unsigned length);
     
+    // XXX is the param really needed ?
     int get_param() const;
     unsigned get_step() const;
     unsigned get_length() const;

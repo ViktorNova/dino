@@ -29,15 +29,23 @@
 namespace Dino {
 
   
+  /** Need a base class for the template class so we can use it 
+      polymorphically. */
   class DeletableBase {
   public:
+    /** Need a virtual destructor so the destructors of the subclasses get
+	called. */
     virtual ~DeletableBase() { }
   };
   
   
+  /** A template class that wraps a pointer of any type so it can be
+      deleted by the Deleter. */
   template <class T> class Deletable : public DeletableBase {
   public:
+    /** The constructor just stores a copy of the pointer. */
     Deletable(T* pointer) : m_pointer(pointer) { }
+    /** The destructor actually deletes the wrapped object. */
     ~Deletable() { delete m_pointer; }
   private:
     T* m_pointer;
@@ -61,6 +69,7 @@ namespace Dino {
       m_connection.disconnect();
     }
     
+    /** Returns the Deleter singleton object. */
     static Deleter& get_instance() {
       static Deleter d;
       return d;
@@ -91,8 +100,14 @@ namespace Dino {
   
   private:
   
+    /** A ringbuffer containing pointers to the objects that are no longer 
+	used by the deleting thread but still not safe to delete. */
     Ringbuffer<DeletableBase*> m_objects_not_used;
+    
+    /** A ringbuffer containing pointers to the objects that are now safe
+	to delete. */
     Ringbuffer<DeletableBase*> m_objects_to_delete;
+    
     sigc::connection m_connection;
     
   };

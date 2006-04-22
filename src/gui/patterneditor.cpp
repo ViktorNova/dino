@@ -22,7 +22,8 @@
 #include <iostream>
 
 #include "debug.hpp"
-#include "noteevent.hpp"
+#include "notecollection.hpp"
+//#include "noteevent.hpp"
 #include "pattern.hpp"
 #include "patterneditor.hpp"
 #include "patternselection.hpp"
@@ -198,6 +199,16 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
 	  m_drag_operation = ChangingNoteLength;
 	}
       }
+      
+      // XXX needs to be rewritten
+      else {
+	NoteCollection nc(m_selection);
+	NoteCollection::ConstIterator iter;
+	for (iter = nc.begin(); iter != nc.end(); ++iter) 
+	  m_pat->add_note(iter->start + step, iter->key + note - 128, 
+			  iter->velocity, iter->length);
+      }
+      
       break;
     }
     

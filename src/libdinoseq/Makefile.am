@@ -10,6 +10,7 @@ libdinoseq_la_SOURCES = \
 	midibuffer.cpp midibuffer.hpp \
 	midievent.cpp midievent.hpp \
 	note.cpp note.hpp \
+	notecollection.cpp notecollection.hpp \
 	noteevent.cpp noteevent.hpp \
 	pattern.cpp pattern.hpp \
 	patternselection.cpp patternselection.hpp \

@@ -255,6 +255,9 @@ namespace Dino {
     
     typedef vector<NoteEvent*> NoteEventList;
     
+    /** This struct is used internally so we can swap all data used by the
+	sequencer with a single pointer assignment (for lock-free 
+	thread safety). */
     struct SeqData {
       
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
@@ -289,16 +292,18 @@ namespace Dino {
     Pattern(const Pattern&) { assert(0); }
     Pattern& operator=(const Pattern&) { assert(0); return *this; }
     
+    /** Find a note on event with the specified @c key between the steps
+	@c start and @c end. */
     NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
+    /** Delete a note in a safe way. */
     void delete_note(Note* note);
+    /** Resize a note. */
     int resize_note(Note* note, int length);
     
+    /** The pattern id. */
     int m_id;
     /** The name of the pattern */
     string m_name;
-    // XXX the controller list should also be in the SeqData structure
-    /** The control change event lists */
-    //std::vector<Controller*>* m_controllers;
     /** The data used by the sequencing functions need to be stored in a
 	single structure so we can modify it in a lock-free way by swapping 
 	a single pointer. */

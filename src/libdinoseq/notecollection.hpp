@@ -54,6 +54,9 @@ namespace Dino {
 	this collection. */
     typedef std::vector<NoteDescription>::const_iterator ConstIterator;
     
+    /** Create a new empty NoteCollection. */
+    NoteCollection();
+    
     /** Create a new NoteCollection from the notes in a PatternSelection. */
     NoteCollection(const PatternSelection& selection);
     

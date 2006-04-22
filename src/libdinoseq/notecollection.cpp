@@ -42,6 +42,11 @@ namespace Dino {
   }
 
 
+  NoteCollection::NoteCollection() {
+
+  }
+
+
   NoteCollection::NoteCollection(const PatternSelection& selection) {
     PatternSelection::Iterator iter;
     unsigned int minstep = 666666;
@@ -56,7 +61,7 @@ namespace Dino {
     }
     for (unsigned i = 0; i < m_data.size(); ++i) {
       m_data[i].start -= minstep;
-      m_data[i].key += 128 - maxkey;
+      m_data[i].key += 127 - maxkey;
     }
   }
   

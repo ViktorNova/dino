@@ -22,13 +22,7 @@
 #include <iostream>
 
 #include "debug.hpp"
-#include "notecollection.hpp"
-//#include "noteevent.hpp"
-#include "pattern.hpp"
 #include "patterneditor.hpp"
-#include "patternselection.hpp"
-#include "song.hpp"
-#include "track.hpp"
 
 
 using namespace Gdk;
@@ -132,6 +126,11 @@ void PatternEditor::set_vadjustment(Gtk::Adjustment* adj) {
 }
 
 
+void PatternEditor::copy_selection() {
+  m_clipboard = NoteCollection(m_selection);
+}
+
+
 bool PatternEditor::on_button_press_event(GdkEventButton* event) {
   if (!m_pat)
     return false;
@@ -202,11 +201,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       
       // XXX needs to be rewritten
       else {
-	NoteCollection nc(m_selection);
-	NoteCollection::ConstIterator iter;
-	for (iter = nc.begin(); iter != nc.end(); ++iter) 
-	  m_pat->add_note(iter->start + step, iter->key + note - 128, 
-			  iter->velocity, iter->length);
+	m_pat->add_notes(m_clipboard, step, note);
       }
       
       break;
@@ -214,27 +209,30 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     
       // button 3 deletes
     case 3: {
-      if (event->state & GDK_SHIFT_MASK) {
+      Pattern::NoteIterator iterator = m_pat->find_note(step, note);
+      if (iterator != m_pat->notes_end()) {
+	
+	// if shift isn't pressed the selection is set to this single note
+	if (!(event->state & GDK_SHIFT_MASK)) {
+	  m_selection.clear();
+	  m_selection.add_note(iterator);
+	}
+	
 	PatternSelection::Iterator iter1, iter2;
 	iter1 = m_selection.begin();
 	iter2 = iter1;
-	for (iter1 = m_selection.begin(), iter2 = iter1; 
-	     iter2 != m_selection.end(); ) {
+	while (iter2 != m_selection.end()) {
+	  ++iter1;
 	  m_pat->delete_note(iter2);
 	  iter2 = iter1;
 	}
-	  
+	
       }
-      else {
-	Pattern::NoteIterator iterator = 
-	  m_pat->find_note(int(event->x) / m_col_width, 
-			   m_max_note - int(event->y) / m_row_height - 1);
-	if (iterator != m_pat->notes_end())
-	  m_pat->delete_note(iterator);
-	m_drag_operation = DeletingNotes;
-      }
+      
+      m_drag_operation = DeletingNotes;
       break;
     }
+      
     }
   }
   

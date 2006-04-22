@@ -144,7 +144,7 @@ void DinoGUI::slot_edit_cut() {
 
 
 void DinoGUI::slot_edit_copy() {
-
+  m_pe.copy_selection();
 }
 
 
@@ -627,6 +627,7 @@ void DinoGUI::init_menus() {
     mi->signal_activate().connect(mem_fun(*this, iter->second));
     m_menuitems[iter->first] = mi;
   }
+  m_menuitems["copy1"]->set_sensitive(true);
   
   // and toolbuttons
   map<string, void (DinoGUI::*)(void)> toolSlots;

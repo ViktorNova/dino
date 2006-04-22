@@ -25,6 +25,7 @@
 
 #include <gtkmm.h>
 
+#include "notecollection.hpp"
 #include "pattern.hpp"
 #include "patternselection.hpp"
 
@@ -36,6 +37,7 @@ public:
   void set_pattern(Dino::Pattern* pattern);
   void set_step_width(int width);
   void set_vadjustment(Gtk::Adjustment* adj);
+  void copy_selection();
   
 protected:
   
@@ -81,6 +83,7 @@ private:
   int m_drag_start_vel;
   int m_last_note_length;
   Dino::PatternSelection m_selection;
+  Dino::NoteCollection m_clipboard;
   
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Dino::Pattern* m_pat;

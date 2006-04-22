@@ -29,6 +29,7 @@
 #include "debug.hpp"
 #include "deleter.hpp"
 #include "midibuffer.hpp"
+#include "notecollection.hpp"
 #include "noteevent.hpp"
 #include "pattern.hpp"
 
@@ -420,6 +421,22 @@ namespace Dino {
   }
 
 
+  void Pattern::add_notes(const NoteCollection& notes, unsigned step, int key) {
+    assert(step < m_sd->length * m_sd->steps);
+    assert(key < 128);
+    
+    NoteCollection::ConstIterator iter;
+    for (iter = notes.begin(); iter != notes.end(); ++iter) {
+      if (iter->start + step >= m_sd->length * m_sd->steps)
+	continue;
+      if (iter->key + key < 128)
+	continue;
+      add_note(iter->start + step, iter->key + key - 128, 
+	       iter->velocity, iter->length);
+    }
+  }
+
+
   /** This function will delete the note with the given value playing at the
       given step, if there is one. It will also update the @c previous and 
       @c next pointers so the doubly linked list will stay consistent with the
@@ -470,7 +487,9 @@ namespace Dino {
   int Pattern::resize_note(NoteIterator iterator, int length) {
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
-    assert(iterator->get_step() + length <= m_sd->length * m_sd->steps);
+    
+    if (iterator->get_step() + length > m_sd->length * m_sd->steps)
+      length = m_sd->length * m_sd->steps - iterator->get_step();
     
     return resize_note(iterator.m_note, length);
   }

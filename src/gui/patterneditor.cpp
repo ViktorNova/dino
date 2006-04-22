@@ -176,14 +176,24 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
     case 2: {
       Pattern::NoteIterator iterator = m_pat->find_note(step, note);
       if (iterator != m_pat->notes_end()) {
+	
+	// if shift isn't pressed the selection is set to this single note
+	if (!(event->state & GDK_SHIFT_MASK)) {
+	  m_selection.clear();
+	  m_selection.add_note(iterator);
+	}
+	
 	if (event->state & GDK_CONTROL_MASK) {
 	  m_drag_operation = ChangingNoteVelocity;
 	  m_drag_start_vel = iterator->get_velocity();
 	  queue_draw();
 	}
 	else {
-	  m_pat->resize_note(iterator, step - iterator->get_step() + 1);
-	  m_last_note_length = step - iterator->get_step() + 1;
+	  PatternSelection::Iterator iter;
+	  unsigned new_size = step - iterator->get_step() + 1;
+	  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+	    m_pat->resize_note(iter, new_size);
+	  m_last_note_length = new_size;
 	  m_added_note = make_pair(iterator->get_step(), note);
 	  m_drag_operation = ChangingNoteLength;
 	}
@@ -191,7 +201,7 @@ bool PatternEditor::on_button_press_event(GdkEventButton* event) {
       break;
     }
     
-    // button 3 deletes
+      // button 3 deletes
     case 3: {
       if (event->state & GDK_SHIFT_MASK) {
 	PatternSelection::Iterator iter1, iter2;
@@ -232,9 +242,15 @@ bool PatternEditor::on_button_release_event(GdkEventButton* event) {
     if (step != m_drag_step) {
       if (step >= m_pat->get_length() * m_pat->get_steps())
 	step = m_pat->get_length() * m_pat->get_steps() - 1;
+      unsigned new_size = step - m_added_note.first + 1;
+      PatternSelection::Iterator iter;
+      for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+	m_pat->resize_note(iter, new_size);
+      /*
       Pattern::NoteIterator iterator = 
 	m_pat->find_note(m_added_note.first, m_added_note.second);
       m_pat->resize_note(iterator, step - m_added_note.first + 1);
+      */
       m_added_note = make_pair(-1, -1);
     }
   }
@@ -257,14 +273,13 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
   switch (m_drag_operation) {
 
   case ChangingNoteVelocity: {
-    Pattern::NoteIterator iterator = m_pat->find_note(m_drag_step, m_drag_note);
-    if (iterator != m_pat->notes_end()) {
-      double dy = m_drag_y - int(event->y);
-      int velocity = int(m_drag_start_vel + dy);
-      velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
-      m_pat->set_velocity(iterator, velocity);
-      queue_draw();
-    }
+    double dy = m_drag_y - int(event->y);
+    int velocity = int(m_drag_start_vel + dy);
+    velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
+    PatternSelection::Iterator iter;
+    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+      m_pat->set_velocity(iter, velocity);
+    queue_draw();
     break;
   }
     
@@ -281,7 +296,13 @@ bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
       step = m_pat->get_length() * m_pat->get_steps() - 1;
     Pattern::NoteIterator iterator = 
       m_pat->find_note(m_added_note.first, m_added_note.second);
+    unsigned new_size = step - m_added_note.first + 1;
+    PatternSelection::Iterator iter;
+    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+      m_pat->resize_note(iter, new_size);
+    /*
     m_pat->resize_note(iterator, step - m_added_note.first + 1);
+    */
     m_last_note_length = step - m_added_note.first + 1;
     
     m_drag_step = step;

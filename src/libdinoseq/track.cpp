@@ -209,29 +209,6 @@ namespace Dino {
   }
 
   
-  /** Returns a map of the patterns in this track. This map can be changed
-      by the user, and we have no way of knowing how it's changed - this will
-      probably be replaced by higher level functions in the future. */
-  /*
-  map<int, Pattern*>& Track::get_patterns() {
-    return m_patterns;
-  }
-
-
-  const map<int, Pattern*>& Track::get_patterns() const {
-    return m_patterns;
-  }
-
-
-  Pattern* Track::get_pattern(int id) {
-    map<int, Pattern*>::iterator iter = m_patterns.find(id);
-    if (iter != m_patterns.end())
-      return iter->second;
-    return 0;
-  }
-  */
-  
-
   Track::ConstPatternIterator Track::pat_begin() const {
     return ConstPatternIterator(m_patterns.begin());
   }
@@ -362,7 +339,8 @@ namespace Dino {
   }
 
 
-  /** Set the sequency entry at the given beat to the given pattern and length.*/
+  /** Set the sequency entry at the given beat to the given pattern 
+      and length. */
   Track::SequenceIterator Track::set_sequence_entry(int beat, 
 						    int pattern, int length) {
     assert(beat >= 0);

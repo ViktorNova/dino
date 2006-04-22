@@ -26,6 +26,7 @@
 #include <iostream>
 #include <set>
 
+#include "controller_numbers.hpp"
 #include "debug.hpp"
 #include "deleter.hpp"
 #include "midibuffer.hpp"
@@ -107,11 +108,6 @@ namespace Dino {
   Pattern::Pattern(int id, const string& name, int length, int steps) 
     : m_id(id),
       m_name(name),
-      //m_length(length),
-      //m_steps(steps),
-      //m_note_ons(new NoteEventList(length * steps)),
-      //m_note_offs(new NoteEventList(length * steps)),
-      //m_controllers(new vector<Controller*>()),
       m_sd(new SeqData(new NoteEventList(length * steps),
 		       new NoteEventList(length * steps),
 		       new vector<Controller*>(), length, steps)),
@@ -744,7 +740,6 @@ namespace Dino {
       }
       
       // write CCs
-      //cerr<<"cc_pos = "<<cc_pos<<", step = "<<step<<endl;
       for ( ; cc_pos < (step + 1) / double(sd->steps) && cc_pos < to; 
 	    cc_pos += buffer.get_cc_resolution()) {
 	++cc_steps;
@@ -753,15 +748,15 @@ namespace Dino {
 	  if (event) {
 	    unsigned char* data = buffer.
 	      reserve(offset + cc_pos, 3);
-	    if (data && event->get_param() < 128) {
+	    if (data && is_cc(event->get_param())) {
 	      data[0] = 0xB0 | (unsigned char)channel;
-	      data[1] = event->get_param();
+	      data[1] = cc_number(event->get_param());
 	      data[2] = (unsigned char)
 		(event->get_start() + (cc_pos * sd->steps - event->get_step()) *
 		 ((event->get_end() - event->get_start()) /
 		  double(event->get_length())));
 	    }
-	    else if (data && event->get_param() == 128) {
+	    else if (data && is_pbend(event->get_param())) {
 	      data[0] = 0xE0 | (unsigned char)channel;
 	      int value = int(event->get_start() + 
 			      (cc_pos * sd->steps - event->get_step()) *

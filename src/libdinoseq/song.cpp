@@ -489,9 +489,7 @@ namespace Dino {
 
 
   pair<int, int> Song::frame2bt(unsigned long frame) {
-    //double bpm;
     int32_t beat = 0, tick = 0;
-    //m_tempo_map.get_bbt(frame, 48000, bpm, beat, tick);
     return make_pair<int, int>(beat, tick);
   }
 

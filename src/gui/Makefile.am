@@ -8,10 +8,13 @@ dino_SOURCES = \
 	controllerdialog.cpp controllerdialog.hpp \
 	dinogui.cpp dinogui.hpp \
 	evilscrolledwindow.hpp \
+	infoeditor.cpp infoeditor.hpp \
+	noteeditor.cpp noteeditor.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterneditor.cpp patterneditor.hpp \
 	patterndialog.cpp patterndialog.hpp \
 	ruler.cpp ruler.hpp \
+	sequenceeditor.cpp sequenceeditor.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
 	tempolabel.cpp tempolabel.hpp \
 	tempowidget.cpp tempowidget.hpp \

@@ -1,96 +1,89 @@
-/****************************************************************************
-   Dino - A simple pattern based MIDI sequencer
-   
-   Copyright (C) 2006  Lars Luthman <larsl@users.sourceforge.net>
-   
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-****************************************************************************/
-
 #ifndef PATTERNEDITOR_HPP
 #define PATTERNEDITOR_HPP
 
-#include <utility>
-
 #include <gtkmm.h>
+#include <libglademm.h>
 
-#include "notecollection.hpp"
-#include "pattern.hpp"
-#include "patternselection.hpp"
+#include "cceditor.hpp"
+#include "debug.hpp"
+#include "octavelabel.hpp"
+#include "noteeditor.hpp"
+#include "ruler.hpp"
+#include "singletextcombo.hpp"
 
 
-class PatternEditor : public Gtk::DrawingArea {
+namespace Dino {
+  class Song;
+}
+
+class PatternDialog;
+class ControllerDialog;
+
+
+class PatternEditor : public Gtk::VBox {
 public:
-  PatternEditor();
   
-  void set_pattern(Dino::Pattern* pattern);
-  void set_step_width(int width);
-  void set_vadjustment(Gtk::Adjustment* adj);
-  void copy_selection();
+  PatternEditor(BaseObjectType* cobject, 
+		const Glib::RefPtr<Gnome::Glade::Xml>& xml);
+  
+  void set_song(Dino::Song* song);
+  void reset_gui();
   
 protected:
   
-  // event handlers
-  virtual bool on_button_press_event(GdkEventButton* event);
-  virtual bool on_button_release_event(GdkEventButton* event);
-  virtual bool on_motion_notify_event(GdkEventMotion* event);
-  virtual bool on_expose_event(GdkEventExpose* event);
-  virtual bool on_scroll_event(GdkEventScroll* event);
-  virtual void on_realize();
+  template <class T>
+  static inline T* w(const Glib::RefPtr<Gnome::Glade::Xml>& xml, 
+		     const std::string& name) {
+    using namespace Dino;
+    T* widget = dynamic_cast<T*>(xml->get_widget(name));
+    if (widget == 0)
+      dbg0<<"Could not load widget "<<name<<" of type "
+	  <<demangle(typeid(T).name())<<endl;
+    return widget;
+  }
 
-  void draw_note(Dino::Pattern::NoteIterator iterator, bool selected = false);
-  void draw_velocity_box(Dino::Pattern::NoteIterator iterator, 
-			 bool selected = false);
-  void update();
+  void update_track_combo();
+  void update_pattern_combo();
+  void update_controller_combo();
   
-private:
+  void set_active_track(int track);
+  void set_active_pattern(int pattern);
+  void set_active_controller(long pattern);
   
-  /** This is used to figure out what to do when a motion event is received.
-      It is set on a button press event and reset (set to NoOperation) on a
-      button release event. */
-  enum DragOperation {
-    NoOperation,
-    ChangingNoteLength,
-    ChangingNoteVelocity,
-    DeletingNotes
-  } m_drag_operation;
-  
-  Glib::RefPtr<Gdk::GC> m_gc;
-  Glib::RefPtr<Gdk::Colormap> m_colormap;
-  Gdk::Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 
-    m_edge_color, m_hl_color;
-  Gdk::Color m_note_colors[16];
-  Gdk::Color m_selected_note_colors[16];
-  int m_row_height;
-  int m_col_width;
-  int m_max_note;
-  
-  std::pair<int, int> m_added_note;
-  int m_drag_step;
-  int m_drag_note;
-  int m_drag_y;
-  int m_drag_start_vel;
-  int m_last_note_length;
-  Dino::PatternSelection m_selection;
-  Dino::NoteCollection m_clipboard;
-  
-  int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
-  Dino::Pattern* m_pat;
-  Glib::RefPtr<Pango::Layout> m_layout;
-  Gtk::Adjustment* m_vadj;
+  void add_controller();
+  void delete_controller();
+  void add_pattern();
+  void delete_pattern();
+  void duplicate_pattern();
+  void edit_pattern_properties();
+
+  SingleTextCombo m_cmb_track;
+  SingleTextCombo m_cmb_pattern;
+  SingleTextCombo m_cmb_controller;
+  PatternRuler m_pattern_ruler;
+  OctaveLabel m_octave_label;
+
+  NoteEditor m_ne;
+  CCEditor m_cce;
+
+  PatternDialog* m_dlg_pattern;
+  ControllerDialog* m_dlg_controller;
+
+  std::map<std::string, Gtk::ToolButton*> m_toolbuttons;
+
+  sigc::connection m_track_combo_connection;
+  sigc::connection m_pattern_combo_connection;
+  sigc::connection m_conn_pat_added;
+  sigc::connection m_conn_pat_removed;
+  sigc::connection m_conn_cont_added;
+  sigc::connection m_conn_cont_removed;
+
+  int m_active_track;
+  int m_active_pattern;
+  long m_active_controller;
+
+  Dino::Song* m_song;
 };
 
 
 #endif
-

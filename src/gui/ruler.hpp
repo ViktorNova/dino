@@ -63,13 +63,14 @@ private:
 class PatternRuler : public ::Ruler {
 public:
 
-  PatternRuler(const Dino::Song& song);
+  PatternRuler();
 
+  void set_song(const Dino::Song* song);
   void set_pattern(int track, int pattern);
 
 private:
 
-  const Dino::Song& m_song;
+  const Dino::Song* m_song;
 
 };
 

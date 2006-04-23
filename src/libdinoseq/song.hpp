@@ -50,6 +50,7 @@ namespace Dino {
     /** An iterator class that is used to access the tracks in the song. */
     class TrackIterator {
     public:      
+      TrackIterator();
       const Track& operator*() const;
       Track& operator*();
       const Track* operator->() const;
@@ -126,7 +127,7 @@ namespace Dino {
     const string& get_info() const;
     ConstTrackIterator tracks_begin() const;
     ConstTrackIterator tracks_end() const;
-    ConstTrackIterator find_track(int id) const;
+    ConstTrackIterator tracks_find(int id) const;
     TempoIterator tempo_begin() const;
     TempoIterator tempo_end() const;
     TempoIterator tempo_find(int beat) const;
@@ -136,7 +137,7 @@ namespace Dino {
     // non-const accessors
     TrackIterator tracks_begin();
     TrackIterator tracks_end();
-    TrackIterator find_track(int id);
+    TrackIterator tracks_find(int id);
     //@}
 
     /// @name Mutators

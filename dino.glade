@@ -502,24 +502,6 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolButton" id="tbn_duplicate_track">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="tooltip" translatable="yes">Duplicate the active track</property>
-		      <property name="label" translatable="yes">Duplicate</property>
-		      <property name="use_underline">True</property>
-		      <property name="stock_id">gtk-copy</property>
-		      <property name="visible_horizontal">True</property>
-		      <property name="visible_vertical">True</property>
-		      <property name="is_important">False</property>
-		    </widget>
-		    <packing>
-		      <property name="expand">False</property>
-		      <property name="homogeneous">True</property>
-		    </packing>
-		  </child>
-
-		  <child>
 		    <widget class="GtkToolButton" id="tbn_edit_track_properties">
 		      <property name="visible">True</property>
 		      <property name="sensitive">False</property>
@@ -568,28 +550,19 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkToolItem" id="toolitem1">
+		    <widget class="GtkToolButton" id="tbn_stop">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Stop</property>
+		      <property name="label" translatable="yes"></property>
+		      <property name="use_underline">True</property>
+		      <property name="stock_id">gtk-media-pause</property>
 		      <property name="visible_horizontal">True</property>
 		      <property name="visible_vertical">True</property>
 		      <property name="is_important">False</property>
-
-		      <child>
-			<widget class="GtkToolButton" id="tbn_stop">
-			  <property name="visible">True</property>
-			  <property name="tooltip" translatable="yes">Stop</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">True</property>
-			  <property name="stock_id">gtk-media-pause</property>
-			  <property name="visible_horizontal">True</property>
-			  <property name="visible_vertical">True</property>
-			  <property name="is_important">False</property>
-			</widget>
-		      </child>
 		    </widget>
 		    <packing>
 		      <property name="expand">False</property>
-		      <property name="homogeneous">False</property>
+		      <property name="homogeneous">True</property>
 		    </packing>
 		  </child>
 

@@ -111,16 +111,22 @@ bool Ruler::on_button_press_event(GdkEventButton* event) {
 }
 
 
-PatternRuler::PatternRuler(const Song& song) 
-  : Ruler(0, 1, 1, 20, 20), m_song(song) {
+PatternRuler::PatternRuler()
+  : Ruler(0, 1, 1, 20, 20),
+    m_song(0) {
 
+}
+
+
+void PatternRuler::set_song(const Song* song) {
+  m_song = song;
 }
 
 
 void PatternRuler::set_pattern(int track, int pattern) {
   if (track != -1 && pattern != -1) {
     // XXX need to connect to the length and steps signals
-    const Pattern* pat = &*m_song.find_track(track)->pat_find(pattern);
+    const Pattern* pat = &*m_song->tracks_find(track)->pat_find(pattern);
     set_length(pat->get_length());
     set_subdivisions(pat->get_steps());
     set_interval(1);

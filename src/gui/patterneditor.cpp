@@ -1,488 +1,380 @@
-/****************************************************************************
-   Dino - A simple pattern based MIDI sequencer
-   
-   Copyright (C) 2006  Lars Luthman <larsl@users.sourceforge.net>
-   
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-****************************************************************************/
-
-#include <cstdlib>
-#include <iostream>
-
-#include "debug.hpp"
+#include "controllerdialog.hpp"
+#include "controller_numbers.hpp"
+#include "evilscrolledwindow.hpp"
+#include "patterndialog.hpp"
 #include "patterneditor.hpp"
+#include "song.hpp"
+#include "track.hpp"
 
 
-using namespace Gdk;
-using namespace Pango;
-using namespace Gtk;
 using namespace Dino;
+using namespace Glib;
+using namespace Gnome::Glade;
+using namespace Gtk;
+using namespace sigc;
 
 
-PatternEditor::PatternEditor() 
-  : m_drag_operation(NoOperation), 
-    m_row_height(8), 
-    m_col_width(8), 
-    m_max_note(128), 
-    m_drag_y(-1), 
-    m_drag_start_vel(-1), 
-    m_last_note_length(1),
-    m_pat(0),
-    m_vadj(0) {
+PatternEditor::PatternEditor(BaseObjectType* cobject, 
+				     const Glib::RefPtr<Gnome::Glade::Xml>& xml)
+  : Gtk::VBox(cobject),
+    m_octave_label(20, 8),
+    m_active_track(-1),
+    m_active_pattern(-1),
+    m_active_controller(-1),
+    m_song(0) {
+
+  // get all the widgets from the glade file
+  Box* boxPatternRuler1 = w<Box>(xml, "box_pattern_ruler_1");
+  HBox* hbx_track_combo = w<HBox>(xml, "hbx_track_combo");
+  HBox* hbx_pattern_combo = w<HBox>(xml, "hbx_pattern_combo");
+  HBox* hbx_controller_combo = w<HBox>(xml, "hbx_controller_combo");
+  Scrollbar* scbHorizontal = w<Scrollbar>(xml, "scb_pattern_editor");
+  Scrollbar* scbVertical = w<Scrollbar>(xml, "scb_note_editor");
+  Box* boxNoteEditor = w<Box>(xml, "box_note_editor");
+  Box* boxCCEditor = w<Box>(xml, "box_cc_editor");
+  Box* box_octave_label = w<Box>(xml, "box_octave_label");
   
-  // initialise colours
-  m_colormap = Colormap::get_system();
-  m_bg_color.set_rgb(65535, 65535, 65535);
-  m_bg_color2.set_rgb(60000, 60000, 65535);
-  m_fg_color1.set_rgb(0, 0, 65535);
-  m_grid_color.set_rgb(40000, 40000, 40000);
-  m_edge_color.set_rgb(0, 0, 0);
-  m_hl_color.set_rgb(65535, 0, 0);
+  // add and connect the combo boxes
+  hbx_pattern_combo->pack_start(m_cmb_pattern);
+  hbx_track_combo->pack_start(m_cmb_track);
+  hbx_controller_combo->pack_start(m_cmb_controller);
+  m_cmb_track.set_sensitive(false);
+  m_cmb_pattern.set_sensitive(false);
+  m_cmb_controller.set_sensitive(false);
+  m_track_combo_connection = m_cmb_track.signal_changed().
+    connect(compose(mem_fun(*this, &PatternEditor::set_active_track),
+		    mem_fun(m_cmb_track, &SingleTextCombo::get_active_id)));
+  m_pattern_combo_connection = m_cmb_pattern.signal_changed().
+    connect(compose(mem_fun(*this, &PatternEditor::set_active_pattern),
+		    mem_fun(m_cmb_pattern, &SingleTextCombo::get_active_id)));
+  m_cmb_controller.signal_changed().
+    connect(compose(mem_fun(*this, &PatternEditor::set_active_controller),
+		    mem_fun(m_cmb_controller,&SingleTextCombo::get_active_id)));
   
-  // initialise note colours for different velocities
-  gushort red1 = 40000, green1 = 45000, blue1 = 40000;
-  gushort red2 = 0, green2 = 30000, blue2 = 0;
-  gushort red3 = 50000, green3 = 40000, blue3 = 40000;
-  gushort red4 = 60000, green4 = 0, blue4 = 0;
-  for (int i = 0; i < 16; ++i) {
-    m_note_colors[i].set_rgb(gushort((red1 * (15 - i) + red2 * i) / 15.0),
-			     gushort((green1 * (15 - i) + green2 * i) / 15.0),
-			     gushort((blue1 * (15 - i) + blue2 * i) / 15.0));
-    m_selected_note_colors[i].
-      set_rgb(gushort((red3 * (15 - i) + red4 * i) / 15.0),
-	      gushort((green3 * (15 - i) + green4 * i) / 15.0),
-	      gushort((blue3 * (15 - i) + blue4 * i) / 15.0));
+  // add the ruler
+  EvilScrolledWindow* scwPatternRuler1 = 
+    manage(new EvilScrolledWindow(true, false));
+  boxPatternRuler1->pack_start(*scwPatternRuler1);
+  scwPatternRuler1->add(m_pattern_ruler);
+  
+  // add the note editor
+  EvilScrolledWindow* scwNoteEditor = manage(new EvilScrolledWindow);
+  boxNoteEditor->pack_start(*scwNoteEditor);
+  scwNoteEditor->add(m_ne);
+  
+  // add the octave labels
+  EvilScrolledWindow* scwOctaveLabel = 
+    manage(new EvilScrolledWindow(false, true));
+  box_octave_label->pack_start(*scwOctaveLabel);
+  scwOctaveLabel->add(m_octave_label);
+  
+  // add the CC editor
+  EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
+  boxCCEditor->pack_start(*scwCCEditor);
+  scwCCEditor->add(m_cce);
+  
+  // synchronise scrolling
+  scwPatternRuler1->set_hadjustment(scwNoteEditor->get_hadjustment());
+  scbHorizontal->set_adjustment(*scwNoteEditor->get_hadjustment());
+  scbVertical->set_adjustment(*scwNoteEditor->get_vadjustment());
+  scwCCEditor->set_hadjustment(*scwNoteEditor->get_hadjustment());
+  scwOctaveLabel->set_vadjustment(*scwNoteEditor->get_vadjustment());
+  m_ne.set_vadjustment(scwNoteEditor->get_vadjustment());
+
+  // get the dialogs
+  m_dlg_pattern = xml->get_widget_derived("dlg_pattern_properties", 
+					  m_dlg_pattern);
+  m_dlg_controller = xml->get_widget_derived("dlg_controller_properties",
+					     m_dlg_controller);
+  
+  // the toolbuttons
+  std::map<string, void (PatternEditor::*)(void)> toolSlots;
+  toolSlots["tbn_add_controller"] = &PatternEditor::add_controller;
+  toolSlots["tbn_delete_controller"] = &PatternEditor::delete_controller;
+  toolSlots["tbn_add_pattern"] = &PatternEditor::add_pattern;
+  toolSlots["tbn_delete_pattern"] = &PatternEditor::delete_pattern;
+  toolSlots["tbn_duplicate_pattern"] = &PatternEditor::duplicate_pattern;
+  toolSlots["tbn_set_pattern_properties"] = 
+    &PatternEditor::edit_pattern_properties;
+  std::map<string, void (PatternEditor::*)(void)>::const_iterator iter;
+  for (iter = toolSlots.begin(); iter != toolSlots.end(); ++iter) {
+    m_toolbuttons[iter->first] = w<ToolButton>(xml, iter->first);
+    m_toolbuttons[iter->first]->signal_clicked().
+      connect(mem_fun(*this, iter->second));
+    m_toolbuttons[iter->first]->set_sensitive(false);
   }
-  
-  // allocate all colours
-  m_colormap->alloc_color(m_bg_color);
-  m_colormap->alloc_color(m_bg_color2);
-  m_colormap->alloc_color(m_fg_color1);
-  m_colormap->alloc_color(m_grid_color);
-  m_colormap->alloc_color(m_edge_color);
-  m_colormap->alloc_color(m_hl_color);
-  for (int i = 0; i < 16; ++i) {
-    m_colormap->alloc_color(m_note_colors[i]);
-    m_colormap->alloc_color(m_selected_note_colors[i]);
-  }
-  m_layout = Layout::create(get_pango_context());
-  m_layout->set_text("127");
-  add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | 
-	     BUTTON_MOTION_MASK | SCROLL_MASK);
-  
-  m_added_note = make_pair(-1, -1);
-  m_drag_step = -1;
+
 }
 
 
-void PatternEditor::set_pattern(Pattern* pattern) {
-  if (pattern != m_pat) {
-    m_pat = pattern;
-    if (m_pat) {
-      
-      m_selection = PatternSelection(m_pat);
-      
-      namespace s = sigc;
-      sigc::slot<void> draw = mem_fun(*this, &PatternEditor::queue_draw);
-      m_pat->signal_note_added.connect(s::hide(draw));
-      m_pat->signal_note_removed.connect(s::hide(draw));
-      //m_pat->signal_note_removed.connect(mem_fun(m_selection, &PatternSelection::remove_note_internal));
-      m_pat->signal_note_changed.connect(s::hide(draw));
-      m_pat->signal_length_changed.connect(s::hide(draw));
-      m_pat->signal_steps_changed.connect(s::hide(draw));
-      set_size_request(m_pat->get_length() * m_pat->get_steps() * 
-		       m_col_width + 1, m_max_note * m_row_height + 1);
-      queue_draw();
+void PatternEditor::set_song(Song* song) {
+  m_song = song;
+  
+  m_pattern_ruler.set_song(song);
+  slot<void> update_t_combo = 
+    mem_fun(*this, &PatternEditor::update_track_combo);
+  m_song->signal_track_added.connect(sigc::hide(update_t_combo));
+  m_song->signal_track_removed.connect(sigc::hide(update_t_combo));
+}
+
+
+void PatternEditor::reset_gui() {
+  update_track_combo();
+  update_pattern_combo();
+  update_controller_combo();
+}
+
+
+void PatternEditor::update_track_combo() {
+  m_track_combo_connection.block();
+  int oldActive = m_cmb_track.get_active_id();
+  m_cmb_track.clear();
+  int newActive = m_active_track;
+  if (m_song->get_number_of_tracks() > 0) {
+    char tmp[10];
+    Song::TrackIterator iter;
+    for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
+      sprintf(tmp, "%03d ", iter->get_id());
+      m_cmb_track.append_text(string(tmp) + iter->get_name(), 
+			      iter->get_id());
+      if (newActive == -1 || (m_active_track == -1 &&
+			      iter->get_id() <= oldActive))
+	newActive = iter->get_id();
     }
-    else
-      set_size_request();
   }
-}
-
-
-void PatternEditor::set_step_width(int width) {
-  assert(width > 0);
-  m_col_width = width;
-  if (m_pat) {
-    set_size_request(m_pat->get_length() * m_pat->get_steps() * m_col_width + 1,
-		     m_max_note * m_row_height + 1);
-    queue_draw();
+  else {
+    m_cmb_track.append_text("No tracks");
   }
+  m_track_combo_connection.unblock();
+  m_cmb_track.set_active_id(newActive);
+  m_cmb_track.set_sensitive(newActive != -1);
 }
 
 
-void PatternEditor::set_vadjustment(Gtk::Adjustment* adj) {
-  m_vadj = adj;
-}
-
-
-void PatternEditor::copy_selection() {
-  m_clipboard = NoteCollection(m_selection);
-}
-
-
-bool PatternEditor::on_button_press_event(GdkEventButton* event) {
-  if (!m_pat)
-    return false;
+void PatternEditor::update_pattern_combo() {
+  m_pattern_combo_connection.block();
+  int newActive = m_active_pattern;
+  m_cmb_pattern.clear();
+  int trackID = m_cmb_track.get_active_id();
+  if (trackID >= 0) {
+    Song::ConstTrackIterator trk = m_song->tracks_find(trackID);
+    if (trk->pat_find(newActive) == trk->pat_end())
+      newActive = -1;
+    Track::ConstPatternIterator iter;
+    char tmp[10];
+    for (iter = trk->pat_begin(); iter != trk->pat_end(); ++iter) {
+      sprintf(tmp, "%03d ", iter->get_id());
+      m_cmb_pattern.append_text(string(tmp) + iter->get_name(), 
+				iter->get_id());
+      if (newActive == -1)
+	newActive = iter->get_id();
+    }
+  }
   
-  // check that we're on the editor surface
-  if (event->x < m_pat->get_length() * m_pat->get_steps() * m_col_width &&
-      event->y < m_max_note * m_row_height) {
-    
-    int note = m_max_note - int(event->y) / m_row_height - 1;
-    int step = int(event->x) / m_col_width;
+  if (newActive == -1)
+    m_cmb_pattern.append_text("No patterns");
+  m_cmb_pattern.set_sensitive(newActive != -1);
+  m_pattern_combo_connection.unblock();
+  m_cmb_pattern.set_active_id(newActive);
+}
 
-    m_drag_y = int(event->y);
-    m_drag_step = step;
-    m_drag_note = note;
-    
-    switch (event->button) {
-      
-      // button 1 adds or selects notes
-    case 1: {
-      if (event->state & GDK_CONTROL_MASK) {
-	Pattern::NoteIterator iterator = m_pat->find_note(step, note);
-	if (iterator != m_pat->notes_end()) {
-	  if (m_selection.find(iterator) == m_selection.end())
-	    m_selection.add_note(iterator);
-	  else
-	    m_selection.remove_note(iterator);
-	}
-	queue_draw();
+
+void PatternEditor::update_controller_combo() {
+  m_cmb_controller.clear();
+  long new_active = m_active_controller;
+  Song::TrackIterator t_iter = m_song->tracks_find(m_active_track);
+  if (t_iter != m_song->tracks_end()) {
+    Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
+    if (p_iter != t_iter->pat_end()) {
+      Pattern::ControllerIterator iter;
+      if (p_iter->ctrls_find(new_active) == p_iter->ctrls_end())
+	new_active = -1;
+      char tmp[10];
+      for (iter = p_iter->ctrls_begin(); iter != p_iter->ctrls_end(); ++iter) {
+	long param = iter->get_param();
+	string name = iter->get_name();
+	if (is_cc(param))
+	  sprintf(tmp, "CC%03ld: ", cc_number(param));
+	else if (is_nrpn(param))
+	  sprintf(tmp, "NRPN%03ld: ", nrpn_number(param));
+	else if (is_pbend(param))
+	  tmp[0] = '\0';
+	m_cmb_controller.append_text(string(tmp) + name, param);
+	if (new_active == -1)
+	  new_active = param;
       }
-      else {
-	Pattern::NoteIterator iter = m_pat->add_note(step, note, 64, 
-						     m_last_note_length);
-	m_selection.clear();
-	if (iter != m_pat->notes_end())
-	  m_selection.add_note(iter);
-	m_added_note = make_pair(step, note);
-	m_drag_operation = ChangingNoteLength;
+    }
+  }
+  if (new_active == -1)
+    m_cmb_controller.append_text("No controllers");
+  m_cmb_controller.set_sensitive(new_active != -1);
+  m_cmb_controller.set_active_id(new_active);
+}
+
+
+void PatternEditor::set_active_track(int track) {
+  if (track == m_active_track)
+    return;
+
+  m_active_track = track;
+  
+  // update connections
+  m_conn_pat_added.disconnect();
+  m_conn_pat_removed.disconnect();
+  if (m_active_track != -1) {
+    Song::TrackIterator t = m_song->tracks_find(m_active_track);
+    slot<void> update_slot = 
+      mem_fun(*this, &PatternEditor::update_pattern_combo);
+    m_conn_pat_added = t->signal_pattern_added.connect(sigc::hide(update_slot));
+    m_conn_pat_removed = t->signal_pattern_removed.
+      connect(sigc::hide(update_slot));
+  }
+  set_active_pattern(-1);
+  update_pattern_combo();
+  
+  bool active = (m_active_track != -1);
+  m_toolbuttons["tbn_add_pattern"]->set_sensitive(active);
+}
+
+
+void PatternEditor::set_active_pattern(int pattern) {
+  if (pattern == m_active_pattern)
+    return;
+  
+  m_active_pattern = pattern;
+  Song::TrackIterator t = m_song->tracks_find(m_active_track);
+  Track::PatternIterator p = t->pat_find(m_active_pattern);
+  
+  // update connections
+  m_conn_cont_added.disconnect();
+  m_conn_cont_removed.disconnect();
+  if (m_active_pattern != -1) {
+    slot<void> uslot = 
+      mem_fun(*this, &PatternEditor::update_controller_combo);
+    m_conn_cont_added = p->signal_controller_added.connect(sigc::hide(uslot));
+    m_conn_cont_removed=p->signal_controller_removed.connect(sigc::hide(uslot));
+  }
+
+  update_controller_combo();
+  m_ne.set_pattern(&*p);
+  m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);
+
+  bool active = (m_active_pattern != -1);
+  m_toolbuttons["tbn_delete_pattern"]->set_sensitive(active);
+  m_toolbuttons["tbn_duplicate_pattern"]->set_sensitive(active);
+  m_toolbuttons["tbn_set_pattern_properties"]->set_sensitive(active);
+  m_toolbuttons["tbn_add_controller"]->set_sensitive(active);
+}
+
+
+void PatternEditor::set_active_controller(long controller) {
+  if (controller == m_active_controller)
+    return;
+  
+  m_active_controller = controller;
+  
+  if (m_active_controller == -1) {
+    m_cce.set_controller(0, 0);
+    return;
+  }
+  
+  Song::TrackIterator t = m_song->tracks_find(m_active_track);
+  if (t == m_song->tracks_end())
+    return;
+  Track::PatternIterator p = t->pat_find(m_active_pattern);
+  if (p == t->pat_end())
+    return;
+  m_cce.set_controller(&*p, m_active_controller);
+}
+
+  
+void PatternEditor::add_controller() {
+  if (m_active_track >= 0 && m_active_pattern >= 0) {
+    m_dlg_controller->set_controller(make_cc(1));
+    m_dlg_controller->refocus();
+    m_dlg_controller->show_all();
+    if (m_dlg_controller->run() == RESPONSE_OK) {
+      Pattern::ControllerIterator iter;
+      int min = 0, max = 127;
+      long controller = m_dlg_controller->get_controller();
+      if (is_pbend(controller)) {
+	min = -8192;
+	max = 8191;
       }
-      break;
+      iter = m_song->tracks_find(m_active_track)->pat_find(m_active_pattern)->
+	add_controller(m_dlg_controller->get_name(), controller, min, max);
+      m_cmb_controller.set_active_id(iter->get_param());
     }
-    
-    // button 2 changes the velocity or length
-    case 2: {
-      Pattern::NoteIterator iterator = m_pat->find_note(step, note);
-      if (iterator != m_pat->notes_end()) {
-	
-	// if shift isn't pressed the selection is set to this single note
-	if (!(event->state & GDK_SHIFT_MASK))
-	  m_selection.clear();
-	m_selection.add_note(iterator);
-	
-	if (event->state & GDK_CONTROL_MASK) {
-	  m_drag_operation = ChangingNoteVelocity;
-	  m_drag_start_vel = iterator->get_velocity();
-	  queue_draw();
-	}
-	else {
-	  PatternSelection::Iterator iter;
-	  unsigned new_size = step - iterator->get_step() + 1;
-	  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	    m_pat->resize_note(iter, new_size);
-	  m_last_note_length = new_size;
-	  m_added_note = make_pair(iterator->get_step(), note);
-	  m_drag_operation = ChangingNoteLength;
-	}
-      }
-      
-      // XXX needs to be rewritten
-      else {
-	m_pat->add_notes(m_clipboard, step, note);
-      }
-      
-      break;
+    m_dlg_controller->hide();
+  }
+}
+
+
+void PatternEditor::delete_controller() {
+  if (m_active_track >= 0 && m_active_pattern >= 0 && 
+      m_active_controller >= 0) {
+    Pattern* pat = &*m_song->tracks_find(m_active_track)->
+      pat_find(m_active_pattern);
+    pat->remove_controller(pat->ctrls_find(m_active_controller));
+  }
+}
+
+
+void PatternEditor::add_pattern() {
+  if (m_active_track >= 0) {
+    m_dlg_pattern->set_name("Untitled");
+    m_dlg_pattern->set_length(8);
+    m_dlg_pattern->set_steps(8);
+    m_dlg_pattern->refocus();
+    m_dlg_pattern->show_all();
+    if (m_dlg_pattern->run() == RESPONSE_OK) {
+      Track::PatternIterator iter = m_song->tracks_find(m_active_track)->
+	add_pattern(m_dlg_pattern->get_name(),
+		    m_dlg_pattern->get_length(),
+		    m_dlg_pattern->get_steps());
+      m_cmb_pattern.set_active_id(iter->get_id());
     }
-    
-      // button 3 deletes
-    case 3: {
-      Pattern::NoteIterator iterator = m_pat->find_note(step, note);
-      if (iterator != m_pat->notes_end()) {
-	
-	// if shift isn't pressed the selection is set to this single note
-	if (!(event->state & GDK_SHIFT_MASK))
-	  m_selection.clear();
-	m_selection.add_note(iterator);
-	
-	PatternSelection::Iterator iter1, iter2;
-	iter1 = m_selection.begin();
-	iter2 = iter1;
-	while (iter2 != m_selection.end()) {
-	  ++iter1;
-	  m_pat->delete_note(iter2);
-	  iter2 = iter1;
-	}
-	
-      }
-      
-      m_drag_operation = DeletingNotes;
-      break;
+    m_dlg_pattern->hide();
+  }
+}
+
+
+void PatternEditor::delete_pattern() {
+  if (m_active_track < 0 || m_active_pattern < 0)
+    return;
+  Track& trk = *(m_song->tracks_find(m_active_track));
+  trk.remove_pattern(m_active_pattern);
+}
+
+
+void PatternEditor::duplicate_pattern() {
+  if (m_active_track < 0 || m_active_pattern < 0)
+    return;
+  Track& trk = *(m_song->tracks_find(m_active_track));
+  trk.duplicate_pattern(trk.pat_find(m_active_pattern));
+}
+
+
+void PatternEditor::edit_pattern_properties() {
+  if (m_active_track >= 0 && m_active_pattern >= 0) {
+    Song::TrackIterator iter = m_song->tracks_find(m_active_track);
+    assert(iter != m_song->tracks_end());
+    Track::PatternIterator pat = iter->pat_find(m_active_pattern);
+    assert(pat != iter->pat_end());
+
+    m_dlg_pattern->set_name(pat->get_name());
+    m_dlg_pattern->set_length(pat->get_length());
+    m_dlg_pattern->set_steps(pat->get_steps());
+    m_dlg_pattern->refocus();
+    m_dlg_pattern->show_all();
+    if (m_dlg_pattern->run() == RESPONSE_OK) {
+      // XXX actually change the pattern properties here
+      pat->set_name(m_dlg_pattern->get_name());
+      pat->set_length(m_dlg_pattern->get_length());
+      pat->set_steps(m_dlg_pattern->get_steps());
     }
-      
-    }
+    m_dlg_pattern->hide();
   }
-  
-  return true;
 }
 
 
-bool PatternEditor::on_button_release_event(GdkEventButton* event) {
-  if (!m_pat)
-    return false;
-
-  if (m_drag_operation == ChangingNoteLength) {
-    int step = int(event->x) / m_col_width;
-    if (step < m_added_note.first)
-      step = m_added_note.first;
-    if (step != m_drag_step) {
-      if (step >= m_pat->get_length() * m_pat->get_steps())
-	step = m_pat->get_length() * m_pat->get_steps() - 1;
-      unsigned new_size = step - m_added_note.first + 1;
-      PatternSelection::Iterator iter;
-      for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	m_pat->resize_note(iter, new_size);
-      m_added_note = make_pair(-1, -1);
-    }
-  }
-  
-  if (m_drag_operation == ChangingNoteVelocity) {
-    m_drag_operation = NoOperation;
-    queue_draw();
-  }
-
-  m_drag_operation = NoOperation;
-  
-  return true;
-}
-
-
-bool PatternEditor::on_motion_notify_event(GdkEventMotion* event) {
-  if (!m_pat)
-    return false;
-  
-  switch (m_drag_operation) {
-
-  case ChangingNoteVelocity: {
-    double dy = m_drag_y - int(event->y);
-    int velocity = int(m_drag_start_vel + dy);
-    velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
-    PatternSelection::Iterator iter;
-    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-      m_pat->set_velocity(iter, velocity);
-    queue_draw();
-    break;
-  }
-    
-  case ChangingNoteLength: {
-    int step = int(event->x) / m_col_width;
-    int note = m_max_note - int(event->y) / m_row_height - 1;
-    
-    // or changing the note length
-    if (step < m_added_note.first)
-      step = m_added_note.first;
-    if (step == m_drag_step)
-      return true;
-    else if (step >= m_pat->get_length() * m_pat->get_steps())
-      step = m_pat->get_length() * m_pat->get_steps() - 1;
-    Pattern::NoteIterator iterator = 
-      m_pat->find_note(m_added_note.first, m_added_note.second);
-    unsigned new_size = step - m_added_note.first + 1;
-    PatternSelection::Iterator iter;
-    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-      m_pat->resize_note(iter, new_size);
-    m_last_note_length = step - m_added_note.first + 1;
-    
-    m_drag_step = step;
-    m_drag_note = note;
-    break;
-  }
-    
-  case DeletingNotes: {
-    int step = int(event->x) / m_col_width;
-    int note = m_max_note - int(event->y) / m_row_height - 1;
-    if (step == m_drag_step && note == m_drag_note)
-      return true;
-    if (step >= 0 && step < m_pat->get_length() * m_pat->get_steps() &&
-	note >= 0 && note < m_max_note) {
-      Pattern::NoteIterator iter = m_pat->find_note(step, note);
-      if (iter != m_pat->notes_end())
-	m_pat->delete_note(iter);
-      m_drag_step = step;
-      m_drag_note = note;
-    }
-    break;
-  }
-
-  default:
-    break;
-  }
-
-  return true;
-}
-
-
-bool PatternEditor::on_scroll_event(GdkEventScroll* event) {
-  
-  if (!m_vadj)
-    return true;
-  
-  double value = m_vadj->get_value();
-  if (event->direction == GDK_SCROLL_UP) {
-    value -= m_vadj->get_step_increment();
-    if (value < m_vadj->get_lower())
-      value = m_vadj->get_lower();
-  }
-  else if (event->direction == GDK_SCROLL_DOWN) {
-    value += m_vadj->get_step_increment();
-    if (value > m_vadj->get_upper() - m_vadj->get_page_size())
-      value = m_vadj->get_upper() - m_vadj->get_page_size();
-  }
-  m_vadj->set_value(value);
-    
-  return true;
-}
-
-
-void PatternEditor::on_realize() {
-  DrawingArea::on_realize();
-  RefPtr<Gdk::Window> win = get_window();
-  m_gc = GC::create(win);
-  m_gc->set_background(m_bg_color);
-  m_gc->set_foreground(m_fg_color1);
-  FontDescription fd("helvetica bold 9");
-  get_pango_context()->set_font_description(fd);
-  win->clear();
-}
-
-
-bool PatternEditor::on_expose_event(GdkEventExpose* event) {
-  RefPtr<Gdk::Window> win = get_window();
-  win->clear();
-  if (!m_pat)
-    return true;
-  
-  // draw background
-  int width = m_pat->get_length() * m_pat->get_steps() * m_col_width;
-  int height = m_max_note * m_row_height;
-  for (int b = 0; b < m_pat->get_length(); ++b) {
-    if (b % 2 == 0)
-      m_gc->set_foreground(m_bg_color);
-    else
-      m_gc->set_foreground(m_bg_color2);
-    win->draw_rectangle(m_gc, true, b * m_pat->get_steps() * m_col_width, 0, 
-			m_pat->get_steps() * m_col_width, height);
-  }
-  
-  // draw grid
-  m_gc->set_foreground(m_grid_color);
-  for (int r = -1; r < m_max_note; ++r) {
-    win->draw_line(m_gc, 0, (m_max_note - r - 1) * m_row_height, 
-		   width, (m_max_note - r - 1) * m_row_height);
-    if (r % 12 == 1 || r % 12 == 3 || 
-	r % 12 == 6 || r % 12 == 8 || r % 12 == 10) {
-	win->draw_rectangle(m_gc, true, 0, (m_max_note - r - 1) * m_row_height,
-			    width, m_row_height);
-    }
-  }
-  for (int c = 0; c < m_pat->get_steps() * m_pat->get_length() + 1; ++c)
-    win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
-  
-  // draw notes
-  Pattern::NoteIterator iter;
-  for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter)
-    draw_note(iter, m_selection.find(iter) != m_selection.end());
-  
-  // draw box for editing note velocity
-  if (m_drag_operation == ChangingNoteVelocity) {
-    iter = m_pat->find_note(m_drag_step, m_drag_note);
-    draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
-  }
-  
-  /*
-    gc->set_foreground(hlColor);
-    win->draw_rectangle(gc, false, event->area.x, event->area.y,
-    event->area.width - 1, event->area.height - 1);
-  */
-  
-  return true;
-}
-
-
-void PatternEditor::draw_note(Pattern::NoteIterator iterator, bool selected) {
-
-  RefPtr<Gdk::Window> win = get_window();
-  
-  int i = iterator->get_step();
-  if (!selected)
-    m_gc->set_foreground(m_note_colors[int(iterator->get_velocity() / 8)]);
-  else
-    m_gc->set_foreground(m_selected_note_colors[int(iterator->get_velocity() / 8)]);
-  win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
-		      (m_max_note - iterator->get_key()- 1) * m_row_height + 1, 
-		      iterator->get_length() * m_col_width, m_row_height - 1);
-  m_gc->set_foreground(m_edge_color);
-  win->draw_rectangle(m_gc, false, i * m_col_width, 
-		      (m_max_note - iterator->get_key() - 1) * m_row_height, 
-		      iterator->get_length() * m_col_width, m_row_height);
-}
-
-
-void PatternEditor::draw_velocity_box(Pattern::NoteIterator iterator,
-				      bool selected) {
-  RefPtr<Gdk::Window> win = get_window();
-  m_gc->set_foreground(m_edge_color);
-  int box_height = m_layout->get_pixel_logical_extents().get_height() + 6;
-  box_height = (box_height < m_row_height * 2 ? m_row_height * 2 : box_height);
-  int box_width = m_col_width * iterator->get_length() + 4;
-  int l_width = m_layout->get_pixel_logical_extents().get_width();
-  box_width = (box_width < l_width + 6 ? l_width + 6 : box_width);
-  win->draw_rectangle(m_gc, false, iterator->get_step() * m_col_width - 2,
-		      int((m_max_note - iterator->get_key() - 0.5) * 
-			  m_row_height - box_height / 2), 
-		      box_width, box_height);
-  if (!selected)
-    m_gc->set_foreground(m_note_colors[iterator->get_velocity() / 8]);
-  else
-    m_gc->set_foreground(m_selected_note_colors[iterator->get_velocity() / 8]);
-  win->draw_rectangle(m_gc, true, iterator->get_step() * m_col_width - 1, 
-		      int((m_max_note - iterator->get_key() - 0.5) * 
-			  m_row_height - box_height / 2) + 1, 
-		      box_width - 1, box_height - 1);
-  char buffer[10];
-  sprintf(buffer, "%d", iterator->get_velocity());
-  m_layout->set_text(buffer);
-  m_gc->set_foreground(m_edge_color);
-  win->draw_layout(m_gc, iterator->get_step() * m_col_width + 2,
-		   int((m_max_note - iterator->get_key() - 0.5) * 
-		       m_row_height - box_height / 2) + 3, m_layout);
-}
-
-
-void PatternEditor::update() {
-  m_pat->get_dirty_rect(&m_d_min_step, &m_d_min_note, 
-			&m_d_max_step, &m_d_max_note);
-  m_pat->reset_dirty_rect();
-  RefPtr<Gdk::Window> win = get_window();
-  win->invalidate_rect(Gdk::Rectangle(m_d_min_step * m_col_width, 
-				      (m_max_note - m_d_max_note - 1) * 
-				      m_row_height, 
-				      (m_d_max_step - m_d_min_step + 1) * 
-				      m_col_width + 1,
-				      (m_d_max_note - m_d_min_note + 1) * 
-				      m_row_height + 1), false);
-  win->process_updates(false);
-}

@@ -37,6 +37,11 @@ using namespace xmlpp;
 namespace Dino {
 
 
+  Song::TrackIterator::TrackIterator() {
+
+  }
+
+  
   const Track& Song::TrackIterator::operator*() const { 
     return *(m_iterator->second);
   }
@@ -206,12 +211,12 @@ namespace Dino {
   }
   
   
-  Song::ConstTrackIterator Song::find_track(int id) const {
+  Song::ConstTrackIterator Song::tracks_find(int id) const {
     return ConstTrackIterator(m_tracks->find(id));
   }
   
   
-  Song::TrackIterator Song::find_track(int id) {
+  Song::TrackIterator Song::tracks_find(int id) {
     return TrackIterator(m_tracks->find(id));
   }
   

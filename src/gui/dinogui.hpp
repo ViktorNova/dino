@@ -37,8 +37,10 @@
 
 
 class ControllerDialog;
+class InfoEditor;
 class PatternDialog;
-class TrackDialog;
+class PatternEditor;
+class SequenceEditor;
 
 
 /** This is the main class. It connects our custom widgets to the rest of the
@@ -64,9 +66,6 @@ private:
   void slot_edit_copy();
   void slot_edit_paste();
   void slot_edit_delete();
-  void slot_edit_add_track();
-  void slot_edit_delete_track();
-  void slot_edit_edit_track_properties();
   void slot_edit_add_pattern();
   void slot_edit_delete_pattern();
   void slot_edit_duplicate_pattern();
@@ -96,63 +95,21 @@ private:
   }
   
   void reset_gui();
-  void update_track_widgets();
-  void update_track_combo();
-  void update_pattern_combo();
-  void update_controller_combo();
-  void init_pattern_editor();
-  void init_sequence_editor();
-  void init_info_editor();
   void init_menus();
   bool init_lash(int argc, char** argv);
   
   // internal callbacks
   bool slot_check_ladcca_events();
-  void set_active_track(int active_track);
-  void set_active_pattern(int active_pattern);
-  void set_active_controller(int active_controller);
-  
-  // internal signals
-  sigc::signal<void, int> signal_active_track_changed;
-  sigc::signal<void, int, int> signal_active_pattern_changed;
-  sigc::signal<void, int> signal_active_controller_changed;
   
   Dino::Song m_song;
-  int m_active_track;
-  int m_active_pattern;
-  long m_active_controller;
   
   Glib::RefPtr<Gnome::Glade::Xml> m_xml;
   Gtk::Window* m_window;
-  PatternEditor m_pe;
-  CCEditor m_cce;
-  Gtk::VBox* m_vbx_track_editor;
-  Gtk::VBox* m_vbx_track_labels;
-  
-  SingleTextCombo m_cmb_track;
-  SingleTextCombo m_cmb_pattern;
-  SingleTextCombo m_cmb_controller;
-  
-  std::map<std::string, Gtk::ToolButton*> m_toolbuttons;
   std::map<std::string, Gtk::MenuItem*> m_menuitems;
 
-  sigc::connection m_track_combo_connection;
-  sigc::connection m_pattern_combo_connection;
-  sigc::connection m_conn_pat_added;
-  sigc::connection m_conn_pat_removed;
-  sigc::connection m_conn_cont_added;
-  sigc::connection m_conn_cont_removed;
-  Gtk::SpinButton* m_sb_cc_editor_size;
-  Ruler m_sequence_ruler;
-  PatternRuler m_pattern_ruler_1;
-  OctaveLabel m_octave_label;
-  Gtk::Entry* m_ent_title;
-  Gtk::Entry* m_ent_author;
-  Gtk::TextView* m_text_info;
-  
-  TrackDialog* m_dlg_track;
-  PatternDialog* m_dlg_pattern;
-  ControllerDialog* m_dlg_controller;
+  PatternEditor* m_pe;
+  SequenceEditor* m_se;
+  InfoEditor* m_ie;
   
   Gtk::AboutDialog* m_about_dialog;
   

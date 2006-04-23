@@ -23,6 +23,7 @@ Later (before 0.4?):
  [ ] Record MIDI note events
  [ ] Record MIDI CC and pitch bend events
  [ ] Play loops, set loop points
+ [ ] Support libmpmd or equivalent
  [ ] Embed a Python interpreter
  
 Crazy ideas:

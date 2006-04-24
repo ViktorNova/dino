@@ -69,7 +69,8 @@ private:
     DragNoOperation,
     DragChangingNoteLength,
     DragChangingNoteVelocity,
-    DragDeletingNotes
+    DragDeletingNotes,
+    DragMovingNotes
   } m_drag_operation;
   
   /** This is used to figure out what to do when a pointer motion event is 
@@ -95,8 +96,12 @@ private:
   int m_drag_y;
   int m_drag_start_vel;
   int m_last_note_length;
+  int m_move_offset_step;
+  int m_move_offset_note;
+  
   Dino::PatternSelection m_selection;
   Dino::NoteCollection m_clipboard;
+  Dino::NoteCollection m_moved_notes;
   
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Dino::Pattern* m_pat;

@@ -47,6 +47,7 @@ namespace Dino {
   class InterpolatedEvent;
   class MIDIBuffer;
   class NoteCollection;
+  class PatternSelection;
   
 
   /** This class stores information about a pattern. A pattern is a sequence of
@@ -192,7 +193,8 @@ namespace Dino {
     NoteIterator add_note(unsigned step, int key, int velocity, int length);
     /** Add a collection of notes with the given step and key offsets. 
 	Can be used as a "paste" command. */
-    void add_notes(const NoteCollection& notes, unsigned step, int key);
+    void add_notes(const NoteCollection& notes, unsigned step, int key,
+		   PatternSelection* selection = 0);
     /** Delete a note. */
     void delete_note(NoteIterator note);
     /** Change the length of a note. */

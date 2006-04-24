@@ -33,6 +33,7 @@
 #include "notecollection.hpp"
 #include "noteevent.hpp"
 #include "pattern.hpp"
+#include "patternselection.hpp"
 
 
 using namespace std;
@@ -417,9 +418,13 @@ namespace Dino {
   }
 
 
-  void Pattern::add_notes(const NoteCollection& notes, unsigned step, int key) {
+  void Pattern::add_notes(const NoteCollection& notes, unsigned step, int key,
+			  PatternSelection* selection) {
     assert(step < m_sd->length * m_sd->steps);
     assert(key < 128);
+    
+    if (selection)
+      selection->clear();
     
     NoteCollection::ConstIterator iter;
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
@@ -427,8 +432,10 @@ namespace Dino {
 	continue;
       if (iter->key + key < 128)
 	continue;
-      add_note(iter->start + step, iter->key + key - 127, 
-	       iter->velocity, iter->length);
+      NoteIterator iter2 = add_note(iter->start + step, iter->key + key - 127, 
+				    iter->velocity, iter->length);
+      if (selection)
+	selection->add_note(iter2);
     }
   }
 

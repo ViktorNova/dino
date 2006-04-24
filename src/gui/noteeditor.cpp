@@ -261,10 +261,27 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	if (!(event->state & GDK_SHIFT_MASK))
 	  m_selection.clear();
 	m_selection.add_note(iterator);
-	delete_selection();
+	
+	if (event->state & GDK_CONTROL_MASK) {
+	  m_moved_notes = NoteCollection(m_selection);
+	  m_drag_operation = DragMovingNotes;
+	  PatternSelection::Iterator iter;
+	  unsigned int minstep = step;
+	  unsigned int maxkey = note;
+	  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
+	    minstep = minstep < iter->get_step() ? minstep : iter->get_step();
+	    maxkey = maxkey > iter->get_key() ? maxkey : iter->get_key();
+	  }
+	  m_move_offset_step = minstep - step;
+	  m_move_offset_note = maxkey - note;
+	  queue_draw();
+	}
+	else {
+	  delete_selection();
+	  m_drag_operation = DragDeletingNotes;
+	}
       }
       
-      m_drag_operation = DragDeletingNotes;
       break;
     }
       
@@ -297,6 +314,19 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
   if (m_drag_operation == DragChangingNoteVelocity) {
     m_drag_operation = DragNoOperation;
     queue_draw();
+  }
+  
+  if (m_drag_operation == DragMovingNotes) {
+    m_drag_operation = DragNoOperation;
+    int step = m_drag_step + m_move_offset_step;
+    step = step < 0 ? 0 : step;
+    int note = int(m_drag_note) + m_move_offset_note;
+    note = note < 0 ? 0 : note;
+    note = note > 127 ? 127 : note;
+    if (unsigned(step) < m_pat->get_steps() * m_pat->get_length()) {
+      delete_selection();
+      m_pat->add_notes(m_moved_notes, step, note, &m_selection);
+    }
   }
 
   m_drag_operation = DragNoOperation;
@@ -362,6 +392,17 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     break;
   }
 
+  case DragMovingNotes: {
+    int step = int(event->x) / m_col_width;
+    int note = m_max_note - int(event->y) / m_row_height - 1;
+    if (m_drag_step != step || m_drag_note != note) {
+      m_drag_step = step;
+      m_drag_note = note;
+      queue_draw();
+    }
+    break;
+  }
+    
   case DragNoOperation:
     if (m_motion_operation == MotionPaste) {
       int step = int(event->x) / m_col_width;
@@ -462,6 +503,15 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
   // draw outline
   if (m_motion_operation == MotionPaste)
     draw_outline(m_clipboard, m_drag_step, m_drag_note);
+  else if (m_drag_operation == DragMovingNotes) {
+    int step = m_drag_step + m_move_offset_step;
+    step = step < 0 ? 0 : step;
+    int note = m_drag_note + m_move_offset_note;
+    note = note < 0 ? 0 : note;
+    note = note > 127 ? 127 : note;
+    draw_outline(m_moved_notes, step, note);
+  }
+    
   
   /*
     gc->set_foreground(hlColor);

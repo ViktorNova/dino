@@ -64,11 +64,18 @@ private:
       It is set on a button press event and reset (set to NoOperation) on a
       button release event. */
   enum DragOperation {
-    NoOperation,
-    ChangingNoteLength,
-    ChangingNoteVelocity,
-    DeletingNotes
+    DragNoOperation,
+    DragChangingNoteLength,
+    DragChangingNoteVelocity,
+    DragDeletingNotes
   } m_drag_operation;
+  
+  /** This is used to figure out what to do when a pointer motion event is 
+      received. For the moment it's only used to paste things. */
+  enum MotionOperation {
+    MotionNoOperation,
+    MotionPaste
+  } m_motion_operation;
   
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;

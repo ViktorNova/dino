@@ -427,7 +427,7 @@ namespace Dino {
 	continue;
       if (iter->key + key < 128)
 	continue;
-      add_note(iter->start + step, iter->key + key - 128, 
+      add_note(iter->start + step, iter->key + key - 127, 
 	       iter->velocity, iter->length);
     }
   }

@@ -32,7 +32,8 @@ using namespace Dino;
 
 
 NoteEditor::NoteEditor() 
-  : m_drag_operation(NoOperation), 
+  : m_drag_operation(DragNoOperation), 
+    m_motion_operation(MotionNoOperation),
     m_row_height(8), 
     m_col_width(8), 
     m_max_note(128), 
@@ -140,7 +141,8 @@ void NoteEditor::copy_selection() {
 
 
 void NoteEditor::paste() {
-  
+  if (m_clipboard.begin() != m_clipboard.end())
+    m_motion_operation = MotionPaste;
 }
 
 
@@ -173,6 +175,13 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
     m_drag_step = step;
     m_drag_note = note;
     
+    if (m_motion_operation == MotionPaste) {
+      m_pat->add_notes(m_clipboard, step, note);
+      m_motion_operation = MotionNoOperation;
+      return true;
+    }
+    
+    
     switch (event->button) {
       
       // button 1 adds or selects notes
@@ -194,7 +203,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	if (iter != m_pat->notes_end())
 	  m_selection.add_note(iter);
 	m_added_note = make_pair(step, note);
-	m_drag_operation = ChangingNoteLength;
+	m_drag_operation = DragChangingNoteLength;
       }
       break;
     }
@@ -210,7 +219,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	m_selection.add_note(iterator);
 	
 	if (event->state & GDK_CONTROL_MASK) {
-	  m_drag_operation = ChangingNoteVelocity;
+	  m_drag_operation = DragChangingNoteVelocity;
 	  m_drag_start_vel = iterator->get_velocity();
 	  queue_draw();
 	}
@@ -221,7 +230,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	    m_pat->resize_note(iter, new_size);
 	  m_last_note_length = new_size;
 	  m_added_note = make_pair(iterator->get_step(), note);
-	  m_drag_operation = ChangingNoteLength;
+	  m_drag_operation = DragChangingNoteLength;
 	}
       }
       
@@ -245,7 +254,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	delete_selection();
       }
       
-      m_drag_operation = DeletingNotes;
+      m_drag_operation = DragDeletingNotes;
       break;
     }
       
@@ -260,7 +269,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
   if (!m_pat)
     return false;
 
-  if (m_drag_operation == ChangingNoteLength) {
+  if (m_drag_operation == DragChangingNoteLength) {
     int step = int(event->x) / m_col_width;
     if (step < m_added_note.first)
       step = m_added_note.first;
@@ -275,12 +284,12 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     }
   }
   
-  if (m_drag_operation == ChangingNoteVelocity) {
-    m_drag_operation = NoOperation;
+  if (m_drag_operation == DragChangingNoteVelocity) {
+    m_drag_operation = DragNoOperation;
     queue_draw();
   }
 
-  m_drag_operation = NoOperation;
+  m_drag_operation = DragNoOperation;
   
   return true;
 }
@@ -292,7 +301,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
   
   switch (m_drag_operation) {
 
-  case ChangingNoteVelocity: {
+  case DragChangingNoteVelocity: {
     double dy = m_drag_y - int(event->y);
     int velocity = int(m_drag_start_vel + dy);
     velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
@@ -303,7 +312,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     break;
   }
     
-  case ChangingNoteLength: {
+  case DragChangingNoteLength: {
     int step = int(event->x) / m_col_width;
     int note = m_max_note - int(event->y) / m_row_height - 1;
     
@@ -327,7 +336,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     break;
   }
     
-  case DeletingNotes: {
+  case DragDeletingNotes: {
     int step = int(event->x) / m_col_width;
     int note = m_max_note - int(event->y) / m_row_height - 1;
     if (step == m_drag_step && note == m_drag_note)
@@ -423,7 +432,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
     draw_note(iter, m_selection.find(iter) != m_selection.end());
   
   // draw box for editing note velocity
-  if (m_drag_operation == ChangingNoteVelocity) {
+  if (m_drag_operation == DragChangingNoteVelocity) {
     iter = m_pat->find_note(m_drag_step, m_drag_note);
     draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
   }

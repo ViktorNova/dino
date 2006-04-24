@@ -38,14 +38,14 @@
 		<widget class="GtkMenu" id="menuitem1_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="clear_all1">
+		    <widget class="GtkImageMenuItem" id="file_clear_all">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Clear all</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_clear_all1_activate" last_modification_time="Thu, 16 Dec 2004 18:39:06 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image12">
+			<widget class="GtkImage" id="image28">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-new</property>
 			  <property name="icon_size">1</property>
@@ -65,7 +65,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="quit1">
+		    <widget class="GtkImageMenuItem" id="file_quit">
 		      <property name="visible">True</property>
 		      <property name="label">gtk-quit</property>
 		      <property name="use_stock">True</property>
@@ -87,7 +87,7 @@
 		<widget class="GtkMenu" id="menuitem2_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="cut1">
+		    <widget class="GtkImageMenuItem" id="edit_cut">
 		      <property name="visible">True</property>
 		      <property name="sensitive">False</property>
 		      <property name="label">gtk-cut</property>
@@ -97,7 +97,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="copy1">
+		    <widget class="GtkImageMenuItem" id="edit_copy">
 		      <property name="visible">True</property>
 		      <property name="sensitive">False</property>
 		      <property name="label">gtk-copy</property>
@@ -107,7 +107,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="paste1">
+		    <widget class="GtkImageMenuItem" id="edit_paste">
 		      <property name="visible">True</property>
 		      <property name="sensitive">False</property>
 		      <property name="label">gtk-paste</property>
@@ -117,205 +117,12 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="delete1">
+		    <widget class="GtkImageMenuItem" id="edit_delete">
 		      <property name="visible">True</property>
 		      <property name="sensitive">False</property>
 		      <property name="label">gtk-delete</property>
 		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_delete1_activate" last_modification_time="Thu, 16 Dec 2004 18:39:06 GMT"/>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkSeparatorMenuItem" id="separator1">
-		      <property name="visible">True</property>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="add_track1">
-		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Add _track</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_add_track1_activate" last_modification_time="Wed, 02 Feb 2005 17:00:05 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image13">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-add</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="delete_track1">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="label" translatable="yes">Delete t_rack</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_delete_track1_activate" last_modification_time="Wed, 02 Feb 2005 17:00:05 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image14">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-delete</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="edit_track_properties1">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="label" translatable="yes">Edit track _properties</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_edit_track_properties1_activate" last_modification_time="Sun, 20 Feb 2005 11:13:13 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image15">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-properties</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkSeparatorMenuItem" id="separator2">
-		      <property name="visible">True</property>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="add_pattern1">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="label" translatable="yes">Add p_attern</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_add_pattern1_activate" last_modification_time="Wed, 02 Feb 2005 23:38:02 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image16">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-add</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="delete_pattern1">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="label" translatable="yes">Delete patt_ern</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_delete_pattern1_activate" last_modification_time="Wed, 02 Feb 2005 23:38:02 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image17">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-delete</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="edit_pattern_properties1">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="label" translatable="yes">Edit pattern propert_ies</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_edit_pattern_properties1_activate" last_modification_time="Wed, 21 Sep 2005 20:40:30 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image18">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-properties</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkSeparatorMenuItem" id="separator3">
-		      <property name="visible">True</property>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="add_controller1">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="label" translatable="yes">Add c_ontroller</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_add_controller1_activate" last_modification_time="Sun, 18 Sep 2005 17:22:39 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image19">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-add</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="delete_controller1">
-		      <property name="visible">True</property>
-		      <property name="sensitive">False</property>
-		      <property name="label" translatable="yes">Delete contro_ller</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_delete_controller1_activate" last_modification_time="Sun, 18 Sep 2005 17:22:39 GMT"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image20">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-delete</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
 		    </widget>
 		  </child>
 		</widget>
@@ -334,14 +141,14 @@
 		<widget class="GtkMenu" id="transport1_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="play1">
+		    <widget class="GtkImageMenuItem" id="transport_play">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Play</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_play1_activate" last_modification_time="Tue, 01 Feb 2005 20:06:00 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image21">
+			<widget class="GtkImage" id="image29">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-media-play</property>
 			  <property name="icon_size">1</property>
@@ -355,14 +162,14 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="stop1">
+		    <widget class="GtkImageMenuItem" id="transport_stop">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Stop</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_stop1_activate" last_modification_time="Tue, 01 Feb 2005 20:06:00 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image22">
+			<widget class="GtkImage" id="image30">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-media-pause</property>
 			  <property name="icon_size">1</property>
@@ -376,14 +183,14 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="go_to_start1">
+		    <widget class="GtkImageMenuItem" id="transport_go_to_start">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Go to start</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_go_to_start1_activate" last_modification_time="Tue, 01 Feb 2005 20:06:00 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image23">
+			<widget class="GtkImage" id="image31">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-media-previous</property>
 			  <property name="icon_size">1</property>
@@ -410,14 +217,14 @@
 		<widget class="GtkMenu" id="menuitem4_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="about1">
+		    <widget class="GtkImageMenuItem" id="help_about">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_About Dino</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_about1_activate" last_modification_time="Thu, 16 Dec 2004 18:39:06 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image24">
+			<widget class="GtkImage" id="image32">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-about</property>
 			  <property name="icon_size">1</property>

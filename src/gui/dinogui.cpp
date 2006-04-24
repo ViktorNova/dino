@@ -222,22 +222,16 @@ void DinoGUI::reset_gui() {
 
 void DinoGUI::init_menus() {
   map<string, void (DinoGUI::*)(void)> menuSlots;
-  menuSlots["clear_all1"] = &DinoGUI::slot_file_clear_all;
-  menuSlots["quit1"] = &DinoGUI::slot_file_quit;
-  menuSlots["cut1"] = &DinoGUI::slot_edit_cut;
-  menuSlots["copy1"] = &DinoGUI::slot_edit_copy;
-  menuSlots["paste1"] = &DinoGUI::slot_edit_paste;
-  menuSlots["delete1"] = &DinoGUI::slot_edit_delete;
-  menuSlots["add_pattern1"] = &DinoGUI::slot_edit_add_pattern;
-  menuSlots["delete_pattern1"] = &DinoGUI::slot_edit_delete_pattern;
-  menuSlots["edit_pattern_properties1"] = 
-    &DinoGUI::slot_edit_edit_pattern_properties;
-  menuSlots["add_controller1"] = &DinoGUI::slot_edit_add_controller;
-  menuSlots["delete_controller1"] = &DinoGUI::slot_edit_delete_controller;
-  menuSlots["about1"] = &DinoGUI::slot_help_about_dino;
-  menuSlots["play1"] = &DinoGUI::slot_transport_play;
-  menuSlots["stop1"] = &DinoGUI::slot_transport_stop;
-  menuSlots["go_to_start1"] = &DinoGUI::slot_transport_go_to_start;
+  menuSlots["file_clear_all"] = &DinoGUI::slot_file_clear_all;
+  menuSlots["file_quit"] = &DinoGUI::slot_file_quit;
+  menuSlots["edit_cut"] = &DinoGUI::slot_edit_cut;
+  menuSlots["edit_copy"] = &DinoGUI::slot_edit_copy;
+  menuSlots["edit_paste"] = &DinoGUI::slot_edit_paste;
+  menuSlots["edit_delete"] = &DinoGUI::slot_edit_delete;
+  menuSlots["transport_play"] = &DinoGUI::slot_transport_play;
+  menuSlots["transport_stop"] = &DinoGUI::slot_transport_stop;
+  menuSlots["transport_go_to_start"] = &DinoGUI::slot_transport_go_to_start;
+  menuSlots["help_about"] = &DinoGUI::slot_help_about_dino;
   map<string, void (DinoGUI::*)(void)>::const_iterator iter;
   for (iter = menuSlots.begin(); iter != menuSlots.end(); ++iter) {
     MenuItem* mi = w<MenuItem>(iter->first);
@@ -245,8 +239,6 @@ void DinoGUI::init_menus() {
     mi->signal_activate().connect(mem_fun(*this, iter->second));
     m_menuitems[iter->first] = mi;
   }
-  m_menuitems["copy1"]->set_sensitive(true);
-  
 }
 
 

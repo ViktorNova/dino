@@ -164,6 +164,7 @@ void PatternEditor::update_track_combo() {
   }
   else {
     m_cmb_track.append_text("No tracks");
+    newActive = -1;
   }
   m_track_combo_connection.unblock();
   m_cmb_track.set_active_id(newActive);

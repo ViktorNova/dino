@@ -56,8 +56,7 @@ using namespace Dino;
 
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_xml(xml),
-    m_seq("Dino", m_song) {
+  : m_seq("Dino", m_song) {
   
   if (!m_seq.is_valid()) {
     MessageDialog dlg("Could not initialise the sequencer! You will not be "
@@ -71,26 +70,23 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
     dlg.run();
   }
   
-  m_window = w<Gtk::Window>("main_window");
-  m_about_dialog = w<AboutDialog>("dlg_about");
+  m_window = w<Gtk::Window>(xml, "main_window");
+  m_about_dialog = w<AboutDialog>(xml, "dlg_about");
   m_about_dialog->set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
 				"<larsl@users.sourceforge.net>");
 
-  m_pe = xml->get_widget_derived("patternVBox", m_pe);
-  assert(m_pe);
+  m_pe = wd<PatternEditor>(xml, "patternVBox");
   m_pe->set_song(&m_song);
-  m_se = xml->get_widget_derived("arrangementVBox", m_se);
-  assert(m_se);
+  m_se = wd<SequenceEditor>(xml, "arrangementVBox");
   m_se->set_song(&m_song);
   m_se->set_sequencer(&m_seq);
-  m_ie = xml->get_widget_derived("table1", m_ie);
-  assert(m_ie);
+  m_ie = wd<InfoEditor>(xml, "table1");
   m_ie->set_song(&m_song);
   
-  w<Notebook>("main_notebook")->signal_switch_page().
+  w<Notebook>(xml, "main_notebook")->signal_switch_page().
     connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
   
-  init_menus();
+  init_menus(xml);
   reset_gui();
   
   m_window->show_all();
@@ -183,7 +179,7 @@ void DinoGUI::reset_gui() {
 }
 
 
-void DinoGUI::init_menus() {
+void DinoGUI::init_menus(RefPtr<Xml>& xml) {
   map<string, void (DinoGUI::*)(void)> menuSlots;
   menuSlots["file_clear_all"] = &DinoGUI::slot_file_clear_all;
   menuSlots["file_quit"] = &DinoGUI::slot_file_quit;
@@ -197,7 +193,7 @@ void DinoGUI::init_menus() {
   menuSlots["help_about"] = &DinoGUI::slot_help_about_dino;
   map<string, void (DinoGUI::*)(void)>::const_iterator iter;
   for (iter = menuSlots.begin(); iter != menuSlots.end(); ++iter) {
-    MenuItem* mi = w<MenuItem>(iter->first);
+    MenuItem* mi = w<MenuItem>(xml, iter->first);
     assert(mi);
     mi->signal_activate().connect(mem_fun(*this, iter->second));
     m_menuitems[iter->first] = mi;

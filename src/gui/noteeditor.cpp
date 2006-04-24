@@ -201,7 +201,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       
       // button 1 adds or selects notes
     case 1: {
-      if (event->state & GDK_CONTROL_MASK) {
+      if (event->state & GDK_SHIFT_MASK) {
 	Pattern::NoteIterator iterator = m_pat->find_note(step, note);
 	if (iterator != m_pat->notes_end()) {
 	  if (m_selection.find(iterator) == m_selection.end())
@@ -252,7 +252,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       break;
     }
     
-      // button 3 deletes
+      // button 3 deletes or drags
     case 3: {
       Pattern::NoteIterator iterator = m_pat->find_note(step, note);
       if (iterator != m_pat->notes_end()) {

@@ -249,11 +249,6 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	}
       }
       
-      // XXX needs to be rewritten
-      else {
-	m_pat->add_notes(m_clipboard, step, note);
-      }
-      
       break;
     }
     

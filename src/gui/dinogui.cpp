@@ -86,7 +86,10 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   m_ie = xml->get_widget_derived("table1", m_ie);
   assert(m_ie);
   m_ie->set_song(&m_song);
-
+  
+  w<Notebook>("main_notebook")->signal_switch_page().
+    connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
+  
   init_menus();
   reset_gui();
   
@@ -96,11 +99,6 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
 
 Gtk::Window* DinoGUI::get_window() {
   return m_window;
-}
-
-
-void DinoGUI::slot_file_new() {
-
 }
 
 
@@ -137,57 +135,22 @@ void DinoGUI::slot_file_quit() {
 
 
 void DinoGUI::slot_edit_cut() {
-  
+  m_pe->cut_selection();
 }
 
 
 void DinoGUI::slot_edit_copy() {
-  
+  m_pe->copy_selection();
 }
 
 
 void DinoGUI::slot_edit_paste() {
-
+  m_pe->paste();
 }
 
 
 void DinoGUI::slot_edit_delete() {
-  
-}
-
-
-void DinoGUI::slot_edit_add_pattern() {
-  
-}
- 
-
-void DinoGUI::slot_edit_delete_pattern() {
-  
-}
-
-
-void DinoGUI::slot_edit_duplicate_pattern() {
-
-}
-
-
-void DinoGUI::slot_edit_edit_pattern_properties() {
-
-}
-
-
-void DinoGUI::slot_edit_add_controller() {
-
-}
-
-
-void DinoGUI::slot_edit_delete_controller() {
-
-}
-
-
-void DinoGUI::slot_edit_set_song_length(int song_length) {
-  
+  m_pe->delete_selection();
 }
 
 
@@ -290,4 +253,14 @@ bool DinoGUI::slot_check_ladcca_events() {
     lash_event_destroy(event);
   }
   return true;
+}
+
+
+void DinoGUI::page_switched(guint index) {
+  // ugly hack - what if we reorder the notebook pages?
+  bool clipboard_active = (index == 1);
+  m_menuitems["edit_cut"]->set_sensitive(clipboard_active);
+  m_menuitems["edit_copy"]->set_sensitive(clipboard_active);
+  m_menuitems["edit_paste"]->set_sensitive(clipboard_active);
+  m_menuitems["edit_delete"]->set_sensitive(clipboard_active);
 }

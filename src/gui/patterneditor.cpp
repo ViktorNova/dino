@@ -125,6 +125,26 @@ void PatternEditor::reset_gui() {
 }
 
 
+void PatternEditor::cut_selection() {
+  m_ne.cut_selection();
+}
+
+
+void PatternEditor::copy_selection() {
+  m_ne.copy_selection();
+}
+
+
+void PatternEditor::paste() {
+  m_ne.paste();
+}
+
+
+void PatternEditor::delete_selection() {
+  m_ne.delete_selection();
+}
+
+
 void PatternEditor::update_track_combo() {
   m_track_combo_connection.block();
   int oldActive = m_cmb_track.get_active_id();

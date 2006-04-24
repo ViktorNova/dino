@@ -29,6 +29,11 @@ public:
   void set_song(Dino::Song* song);
   void reset_gui();
   
+  void cut_selection();
+  void copy_selection();
+  void paste();
+  void delete_selection();
+  
 protected:
   
   template <class T>

@@ -55,7 +55,6 @@ private:
 
   /// @name Menu and toolbutton callbacks
   //@{
-  void slot_file_new();
   void slot_file_open();
   void slot_file_save();
   void slot_file_save_as();
@@ -66,13 +65,6 @@ private:
   void slot_edit_copy();
   void slot_edit_paste();
   void slot_edit_delete();
-  void slot_edit_add_pattern();
-  void slot_edit_delete_pattern();
-  void slot_edit_duplicate_pattern();
-  void slot_edit_edit_pattern_properties();
-  void slot_edit_add_controller();
-  void slot_edit_delete_controller();
-  void slot_edit_set_song_length(int song_length);
   
   void slot_transport_play();
   void slot_transport_stop();
@@ -100,6 +92,7 @@ private:
   
   // internal callbacks
   bool slot_check_ladcca_events();
+  void page_switched(guint index);
   
   Dino::Song m_song;
   

@@ -184,10 +184,16 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
     m_drag_step = step;
     m_drag_note = note;
     
+    // if we are pasting and clicking button 1, insert the clipboard
+    // if we click another button, abort the paste
     if (m_motion_operation == MotionPaste) {
-      m_pat->add_notes(m_clipboard, step, note);
       m_motion_operation = MotionNoOperation;
-      return true;
+      if (event->button == 1) {
+	m_pat->add_notes(m_clipboard, step, note);
+	return true;
+      }
+      else
+	queue_draw();
     }
     
     

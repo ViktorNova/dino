@@ -342,16 +342,17 @@ namespace Dino {
   /** Set the sequency entry at the given beat to the given pattern 
       and length. */
   Track::SequenceIterator Track::set_sequence_entry(int beat, 
-						    int pattern, int length) {
+						    int pattern, 
+						    unsigned int length) {
     assert(beat >= 0);
     assert(beat < int(m_sequence->size()));
     assert(m_patterns.find(pattern) != m_patterns.end());
-    assert(length > 0 || length == -1);
+    assert(length >= 0);
     assert(length <= m_patterns.find(pattern)->second->get_length());
     
-    // if length is -1, get it from the pattern
+    // if length is 0, get it from the pattern
     int newLength;
-    if (length == -1)
+    if (length == 0)
       newLength = m_patterns[pattern]->get_length();
     else
       newLength = length;

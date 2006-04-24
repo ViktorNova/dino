@@ -170,9 +170,9 @@ namespace Dino {
 	invalid iterator if no such controller exists. */
     ControllerIterator ctrls_find(long param) const;
     /** Return the number of steps per beat. */
-    int get_steps() const;
+    unsigned int get_steps() const;
     /** Return the length in beats. */
-    int get_length() const;
+    unsigned int get_length() const;
     /** Return the bounding rectangle in the (step, key) plane for all notes
 	that have been changed since the last call to reset_dirty_rect(). */
     void get_dirty_rect(int* min_step, int* min_note, 

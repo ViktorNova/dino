@@ -86,7 +86,7 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
   // add a CC event
   if (event->button == 1 || event->button == 2) {
     int step = xpix2step(int(event->x));
-    if (step <= m_pat->get_length() * m_pat->get_steps()) {
+    if (step <= int(m_pat->get_length() * m_pat->get_steps())) {
       int value = ypix2value(int(event->y));
       int min = m_pat->ctrls_find(m_controller)->get_min();
       int max = m_pat->ctrls_find(m_controller)->get_max();
@@ -104,7 +104,7 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
   else if (event->button == 3) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
-	m_pat->get_length() * m_pat->get_steps()) {
+	int(m_pat->get_length() * m_pat->get_steps())) {
       m_pat->remove_cc(m_pat->ctrls_find(m_controller), step);
     }
   }
@@ -127,7 +127,7 @@ bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
     int step = m_drag_step;
     if (step == -1)
       step = xpix2step(int(event->x));
-    if (step <= m_pat->get_length() * m_pat->get_steps()) {
+    if (step <= int(m_pat->get_length() * m_pat->get_steps())) {
       int value = ypix2value(int(event->y));
       int min = m_pat->ctrls_find(m_controller)->get_min();
       int max = m_pat->ctrls_find(m_controller)->get_max();
@@ -141,7 +141,7 @@ bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
   else if (event->state & GDK_BUTTON3_MASK) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
-	m_pat->get_length() * m_pat->get_steps()) {
+	int(m_pat->get_length() * m_pat->get_steps())) {
       m_pat->remove_cc(m_pat->ctrls_find(m_controller), step);
     }
   }

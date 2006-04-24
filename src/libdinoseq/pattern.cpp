@@ -91,7 +91,7 @@ namespace Dino {
       return *this;
     }
     else {
-      for (int i = m_note->get_step() + 1;
+      for (unsigned int i = m_note->get_step() + 1;
 	   i < m_pattern->get_length() * m_pattern->get_steps(); ++i) {
 	if ((*m_pattern->m_sd->ons)[i]) {
 	  m_note = (*m_pattern->m_sd->ons)[i]->get_note();
@@ -610,12 +610,12 @@ namespace Dino {
   }
 
   
-  int Pattern::get_steps() const {
+  unsigned int Pattern::get_steps() const {
     return m_sd->steps;
   }
 
 
-  int Pattern::get_length() const {
+  unsigned int Pattern::get_length() const {
     return m_sd->length;
   }
   

@@ -81,7 +81,7 @@ NoteEditor::NoteEditor()
   m_layout = Layout::create(get_pango_context());
   m_layout->set_text("127");
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | 
-	     BUTTON_MOTION_MASK | SCROLL_MASK);
+	     BUTTON_MOTION_MASK | SCROLL_MASK | POINTER_MOTION_MASK);
   
   m_added_note = make_pair(-1, -1);
   m_drag_step = -1;
@@ -99,7 +99,6 @@ void NoteEditor::set_pattern(Pattern* pattern) {
       sigc::slot<void> draw = mem_fun(*this, &NoteEditor::queue_draw);
       m_pat->signal_note_added.connect(s::hide(draw));
       m_pat->signal_note_removed.connect(s::hide(draw));
-      //m_pat->signal_note_removed.connect(mem_fun(m_selection, &PatternSelection::remove_note_internal));
       m_pat->signal_note_changed.connect(s::hide(draw));
       m_pat->signal_length_changed.connect(s::hide(draw));
       m_pat->signal_steps_changed.connect(s::hide(draw));
@@ -141,8 +140,18 @@ void NoteEditor::copy_selection() {
 
 
 void NoteEditor::paste() {
-  if (m_clipboard.begin() != m_clipboard.end())
+  if (m_clipboard.begin() != m_clipboard.end()) {
+    m_drag_operation = DragNoOperation;
     m_motion_operation = MotionPaste;
+    int x, y;
+    ModifierType mt;
+    get_window()->get_pointer(x, y, mt);
+    x = x < 0 ? 0 : x;
+    y = y < 0 ? 0 : y;
+    m_drag_step = x / m_col_width;
+    m_drag_note = m_max_note - y / m_row_height - 1;
+    queue_draw();
+  }
 }
 
 
@@ -274,7 +283,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     if (step < m_added_note.first)
       step = m_added_note.first;
     if (step != m_drag_step) {
-      if (step >= m_pat->get_length() * m_pat->get_steps())
+      if (step >= int(m_pat->get_length() * m_pat->get_steps()))
 	step = m_pat->get_length() * m_pat->get_steps() - 1;
       unsigned new_size = step - m_added_note.first + 1;
       PatternSelection::Iterator iter;
@@ -321,7 +330,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
       step = m_added_note.first;
     if (step == m_drag_step)
       return true;
-    else if (step >= m_pat->get_length() * m_pat->get_steps())
+    else if (step >= int(m_pat->get_length() * m_pat->get_steps()))
       step = m_pat->get_length() * m_pat->get_steps() - 1;
     Pattern::NoteIterator iterator = 
       m_pat->find_note(m_added_note.first, m_added_note.second);
@@ -341,7 +350,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     int note = m_max_note - int(event->y) / m_row_height - 1;
     if (step == m_drag_step && note == m_drag_note)
       return true;
-    if (step >= 0 && step < m_pat->get_length() * m_pat->get_steps() &&
+    if (step >= 0 && step < int(m_pat->get_length() * m_pat->get_steps()) &&
 	note >= 0 && note < m_max_note) {
       Pattern::NoteIterator iter = m_pat->find_note(step, note);
       if (iter != m_pat->notes_end())
@@ -352,6 +361,18 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     break;
   }
 
+  case DragNoOperation:
+    if (m_motion_operation == MotionPaste) {
+      int step = int(event->x) / m_col_width;
+      int note = m_max_note - int(event->y) / m_row_height - 1;
+      if (m_drag_step != step || m_drag_note != note) {
+	m_drag_step = step;
+	m_drag_note = note;
+	queue_draw();
+      }
+    }
+    break;
+    
   default:
     break;
   }
@@ -403,7 +424,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
   // draw background
   int width = m_pat->get_length() * m_pat->get_steps() * m_col_width;
   int height = m_max_note * m_row_height;
-  for (int b = 0; b < m_pat->get_length(); ++b) {
+  for (unsigned int b = 0; b < m_pat->get_length(); ++b) {
     if (b % 2 == 0)
       m_gc->set_foreground(m_bg_color);
     else
@@ -423,7 +444,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
 			    width, m_row_height);
     }
   }
-  for (int c = 0; c < m_pat->get_steps() * m_pat->get_length() + 1; ++c)
+  for (unsigned c = 0; c < m_pat->get_steps() * m_pat->get_length() + 1; ++c)
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   
   // draw notes
@@ -436,6 +457,10 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
     iter = m_pat->find_note(m_drag_step, m_drag_note);
     draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
   }
+  
+  // draw outline
+  if (m_motion_operation == MotionPaste)
+    draw_outline(m_clipboard, m_drag_step, m_drag_note);
   
   /*
     gc->set_foreground(hlColor);
@@ -467,7 +492,7 @@ void NoteEditor::draw_note(Pattern::NoteIterator iterator, bool selected) {
 
 
 void NoteEditor::draw_velocity_box(Pattern::NoteIterator iterator,
-				      bool selected) {
+				   bool selected) {
   RefPtr<Gdk::Window> win = get_window();
   m_gc->set_foreground(m_edge_color);
   int box_height = m_layout->get_pixel_logical_extents().get_height() + 6;
@@ -510,4 +535,23 @@ void NoteEditor::update() {
 				      (m_d_max_note - m_d_min_note + 1) * 
 				      m_row_height + 1), false);
   win->process_updates(false);
+}
+
+
+void NoteEditor::draw_outline(const Dino::NoteCollection& notes, 
+			      unsigned int step, unsigned char key) {
+  RefPtr<Gdk::Window> win = get_window();
+  m_gc->set_foreground(m_hl_color);
+  NoteCollection::ConstIterator iter;
+  for (iter = notes.begin(); iter != notes.end(); ++iter) {
+    if (step + iter->start >= m_pat->get_length() * m_pat->get_steps())
+      continue;
+    int length = iter->length;
+    if (step + iter->start + iter->length >= 
+	m_pat->get_length() * m_pat->get_steps())
+      length = m_pat->get_length() * m_pat->get_steps() - step - iter->start;
+    win->draw_rectangle(m_gc, false, (step + iter->start) * m_col_width, 
+			(2 * m_max_note - iter->key - 2 - key) * m_row_height, 
+			iter->length * m_col_width, m_row_height);
+  }
 }

@@ -56,6 +56,8 @@ protected:
   void draw_note(Dino::Pattern::NoteIterator iterator, bool selected = false);
   void draw_velocity_box(Dino::Pattern::NoteIterator iterator, 
 			 bool selected = false);
+  void draw_outline(const Dino::NoteCollection& notes, unsigned int step,
+		    unsigned char key);
   void update();
   
 private:

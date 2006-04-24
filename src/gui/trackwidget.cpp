@@ -203,7 +203,7 @@ bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
   if ((event->state & GDK_BUTTON2_MASK) && m_drag_beat != -1 &&
       beat >= m_drag_beat && 
       beat - m_drag_beat + 1 <= 
-      m_track->pat_find(m_drag_pattern)->get_length()) {
+      int(m_track->pat_find(m_drag_pattern)->get_length())) {
     m_track->set_sequence_entry(m_drag_beat, m_drag_pattern, 
 				beat - m_drag_beat + 1);
     update();

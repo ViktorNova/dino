@@ -41,8 +41,6 @@ protected:
   Gtk::Entry* m_ent_author;
   Gtk::TextView* m_text_info;
   
-  sigc::connection m_conn_info;
-  
   Dino::Song* m_song;
 };
 

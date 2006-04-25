@@ -269,12 +269,18 @@ namespace Dino {
     pos->bar = int32_t(pos->beat / pos->beats_per_bar);
     pos->beat %= int(pos->beats_per_bar);
     pos->valid = JackPositionBBT;
+    
+    // bars and beats start from 1 by convention (but ticks don't!)
+    ++pos->bar;
+    ++pos->beat;
   }
 
 
   int Sequencer::jack_process_callback(jack_nframes_t nframes) {
     jack_position_t pos;
     jack_transport_state_t state = jack_transport_query(m_jack_client, &pos);
+    --pos.bar;
+    --pos.beat;
   
     // first, tell the GUI thread that it's OK to delete unused objects
     Deleter::get_instance().confirm();
@@ -287,8 +293,7 @@ namespace Dino {
     m_current_beat = pos.bar * int(pos.beats_per_bar) + pos.beat;
     
     // at the end of the song, stop and go back to the beginning
-    if (pos.bar * pos.beats_per_bar + pos.beat >= m_song.get_length()) {
-      //cerr<<"At the end, stopping"<<endl;
+    if (m_current_beat >= m_song.get_length()) {
       jack_transport_stop(m_jack_client);
       jack_transport_locate(m_jack_client, 0);
       return 0;
@@ -341,8 +346,11 @@ namespace Dino {
     m_sent_all_off = false;
     
     // if we are rolling, sequence MIDI
-    double offset = pos.bar_start_tick * pos.beats_per_minute / 
-      (pos.frame_rate * 60);
+    /* can't abuse this field, some transport masters actually set it
+       to bar * bpm * tpb (what's the point in that?) */
+    /*double offset = pos.bar_start_tick * pos.beats_per_minute / 
+      (pos.frame_rate * 60);*/
+    double offset = 0;
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
       pos.tick / double(pos.ticks_per_beat) + offset;
     double end = start + pos.beats_per_minute * nframes / 

@@ -36,7 +36,7 @@ public:
   
   CCEditor();
   
-  void set_controller(Dino::Pattern* pat, unsigned controller);
+  void set_controller(Dino::Pattern* pat, long controller);
   void set_step_width(int width);
   
 protected:
@@ -59,7 +59,7 @@ protected:
   unsigned m_step_width;
   
   Dino::Pattern* m_pat;
-  unsigned int m_controller;
+  long m_controller;
   
   int m_drag_step;
 };

@@ -11,6 +11,12 @@ namespace Dino {
   static const long g_controller_none = -1;
   
   
+  /** Returns an invalid ID. */
+  static inline long make_invalid() {
+    return g_controller_none;
+  }
+  
+  
   /** Returns @c true if the given @c id is actually a controller number. */
   static inline bool controller_is_set(long id) {
     return (g_controller_none != id);

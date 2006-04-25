@@ -21,6 +21,7 @@
 #include <iostream>
 
 #include "cceditor.hpp"
+#include "controller_numbers.hpp"
 #include "pattern.hpp"
 
 using namespace Glib;
@@ -51,7 +52,7 @@ CCEditor::CCEditor()
 }
 
 
-void CCEditor::set_controller(Dino::Pattern* pat, unsigned controller) {
+void CCEditor::set_controller(Dino::Pattern* pat, long controller) {
   m_pat = pat;
   m_controller = controller;
   if (m_pat) {
@@ -160,7 +161,7 @@ void CCEditor::on_realize() {
 
 bool CCEditor::on_expose_event(GdkEventExpose* event) {
   
-  if (!m_pat)
+  if (!m_pat || !controller_is_set(m_controller))
     return true;
   
   RefPtr<Gdk::Window> win = get_window();

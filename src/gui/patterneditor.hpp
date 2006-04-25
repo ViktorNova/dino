@@ -46,7 +46,9 @@ protected:
 	  <<demangle(typeid(T).name())<<endl;
     return widget;
   }
-
+  
+  void pattern_added(int id);
+  
   void update_track_combo();
   void update_pattern_combo();
   void update_controller_combo();

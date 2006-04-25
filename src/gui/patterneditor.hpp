@@ -33,6 +33,7 @@ public:
   void copy_selection();
   void paste();
   void delete_selection();
+  void select_all();
   
 protected:
   

@@ -65,6 +65,7 @@ private:
   void slot_edit_copy();
   void slot_edit_paste();
   void slot_edit_delete();
+  void slot_edit_select_all();
   
   void slot_transport_play();
   void slot_transport_stop();

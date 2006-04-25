@@ -150,6 +150,11 @@ void DinoGUI::slot_edit_delete() {
 }
 
 
+void DinoGUI::slot_edit_select_all() {
+  m_pe->select_all();
+}
+
+
 void DinoGUI::slot_transport_play() {
   m_seq.play();
 }
@@ -187,6 +192,7 @@ void DinoGUI::init_menus(RefPtr<Xml>& xml) {
   menuSlots["edit_copy"] = &DinoGUI::slot_edit_copy;
   menuSlots["edit_paste"] = &DinoGUI::slot_edit_paste;
   menuSlots["edit_delete"] = &DinoGUI::slot_edit_delete;
+  menuSlots["edit_select_all"] = &DinoGUI::slot_edit_select_all;
   menuSlots["transport_play"] = &DinoGUI::slot_transport_play;
   menuSlots["transport_stop"] = &DinoGUI::slot_transport_stop;
   menuSlots["transport_go_to_start"] = &DinoGUI::slot_transport_go_to_start;
@@ -259,4 +265,5 @@ void DinoGUI::page_switched(guint index) {
   m_menuitems["edit_copy"]->set_sensitive(clipboard_active);
   m_menuitems["edit_paste"]->set_sensitive(clipboard_active);
   m_menuitems["edit_delete"]->set_sensitive(clipboard_active);
+  m_menuitems["edit_select_all"]->set_sensitive(clipboard_active);
 }

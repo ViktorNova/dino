@@ -145,6 +145,11 @@ void PatternEditor::delete_selection() {
 }
 
 
+void PatternEditor::select_all() {
+  m_ne.select_all();
+}
+
+
 void PatternEditor::update_track_combo() {
   m_track_combo_connection.block();
   int oldActive = m_cmb_track.get_active_id();

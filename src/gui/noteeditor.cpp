@@ -169,6 +169,17 @@ void NoteEditor::delete_selection() {
 }
 
 
+void NoteEditor::select_all() {
+  if (m_pat) {
+    m_selection.clear();
+    Pattern::NoteIterator iter;
+    for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter)
+      m_selection.add_note(iter);
+    queue_draw();
+  }
+}
+
+
 bool NoteEditor::on_button_press_event(GdkEventButton* event) {
   if (!m_pat)
     return false;
@@ -248,6 +259,12 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	  m_drag_operation = DragChangingNoteLength;
 	}
       }
+      
+      // outside a note, add the selection here
+      step = (step < int(m_pat->get_length() * m_pat->get_steps()) ? step : 
+	      m_pat->get_length() * m_pat->get_steps() - 1);
+      NoteCollection nc(m_selection);
+      m_pat->add_notes(nc, step, note);
       
       break;
     }

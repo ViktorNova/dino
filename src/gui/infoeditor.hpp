@@ -24,6 +24,8 @@ public:
   
 protected:
   
+  void update_info(const std::string& info);
+  
   template <class T>
   static inline T* w(const Glib::RefPtr<Gnome::Glade::Xml>& xml, 
 		     const std::string& name) {
@@ -38,7 +40,9 @@ protected:
   Gtk::Entry* m_ent_title;
   Gtk::Entry* m_ent_author;
   Gtk::TextView* m_text_info;
-
+  
+  sigc::connection m_conn_info;
+  
   Dino::Song* m_song;
 };
 

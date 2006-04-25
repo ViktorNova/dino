@@ -71,7 +71,8 @@ private:
     DragChangingNoteLength,
     DragChangingNoteVelocity,
     DragDeletingNotes,
-    DragMovingNotes
+    DragMovingNotes,
+    DragSelectBox
   } m_drag_operation;
   
   /** This is used to figure out what to do when a pointer motion event is 
@@ -84,7 +85,7 @@ private:
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;
   Gdk::Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 
-    m_edge_color, m_hl_color;
+    m_edge_color, m_hl_color, m_selbox_color;
   Gdk::Color m_note_colors[16];
   Gdk::Color m_selected_note_colors[16];
   int m_row_height;
@@ -99,6 +100,7 @@ private:
   int m_last_note_length;
   int m_move_offset_step;
   int m_move_offset_note;
+  int m_sb_step, m_sb_note;
   
   Dino::PatternSelection m_selection;
   Dino::NoteCollection m_clipboard;

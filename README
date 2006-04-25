@@ -1,2 +1,82 @@
-It's not done yet! Don't use it!
+Dino is a MIDI sequencer for GNU/Linux. It uses the JACK system to send MIDI 
+to other software and to synchronise with JACK transport. You need a version of
+JACK that is patched to handle MIDI as well as audio to use Dino.
 
+Dino requires that jackd is running in order to sequence anything (although
+you can still edit songs without it) and that lashd is running in order to be
+able to save anything you do. If you set the environment variables 
+JACK_START_SERVER and LASH_START_SERVER to 1 they will both be started
+automatically when you start Dino (this is true for all programs that use
+JACK or LASH).
+
+
+The arrangement editor
+======================
+The GUI is divided into three tabs. The first tab, "Arrangement" is where you
+add new tracks, arrange patterns, and edit the tempo map. When you first
+start Dino there will be no tracks and all you will see is the "BPM" track.
+Here you can add new tempo changes with the left button, remove them with
+the right button (except the first one - if you removed it the BPM for the
+whole song would be undefined, so Dino will not let you remove it) and change
+their BPM by middle-clicking and dragging up and down. This mousing pattern
+is used in most places in Dino - left adds, middle modifies, right removes.
+
+If you click the '+' button in the arrangement tab you will add a track. When
+you add a track you can choose a name for it, which MIDI port it should connect
+to, and the MIDI channel it should send events to. You can edit all these
+properties later too by clicking the 'Properties' button (the one with the 
+tool). The selected track (the one that has a dark blue background for its
+name) can be removed by clicking the trashcan button. 
+
+Each track is shown as a strip of blocks, where each block represents a beat.
+When you have created patterns for your track (see the text about the "Patterns"
+tab below) you can use the left mouse button to click on a track and bring up
+a popup menu listing all patterns for that track. The one you select will be
+added to the track at the beat you clicked. You can modify its length with
+the middle mouse button and delete it with the right (this does not affect
+the actual pattern at all, just how this instance of it is played).
+
+
+The pattern editor
+==================
+In the pattern editor you can add, edit, and remove patterns for the different
+tracks. Look at the tooltips for the buttons in the upper row and it should
+be fairly obvious how to add and delete patterns. When you have added a pattern
+you can also add and delete controllers in it. Controllers are e.g. pitchbend
+and MIDI CC controllers. The active controller can be edited in the box at the
+bottom of this tab.
+
+The main box here is the note editor, where you edit the notes in the active
+pattern. You add new notes with the left button, change their length with the
+middle button, change their velocity with the middle button while holding Ctrl,
+and delete them with the right button. You can also shift-click a note to 
+select or unselect it, and shift-click outside the notes and drag a box to
+select or unselect all notes that intersect that box.
+
+Also, if you hold shift while you are changing the length of a note, all
+selected notes will be changed to that length, if you hold shift+ctrl while
+changing the velocity all selected notes will be changed to that velocity,
+and if you hold shift while right-clicking a note all selected notes will be
+removed. If you hold ctrl you can use the right mouse button to drag notes 
+around. (ctrl to drag one note, shift+ctrl to drag all selected notes).
+
+There are also basic clipboard commands, you can cut, copy, paste and delete
+the current selection. When you paste you will have to click where you want
+the clipboard content to appear. You can also middle-click outside all notes to
+insert a copy of the current selection there without affecting the clipboard
+content.
+
+
+The info editor
+===============
+The third tab simply has entry fields for the songs title, author, and info.
+It should be obvious how to use them
+
+
+Saving
+======
+Dino does not have any save or load commands. Instead, you should use your
+favourite LASH controller program to save and load entire sessions.
+
+
+Send bug reports and suggestions to Lars Luthman <larsl@users.sourceforge.net>

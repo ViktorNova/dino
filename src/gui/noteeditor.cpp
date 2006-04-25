@@ -51,6 +51,7 @@ NoteEditor::NoteEditor()
   m_grid_color.set_rgb(40000, 40000, 40000);
   m_edge_color.set_rgb(0, 0, 0);
   m_hl_color.set_rgb(65535, 0, 0);
+  m_selbox_color.set_rgb(20000, 20000, 40000);
   
   // initialise note colours for different velocities
   gushort red1 = 40000, green1 = 45000, blue1 = 40000;
@@ -74,6 +75,7 @@ NoteEditor::NoteEditor()
   m_colormap->alloc_color(m_grid_color);
   m_colormap->alloc_color(m_edge_color);
   m_colormap->alloc_color(m_hl_color);
+  m_colormap->alloc_color(m_selbox_color);
   for (int i = 0; i < 16; ++i) {
     m_colormap->alloc_color(m_note_colors[i]);
     m_colormap->alloc_color(m_selected_note_colors[i]);
@@ -220,6 +222,11 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	  else
 	    m_selection.remove_note(iterator);
 	}
+	else {
+	  m_drag_operation = DragSelectBox;
+	  m_sb_note = note;
+	  m_sb_step = step;
+	}
 	queue_draw();
       }
       else {
@@ -259,12 +266,13 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	  m_drag_operation = DragChangingNoteLength;
 	}
       }
-      
-      // outside a note, add the selection here
-      step = (step < int(m_pat->get_length() * m_pat->get_steps()) ? step : 
-	      m_pat->get_length() * m_pat->get_steps() - 1);
-      NoteCollection nc(m_selection);
-      m_pat->add_notes(nc, step, note);
+      else {
+	// outside a note, add the selection here
+	step = (step < int(m_pat->get_length() * m_pat->get_steps()) ? step : 
+		m_pat->get_length() * m_pat->get_steps() - 1);
+	NoteCollection nc(m_selection);
+	m_pat->add_notes(nc, step, note);
+      }
       
       break;
     }
@@ -345,6 +353,26 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       m_pat->add_notes(m_moved_notes, step, note, &m_selection);
     }
   }
+  
+  if (m_drag_operation == DragSelectBox) {
+    m_drag_operation = DragNoOperation;
+    Pattern::NoteIterator iter;
+    unsigned int minstep = m_drag_step < m_sb_step ? m_drag_step : m_sb_step;
+    unsigned int maxstep = m_drag_step > m_sb_step ? m_drag_step : m_sb_step;
+    unsigned int minnote = m_drag_note < m_sb_note ? m_drag_note : m_sb_note;
+    unsigned int maxnote = m_drag_note > m_sb_note ? m_drag_note : m_sb_note;
+    for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter) {
+      if (iter->get_step() <= maxstep && 
+	  iter->get_step() + iter->get_length() >= minstep &&
+	  iter->get_key() >= minnote && iter->get_key() <= maxnote) {
+	if (m_selection.find(iter) == m_selection.end())
+	  m_selection.add_note(iter);
+	else
+	  m_selection.remove_note(iter);
+      }
+    }
+    queue_draw();
+  }
 
   m_drag_operation = DragNoOperation;
   
@@ -415,6 +443,19 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     if (m_drag_step != step || m_drag_note != note) {
       m_drag_step = step;
       m_drag_note = note;
+      queue_draw();
+    }
+    break;
+  }
+    
+  case DragSelectBox: {
+    int step = int(event->x) / m_col_width;
+    int note = m_max_note - int(event->y) / m_row_height - 1;
+    if (m_drag_step != step || m_drag_note != note) {
+      m_drag_note = note;
+      m_drag_step = (step >= int(m_pat->get_steps() * m_pat->get_length()) ?
+		     m_pat->get_steps() * m_pat->get_length() - 1: step);
+      
       queue_draw();
     }
     break;
@@ -505,6 +546,18 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
   }
   for (unsigned c = 0; c < m_pat->get_steps() * m_pat->get_length() + 1; ++c)
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
+  
+  // draw selection box
+  if (m_drag_operation == DragSelectBox) {
+    int minx = m_sb_step < m_drag_step ? m_sb_step : m_drag_step;
+    int miny = m_sb_note > m_drag_note ? m_sb_note : m_drag_note;
+    miny = 127 - miny;
+    int w = abs(m_sb_step - m_drag_step) + 1;
+    int h = abs(m_sb_note - m_drag_note) + 1;
+    m_gc->set_foreground(m_selbox_color);
+    win->draw_rectangle(m_gc, true, minx * m_col_width, miny * m_row_height,
+			w * m_col_width + 1, h * m_row_height + 1);
+  }
   
   // draw notes
   Pattern::NoteIterator iter;

@@ -593,7 +593,7 @@ namespace Dino {
     if (to > sequence.size())
       to = sequence.size();
     
-    // iterate over all beats in the interval [from, to]
+    // iterate over all beats in the interval [from, to)
     unsigned beat = unsigned(from);
     while (beat < to) {
       if (sequence[beat]) {

@@ -180,8 +180,8 @@ namespace Dino {
       NoteEvent* event = *iter;
       while (event) {
 	NoteEvent* tmp = event;
-	delete event;
 	event = tmp->get_next();
+	delete tmp;
       }
     }
     
@@ -190,8 +190,8 @@ namespace Dino {
       NoteEvent* event = *iter;
       while (event) {
 	NoteEvent* tmp = event;
-	delete event;
 	event = tmp->get_next();
+	delete tmp;
       }
     }
     
@@ -724,6 +724,7 @@ namespace Dino {
     // need to copy this because the editing thread might change it
     SeqData* sd = m_sd;
     
+    from = from < 0 ? 0 : from;
     unsigned start = unsigned(floor(from * sd->steps));
     unsigned end = unsigned(ceil(to * sd->steps));
     end = (end > sd->length * sd->steps ? sd->length * sd->steps : end);
@@ -777,10 +778,11 @@ namespace Dino {
       }
       
       // write note offs
-      if ((step / double(sd->steps) + 1 - off_d < to) &&
-	  (step / double(sd->steps) + 1 - off_d >= from)){
+      if (((step + 1) / double(sd->steps) - off_d < to) &&
+	  ((step + 1) / double(sd->steps) - off_d >= from)){
 	event = (*sd->offs)[step];
 	while (event) {
+	  cerr<<"note off from dino"<<endl;
 	  unsigned char* data = 
 	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 
 			   event->get_size());

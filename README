@@ -47,18 +47,12 @@ and MIDI CC controllers. The active controller can be edited in the box at the
 bottom of this tab.
 
 The main box here is the note editor, where you edit the notes in the active
-pattern. You add new notes with the left button, change their length with the
-middle button, change their velocity with the middle button while holding Ctrl,
-and delete them with the right button. You can also shift-click a note to 
-select or unselect it, and shift-click outside the notes and drag a box to
-select or unselect all notes that intersect that box.
-
-Also, if you hold shift while you are changing the length of a note, all
-selected notes will be changed to that length, if you hold shift+ctrl while
-changing the velocity all selected notes will be changed to that velocity,
-and if you hold shift while right-clicking a note all selected notes will be
-removed. If you hold ctrl you can use the right mouse button to drag notes 
-around. (ctrl to drag one note, shift+ctrl to drag all selected notes).
+pattern. You add new notes with Ctrl-left button, change their length with the
+middle button, change their velocity with Ctrl-middle button and delete them 
+with Ctrl-right button. You can also use the left mouse button to select, 
+unselect, and drag notes around - clicking a note will select it, shift-clicking
+will unselect or select it depending on whether it was selected or not, clicking
+and dragging notes will move the selected notes around on the grid.
 
 There are also basic clipboard commands, you can cut, copy, paste and delete
 the current selection. When you paste you will have to click where you want
@@ -70,7 +64,7 @@ content.
 The info editor
 ===============
 The third tab simply has entry fields for the songs title, author, and info.
-It should be obvious how to use them
+It should be obvious how to use them.
 
 
 Saving

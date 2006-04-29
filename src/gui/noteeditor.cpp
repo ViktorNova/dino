@@ -214,22 +214,9 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       
       // button 1 adds or selects notes
     case 1: {
-      if (event->state & GDK_SHIFT_MASK) {
-	Pattern::NoteIterator iterator = m_pat->find_note(step, note);
-	if (iterator != m_pat->notes_end()) {
-	  if (m_selection.find(iterator) == m_selection.end())
-	    m_selection.add_note(iterator);
-	  else
-	    m_selection.remove_note(iterator);
-	}
-	else {
-	  m_drag_operation = DragSelectBox;
-	  m_sb_note = note;
-	  m_sb_step = step;
-	}
-	queue_draw();
-      }
-      else {
+      
+      // Ctrl-Button1 adds notes
+      if (event->state & GDK_CONTROL_MASK) {
 	Pattern::NoteIterator iter = m_pat->add_note(step, note, 64, 
 						     m_last_note_length);
 	m_selection.clear();
@@ -238,18 +225,65 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	m_added_note = make_pair(step, note);
 	m_drag_operation = DragChangingNoteLength;
       }
+      
+      // Button1 without Ctrl selects and moves
+      else {
+	Pattern::NoteIterator iterator = m_pat->find_note(step, note);
+	if (iterator != m_pat->notes_end()) {
+	  
+	  // Shift adds or removes from selection
+	  if (event->state & GDK_SHIFT_MASK) {
+	    if (m_selection.find(iterator) == m_selection.end())
+	      m_selection.add_note(iterator);
+	    else
+	      m_selection.remove_note(iterator);
+	  }
+	  
+	  // No shift, drag the selection
+	  else {
+	    if (m_selection.find(iterator) == m_selection.end()) {
+	      m_selection.clear();
+	      m_selection.add_note(iterator);
+	    }
+	    m_moved_notes = NoteCollection(m_selection);
+	    m_drag_operation = DragMovingNotes;
+	    PatternSelection::Iterator i;
+	    unsigned int minstep = step;
+	    unsigned int maxkey = note;
+	    for (i = m_selection.begin(); i != m_selection.end(); ++i) {
+	      minstep = minstep < i->get_step() ? minstep : i->get_step();
+	      maxkey = maxkey > i->get_key() ? maxkey : i->get_key();
+	    }
+	    m_move_offset_step = minstep - step;
+	    m_move_offset_note = maxkey - note;
+	    queue_draw();
+	  }
+	}
+	
+	// outside a note, select a box
+	else {
+	  if (!(event->state & GDK_SHIFT_MASK))
+	    m_selection.clear();
+	  m_drag_operation = DragSelectBox;
+	  m_sb_note = note;
+	  m_sb_step = step;
+	}
+	queue_draw();
+      }
       break;
     }
     
-    // button 2 changes the velocity or length
+    // button 2 changes the velocity or length or inserts a copy of the 
+    // selection
     case 2: {
       Pattern::NoteIterator iterator = m_pat->find_note(step, note);
       if (iterator != m_pat->notes_end()) {
 	
-	// if shift isn't pressed the selection is set to this single note
-	if (!(event->state & GDK_SHIFT_MASK))
+	// if the click is outside the selection, clear the selection first
+	if (m_selection.find(iterator) == m_selection.end()) {
 	  m_selection.clear();
-	m_selection.add_note(iterator);
+	  m_selection.add_note(iterator);
+	}
 	
 	if (event->state & GDK_CONTROL_MASK) {
 	  m_drag_operation = DragChangingNoteVelocity;
@@ -277,36 +311,20 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       break;
     }
     
-      // button 3 deletes or drags
+    // Ctrl-Button3 deletes or drags
     case 3: {
-      Pattern::NoteIterator iterator = m_pat->find_note(step, note);
-      if (iterator != m_pat->notes_end()) {
-
-	// if shift isn't pressed the selection is set to this single note
-	if (!(event->state & GDK_SHIFT_MASK))
-	  m_selection.clear();
-	m_selection.add_note(iterator);
-	
-	if (event->state & GDK_CONTROL_MASK) {
-	  m_moved_notes = NoteCollection(m_selection);
-	  m_drag_operation = DragMovingNotes;
-	  PatternSelection::Iterator iter;
-	  unsigned int minstep = step;
-	  unsigned int maxkey = note;
-	  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
-	    minstep = minstep < iter->get_step() ? minstep : iter->get_step();
-	    maxkey = maxkey > iter->get_key() ? maxkey : iter->get_key();
+      if (event->state & GDK_CONTROL_MASK) {
+	Pattern::NoteIterator iterator = m_pat->find_note(step, note);
+	if (iterator != m_pat->notes_end()) {
+	  // if shift isn't pressed the selection is set to this single note
+	  if (m_selection.find(iterator) == m_selection.end()) {
+	    m_selection.clear();
+	    m_selection.add_note(iterator);
 	  }
-	  m_move_offset_step = minstep - step;
-	  m_move_offset_note = maxkey - note;
-	  queue_draw();
-	}
-	else {
 	  delete_selection();
-	  m_drag_operation = DragDeletingNotes;
 	}
       }
-      
+      m_drag_operation = DragDeletingNotes;
       break;
     }
       
@@ -365,10 +383,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       if (iter->get_step() <= maxstep && 
 	  iter->get_step() + iter->get_length() >= minstep &&
 	  iter->get_key() >= minnote && iter->get_key() <= maxnote) {
-	if (m_selection.find(iter) == m_selection.end())
-	  m_selection.add_note(iter);
-	else
-	  m_selection.remove_note(iter);
+	m_selection.add_note(iter);
       }
     }
     queue_draw();

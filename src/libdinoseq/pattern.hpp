@@ -21,6 +21,7 @@
 #ifndef PATTERN_H
 #define PATTERN_H
 
+#include <cassert>
 #include <list>
 #include <map>
 #include <vector>

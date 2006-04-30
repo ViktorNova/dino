@@ -174,7 +174,7 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
     if (se != m_track->seq_end()) {
       m_drag_beat = se->start;
       m_drag_pattern = se->pattern_id;
-      m_track->set_seq_entry_length(se, beat - se->start);
+      m_track->set_seq_entry_length(se, beat - se->start + 1);
       update();
     }
     return true;

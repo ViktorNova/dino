@@ -782,7 +782,6 @@ namespace Dino {
 	  ((step + 1) / double(sd->steps) - off_d >= from)){
 	event = (*sd->offs)[step];
 	while (event) {
-	  cerr<<"note off from dino"<<endl;
 	  unsigned char* data = 
 	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 
 			   event->get_size());

@@ -18,12 +18,13 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ****************************************************************************/
 
+#include <cassert>
 #include <cstdio>
 #include <iostream>
-#include <cassert>
 
 #include "debug.hpp"
 #include "deleter.hpp"
+#include "midibuffer.hpp"
 #include "pattern.hpp"
 #include "track.hpp"
 
@@ -603,8 +604,15 @@ namespace Dino {
 			      se->length, m_channel);
 	beat += sequence[beat]->start + sequence[beat]->length - beat;
       }
-      else
+      else {
+	unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+	unsigned char* data = buffer.reserve(beat, 3);
+	if (data) {
+	  memcpy(data, all_notes_off, 3);
+	  data[0] |= (unsigned char)m_channel;
+	}
 	++beat;
+      }
     }
 
   }

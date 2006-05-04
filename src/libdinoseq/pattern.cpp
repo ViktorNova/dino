@@ -717,8 +717,9 @@ namespace Dino {
   }
 
 
-  void Pattern::sequence(MIDIBuffer& buffer, double from, 
-			 double to, double offset, int channel) const {
+  void Pattern::sequence(MIDIBuffer& buffer, double from, double to, 
+			 double offset, unsigned int pattern_length, 
+			 int channel) const {
     unsigned long cc_steps = 0;
     
     // need to copy this because the editing thread might change it
@@ -727,7 +728,7 @@ namespace Dino {
     from = from < 0 ? 0 : from;
     unsigned start = unsigned(floor(from * sd->steps));
     unsigned end = unsigned(ceil(to * sd->steps));
-    end = (end > sd->length * sd->steps ? sd->length * sd->steps : end);
+    end = (end > pattern_length * sd->steps ? pattern_length * sd->steps : end);
     double off_d = 0.001;
     double cc_pos = from;
     
@@ -790,6 +791,18 @@ namespace Dino {
 	  }
 	  event = event->get_next();
 	}
+	
+	// write all notes off if this is the end of the sequence entry
+	if (step == pattern_length * sd->steps - 1) {
+	  unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+	  unsigned char* data = 
+	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 3);
+	  if (data) {
+	    memcpy(data, all_notes_off, 3);
+	    data[0] |= (unsigned char)channel;
+	  }
+	}
+
       }
       
     }

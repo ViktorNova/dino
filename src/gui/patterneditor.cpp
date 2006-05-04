@@ -286,8 +286,10 @@ void PatternEditor::set_active_pattern(int pattern) {
   if (pattern == m_active_pattern)
     return;
   
-  m_active_pattern = pattern;
   Song::TrackIterator t = m_song->tracks_find(m_active_track);
+  if (t == m_song->tracks_end())
+    return;
+  
   Track::PatternIterator p = t->pat_find(m_active_pattern);
   
   // update connections

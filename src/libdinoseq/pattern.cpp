@@ -390,9 +390,9 @@ namespace Dino {
 
     
     // create the new objects
-    NoteEvent* note_on = new NoteEvent(MIDIEvent::NoteOn, step, key, velocity);
+    NoteEvent* note_on = new NoteEvent(NoteEvent::NoteOn, step, key, velocity);
     NoteEvent* note_off = 
-      new NoteEvent(MIDIEvent::NoteOff, step + new_length - 1, key, 0);
+      new NoteEvent(NoteEvent::NoteOff, step + new_length - 1, key, 0);
     Note* note = new Note(note_on, note_off);
     note_on->set_note(note);
     note_off->set_note(note);

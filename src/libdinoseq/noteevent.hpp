@@ -23,8 +23,6 @@
 #ifndef NOTEEVENT_HPP
 #define NOTEEVENT_HPP
 
-#include "midievent.hpp"
-
 
 namespace Dino {
   
@@ -38,7 +36,12 @@ namespace Dino {
       and other related information. */
   class NoteEvent {
   public:
-  
+    
+    enum {
+      NoteOn = 0x90,
+      NoteOff = 0x80
+    };
+    
     NoteEvent(unsigned char type, int stp, int val, int vel);
 
     /** Return the second data byte of this event. For a note event this will

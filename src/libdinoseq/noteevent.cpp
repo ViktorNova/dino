@@ -30,21 +30,19 @@ namespace Dino {
 
 
   NoteEvent::NoteEvent(unsigned char type, int stp, int val, int vel) 
-    : MIDIEvent(type, val, vel),
-      m_step(stp), 
-      m_previous(0) {
-    
+    : m_step(stp), 
+      m_previous(0),
+      m_next(0),
+      m_note(0) {
+    assert(val >= 0);
+    assert(vel >= 0);
+    assert(val < 128);
+    assert(vel < 128);
+    m_data[0] = type;
+    m_data[1] = val;
+    m_data[2] = vel;
   }
   
-  
-  NoteEvent::NoteEvent(unsigned char type, int stp, unsigned char data1, 
-		       unsigned char data2) 
-    : MIDIEvent(type, data1, data2),
-      m_step(stp),
-      m_previous(0) {
-      
-  }
-   
   
   unsigned char NoteEvent::get_key() const {
     return m_data[1];
@@ -67,12 +65,17 @@ namespace Dino {
 
 
   NoteEvent* NoteEvent::get_next() const {
-    return static_cast<NoteEvent*>(MIDIEvent::get_next());
+    return m_next;
   }
   
 
   Note* NoteEvent::get_note() {
     return m_note;
+  }
+
+
+  const unsigned char* NoteEvent::get_data() const {
+    return m_data;
   }
 
   
@@ -100,4 +103,10 @@ namespace Dino {
     m_note = note;
   }
 
+
+  void NoteEvent::set_next(NoteEvent* next) {
+    m_next = next;
+  }
+
+  
 }

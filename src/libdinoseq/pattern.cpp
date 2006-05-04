@@ -738,9 +738,9 @@ namespace Dino {
       if (step / double(sd->steps) >= from) {
 	while (event) {
 	  unsigned char* data = buffer.reserve(offset+ step / double(sd->steps),
-					       event->get_size());
+					       3);
 	  if (data) {
-	    memcpy(data, event->get_data(), event->get_size());
+	    memcpy(data, event->get_data(), 3);
 	    data[0] |= (unsigned char)channel;
 	  }
 	  event = event->get_next();
@@ -783,10 +783,9 @@ namespace Dino {
 	event = (*sd->offs)[step];
 	while (event) {
 	  unsigned char* data = 
-	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 
-			   event->get_size());
+	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 3);
 	  if (data) {
-	    memcpy(data, event->get_data(), event->get_size());
+	    memcpy(data, event->get_data(), 3);
 	    data[0] |= (unsigned char)channel;
 	  }
 	  event = event->get_next();

@@ -36,12 +36,10 @@ namespace Dino {
       information about the type of event and the data associated
       with the event, as well as where in the Pattern the event appears
       and other related information. */
-  class NoteEvent : public MIDIEvent {
+  class NoteEvent {
   public:
   
     NoteEvent(unsigned char type, int stp, int val, int vel);
-    NoteEvent(unsigned char type, int stp, unsigned char data1, 
-	      unsigned char data2);
 
     /** Return the second data byte of this event. For a note event this will
 	be the MIDI note number, between 0 and 127. */
@@ -59,6 +57,8 @@ namespace Dino {
     NoteEvent* get_next() const;
     /** Return a pointer to the Note object that owns this event. */
     Note* get_note();
+    /** Return the MIDI data for this event. */
+    const unsigned char* get_data() const;
     
     /** Set the second byte of the event. For note events this is the MIDI
 	note number (from 0 to 127). */
@@ -72,6 +72,8 @@ namespace Dino {
     void set_previous(NoteEvent* event);
     /** Set the pointer to the Note object that owns this event. */
     void set_note(Note* note);
+    /** Set the pointer to next event at the same pattern step. */
+    void set_next(NoteEvent* next);
     
   protected:
     
@@ -79,8 +81,12 @@ namespace Dino {
     unsigned int m_step;
     /** A pointer to the previous event at the same pattern step. */
     NoteEvent* m_previous;
+    /** A pointer to next event at the same pattern step. */
+    NoteEvent* m_next;
     /** The Note object that owns this event. */
     Note* m_note;
+    
+    unsigned char m_data[4];
   };
 
 

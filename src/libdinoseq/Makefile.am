@@ -8,7 +8,6 @@ libdinoseq_la_SOURCES = \
 	deleter.hpp \
 	interpolatedevent.cpp interpolatedevent.hpp \
 	midibuffer.cpp midibuffer.hpp \
-	midievent.cpp midievent.hpp \
 	note.cpp note.hpp \
 	notecollection.cpp notecollection.hpp \
 	noteevent.cpp noteevent.hpp \

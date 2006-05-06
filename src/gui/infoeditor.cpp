@@ -24,21 +24,30 @@
 #include "song.hpp"
 
 
-using namespace Gnome::Glade;
 using namespace Glib;
 using namespace Gtk;
 using namespace sigc;
 using namespace Dino;
 
 
-InfoEditor::InfoEditor(BaseObjectType* cobject, 
-		       const Glib::RefPtr<Gnome::Glade::Xml>& xml)
-  : Gtk::Table(cobject),
-    m_song(0) {
-
-  m_ent_title = w<Entry>(xml, "ent_title");
-  m_ent_author = w<Entry>(xml, "ent_author");
-  m_text_info = w<TextView>(xml, "text_info");
+InfoEditor::InfoEditor() 
+  : Table(3, 2, false) {
+  m_ent_title = manage(new Entry);
+  m_ent_author = manage(new Entry);
+  m_text_info = manage(new TextView);
+  attach(*manage(new Label("Title:", 0.0f, 0.5f)), 0, 1, 0, 1, FILL, FILL);
+  attach(*m_ent_title, 1, 2, 0, 1, FILL|EXPAND, FILL);
+  attach(*manage(new Label("Author:", 0.0f, 0.5f)), 0, 1, 1, 2, FILL, FILL);
+  attach(*m_ent_author, 1, 2, 1, 2, FILL|EXPAND, FILL);
+  attach(*manage(new Label("Comment:", 0.0f, 0.0f)), 0, 1, 2, 3, FILL);
+  ScrolledWindow* scw = manage(new ScrolledWindow);
+  scw->set_policy(POLICY_ALWAYS, POLICY_ALWAYS);
+  scw->add(*m_text_info);
+  scw->set_shadow_type(SHADOW_IN);
+  attach(*scw, 1, 2, 2, 3);
+  set_col_spacings(5);
+  set_row_spacings(5);
+  set_border_width(5);
 }
 
 

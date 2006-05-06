@@ -76,15 +76,17 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
 				"<larsl@users.sourceforge.net>");
   m_about_dialog->set_version(PACKAGE_VERSION);
   
+  Notebook* nb = w<Notebook>(xml, "main_notebook");
   m_pe = wd<PatternEditor>(xml, "patternVBox");
   m_pe->set_song(&m_song);
   m_se = wd<SequenceEditor>(xml, "arrangementVBox");
   m_se->set_song(&m_song);
   m_se->set_sequencer(&m_seq);
-  m_ie = wd<InfoEditor>(xml, "table1");
+  m_ie = manage(new InfoEditor);
   m_ie->set_song(&m_song);
+  nb->append_page(*m_ie, "Information");
   
-  w<Notebook>(xml, "main_notebook")->signal_switch_page().
+  nb->signal_switch_page().
     connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
   
   init_menus(xml);

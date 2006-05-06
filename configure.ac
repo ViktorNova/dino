@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 
 # Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.3.2)
+AC_INIT(dino, 0.3.3)
 AC_CONFIG_HEADERS([src/config.hpp])
 AC_DEFINE([CR_YEAR], ["2006"], [The copyright year])
 

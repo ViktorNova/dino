@@ -74,7 +74,8 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   m_about_dialog = w<AboutDialog>(xml, "dlg_about");
   m_about_dialog->set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
 				"<larsl@users.sourceforge.net>");
-
+  m_about_dialog->set_version(PACKAGE_VERSION);
+  
   m_pe = wd<PatternEditor>(xml, "patternVBox");
   m_pe->set_song(&m_song);
   m_se = wd<SequenceEditor>(xml, "arrangementVBox");

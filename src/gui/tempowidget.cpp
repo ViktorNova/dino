@@ -177,7 +177,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     
   case 2: {
     Song::TempoIterator iter = m_song->tempo_find(beat);
-    if (iter != m_song->tempo_end()) {
+    if (iter != m_song->tempo_end() && iter->beat == beat) {
       m_active_tempo = &*iter;
       m_drag_start_y = int(event->y);
       m_editing_bpm = int(m_active_tempo->bpm);
@@ -190,7 +190,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     
   case 3:
     Song::TempoIterator iter = m_song->tempo_find(beat);
-    if (iter != m_song->tempo_end())
+    if (iter != m_song->tempo_end() && iter->beat == beat)
       m_song->remove_tempo_change(iter);
     return true;
   } 

@@ -23,17 +23,30 @@
 
 using namespace Gtk;
 using namespace Glib;
-using namespace Gnome::Glade;
 
 
-PatternDialog::PatternDialog(BaseObjectType* obj, const RefPtr<Xml>& xml) 
-  : Dialog(obj) {
-  m_ent_name = dynamic_cast<Entry*>(xml->get_widget("dlgpat_ent_name"));
-  m_sbn_length =dynamic_cast<SpinButton*>(xml->get_widget("dlgpat_sbn_length"));
-  m_sbn_steps = dynamic_cast<SpinButton*>(xml->get_widget("dlgpat_sbn_steps"));
-  manage(m_ent_name);
-  manage(m_sbn_length);
-  manage(m_sbn_steps);
+PatternDialog::PatternDialog() {
+  set_title("Pattern properties");
+  m_ent_name = manage(new Entry);
+  m_sbn_length = manage(new SpinButton);
+  m_sbn_length->set_range(1, 10000);
+  m_sbn_length->set_increments(1, 10);
+  m_sbn_steps = manage(new SpinButton);
+  m_sbn_steps->set_range(1, 10000);
+  m_sbn_steps->set_increments(1, 10);
+  Table* table = manage(new Table(3, 2));
+  table->set_border_width(5);
+  table->set_row_spacings(5);
+  table->set_col_spacings(5);
+  table->attach(*manage(new Label("Pattern name:")), 0, 1, 0, 1);
+  table->attach(*manage(new Label("Pattern length (beats):")), 0, 1, 1, 2);
+  table->attach(*manage(new Label("Note steps per beat:")), 0, 1, 2, 3);
+  table->attach(*m_ent_name, 1, 2, 0, 1);
+  table->attach(*m_sbn_length, 1, 2, 1, 2);
+  table->attach(*m_sbn_steps, 1, 2, 2, 3);
+  get_vbox()->pack_start(*table);
+  add_button(Stock::CANCEL, RESPONSE_CANCEL);
+  add_button(Stock::OK, RESPONSE_OK);
 }
 
 

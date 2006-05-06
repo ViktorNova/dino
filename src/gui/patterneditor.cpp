@@ -102,10 +102,8 @@ PatternEditor::PatternEditor(BaseObjectType* cobject,
   m_ne.set_vadjustment(scwNoteEditor->get_vadjustment());
 
   // get the dialogs
-  m_dlg_pattern = xml->get_widget_derived("dlg_pattern_properties", 
-					  m_dlg_pattern);
-  m_dlg_controller = xml->get_widget_derived("dlg_controller_properties",
-					     m_dlg_controller);
+  m_dlg_pattern = new PatternDialog;
+  m_dlg_controller = new ControllerDialog;
   
   // the toolbuttons
   std::map<string, void (PatternEditor::*)(void)> toolSlots;

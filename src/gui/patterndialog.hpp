@@ -22,7 +22,6 @@
 #define PATTERNDIALOG_HPP
 
 #include <gtkmm.h>
-#include <libglademm.h>
 
 #include "singletextcombo.hpp"
 
@@ -30,8 +29,7 @@
 class PatternDialog : public Gtk::Dialog {
 public:
   
-  PatternDialog(BaseObjectType* obj, 
-		const Glib::RefPtr<Gnome::Glade::Xml>& xml);
+  PatternDialog();
   
   std::string get_name() const;
   int get_length() const;

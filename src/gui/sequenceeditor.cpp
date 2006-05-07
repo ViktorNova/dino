@@ -50,7 +50,12 @@ public:
     m_plif = &plif;
   }
   
-  ~SequenceEditorPlugin() { if (m_plif) m_plif->remove_page(*m_se); }
+  ~SequenceEditorPlugin() { 
+    if (m_plif) {
+      m_plif->remove_page(*m_se); 
+      delete m_se;
+    }
+  }
   
 private:
   

@@ -16,7 +16,6 @@ PluginInterfaceImplementation(DinoGUI& gui, Dino::Song& song,
 
 void PluginInterfaceImplementation::add_page(const std::string& label, 
 					     GUIPage& widget) {
-  std::cerr<<"Trying to add page \""<<label<<"\""<<endl;
   m_gui.add_page(label, widget);
 }
   

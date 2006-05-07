@@ -56,7 +56,9 @@ using namespace Dino;
 
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_seq("Dino", m_song) {
+  : m_seq("Dino", m_song),
+    m_plif(*this, m_song, m_seq),
+    m_plib(m_plif) {
   
   if (!m_seq.is_valid()) {
     MessageDialog dlg("Could not initialise the sequencer! You will not be "
@@ -71,31 +73,20 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   }
   
   m_window = w<Gtk::Window>(xml, "main_window");
+  
+  // initialise the "About" dialog
   m_about_dialog = w<AboutDialog>(xml, "dlg_about");
   m_about_dialog->set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
 				"<larsl@users.sourceforge.net>");
   m_about_dialog->set_version(PACKAGE_VERSION);
   
   m_nb = w<Notebook>(xml, "main_notebook");
-  m_pe = manage(new PatternEditor);
-  m_pe->set_song(&m_song);
-  m_nb->append_page(*m_pe, "Patterns");
-  
-  m_nb->signal_switch_page().
-    connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
   
   init_menus(xml);
-  
-  PluginInterfaceImplementation plif(*this, m_song, m_seq);
-  Glib::Module module("src/gui/sequenceeditor.la");
-  if (!module)
-    dbg0<<"Could not load plugin: "<<Module::get_last_error()<<endl;
-  void* plg;
-  if (!module.get_symbol("dino_plugin", plg))
-    dbg0<<"Could not find symbol \"dino_plugin\""<<endl;
-  dbg1<<"Loaded plugin \""<<((Plugin*)plg)->get_name()<<"\""<<endl;
-  ((Plugin*)plg)->initialise(plif);
-  module.make_resident();
+
+  PluginLibrary::iterator iter;
+  for (iter = m_plib.begin(); iter != m_plib.end(); ++iter)
+    m_plib.load_plugin(iter);
   
   reset_gui();
   
@@ -151,27 +142,27 @@ void DinoGUI::slot_file_quit() {
 
 
 void DinoGUI::slot_edit_cut() {
-  m_pe->cut_selection();
+  //m_pe->cut_selection();
 }
 
 
 void DinoGUI::slot_edit_copy() {
-  m_pe->copy_selection();
+  //m_pe->copy_selection();
 }
 
 
 void DinoGUI::slot_edit_paste() {
-  m_pe->paste();
+  //m_pe->paste();
 }
 
 
 void DinoGUI::slot_edit_delete() {
-  m_pe->delete_selection();
+  //m_pe->delete_selection();
 }
 
 
 void DinoGUI::slot_edit_select_all() {
-  m_pe->select_all();
+  //m_pe->select_all();
 }
 
 
@@ -198,7 +189,10 @@ void DinoGUI::slot_help_about_dino() {
 
 
 void DinoGUI::reset_gui() {
-  m_pe->reset_gui();
+  std::list<Widget*> pages = m_nb->get_children();
+  std::list<Widget*>::iterator iter;
+  for (iter = pages.begin(); iter != pages.end(); ++iter)
+    static_cast<GUIPage*>(*iter)->reset_gui();
 }
 
 

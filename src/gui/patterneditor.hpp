@@ -27,6 +27,7 @@
 #include "debug.hpp"
 #include "octavelabel.hpp"
 #include "noteeditor.hpp"
+#include "plugininterface.hpp"
 #include "ruler.hpp"
 #include "singletextcombo.hpp"
 
@@ -39,12 +40,11 @@ class PatternDialog;
 class ControllerDialog;
 
 
-class PatternEditor : public Gtk::VBox {
+class PatternEditor : public GUIPage {
 public:
   
-  PatternEditor();
+  PatternEditor(Dino::Song& song);
   
-  void set_song(Dino::Song* song);
   void reset_gui();
   
   void cut_selection();
@@ -102,7 +102,7 @@ protected:
   int m_active_pattern;
   long m_active_controller;
 
-  Dino::Song* m_song;
+  Dino::Song& m_song;
 };
 
 

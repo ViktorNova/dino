@@ -4,10 +4,11 @@
 AC_PREREQ(2.59)
 
 # Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.3.8)
+AC_INIT(dino, 0.3.9)
 AC_CONFIG_HEADERS([src/config.hpp])
 AC_DEFINE([CR_YEAR], ["2006"], [The copyright year])
 
+AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src/gui/main.cpp])
 AM_INIT_AUTOMAKE
@@ -17,6 +18,7 @@ AC_PROG_CXX
 
 # Checks for libraries.
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4 >= 2.4.1)
+PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.6.4)
 PKG_CHECK_MODULES(LIBXMLPP, libxml++-2.6 >= 2.6.1)
 PKG_CHECK_MODULES(JACK, jack >= 0.99.0)
 PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.0)

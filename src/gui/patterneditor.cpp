@@ -33,13 +33,43 @@ using namespace Gtk;
 using namespace sigc;
 
 
-PatternEditor::PatternEditor()
+class PatternEditorPlugin : public Plugin {
+public:
+  
+  PatternEditorPlugin() : m_pe(0), m_plif(0) { }
+  
+  string get_name() const { return "Pattern editor"; }
+  
+  void initialise(PluginInterface& plif) {
+    m_pe = manage(new PatternEditor(plif.get_song()));
+    plif.add_page("Patterns", *m_pe);
+    m_plif = &plif;
+  }
+  
+  ~PatternEditorPlugin() { 
+    if (m_plif) {
+      m_plif->remove_page(*m_pe); 
+      delete m_pe;
+    }
+  }
+  
+private:
+  
+  PatternEditor* m_pe;
+  PluginInterface* m_plif;
+  
+} dino_plugin;
+
+
+PatternEditor::PatternEditor(Song& song)
   : m_octave_label(20, 8),
     m_active_track(-1),
     m_active_pattern(-1),
     m_active_controller(-1),
-    m_song(0) {
-
+    m_song(song) {
+  
+  VBox* v = manage(new VBox);
+  
   // get all the widgets from the glade file
   Scrollbar* hscroll = manage(new HScrollbar);
   Scrollbar* vscroll = manage(new VScrollbar);
@@ -47,12 +77,12 @@ PatternEditor::PatternEditor()
   // add toolbar
   Toolbar* tbar = manage(new Toolbar);
   tbar->set_toolbar_style(TOOLBAR_ICONS);
-  pack_start(*tbar, false, true);
+  v->pack_start(*tbar, false, true);
   
   Table* table = manage(new Table(6, 3));
   table->set_row_spacings(2);
   table->set_col_spacings(2);
-  pack_start(*table);
+  v->pack_start(*table);
   
   // add track and pattern combos
   HBox* cb_box = manage(new HBox);
@@ -141,17 +171,16 @@ PatternEditor::PatternEditor()
   m_tbn_add_controller->set_sensitive(false);
   m_tbn_delete_controller->set_sensitive(false);
   
-}
-
-
-void PatternEditor::set_song(Song* song) {
-  m_song = song;
-  
-  m_pattern_ruler.set_song(song);
+  // connect to song
+  m_pattern_ruler.set_song(&song);
   slot<void> update_t_combo = 
     mem_fun(*this, &PatternEditor::update_track_combo);
-  m_song->signal_track_added.connect(sigc::hide(update_t_combo));
-  m_song->signal_track_removed.connect(sigc::hide(update_t_combo));
+  m_song.signal_track_added.connect(sigc::hide(update_t_combo));
+  m_song.signal_track_removed.connect(sigc::hide(update_t_combo));
+  
+  pack_start(*v);
+  
+  reset_gui();
 }
 
 
@@ -192,10 +221,10 @@ void PatternEditor::update_track_combo() {
   int oldActive = m_cmb_track.get_active_id();
   m_cmb_track.clear();
   int newActive = m_active_track;
-  if (m_song->get_number_of_tracks() > 0) {
+  if (m_song.get_number_of_tracks() > 0) {
     char tmp[10];
     Song::TrackIterator iter;
-    for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
+    for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
       sprintf(tmp, "%03d ", iter->get_id());
       m_cmb_track.append_text(string(tmp) + iter->get_name(), 
 			      iter->get_id());
@@ -220,7 +249,7 @@ void PatternEditor::update_pattern_combo() {
   m_cmb_pattern.clear();
   int trackID = m_cmb_track.get_active_id();
   if (trackID >= 0) {
-    Song::ConstTrackIterator trk = m_song->tracks_find(trackID);
+    Song::ConstTrackIterator trk = m_song.tracks_find(trackID);
     if (trk->pat_find(newActive) == trk->pat_end())
       newActive = -1;
     Track::ConstPatternIterator iter;
@@ -245,8 +274,8 @@ void PatternEditor::update_pattern_combo() {
 void PatternEditor::update_controller_combo() {
   m_cmb_controller.clear();
   long new_active = m_active_controller;
-  Song::TrackIterator t_iter = m_song->tracks_find(m_active_track);
-  if (t_iter != m_song->tracks_end()) {
+  Song::TrackIterator t_iter = m_song.tracks_find(m_active_track);
+  if (t_iter != m_song.tracks_end()) {
     Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
     if (p_iter != t_iter->pat_end()) {
       Pattern::ControllerIterator iter;
@@ -285,7 +314,7 @@ void PatternEditor::set_active_track(int track) {
   m_conn_pat_added.disconnect();
   m_conn_pat_removed.disconnect();
   if (m_active_track != -1) {
-    Song::TrackIterator t = m_song->tracks_find(m_active_track);
+    Song::TrackIterator t = m_song.tracks_find(m_active_track);
     m_conn_pat_added = t->signal_pattern_added.
       connect(mem_fun(*this, &PatternEditor::pattern_added));
     m_conn_pat_removed = t->signal_pattern_removed.
@@ -304,8 +333,8 @@ void PatternEditor::set_active_pattern(int pattern) {
     return;
   
   m_active_pattern = pattern;
-  Song::TrackIterator t = m_song->tracks_find(m_active_track);
-  if (t == m_song->tracks_end())
+  Song::TrackIterator t = m_song.tracks_find(m_active_track);
+  if (t == m_song.tracks_end())
     return;
   Track::PatternIterator p = t->pat_find(m_active_pattern);
   
@@ -334,8 +363,8 @@ void PatternEditor::set_active_pattern(int pattern) {
 void PatternEditor::set_active_controller(long controller) {
   m_active_controller = controller;
   
-  Song::TrackIterator t = m_song->tracks_find(m_active_track);
-  if (t == m_song->tracks_end()) {
+  Song::TrackIterator t = m_song.tracks_find(m_active_track);
+  if (t == m_song.tracks_end()) {
     m_cce.set_controller(0, make_invalid());
     return;
   }
@@ -365,7 +394,7 @@ void PatternEditor::add_controller() {
 	min = -8192;
 	max = 8191;
       }
-      Track::PatternIterator iter = m_song->tracks_find(m_active_track)->
+      Track::PatternIterator iter = m_song.tracks_find(m_active_track)->
 	pat_find(m_active_pattern);
       if (iter->ctrls_find(controller) != iter->ctrls_end()) {
 	MessageDialog dlg("That controller already exists!", 
@@ -387,7 +416,7 @@ void PatternEditor::add_controller() {
 void PatternEditor::delete_controller() {
   if (m_active_track >= 0 && m_active_pattern >= 0 && 
       m_active_controller >= 0) {
-    Pattern* pat = &*m_song->tracks_find(m_active_track)->
+    Pattern* pat = &*m_song.tracks_find(m_active_track)->
       pat_find(m_active_pattern);
     pat->remove_controller(pat->ctrls_find(m_active_controller));
   }
@@ -402,7 +431,7 @@ void PatternEditor::add_pattern() {
     m_dlg_pattern->refocus();
     m_dlg_pattern->show_all();
     if (m_dlg_pattern->run() == RESPONSE_OK) {
-      Track::PatternIterator iter = m_song->tracks_find(m_active_track)->
+      Track::PatternIterator iter = m_song.tracks_find(m_active_track)->
 	add_pattern(m_dlg_pattern->get_name(),
 		    m_dlg_pattern->get_length(),
 		    m_dlg_pattern->get_steps());
@@ -416,7 +445,7 @@ void PatternEditor::add_pattern() {
 void PatternEditor::delete_pattern() {
   if (m_active_track < 0 || m_active_pattern < 0)
     return;
-  Track& trk = *(m_song->tracks_find(m_active_track));
+  Track& trk = *(m_song.tracks_find(m_active_track));
   trk.remove_pattern(m_active_pattern);
 }
 
@@ -424,15 +453,15 @@ void PatternEditor::delete_pattern() {
 void PatternEditor::duplicate_pattern() {
   if (m_active_track < 0 || m_active_pattern < 0)
     return;
-  Track& trk = *(m_song->tracks_find(m_active_track));
+  Track& trk = *(m_song.tracks_find(m_active_track));
   trk.duplicate_pattern(trk.pat_find(m_active_pattern));
 }
 
 
 void PatternEditor::edit_pattern_properties() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
-    Song::TrackIterator iter = m_song->tracks_find(m_active_track);
-    assert(iter != m_song->tracks_end());
+    Song::TrackIterator iter = m_song.tracks_find(m_active_track);
+    assert(iter != m_song.tracks_end());
     Track::PatternIterator pat = iter->pat_find(m_active_pattern);
     assert(pat != iter->pat_end());
 
@@ -453,8 +482,8 @@ void PatternEditor::edit_pattern_properties() {
 
 void PatternEditor::pattern_added(int id) {
   update_pattern_combo();
-  Song::TrackIterator iter = m_song->tracks_find(m_active_track);
-  if (iter != m_song->tracks_end()) {
+  Song::TrackIterator iter = m_song.tracks_find(m_active_track);
+  if (iter != m_song.tracks_end()) {
     iter->pat_find(id)->signal_name_changed.
       connect(sigc::hide(mem_fun(*this, &PatternEditor::update_pattern_combo)));
   }

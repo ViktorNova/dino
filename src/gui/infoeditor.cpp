@@ -39,11 +39,16 @@ public:
   
   void initialise(PluginInterface& plif) {
     m_ie = manage(new InfoEditor(plif.get_song()));
-    plif.add_page("Info editor", *m_ie);
+    plif.add_page("Information", *m_ie);
     m_plif = &plif;
   }
   
-  ~InfoEditorPlugin() { if (m_plif) m_plif->remove_page(*m_ie); }
+  ~InfoEditorPlugin() { 
+    if (m_plif) {
+      m_plif->remove_page(*m_ie); 
+      delete m_ie;
+    }
+  }
   
 private:
   

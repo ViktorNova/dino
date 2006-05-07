@@ -29,6 +29,8 @@
 #include "debug.hpp"
 #include "octavelabel.hpp"
 #include "patterneditor.hpp"
+#include "plugininterfaceimplementation.hpp"
+#include "pluginlibrary.hpp"
 #include "ringbuffer.hpp"
 #include "ruler.hpp"
 #include "sequencer.hpp"
@@ -114,13 +116,15 @@ private:
   std::map<std::string, Gtk::MenuItem*> m_menuitems;
   
   Gtk::Notebook* m_nb;
-  PatternEditor* m_pe;
   
   Gtk::AboutDialog* m_about_dialog;
   
   Dino::Sequencer m_seq;
   
   lash_client_t* m_lash_client;
+  
+  PluginInterfaceImplementation m_plif;
+  PluginLibrary m_plib;
 };
 
 

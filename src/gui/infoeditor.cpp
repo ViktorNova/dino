@@ -53,7 +53,6 @@ private:
 } dino_plugin;
 
 
-
 InfoEditor::InfoEditor(Dino::Song& song)
   : m_song(song) {
   

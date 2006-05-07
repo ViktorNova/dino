@@ -37,12 +37,37 @@ using namespace sigc;
 using namespace Dino;
 
 
-SequenceEditor::SequenceEditor()
+class SequenceEditorPlugin : public Plugin {
+public:
+  
+  SequenceEditorPlugin() : m_se(0), m_plif(0) { }
+  
+  string get_name() const { return "Sequence editor"; }
+  
+  void initialise(PluginInterface& plif) {
+    m_se = manage(new SequenceEditor(plif.get_song(), plif.get_sequencer()));
+    plif.add_page("Arrangement", *m_se);
+    m_plif = &plif;
+  }
+  
+  ~SequenceEditorPlugin() { if (m_plif) m_plif->remove_page(*m_se); }
+  
+private:
+  
+  SequenceEditor* m_se;
+  PluginInterface* m_plif;
+  
+} dino_plugin;
+
+
+SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
   : m_sequence_ruler(32, 1, 4, 20, 20),
     m_dlg_track(0),
     m_active_track(-1),
-    m_song(0),
-    m_seq(0) {
+    m_song(song),
+    m_seq(seq) {
+  
+  VBox* v = manage(new VBox);
   
   // initialise the toolbar
   Toolbar* tbar = manage(new Toolbar);
@@ -70,11 +95,11 @@ SequenceEditor::SequenceEditor()
   ToolItem* ti = manage(new ToolItem);
   ti->add(*thbx);
   tbar->append(*ti);
+  v->pack_start(*tbar, false, true);
   
   // add the ruler
-  pack_start(*tbar, false, true);
   Table* table = manage(new Table(3, 3));
-  pack_start(*table);
+  v->pack_start(*table);
   EvilScrolledWindow* scw_ruler = manage(new EvilScrolledWindow(true, false));
   scw_ruler->add(m_sequence_ruler);
   table->attach(*scw_ruler, 1, 2, 0, 1, FILL, FILL);
@@ -105,69 +130,67 @@ SequenceEditor::SequenceEditor()
   vscroll->set_adjustment(*scw_trackwidgets->get_vadjustment());
   scw_track_labels->set_vadjustment(*scw_trackwidgets->get_vadjustment());
   
+  pack_start(*v);
+  
   m_dlg_track = new TrackDialog;
-}
-
-
-void SequenceEditor::set_song(Song* song) {
-  m_song = song;
+  
+  // connect to the song
   slot<void, int> update_track_view = 
     sigc::hide(mem_fun(*this, &SequenceEditor::reset_gui));
-  m_song->signal_track_added.connect(update_track_view);
-  m_song->signal_track_removed.connect(update_track_view);
-  m_song->signal_length_changed.connect(update_track_view);
-  m_song->signal_length_changed.connect(mem_fun(*m_spb_song_length,
+  m_song.signal_track_added.connect(update_track_view);
+  m_song.signal_track_removed.connect(update_track_view);
+  m_song.signal_length_changed.connect(update_track_view);
+  m_song.signal_length_changed.connect(mem_fun(*m_spb_song_length,
   						&SpinButton::set_value));
   m_spb_song_length->signal_value_changed().
-    connect(compose(mem_fun(*m_song, &Song::set_length),
+    connect(compose(mem_fun(m_song, &Song::set_length),
   		    mem_fun(*m_spb_song_length, &SpinButton::get_value_as_int)));
-  m_song->signal_length_changed.
+  m_song.signal_length_changed.
     connect(mem_fun(m_sequence_ruler, &::Ruler::set_length));
-}
 
-
-void SequenceEditor::set_sequencer(Dino::Sequencer* seq) {
-  m_seq = seq;
-  m_seq->signal_instruments_changed.
-    connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), m_seq));
-  m_dlg_track->update_ports(m_seq);
+  // connect to sequencer
+  m_seq.signal_instruments_changed.
+    connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
+  m_dlg_track->update_ports(&m_seq);
   m_sequence_ruler.signal_clicked.
-    connect(sigc::hide(mem_fun(*m_seq, &Sequencer::go_to_beat)));
+    connect(sigc::hide(mem_fun(m_seq, &Sequencer::go_to_beat)));
+  
+  reset_gui();
 }
 
 
 void SequenceEditor::reset_gui() {
   
-  m_spb_song_length->set_value(m_song->get_length());
+  m_spb_song_length->set_value(m_song.get_length());
   
   m_vbx_track_editor->children().clear();
   m_vbx_track_labels->children().clear();
   
-  TempoWidget* tmpw = manage(new TempoWidget(m_song));
+  TempoWidget* tmpw = manage(new TempoWidget(&m_song));
   m_vbx_track_editor->pack_start(*tmpw, PACK_SHRINK);
-  TempoLabel* tmpl = manage(new TempoLabel(m_song));
+  TempoLabel* tmpl = manage(new TempoLabel(&m_song));
   m_vbx_track_labels->pack_start(*tmpl, PACK_SHRINK);
   
   // find the new selected track
   int new_active = -1;
   Song::TrackIterator iter;
-  for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
+  for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
     new_active = iter->get_id();
     if (new_active >= m_active_track)
       break;
   }
   m_active_track = new_active;
   
-  for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
-    TrackWidget* tw = manage(new TrackWidget(m_song));
+  for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
+    TrackWidget* tw = manage(new TrackWidget(&m_song));
     tw->set_track(&*iter);
     tw->signal_clicked.
       connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
 			      iter->get_id())));
-    m_seq->signal_beat_changed.
+    m_seq.signal_beat_changed.
       connect(mem_fun(*tw, &TrackWidget::set_current_beat));
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
-    TrackLabel* tl = manage(new TrackLabel(m_song));
+    TrackLabel* tl = manage(new TrackLabel(&m_song));
     tl->set_track(iter->get_id(), &(*iter));
     tl->signal_clicked.
       connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
@@ -189,9 +212,9 @@ void SequenceEditor::add_track() {
   m_dlg_track->refocus();
   m_dlg_track->show_all();
   if (m_dlg_track->run() == RESPONSE_OK) {
-    Song::TrackIterator iter = m_song->add_track(m_dlg_track->get_name());
+    Song::TrackIterator iter = m_song.add_track(m_dlg_track->get_name());
     iter->set_channel(m_dlg_track->get_channel() - 1);
-    m_seq->set_instrument(iter->get_id(), m_dlg_track->get_port());
+    m_seq.set_instrument(iter->get_id(), m_dlg_track->get_port());
     set_active_track(iter->get_id());
   }
   m_dlg_track->hide();
@@ -200,14 +223,14 @@ void SequenceEditor::add_track() {
 
 void SequenceEditor::delete_track() {
   if (m_active_track >= 0) {
-    m_song->remove_track(m_song->tracks_find(m_active_track));
+    m_song.remove_track(m_song.tracks_find(m_active_track));
   }
 }
 
 
 void SequenceEditor::edit_track_properties() {
   if (m_active_track >= 0) {
-    Track& t = *(m_song->tracks_find(m_active_track));
+    Track& t = *(m_song.tracks_find(m_active_track));
     m_dlg_track->set_name(t.get_name());
     m_dlg_track->set_channel(t.get_channel() + 1);
     m_dlg_track->refocus();
@@ -215,7 +238,7 @@ void SequenceEditor::edit_track_properties() {
     if (m_dlg_track->run() == RESPONSE_OK) {
       t.set_name(m_dlg_track->get_name());
       t.set_channel(m_dlg_track->get_channel() - 1);
-      m_seq->set_instrument(m_active_track, m_dlg_track->get_port());
+      m_seq.set_instrument(m_active_track, m_dlg_track->get_port());
     }
   }
   m_dlg_track->hide();
@@ -223,17 +246,17 @@ void SequenceEditor::edit_track_properties() {
 
 
 void SequenceEditor::play() {
-  m_seq->play();
+  m_seq.play();
 }
 
 
 void SequenceEditor::stop() {
-  m_seq->stop();
+  m_seq.stop();
 }
 
 
 void SequenceEditor::go_to_start() {
-  m_seq->go_to_beat(0);
+  m_seq.go_to_beat(0);
 }
 
 

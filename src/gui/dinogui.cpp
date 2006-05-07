@@ -77,16 +77,9 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   m_about_dialog->set_version(PACKAGE_VERSION);
   
   m_nb = w<Notebook>(xml, "main_notebook");
-  m_se = manage(new SequenceEditor);
-  m_se->set_song(&m_song);
-  m_se->set_sequencer(&m_seq);
-  m_nb->append_page(*m_se, "Arrangement");
   m_pe = manage(new PatternEditor);
   m_pe->set_song(&m_song);
   m_nb->append_page(*m_pe, "Patterns");
-  //m_ie = manage(new InfoEditor);
-  //m_ie->set_song(&m_song);
-  //m_nb->append_page(*m_ie, "Information");
   
   m_nb->signal_switch_page().
     connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
@@ -94,7 +87,7 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   init_menus(xml);
   
   PluginInterfaceImplementation plif(*this, m_song, m_seq);
-  Glib::Module module("src/gui/infoeditor.la");
+  Glib::Module module("src/gui/sequenceeditor.la");
   if (!module)
     dbg0<<"Could not load plugin: "<<Module::get_last_error()<<endl;
   void* plg;
@@ -206,8 +199,6 @@ void DinoGUI::slot_help_about_dino() {
 
 void DinoGUI::reset_gui() {
   m_pe->reset_gui();
-  m_se->reset_gui();
-  //m_ie->reset_gui();
 }
 
 

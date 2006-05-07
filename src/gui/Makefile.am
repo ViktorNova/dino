@@ -14,19 +14,26 @@ dino_SOURCES = \
 	patterndialog.cpp patterndialog.hpp \
 	plugininterface.hpp \
 	plugininterfaceimplementation.cpp plugininterfaceimplementation.hpp \
-	pluginlibrary.cpp pluginlibrary.hpp \
+	pluginlibrary.cpp pluginlibrary.hpp
+
+dino_LDADD = @LIBGLADEMM_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LASH_LIBS@ ../libdinoseq/libdinoseq.la libdinoseq_gui.la
+
+lib_LTLIBRARIES = libdinoseq_gui.la sequenceeditor.la infoeditor.la
+
+libdinoseq_gui_la_LIBADD = @LIBGLADEMM_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LASH_LIBS@ ../libdinoseq/libdinoseq.la
+libdinoseq_gui_la_SOURCES = \
 	ruler.cpp ruler.hpp \
+	singletextcombo.cpp singletextcombo.hpp
+
+sequenceeditor_la_LDFLAGS = -module -avoid-version
+sequenceeditor_la_SOURCES = \
 	sequenceeditor.cpp sequenceeditor.hpp \
-	singletextcombo.cpp singletextcombo.hpp \
 	tempolabel.cpp tempolabel.hpp \
 	tempowidget.cpp tempowidget.hpp \
 	trackdialog.cpp trackdialog.hpp \
 	tracklabel.hpp tracklabel.cpp \
 	trackwidget.cpp trackwidget.hpp
-
-dino_LDADD = @LIBGLADEMM_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LASH_LIBS@ ../libdinoseq/libdinoseq.la
-
-lib_LTLIBRARIES = infoeditor.la
+sequenceeditor_la_LIBADD = @LIBGLADEMM_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LASH_LIBS@ ../libdinoseq/libdinoseq.la libdinoseq_gui.la
 
 infoeditor_la_LDFLAGS = -module -avoid-version
 infoeditor_la_SOURCES = infoeditor.cpp infoeditor.hpp

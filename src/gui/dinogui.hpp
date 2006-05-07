@@ -36,11 +36,7 @@
 #include "song.hpp"
 
 
-class ControllerDialog;
-//class InfoEditor;
-class PatternDialog;
 class PatternEditor;
-class SequenceEditor;
 class GUIPage;
 
 
@@ -119,8 +115,6 @@ private:
   
   Gtk::Notebook* m_nb;
   PatternEditor* m_pe;
-  SequenceEditor* m_se;
-  //InfoEditor* m_ie;
   
   Gtk::AboutDialog* m_about_dialog;
   

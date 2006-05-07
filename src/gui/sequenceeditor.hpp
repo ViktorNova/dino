@@ -25,6 +25,7 @@
 
 #include <gtkmm.h>
 
+#include "plugininterface.hpp"
 #include "debug.hpp"
 #include "ruler.hpp"
 #include "trackdialog.hpp"
@@ -35,13 +36,10 @@ namespace Dino {
 }
 
 
-class SequenceEditor : public Gtk::VBox {
+class SequenceEditor : public GUIPage {
 public:
   
-  SequenceEditor();
-  
-  void set_song(Dino::Song* song);
-  void set_sequencer(Dino::Sequencer* seq);
+  SequenceEditor(Dino::Song& song, Dino::Sequencer& seq);
   
   void reset_gui();
   
@@ -74,8 +72,8 @@ protected:
   
   int m_active_track;
   
-  Dino::Song* m_song;
-  Dino::Sequencer* m_seq;
+  Dino::Song& m_song;
+  Dino::Sequencer& m_seq;
 };
 
 

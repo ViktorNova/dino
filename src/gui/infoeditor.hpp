@@ -24,6 +24,7 @@
 #include <gtkmm.h>
 
 #include "debug.hpp"
+#include "plugininterface.hpp"
 
 
 namespace Dino {
@@ -31,12 +32,10 @@ namespace Dino {
 }
 
 
-class InfoEditor : public Gtk::Table {
+class InfoEditor : public GUIPage {
 public:
   
-  InfoEditor();
-  
-  void set_song(Dino::Song* song);
+  InfoEditor(Dino::Song& song);
   
   void reset_gui();
   
@@ -48,7 +47,7 @@ protected:
   Gtk::Entry* m_ent_author;
   Gtk::TextView* m_text_info;
   
-  Dino::Song* m_song;
+  Dino::Song& m_song;
 };
 
 

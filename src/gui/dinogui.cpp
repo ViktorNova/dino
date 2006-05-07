@@ -35,10 +35,10 @@
 #include "deleter.hpp"
 #include "dinogui.hpp"
 #include "evilscrolledwindow.hpp"
-#include "infoeditor.hpp"
 #include "pattern.hpp"
 #include "patterndialog.hpp"
 #include "patterneditor.hpp"
+#include "plugininterfaceimplementation.hpp"
 #include "ruler.hpp"
 #include "sequenceeditor.hpp"
 #include "song.hpp"
@@ -76,22 +76,34 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
 				"<larsl@users.sourceforge.net>");
   m_about_dialog->set_version(PACKAGE_VERSION);
   
-  Notebook* nb = w<Notebook>(xml, "main_notebook");
+  m_nb = w<Notebook>(xml, "main_notebook");
   m_se = manage(new SequenceEditor);
   m_se->set_song(&m_song);
   m_se->set_sequencer(&m_seq);
-  nb->append_page(*m_se, "Arrangement");
+  m_nb->append_page(*m_se, "Arrangement");
   m_pe = manage(new PatternEditor);
   m_pe->set_song(&m_song);
-  nb->append_page(*m_pe, "Patterns");
-  m_ie = manage(new InfoEditor);
-  m_ie->set_song(&m_song);
-  nb->append_page(*m_ie, "Information");
+  m_nb->append_page(*m_pe, "Patterns");
+  //m_ie = manage(new InfoEditor);
+  //m_ie->set_song(&m_song);
+  //m_nb->append_page(*m_ie, "Information");
   
-  nb->signal_switch_page().
+  m_nb->signal_switch_page().
     connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
   
   init_menus(xml);
+  
+  PluginInterfaceImplementation plif(*this, m_song, m_seq);
+  Glib::Module module("src/gui/infoeditor.la");
+  if (!module)
+    dbg0<<"Could not load plugin: "<<Module::get_last_error()<<endl;
+  void* plg;
+  if (!module.get_symbol("dino_plugin", plg))
+    dbg0<<"Could not find symbol \"dino_plugin\""<<endl;
+  dbg1<<"Loaded plugin \""<<((Plugin*)plg)->get_name()<<"\""<<endl;
+  ((Plugin*)plg)->initialise(plif);
+  module.make_resident();
+  
   reset_gui();
   
   m_window->show_all();
@@ -100,6 +112,16 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
 
 Gtk::Window* DinoGUI::get_window() {
   return m_window;
+}
+
+
+void DinoGUI::add_page(const std::string& label, GUIPage& page) {
+  m_nb->append_page(page, label);
+}
+
+
+void DinoGUI::remove_page(GUIPage& page) {
+  m_nb->remove_page(page);
 }
 
 
@@ -185,7 +207,7 @@ void DinoGUI::slot_help_about_dino() {
 void DinoGUI::reset_gui() {
   m_pe->reset_gui();
   m_se->reset_gui();
-  m_ie->reset_gui();
+  //m_ie->reset_gui();
 }
 
 

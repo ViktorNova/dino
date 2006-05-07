@@ -8,11 +8,13 @@ dino_SOURCES = \
 	controllerdialog.cpp controllerdialog.hpp \
 	dinogui.cpp dinogui.hpp \
 	evilscrolledwindow.hpp \
-	infoeditor.cpp infoeditor.hpp \
 	noteeditor.cpp noteeditor.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterneditor.cpp patterneditor.hpp \
 	patterndialog.cpp patterndialog.hpp \
+	plugininterface.hpp \
+	plugininterfaceimplementation.cpp plugininterfaceimplementation.hpp \
+	pluginlibrary.cpp pluginlibrary.hpp \
 	ruler.cpp ruler.hpp \
 	sequenceeditor.cpp sequenceeditor.hpp \
 	singletextcombo.cpp singletextcombo.hpp \
@@ -23,3 +25,9 @@ dino_SOURCES = \
 	trackwidget.cpp trackwidget.hpp
 
 dino_LDADD = @LIBGLADEMM_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LASH_LIBS@ ../libdinoseq/libdinoseq.la
+
+lib_LTLIBRARIES = infoeditor.la
+
+infoeditor_la_LDFLAGS = -module -avoid-version
+infoeditor_la_SOURCES = infoeditor.cpp infoeditor.hpp
+infoeditor_la_LIBADD = @LIBGLADEMM_LIBS@ @LIBXMLPP_LIBS@ @JACK_LIBS@ @LASH_LIBS@ ../libdinoseq/libdinoseq.la

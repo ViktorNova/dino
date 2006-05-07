@@ -37,10 +37,11 @@
 
 
 class ControllerDialog;
-class InfoEditor;
+//class InfoEditor;
 class PatternDialog;
 class PatternEditor;
 class SequenceEditor;
+class GUIPage;
 
 
 /** This is the main class. It connects our custom widgets to the rest of the
@@ -50,6 +51,9 @@ public:
   DinoGUI(int argc, char** argv, Glib::RefPtr<Gnome::Glade::Xml> xml);
   
   Gtk::Window* get_window();
+  
+  void add_page(const std::string& label, GUIPage& page);
+  void remove_page(GUIPage& page);
   
 private:
 
@@ -112,10 +116,11 @@ private:
   
   Gtk::Window* m_window;
   std::map<std::string, Gtk::MenuItem*> m_menuitems;
-
+  
+  Gtk::Notebook* m_nb;
   PatternEditor* m_pe;
   SequenceEditor* m_se;
-  InfoEditor* m_ie;
+  //InfoEditor* m_ie;
   
   Gtk::AboutDialog* m_about_dialog;
   

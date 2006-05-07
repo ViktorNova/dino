@@ -77,12 +77,13 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   m_about_dialog->set_version(PACKAGE_VERSION);
   
   Notebook* nb = w<Notebook>(xml, "main_notebook");
-  m_pe = wd<PatternEditor>(xml, "patternVBox");
-  m_pe->set_song(&m_song);
   m_se = manage(new SequenceEditor);
   m_se->set_song(&m_song);
   m_se->set_sequencer(&m_seq);
-  nb->prepend_page(*m_se, "Arrangement");
+  nb->append_page(*m_se, "Arrangement");
+  m_pe = manage(new PatternEditor);
+  m_pe->set_song(&m_song);
+  nb->append_page(*m_pe, "Patterns");
   m_ie = manage(new InfoEditor);
   m_ie->set_song(&m_song);
   nb->append_page(*m_ie, "Information");

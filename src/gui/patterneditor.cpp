@@ -29,35 +29,72 @@
 
 using namespace Dino;
 using namespace Glib;
-using namespace Gnome::Glade;
 using namespace Gtk;
 using namespace sigc;
 
 
-PatternEditor::PatternEditor(BaseObjectType* cobject, 
-				     const Glib::RefPtr<Gnome::Glade::Xml>& xml)
-  : Gtk::VBox(cobject),
-    m_octave_label(20, 8),
+PatternEditor::PatternEditor()
+  : m_octave_label(20, 8),
     m_active_track(-1),
     m_active_pattern(-1),
     m_active_controller(-1),
     m_song(0) {
 
   // get all the widgets from the glade file
-  Box* boxPatternRuler1 = w<Box>(xml, "box_pattern_ruler_1");
-  HBox* hbx_track_combo = w<HBox>(xml, "hbx_track_combo");
-  HBox* hbx_pattern_combo = w<HBox>(xml, "hbx_pattern_combo");
-  HBox* hbx_controller_combo = w<HBox>(xml, "hbx_controller_combo");
-  Scrollbar* scbHorizontal = w<Scrollbar>(xml, "scb_pattern_editor");
-  Scrollbar* scbVertical = w<Scrollbar>(xml, "scb_note_editor");
-  Box* boxNoteEditor = w<Box>(xml, "box_note_editor");
-  Box* boxCCEditor = w<Box>(xml, "box_cc_editor");
-  Box* box_octave_label = w<Box>(xml, "box_octave_label");
+  Scrollbar* hscroll = manage(new HScrollbar);
+  Scrollbar* vscroll = manage(new VScrollbar);
   
-  // add and connect the combo boxes
-  hbx_pattern_combo->pack_start(m_cmb_pattern);
-  hbx_track_combo->pack_start(m_cmb_track);
-  hbx_controller_combo->pack_start(m_cmb_controller);
+  // add toolbar
+  Toolbar* tbar = manage(new Toolbar);
+  tbar->set_toolbar_style(TOOLBAR_ICONS);
+  pack_start(*tbar, false, true);
+  
+  Table* table = manage(new Table(6, 3));
+  table->set_row_spacings(2);
+  table->set_col_spacings(2);
+  pack_start(*table);
+  
+  // add track and pattern combos
+  HBox* cb_box = manage(new HBox);
+  cb_box->set_spacing(5);
+  cb_box->pack_start(*manage(new Label("Track:")), false, false);
+  cb_box->pack_start(m_cmb_track, true, true);
+  cb_box->pack_start(*manage(new Label("Pattern:")), false, false);
+  cb_box->pack_start(m_cmb_pattern, true, true);
+  table->attach(*cb_box, 1, 5, 0, 1, FILL|EXPAND, FILL);
+  
+  // add ruler
+  EvilScrolledWindow* scw_ruler = manage(new EvilScrolledWindow(true, false));
+  scw_ruler->add(m_pattern_ruler);
+  table->attach(*scw_ruler, 1, 5, 1, 2, FILL|EXPAND, FILL);
+  
+  // add octave labels
+  EvilScrolledWindow* scw_octaves = manage(new EvilScrolledWindow(false, true));
+  scw_octaves->add(m_octave_label);
+  table->attach(*scw_octaves, 0, 1, 2, 3, FILL, FILL|EXPAND);
+  
+  // add note editor
+  EvilScrolledWindow* scw_note = manage(new EvilScrolledWindow);
+  scw_note->add(m_ne);
+  table->attach(*scw_note, 1, 5, 2, 3, FILL|EXPAND, FILL|EXPAND);
+  
+  // add CC editor
+  EvilScrolledWindow* scw_cc = manage(new EvilScrolledWindow(true, false));
+  scw_cc->add(m_cce);
+  table->attach(*scw_cc, 1, 5, 4, 5, FILL|EXPAND, FILL);
+  
+  // add controller combo
+  cb_box = manage(new HBox);
+  cb_box->set_spacing(5);
+  cb_box->pack_start(*manage(new Label("Controller:")), false, false);
+  cb_box->pack_start(m_cmb_controller, true, true);
+  table->attach(*cb_box, 1, 5, 3, 4, FILL|EXPAND, FILL);
+  
+  // add scrollbars
+  table->attach(*hscroll, 1, 5, 5, 6, FILL|EXPAND, FILL);
+  table->attach(*vscroll, 5, 6, 2, 3, FILL, FILL|EXPAND);
+
+  // connect the combo boxes
   m_cmb_track.set_sensitive(false);
   m_cmb_pattern.set_sensitive(false);
   m_cmb_controller.set_sensitive(false);
@@ -70,58 +107,40 @@ PatternEditor::PatternEditor(BaseObjectType* cobject,
   m_cmb_controller.signal_changed().
     connect(compose(mem_fun(*this, &PatternEditor::set_active_controller),
 		    mem_fun(m_cmb_controller,&SingleTextCombo::get_active_id)));
-  
-  // add the ruler
-  EvilScrolledWindow* scwPatternRuler1 = 
-    manage(new EvilScrolledWindow(true, false));
-  boxPatternRuler1->pack_start(*scwPatternRuler1);
-  scwPatternRuler1->add(m_pattern_ruler);
-  
-  // add the note editor
-  EvilScrolledWindow* scwNoteEditor = manage(new EvilScrolledWindow);
-  boxNoteEditor->pack_start(*scwNoteEditor);
-  scwNoteEditor->add(m_ne);
-  
-  // add the octave labels
-  EvilScrolledWindow* scwOctaveLabel = 
-    manage(new EvilScrolledWindow(false, true));
-  box_octave_label->pack_start(*scwOctaveLabel);
-  scwOctaveLabel->add(m_octave_label);
-  
-  // add the CC editor
-  EvilScrolledWindow* scwCCEditor = manage(new EvilScrolledWindow(true,false));
-  boxCCEditor->pack_start(*scwCCEditor);
-  scwCCEditor->add(m_cce);
-  
+
   // synchronise scrolling
-  scwPatternRuler1->set_hadjustment(scwNoteEditor->get_hadjustment());
-  scbHorizontal->set_adjustment(*scwNoteEditor->get_hadjustment());
-  scbVertical->set_adjustment(*scwNoteEditor->get_vadjustment());
-  scwCCEditor->set_hadjustment(*scwNoteEditor->get_hadjustment());
-  scwOctaveLabel->set_vadjustment(*scwNoteEditor->get_vadjustment());
-  m_ne.set_vadjustment(scwNoteEditor->get_vadjustment());
+  scw_ruler->set_hadjustment(scw_note->get_hadjustment());
+  hscroll->set_adjustment(*scw_note->get_hadjustment());
+  vscroll->set_adjustment(*scw_note->get_vadjustment());
+  scw_cc->set_hadjustment(*scw_note->get_hadjustment());
+  scw_octaves->set_vadjustment(*scw_note->get_vadjustment());
+  m_ne.set_vadjustment(scw_note->get_vadjustment());
 
   // get the dialogs
   m_dlg_pattern = new PatternDialog;
   m_dlg_controller = new ControllerDialog;
   
   // the toolbuttons
-  std::map<string, void (PatternEditor::*)(void)> toolSlots;
-  toolSlots["tbn_add_controller"] = &PatternEditor::add_controller;
-  toolSlots["tbn_delete_controller"] = &PatternEditor::delete_controller;
-  toolSlots["tbn_add_pattern"] = &PatternEditor::add_pattern;
-  toolSlots["tbn_delete_pattern"] = &PatternEditor::delete_pattern;
-  toolSlots["tbn_duplicate_pattern"] = &PatternEditor::duplicate_pattern;
-  toolSlots["tbn_set_pattern_properties"] = 
-    &PatternEditor::edit_pattern_properties;
-  std::map<string, void (PatternEditor::*)(void)>::const_iterator iter;
-  for (iter = toolSlots.begin(); iter != toolSlots.end(); ++iter) {
-    m_toolbuttons[iter->first] = w<ToolButton>(xml, iter->first);
-    m_toolbuttons[iter->first]->signal_clicked().
-      connect(mem_fun(*this, iter->second));
-    m_toolbuttons[iter->first]->set_sensitive(false);
-  }
-
+  m_tbn_add_pattern = manage(new ToolButton(*manage(new Image(Stock::ADD, ICON_SIZE_SMALL_TOOLBAR))));
+  tbar->append(*m_tbn_add_pattern, mem_fun(*this, &PatternEditor::add_pattern));
+  m_tbn_delete_pattern = manage(new ToolButton(*manage(new Image(Stock::DELETE, ICON_SIZE_SMALL_TOOLBAR))));
+  tbar->append(*m_tbn_delete_pattern, mem_fun(*this, &PatternEditor::delete_pattern));
+  m_tbn_duplicate_pattern = manage(new ToolButton(*manage(new Image(Stock::COPY, ICON_SIZE_SMALL_TOOLBAR))));
+  tbar->append(*m_tbn_duplicate_pattern, mem_fun(*this, &PatternEditor::duplicate_pattern));
+  m_tbn_set_pattern_properties = manage(new ToolButton(*manage(new Image(Stock::PROPERTIES, ICON_SIZE_SMALL_TOOLBAR))));
+  tbar->append(*m_tbn_set_pattern_properties, mem_fun(*this, &PatternEditor::edit_pattern_properties));
+  tbar->append(*manage(new SeparatorToolItem));
+  m_tbn_add_controller = manage(new ToolButton(*manage(new Image(Stock::ADD, ICON_SIZE_SMALL_TOOLBAR))));
+  tbar->append(*m_tbn_add_controller, mem_fun(*this, &PatternEditor::add_controller));
+  m_tbn_delete_controller = manage(new ToolButton(*manage(new Image(Stock::DELETE, ICON_SIZE_SMALL_TOOLBAR))));
+  tbar->append(*m_tbn_delete_controller, mem_fun(*this, &PatternEditor::delete_controller));
+  m_tbn_add_pattern->set_sensitive(false);
+  m_tbn_delete_pattern->set_sensitive(false);
+  m_tbn_duplicate_pattern->set_sensitive(false);
+  m_tbn_set_pattern_properties->set_sensitive(false);
+  m_tbn_add_controller->set_sensitive(false);
+  m_tbn_delete_controller->set_sensitive(false);
+  
 }
 
 
@@ -276,7 +295,7 @@ void PatternEditor::set_active_track(int track) {
   update_pattern_combo();
   
   bool active = (m_active_track != -1);
-  m_toolbuttons["tbn_add_pattern"]->set_sensitive(active);
+  m_tbn_add_pattern->set_sensitive(active);
 }
 
 
@@ -305,10 +324,10 @@ void PatternEditor::set_active_pattern(int pattern) {
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);
 
   bool active = (m_active_pattern != -1);
-  m_toolbuttons["tbn_delete_pattern"]->set_sensitive(active);
-  m_toolbuttons["tbn_duplicate_pattern"]->set_sensitive(active);
-  m_toolbuttons["tbn_set_pattern_properties"]->set_sensitive(active);
-  m_toolbuttons["tbn_add_controller"]->set_sensitive(active);
+  m_tbn_delete_pattern->set_sensitive(active);
+  m_tbn_duplicate_pattern->set_sensitive(active);
+  m_tbn_set_pattern_properties->set_sensitive(active);
+  m_tbn_add_controller->set_sensitive(active);
 }
 
 
@@ -330,7 +349,7 @@ void PatternEditor::set_active_controller(long controller) {
   m_cce.set_controller(&*p, m_active_controller);
   
   bool active = controller_is_set(m_active_controller);
-  m_toolbuttons["tbn_delete_controller"]->set_sensitive(active);
+  m_tbn_delete_controller->set_sensitive(active);
 }
 
   

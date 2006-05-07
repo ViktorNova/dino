@@ -22,7 +22,6 @@
 #define PATTERNEDITOR_HPP
 
 #include <gtkmm.h>
-#include <libglademm.h>
 
 #include "cceditor.hpp"
 #include "debug.hpp"
@@ -43,8 +42,7 @@ class ControllerDialog;
 class PatternEditor : public Gtk::VBox {
 public:
   
-  PatternEditor(BaseObjectType* cobject, 
-		const Glib::RefPtr<Gnome::Glade::Xml>& xml);
+  PatternEditor();
   
   void set_song(Dino::Song* song);
   void reset_gui();
@@ -56,17 +54,6 @@ public:
   void select_all();
   
 protected:
-  
-  template <class T>
-  static inline T* w(const Glib::RefPtr<Gnome::Glade::Xml>& xml, 
-		     const std::string& name) {
-    using namespace Dino;
-    T* widget = dynamic_cast<T*>(xml->get_widget(name));
-    if (widget == 0)
-      dbg0<<"Could not load widget "<<name<<" of type "
-	  <<demangle(typeid(T).name())<<endl;
-    return widget;
-  }
   
   void pattern_added(int id);
   
@@ -97,7 +84,12 @@ protected:
   PatternDialog* m_dlg_pattern;
   ControllerDialog* m_dlg_controller;
 
-  std::map<std::string, Gtk::ToolButton*> m_toolbuttons;
+  Gtk::ToolButton* m_tbn_add_pattern;
+  Gtk::ToolButton* m_tbn_delete_pattern;
+  Gtk::ToolButton* m_tbn_duplicate_pattern;
+  Gtk::ToolButton* m_tbn_set_pattern_properties;
+  Gtk::ToolButton* m_tbn_add_controller;
+  Gtk::ToolButton* m_tbn_delete_controller;
 
   sigc::connection m_track_combo_connection;
   sigc::connection m_pattern_combo_connection;

@@ -43,6 +43,11 @@ namespace Dino {
     /** This removes the last object from the queue and copies it to 
 	@c thing. */
     bool pop(T& thing);
+    /** This removes the last object from the queue and returns a copy of it. */
+    T pop();
+    
+    /** This clears the buffer (not threadsafe!) */
+    void clear();
   
   protected:
   
@@ -85,6 +90,19 @@ namespace Dino {
     thing = m_data[m_read_pos];
     m_read_pos = (m_read_pos + 1) % m_size;
     return true;
+  }
+
+
+  template <class T> T Ringbuffer<T>::pop() {
+    T thing;
+    pop(thing);
+    return thing;
+  }
+
+
+  template <class T> void Ringbuffer<T>::clear() {
+    m_write_pos = 0;
+    m_read_pos = 0;
   }
 
 

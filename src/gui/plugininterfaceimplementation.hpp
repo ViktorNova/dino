@@ -4,6 +4,9 @@
 #include "plugininterface.hpp"
 
 
+class DinoGUI;
+
+
 /** An object of this class is passed to Plugin::initialise() when Dino loads
     a plugin. It can be used to access the functions and data structures
     available to the plugin. */
@@ -15,7 +18,8 @@ public:
   
   /** Add a page to the main notebook. */
   void add_page(const std::string& label, GUIPage& widget);
-
+  
+  /** Remove a page from the main notebook. */
   void remove_page(GUIPage& widget);
   
   /** Returns the used Dino::Song object. */

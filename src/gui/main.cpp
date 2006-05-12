@@ -27,8 +27,6 @@
 #include <sigc++/slot.h>
 #include <libglademm.h>
 
-#include <config.hpp>
-
 #include "debug.hpp"
 #include "dinogui.hpp"
 

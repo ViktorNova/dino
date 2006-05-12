@@ -37,32 +37,28 @@ using namespace sigc;
 using namespace Dino;
 
 
-class SequenceEditorPlugin : public Plugin {
-public:
-  
-  SequenceEditorPlugin() : m_se(0), m_plif(0) { }
-  
-  string get_name() const { return "Sequence editor"; }
-  
-  void initialise(PluginInterface& plif) {
-    m_se = manage(new SequenceEditor(plif.get_song(), plif.get_sequencer()));
-    plif.add_page("Arrangement", *m_se);
-    m_plif = &plif;
-  }
-  
-  ~SequenceEditorPlugin() { 
-    if (m_plif) {
-      m_plif->remove_page(*m_se); 
-      delete m_se;
-    }
-  }
-  
-private:
-  
+namespace {
   SequenceEditor* m_se;
   PluginInterface* m_plif;
+}
+
+
+extern "C" {
   
-} dino_plugin;
+  string dino_get_name() { 
+    return "Sequence editor"; 
+  }
+  
+  void dino_load_plugin(PluginInterface& plif) {
+    m_plif = &plif;
+    m_se = manage(new SequenceEditor(plif.get_song(), plif.get_sequencer()));
+    plif.add_page("Arrangement", *m_se);
+  }
+  
+  void dino_unload_plugin() {
+    m_plif->remove_page(*m_se); 
+  }
+}
 
 
 SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
@@ -158,7 +154,7 @@ SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
     connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
   m_dlg_track->update_ports(&m_seq);
   m_sequence_ruler.signal_clicked.
-    connect(sigc::hide(mem_fun(m_seq, &Sequencer::go_to_beat)));
+  connect(sigc::hide(mem_fun(m_seq, &Sequencer::go_to_beat)));
   
   reset_gui();
 }

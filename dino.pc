@@ -1,0 +1,8 @@
+plugindir = ${pkglibdir}
+
+Name: dino
+Description: A MIDI sequencer library and program for GNU/Linux
+Version: ${PACKAGE_VERSION}
+Libs: -L${libdir} -ldinoseq
+Cflags: -I${pkgincludedir}
+Requires: gtkmm-2.4 >= 2.6.0, libxml++-2.6 >= 2.6.1, jack >= 0.99.0

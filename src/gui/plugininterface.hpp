@@ -10,8 +10,6 @@ namespace Dino {
   class Sequencer;
 }
 
-class DinoGUI;
-
 
 class GUIPage : public Gtk::HBox {
 public:
@@ -63,29 +61,9 @@ public:
 };
 
 
-/** This is the superclass for all plugins. Every Dino plugin should have
-    a global variable with the name @c dino_plugin whose type is a subclass
-    of this class. */
-class Plugin {
-public:
-  
-  /** All plugins _must_ implement this. It should return a short 
-      human-readable name for the plugin, e.g. "Version checker" or
-      "DSSI host" */
-  virtual std::string get_name() const = 0;
-  
-  /** This function will be called when the plugin has been loaded and Dino
-      wants to use it. You should probably override this. */
-  virtual void initialise(PluginInterface& plif) { }
-  
-  /** This function will be called when the plugin is unloaded. Free your 
-      resources here. Remember that initialise() may not have been called
-      before this function - for example, Dino will load all plugins it can
-      find when it starts, call their get_name() functions, and unload them 
-      again. */
-  virtual ~Plugin() { }
-  
-};
+typedef std::string (*PluginNameFunc)(void);
+typedef void (*PluginLoadFunc)(PluginInterface&);
+typedef void (*PluginUnloadFunc)(void);
 
 
 #endif

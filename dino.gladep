@@ -2,12 +2,7 @@
 <!DOCTYPE glade-project SYSTEM "http://glade.gnome.org/glade-project-2.0.dtd">
 
 <glade-project>
-  <name>Dino</name>
-  <program_name>dino</program_name>
-  <language>C++</language>
+  <name></name>
+  <program_name></program_name>
   <gnome_support>FALSE</gnome_support>
-  <use_widget_names>TRUE</use_widget_names>
-  <output_main_file>FALSE</output_main_file>
-  <output_support_files>FALSE</output_support_files>
-  <output_build_files>FALSE</output_build_files>
 </glade-project>

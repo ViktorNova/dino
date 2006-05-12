@@ -45,7 +45,7 @@ namespace Dino {
       playback, changing the song position, and also for checking which
       instruments are available and for connecting a Track in the Song
       to one of those instruments. */
-  class Sequencer {
+  class Sequencer : public sigc::trackable {
   public:
   
     /** This struct contains information about a writable MIDI port. */

@@ -6,11 +6,8 @@
 #include <string>
 
 
-namespace Glib {
-  class Module;
-}
-
 class PluginInterface;
+class Plugin;
 
 
 class PluginLibrary {
@@ -24,7 +21,8 @@ public:
     std::string filename;
   private:
     friend class PluginLibrary;
-    Glib::Module* module;
+    void* module;
+    bool loaded;
   };
   
   typedef std::map<std::string, PluginInfo>::const_iterator const_iterator;
@@ -34,6 +32,9 @@ public:
   ~PluginLibrary();
 
   void refresh_list();
+  
+  bool is_loaded(const_iterator& iter) const;
+  bool is_loaded(iterator& iter) const;
   
   void load_plugin(iterator& iter);
   
@@ -46,7 +47,20 @@ public:
   const_iterator find(const std::string& name) const;
   iterator find(const std::string& name);
   
+  sigc::signal<void, iterator> signal_plugin_loaded;
+  sigc::signal<void, iterator> signal_plugin_unloaded;
+  
 protected:
+  
+  /** Never use this unless you really know what you are doing! */
+  template <class T, class S> T illegal_cast(S arg) {
+    union {
+      S v;
+      T t;
+    } vpf;
+    vpf.v = arg;
+    return vpf.t;
+  }
   
   std::map<std::string, PluginInfo> m_plugins;
   PluginInterface& m_plif;

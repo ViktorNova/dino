@@ -24,6 +24,7 @@ Later (before 0.4?):
  [ ] Record MIDI CC and pitch bend events
  [ ] Play loops, set loop points
  [ ] Support libmpmd or equivalent
+ [ ] Wrap libdinoseq in Python
  [ ] Embed a Python interpreter
  
 Crazy ideas:

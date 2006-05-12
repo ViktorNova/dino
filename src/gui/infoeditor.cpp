@@ -30,32 +30,27 @@ using namespace sigc;
 using namespace Dino;
 
 
-class InfoEditorPlugin : public Plugin {
-public:
+namespace {
+  InfoEditor* m_ie;
+  PluginInterface* m_plif;
+}
+
+
+extern "C" {
+  string dino_get_name() { 
+    return "Info editor"; 
+  }
   
-  InfoEditorPlugin() : m_ie(0), m_plif(0) { }
-  
-  string get_name() const { return "Info editor"; }
-  
-  void initialise(PluginInterface& plif) {
+  void dino_load_plugin(PluginInterface& plif) {
     m_ie = manage(new InfoEditor(plif.get_song()));
     plif.add_page("Information", *m_ie);
     m_plif = &plif;
   }
   
-  ~InfoEditorPlugin() { 
-    if (m_plif) {
-      m_plif->remove_page(*m_ie); 
-      delete m_ie;
-    }
+  void dino_unload_plugin() {
+    m_plif->remove_page(*m_ie);
   }
-  
-private:
-  
-  InfoEditor* m_ie;
-  PluginInterface* m_plif;
-  
-} dino_plugin;
+}
 
 
 InfoEditor::InfoEditor(Dino::Song& song)

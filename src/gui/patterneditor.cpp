@@ -18,6 +18,8 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ****************************************************************************/
 
+#include <iostream>
+
 #include "controllerdialog.hpp"
 #include "controller_numbers.hpp"
 #include "evilscrolledwindow.hpp"
@@ -31,38 +33,36 @@ using namespace Dino;
 using namespace Glib;
 using namespace Gtk;
 using namespace sigc;
+using namespace std;
 
 
-class PatternEditorPlugin : public Plugin {
-public:
+namespace {
+  PatternEditor* m_pe;
+  PluginInterface* m_plif;
+}
+
+
+extern "C" {
+  string dino_get_name() { 
+    return "Pattern editor"; 
+  }
   
-  PatternEditorPlugin() : m_pe(0), m_plif(0) { }
-  
-  string get_name() const { return "Pattern editor"; }
-  
-  void initialise(PluginInterface& plif) {
+  void dino_load_plugin(PluginInterface& plif) {
     m_pe = manage(new PatternEditor(plif.get_song()));
     plif.add_page("Patterns", *m_pe);
     m_plif = &plif;
   }
   
-  ~PatternEditorPlugin() { 
-    if (m_plif) {
-      m_plif->remove_page(*m_pe); 
-      delete m_pe;
-    }
+  
+  void dino_unload_plugin() { 
+    m_plif->remove_page(*m_pe); 
   }
-  
-private:
-  
-  PatternEditor* m_pe;
-  PluginInterface* m_plif;
-  
-} dino_plugin;
+}  
 
 
 PatternEditor::PatternEditor(Song& song)
-  : m_octave_label(20, 8),
+  : GUIPage(PageSupportsClipboard),
+    m_octave_label(20, 8),
     m_active_track(-1),
     m_active_pattern(-1),
     m_active_controller(-1),

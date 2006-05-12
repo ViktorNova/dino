@@ -27,8 +27,6 @@
 
 #include <gtkmm/messagedialog.h>
 
-#include <config.hpp>
-
 #include "cceditor.hpp"
 #include "controller_numbers.hpp"
 #include "controllerdialog.hpp"
@@ -38,6 +36,7 @@
 #include "pattern.hpp"
 #include "patterndialog.hpp"
 #include "patterneditor.hpp"
+#include "plugindialog.hpp"
 #include "plugininterfaceimplementation.hpp"
 #include "ruler.hpp"
 #include "sequenceeditor.hpp"
@@ -78,15 +77,21 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   m_about_dialog = w<AboutDialog>(xml, "dlg_about");
   m_about_dialog->set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
 				"<larsl@users.sourceforge.net>");
-  m_about_dialog->set_version(PACKAGE_VERSION);
+  m_about_dialog->set_version(VERSION);
+  
+  // initialise the "Plugins" dialog
+  m_plug_dialog = xml->get_widget_derived("dlg_plugins", m_plug_dialog);
+  m_plug_dialog->set_library(m_plib);
+  w<Button>(xml, "dlg_plugins_close")->signal_clicked().
+    connect(mem_fun(*m_plug_dialog, &Dialog::hide));
   
   m_nb = w<Notebook>(xml, "main_notebook");
+  m_nb->signal_switch_page().
+    connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
   
   init_menus(xml);
-
-  PluginLibrary::iterator iter;
-  for (iter = m_plib.begin(); iter != m_plib.end(); ++iter)
-    m_plib.load_plugin(iter);
+  
+  load_plugins(argc, argv);
   
   reset_gui();
   
@@ -99,13 +104,20 @@ Gtk::Window* DinoGUI::get_window() {
 }
 
 
-void DinoGUI::add_page(const std::string& label, GUIPage& page) {
-  m_nb->append_page(page, label);
+int DinoGUI::add_page(const std::string& label, GUIPage& page) {
+  int result = m_nb->append_page(page, label);
+  m_window->show_all();
+  return result;
 }
 
 
 void DinoGUI::remove_page(GUIPage& page) {
   m_nb->remove_page(page);
+}
+
+
+void DinoGUI::remove_page(int pagenum) {
+  m_nb->remove_page(pagenum);
 }
 
 
@@ -142,27 +154,42 @@ void DinoGUI::slot_file_quit() {
 
 
 void DinoGUI::slot_edit_cut() {
-  //m_pe->cut_selection();
+  GUIPage* page = 
+    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+  assert(page);
+  page->cut_selection();
 }
 
 
 void DinoGUI::slot_edit_copy() {
-  //m_pe->copy_selection();
+  GUIPage* page = 
+    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+  assert(page);
+  page->copy_selection();
 }
 
 
 void DinoGUI::slot_edit_paste() {
-  //m_pe->paste();
+  GUIPage* page = 
+    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+  assert(page);
+  page->paste();
 }
 
 
 void DinoGUI::slot_edit_delete() {
-  //m_pe->delete_selection();
+  GUIPage* page = 
+    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+  assert(page);
+  page->delete_selection();
 }
 
 
 void DinoGUI::slot_edit_select_all() {
-  //m_pe->select_all();
+  GUIPage* page = 
+    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+  assert(page);
+  page->select_all();
 }
 
 
@@ -191,8 +218,11 @@ void DinoGUI::slot_help_about_dino() {
 void DinoGUI::reset_gui() {
   std::list<Widget*> pages = m_nb->get_children();
   std::list<Widget*>::iterator iter;
-  for (iter = pages.begin(); iter != pages.end(); ++iter)
-    static_cast<GUIPage*>(*iter)->reset_gui();
+  for (iter = pages.begin(); iter != pages.end(); ++iter) {
+    GUIPage* page = dynamic_cast<GUIPage*>(*iter);
+    assert(page);
+    page->reset_gui();
+  }
 }
 
 
@@ -208,6 +238,8 @@ void DinoGUI::init_menus(RefPtr<Xml>& xml) {
   menuSlots["transport_play"] = &DinoGUI::slot_transport_play;
   menuSlots["transport_stop"] = &DinoGUI::slot_transport_stop;
   menuSlots["transport_go_to_start"] = &DinoGUI::slot_transport_go_to_start;
+  menuSlots["plugins_manage_plugins"] = &DinoGUI::slot_plugins_manage;
+
   menuSlots["help_about"] = &DinoGUI::slot_help_about_dino;
   map<string, void (DinoGUI::*)(void)>::const_iterator iter;
   for (iter = menuSlots.begin(); iter != menuSlots.end(); ++iter) {
@@ -221,8 +253,8 @@ void DinoGUI::init_menus(RefPtr<Xml>& xml) {
 
 bool DinoGUI::init_lash(int argc, char** argv) {
   dbg1<<"Initialising LASH client"<<endl;
-  m_lash_client = lash_init(lash_extract_args(&argc, &argv), PACKAGE_NAME, 
-			     LASH_Config_File, LASH_PROTOCOL(2, 0));
+  m_lash_client = lash_init(lash_extract_args(&argc, &argv), "dino", 
+			    LASH_Config_File, LASH_PROTOCOL(2, 0));
   
   if (m_lash_client) {
     lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
@@ -271,11 +303,32 @@ bool DinoGUI::slot_check_ladcca_events() {
 
 
 void DinoGUI::page_switched(guint index) {
-  // ugly hack - what if we reorder the notebook pages?
-  bool clipboard_active = (index == 1);
+  GUIPage* page = dynamic_cast<GUIPage*>(m_nb->get_nth_page(index));
+  if (!page)
+    return;
+  bool clipboard_active = page->get_flags() & GUIPage::PageSupportsClipboard;
   m_menuitems["edit_cut"]->set_sensitive(clipboard_active);
   m_menuitems["edit_copy"]->set_sensitive(clipboard_active);
   m_menuitems["edit_paste"]->set_sensitive(clipboard_active);
   m_menuitems["edit_delete"]->set_sensitive(clipboard_active);
   m_menuitems["edit_select_all"]->set_sensitive(clipboard_active);
+}
+
+
+void DinoGUI::slot_plugins_manage() {
+  m_plug_dialog->present();
+}
+
+
+void DinoGUI::load_plugins(int argc, char** argv) {
+  PluginLibrary::iterator iter;
+  iter = m_plib.find("Sequence editor");
+  if (iter != m_plib.end())
+    m_plib.load_plugin(iter);
+  iter = m_plib.find("Pattern editor");
+  if (iter != m_plib.end())
+    m_plib.load_plugin(iter);
+  iter = m_plib.find("Info editor");
+  if (iter != m_plib.end())
+    m_plib.load_plugin(iter);
 }

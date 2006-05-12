@@ -38,7 +38,7 @@
 #include "song.hpp"
 
 
-class PatternEditor;
+class PluginDialog;
 class GUIPage;
 
 
@@ -50,8 +50,9 @@ public:
   
   Gtk::Window* get_window();
   
-  void add_page(const std::string& label, GUIPage& page);
+  int add_page(const std::string& label, GUIPage& page);
   void remove_page(GUIPage& page);
+  void remove_page(int pagenum);
   
 private:
 
@@ -73,8 +74,12 @@ private:
   void slot_transport_stop();
   void slot_transport_go_to_start();
   
+  void slot_plugins_manage();
+  
   void slot_help_about_dino();
   //@}
+  
+  void load_plugins(int argc, char** argv);
   
   /** This is a convenience function that returns a pointer of type @c T* to
       the widget with name @c name. If there is no widget in @c xml with that
@@ -118,6 +123,7 @@ private:
   Gtk::Notebook* m_nb;
   
   Gtk::AboutDialog* m_about_dialog;
+  PluginDialog* m_plug_dialog;
   
   Dino::Sequencer m_seq;
   

@@ -437,9 +437,11 @@ BOOST_PYTHON_MODULE(dino) {
   {
     Song::TrackIterator (Song::*begin)() = &Song::tracks_begin;
     Song::TrackIterator (Song::*end)() = &Song::tracks_end;
-    _Song.add_property("tracks", range(begin, end));
+    _Song.add_property("tracks", range<return_internal_reference<1> >(begin, 
+								      end));
   }
-  _Song.def("tempochanges", range(&Song::tempo_begin, &Song::tempo_end));
+  _Song.add_property("tempochanges", range<return_internal_reference<1> >
+		     (&Song::tempo_begin, &Song::tempo_end));
   _Song.def("signal_title_changed", &Song_signal_title_changed);
   _Song.def("signal_author_changed", &Song_signal_author_changed);
   _Song.def("signal_info_changed", &Song_signal_info_changed);
@@ -472,7 +474,8 @@ BOOST_PYTHON_MODULE(dino) {
   {
     Track::PatternIterator (Track::*begin)() = &Track::pat_begin;
     Track::PatternIterator (Track::*end)() = &Track::pat_end;
-    _Track.add_property("patterns", range(begin, end));
+    _Track.add_property("patterns", range<return_internal_reference<1> >(begin,
+									 end));
   }
   {
     Track::SequenceIterator (Track::*begin)() const = &Track::seq_begin;

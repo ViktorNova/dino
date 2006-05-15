@@ -21,6 +21,7 @@
 #ifndef TRACK_HPP
 #define TRACK_HPP
 
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -40,7 +41,6 @@ namespace Dino {
 
   class InterpolatedEvent;
   class MIDIBuffer;
-  class MIDIEvent;
   class Pattern;
 
 
@@ -53,10 +53,22 @@ namespace Dino {
     
     /** This struct contains information about a sequence entry, i.e. a
 	scheduled start and length for a pattern. */
-    struct SequenceEntry {
+    class SequenceEntry {
+    public:
+
       SequenceEntry(int patID, Pattern* patPtr, 
 		    unsigned int st, unsigned int len) 
 	: pattern_id(patID), pattern(patPtr), start(st), length(len) { }
+      
+      int get_pattern_id() const { return pattern_id; }
+      Pattern& get_pattern() { return *pattern; }
+      unsigned int get_start() const { return start; }
+      unsigned int get_length() const { return length; }
+      
+    private:
+      
+      friend class Track;
+      
       int pattern_id;
       Pattern* pattern;
       unsigned int start;
@@ -70,14 +82,16 @@ namespace Dino {
 	@see Track::set_sequence_entry(), Track::set_seq_entry_length(),
 	     Track::remove_sequence_entry() 
     */
-    class SequenceIterator {
+    class SequenceIterator : 
+      public std::iterator<std::forward_iterator_tag, SequenceEntry> {
     public:
       SequenceIterator();
-      const SequenceEntry* operator->() const;
-      const SequenceEntry& operator*() const;
+      SequenceEntry* operator->();
+      SequenceEntry& operator*();
       bool operator==(const SequenceIterator& iter) const;
       bool operator!=(const SequenceIterator& iter) const;
       SequenceIterator& operator++();
+      SequenceIterator operator++(int);
       
     private:
       
@@ -96,7 +110,8 @@ namespace Dino {
     
     /** An iterator class that can be used to access and modify the patterns
 	in this track. */
-    class PatternIterator {
+    class PatternIterator : 
+      public std::iterator<std::forward_iterator_tag, Pattern> {
     public:
       PatternIterator();
       const Pattern* operator->() const;
@@ -106,6 +121,7 @@ namespace Dino {
       bool operator==(const PatternIterator& iter) const;
       bool operator!=(const PatternIterator& iter) const;
       PatternIterator& operator++();
+      PatternIterator operator++(int);
       
     private:
       
@@ -120,7 +136,8 @@ namespace Dino {
     
     /** A read-only iterator class that can be used to access the patterns in
 	this track. */
-    class ConstPatternIterator {
+    class ConstPatternIterator 
+      : public std::iterator<std::forward_iterator_tag, Pattern> {
     public:
       ConstPatternIterator();
       ConstPatternIterator(const PatternIterator& iter);
@@ -129,6 +146,7 @@ namespace Dino {
       bool operator==(const ConstPatternIterator& iter) const;
       bool operator!=(const ConstPatternIterator& iter) const;
       ConstPatternIterator& operator++();
+      ConstPatternIterator operator++(int);
       
     private:
       
@@ -148,14 +166,14 @@ namespace Dino {
     //@{
     int get_id() const;
     const string& get_name() const;
+    int get_channel() const;
+    unsigned int get_length() const;
     ConstPatternIterator pat_begin() const;
     ConstPatternIterator pat_end() const;
     ConstPatternIterator pat_find(int id) const;
     SequenceIterator seq_begin() const;
     SequenceIterator seq_end() const;
     SequenceIterator seq_find(unsigned int beat) const;
-    int get_channel() const;
-    unsigned int get_length() const;
     
     // non-const accessors
     PatternIterator pat_begin();
@@ -194,13 +212,13 @@ namespace Dino {
     
     /// @name Signals
     //@{
-    signal<void, const string&> signal_name_changed;
-    signal<void, int> signal_pattern_added; 
-    signal<void, int> signal_pattern_removed;
-    signal<void, int, int, int> signal_sequence_entry_added;
-    signal<void, int, int, int> signal_sequence_entry_changed;
-    signal<void, int> signal_sequence_entry_removed;
-    signal<void, int> signal_length_changed;
+    signal<void, const string&>& signal_name_changed();
+    signal<void, int>& signal_pattern_added();
+    signal<void, int>& signal_pattern_removed();
+    signal<void, int, int, int>& signal_sequence_entry_added();
+    signal<void, int, int, int>& signal_sequence_entry_changed();
+    signal<void, int>& signal_sequence_entry_removed();
+    signal<void, int>& signal_length_changed();
     //@}
     
   private:
@@ -213,6 +231,14 @@ namespace Dino {
   
     mutable bool m_dirty;
   
+    signal<void, const string&> m_signal_name_changed;
+    signal<void, int> m_signal_pattern_added;
+    signal<void, int> m_signal_pattern_removed;
+    signal<void, int, int, int> m_signal_sequence_entry_added;
+    signal<void, int, int, int> m_signal_sequence_entry_changed;
+    signal<void, int> m_signal_sequence_entry_removed;
+    signal<void, int> m_signal_length_changed;
+
   };
 
 

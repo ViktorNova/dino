@@ -20,6 +20,7 @@
 
 #include <iostream>
 
+#include "controller.hpp"
 #include "controllerdialog.hpp"
 #include "controller_numbers.hpp"
 #include "evilscrolledwindow.hpp"
@@ -175,8 +176,8 @@ PatternEditor::PatternEditor(Song& song)
   m_pattern_ruler.set_song(&song);
   slot<void> update_t_combo = 
     mem_fun(*this, &PatternEditor::update_track_combo);
-  m_song.signal_track_added.connect(sigc::hide(update_t_combo));
-  m_song.signal_track_removed.connect(sigc::hide(update_t_combo));
+  m_song.signal_track_added().connect(sigc::hide(update_t_combo));
+  m_song.signal_track_removed().connect(sigc::hide(update_t_combo));
   
   pack_start(*v);
   
@@ -315,9 +316,9 @@ void PatternEditor::set_active_track(int track) {
   m_conn_pat_removed.disconnect();
   if (m_active_track != -1) {
     Song::TrackIterator t = m_song.tracks_find(m_active_track);
-    m_conn_pat_added = t->signal_pattern_added.
+    m_conn_pat_added = t->signal_pattern_added().
       connect(mem_fun(*this, &PatternEditor::pattern_added));
-    m_conn_pat_removed = t->signal_pattern_removed.
+    m_conn_pat_removed = t->signal_pattern_removed().
       connect(sigc::hide(mem_fun(*this, &PatternEditor::update_pattern_combo)));
   }
   set_active_pattern(-1);
@@ -342,10 +343,10 @@ void PatternEditor::set_active_pattern(int pattern) {
   m_conn_cont_added.disconnect();
   m_conn_cont_removed.disconnect();
   if (m_active_pattern != -1) {
-    slot<void> uslot = 
-      mem_fun(*this, &PatternEditor::update_controller_combo);
-    m_conn_cont_added = p->signal_controller_added.connect(sigc::hide(uslot));
-    m_conn_cont_removed=p->signal_controller_removed.connect(sigc::hide(uslot));
+    slot<void> uslot = mem_fun(*this, &PatternEditor::update_controller_combo);
+    m_conn_cont_added = p->signal_controller_added().connect(sigc::hide(uslot));
+    m_conn_cont_removed = p->signal_controller_removed().
+      connect(sigc::hide(uslot));
   }
 
   update_controller_combo();
@@ -484,7 +485,7 @@ void PatternEditor::pattern_added(int id) {
   update_pattern_combo();
   Song::TrackIterator iter = m_song.tracks_find(m_active_track);
   if (iter != m_song.tracks_end()) {
-    iter->pat_find(id)->signal_name_changed.
+    iter->pat_find(id)->signal_name_changed().
       connect(sigc::hide(mem_fun(*this, &PatternEditor::update_pattern_combo)));
   }
 }

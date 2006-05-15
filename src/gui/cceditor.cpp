@@ -21,7 +21,9 @@
 #include <iostream>
 
 #include "cceditor.hpp"
+#include "controller.hpp"
 #include "controller_numbers.hpp"
+#include "interpolatedevent.hpp"
 #include "pattern.hpp"
 
 using namespace Glib;
@@ -60,11 +62,12 @@ void CCEditor::set_controller(Dino::Pattern* pat, long controller) {
     set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width,
 		     68);
     slot<void> draw = mem_fun(*this, &CCEditor::queue_draw);
-    m_pat->signal_cc_added.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
-    m_pat->signal_cc_changed.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
-    m_pat->signal_cc_removed.connect(sigc::hide(sigc::hide(draw)));
-    m_pat->signal_length_changed.connect(sigc::hide(draw));
-    m_pat->signal_steps_changed.connect(sigc::hide(draw));
+    m_pat->signal_cc_added().connect(sigc::hide(sigc::hide(sigc::hide(draw))));
+    m_pat->signal_cc_changed().
+      connect(sigc::hide(sigc::hide(sigc::hide(draw))));
+    m_pat->signal_cc_removed().connect(sigc::hide(sigc::hide(draw)));
+    m_pat->signal_length_changed().connect(sigc::hide(draw));
+    m_pat->signal_steps_changed().connect(sigc::hide(draw));
   }
   queue_draw();
 }

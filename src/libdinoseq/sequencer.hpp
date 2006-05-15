@@ -90,8 +90,8 @@ namespace Dino {
     
     /// @name Signals
     //@{
-    sigc::signal<void, int> signal_beat_changed;
-    sigc::signal<void> signal_instruments_changed;
+    sigc::signal<void, int>& signal_beat_changed();
+    sigc::signal<void>& signal_instruments_changed();
     //@}
     
   private:
@@ -181,8 +181,11 @@ namespace Dino {
     volatile int m_old_current_beat;
     volatile int m_ports_changed;
     int m_old_ports_changed;
-  };
 
+    sigc::signal<void, int> m_signal_beat_changed;
+    sigc::signal<void> m_signal_instruments_changed;
+
+  };
 
 }
 #endif

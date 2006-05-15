@@ -138,19 +138,19 @@ SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
   // connect to the song
   slot<void, int> update_track_view = 
     sigc::hide(mem_fun(*this, &SequenceEditor::reset_gui));
-  m_song.signal_track_added.connect(update_track_view);
-  m_song.signal_track_removed.connect(update_track_view);
-  m_song.signal_length_changed.connect(update_track_view);
-  m_song.signal_length_changed.connect(mem_fun(*m_spb_song_length,
+  m_song.signal_track_added().connect(update_track_view);
+  m_song.signal_track_removed().connect(update_track_view);
+  m_song.signal_length_changed().connect(update_track_view);
+  m_song.signal_length_changed().connect(mem_fun(*m_spb_song_length,
   						&SpinButton::set_value));
   m_spb_song_length->signal_value_changed().
     connect(compose(mem_fun(m_song, &Song::set_length),
   		    mem_fun(*m_spb_song_length, &SpinButton::get_value_as_int)));
-  m_song.signal_length_changed.
+  m_song.signal_length_changed().
     connect(mem_fun(m_sequence_ruler, &::Ruler::set_length));
 
   // connect to sequencer
-  m_seq.signal_instruments_changed.
+  m_seq.signal_instruments_changed().
     connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
   m_dlg_track->update_ports(&m_seq);
   m_sequence_ruler.signal_clicked.
@@ -188,7 +188,7 @@ void SequenceEditor::reset_gui() {
     tw->signal_clicked.
       connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
 			      iter->get_id())));
-    m_seq.signal_beat_changed.
+    m_seq.signal_beat_changed().
       connect(mem_fun(*tw, &TrackWidget::set_current_beat));
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
     TrackLabel* tl = manage(new TrackLabel(&m_song));

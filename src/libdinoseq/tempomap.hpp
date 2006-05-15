@@ -50,7 +50,17 @@ namespace Dino {
 	: frame(nframe), beat(nbeat), bpm(nbpm), prev(nprev), next(nnext) {
     
       }
-    
+      
+      unsigned long get_frame() const { return frame; }
+      unsigned long get_beat() const { return beat; }
+      unsigned int get_bpm() const { return bpm; }
+      TempoChange* get_prev() const { return prev; }
+      TempoChange* get_next() const { return next; }
+      
+    private:    
+      
+      friend class TempoMap;
+      
       unsigned long frame;
       unsigned long beat;
       unsigned int bpm;

@@ -23,7 +23,7 @@
 #include "controller_numbers.hpp"
 #include "controller.hpp"
 #include "deleter.hpp"
-
+#include "interpolatedevent.hpp"
 
 namespace Dino {
 

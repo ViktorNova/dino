@@ -58,7 +58,7 @@ TrackWidget::TrackWidget(const Song* song)
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   set_size_request(m_col_width * m_song->get_length(), m_col_width + 4);
   
-  song->signal_length_changed.
+  song->signal_length_changed().
     connect(mem_fun(*this, &TrackWidget::slot_length_changed));
 }
   
@@ -123,20 +123,20 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
   for (se = m_track->seq_begin(); se != m_track->seq_end(); ++se) {
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
-    int length = se->length;
-    win->draw_rectangle(m_gc, true, se->start * m_col_width, 4, 
+    int length = se->get_length();
+    win->draw_rectangle(m_gc, true, se->get_start() * m_col_width, 4, 
 			length * m_col_width, height - 1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, se->start * m_col_width, 4,
+    win->draw_rectangle(m_gc, false, se->get_start() * m_col_width, 4,
 			length * m_col_width, height - 1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
-    sprintf(tmp, "%03d", se->pattern_id);
+    sprintf(tmp, "%03d", se->get_pattern_id());
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Gdk::Rectangle textBounds(se->start * m_col_width, 0, 
+    Gdk::Rectangle textBounds(se->get_start() * m_col_width, 0, 
 			      length * m_col_width, height - 1);
     m_gc->set_clip_rectangle(textBounds);
-    win->draw_layout(m_gc, se->start * m_col_width + 2, 
+    win->draw_layout(m_gc, se->get_start() * m_col_width + 2, 
 		     4 + (height - lHeight)/2, l);
   }
   
@@ -172,9 +172,9 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   case 2: {
     Track::SequenceIterator se = m_track->seq_find(beat);
     if (se != m_track->seq_end()) {
-      m_drag_beat = se->start;
-      m_drag_pattern = se->pattern_id;
-      m_track->set_seq_entry_length(se, beat - se->start + 1);
+      m_drag_beat = se->get_start();
+      m_drag_pattern = se->get_pattern_id();
+      m_track->set_seq_entry_length(se, beat - se->get_start() + 1);
       update();
     }
     return true;

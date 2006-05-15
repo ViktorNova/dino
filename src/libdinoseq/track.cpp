@@ -37,12 +37,12 @@ namespace Dino {
   }
   
   
-  const Track::SequenceEntry* Track::SequenceIterator::operator->() const {
+  Track::SequenceEntry* Track::SequenceIterator::operator->() {
     return *m_iter;
   }
   
   
-  const Track::SequenceEntry& Track::SequenceIterator::operator*() const {
+  Track::SequenceEntry& Track::SequenceIterator::operator*() {
     return **m_iter;
   }
   
@@ -64,6 +64,13 @@ namespace Dino {
     } while (m_iter != m_vector->end() && 
 	     (*m_iter == old_ptr || *m_iter == 0));
     return *this;
+  }
+  
+  
+  Track::SequenceIterator Track::SequenceIterator::operator++(int) {
+    SequenceIterator iter = *this;
+    ++(*this);
+    return iter;
   }
   
 
@@ -111,6 +118,13 @@ namespace Dino {
     return *this;
   }
   
+  
+  Track::ConstPatternIterator Track::ConstPatternIterator::operator++(int) {
+    ConstPatternIterator iter = *this;
+    ++(*this);
+    return iter;
+  }
+
   
   Track::ConstPatternIterator::ConstPatternIterator(const PatternIterator& iter)
     : m_iter(iter.m_iter) {
@@ -165,6 +179,13 @@ namespace Dino {
     return *this;
   }
       
+
+  Track::PatternIterator Track::PatternIterator::operator++(int) {
+    PatternIterator iter = *this;
+    ++(*this);
+    return iter;
+  }
+
 
   Track::PatternIterator::
   PatternIterator(const std::map<int, Pattern*>::iterator& iter)
@@ -279,7 +300,7 @@ namespace Dino {
     if (name != m_name) {
       dbg1<<"Changing track name from \""<<m_name<<"\" to \""<<name<<"\""<<endl;
       m_name = name;
-      signal_name_changed(m_name);
+      m_signal_name_changed(m_name);
     }
   }
 
@@ -296,7 +317,7 @@ namespace Dino {
     else
       id = 1;
     m_patterns[id] = new Pattern(id, name, length, steps);
-    signal_pattern_added(id);
+    m_signal_pattern_added(id);
     return PatternIterator(m_patterns.find(id));
   }
 
@@ -315,7 +336,7 @@ namespace Dino {
     else
       id = 1;
     m_patterns[id] = new Pattern(id, *iter.m_iter->second);
-    signal_pattern_added(id);
+    m_signal_pattern_added(id);
     return PatternIterator(m_patterns.find(id));
   }
 
@@ -335,7 +356,7 @@ namespace Dino {
       
       Deleter::queue(iter->second);
       m_patterns.erase(iter);
-      signal_pattern_removed(id);
+      m_signal_pattern_removed(id);
     }
   }
 
@@ -384,8 +405,8 @@ namespace Dino {
     for (i = beat; i < beat + newLength; ++i)
       (*m_sequence)[i] = se;
     
-    signal_sequence_entry_added(beat, (*m_sequence)[beat]->pattern->get_id(), 
-				newLength);
+    m_signal_sequence_entry_added(beat, (*m_sequence)[beat]->pattern->get_id(), 
+				  newLength);
     return SequenceIterator(m_sequence->begin() + i, *m_sequence);
   }
 
@@ -411,7 +432,7 @@ namespace Dino {
       for (int i = se->start + tmp - 1; i >= int(se->start + se->length); --i)
 	(*m_sequence)[i] = 0;
     }
-    signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length);
+    m_signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length);
   }
 
 
@@ -429,7 +450,7 @@ namespace Dino {
       for (int i = se->start + se->length - 1; i >= int(se->start); --i)
 	(*m_sequence)[i] = 0;
       Deleter::queue(se);
-      signal_sequence_entry_removed(start);
+      m_signal_sequence_entry_removed(start);
       return true;
     }
     return false;
@@ -459,7 +480,7 @@ namespace Dino {
       m_sequence = new_seq;
       Deleter::queue(old_seq);
       
-      signal_length_changed(m_sequence->size());
+      m_signal_length_changed(m_sequence->size());
     }
   }
 
@@ -615,6 +636,41 @@ namespace Dino {
       }
     }
 
+  }
+
+
+  signal<void, const string&>& Track::signal_name_changed() {
+    return m_signal_name_changed;
+  }
+
+
+  signal<void, int>& Track::signal_pattern_added() {
+    return m_signal_pattern_added;
+  }
+
+
+  signal<void, int>& Track::signal_pattern_removed() {
+    return m_signal_pattern_removed;
+  }
+
+
+  signal<void, int, int, int>& Track::signal_sequence_entry_added() {
+    return m_signal_sequence_entry_added;
+  }
+
+
+  signal<void, int, int, int>& Track::signal_sequence_entry_changed() {
+    return m_signal_sequence_entry_changed;
+  }
+
+
+  signal<void, int>& Track::signal_sequence_entry_removed() {
+    return m_signal_sequence_entry_removed;
+  }
+
+
+  signal<void, int>& Track::signal_length_changed() {
+    return m_signal_length_changed;
   }
 
 

@@ -54,8 +54,8 @@ TempoWidget::TempoWidget(Song* song)
   m_colormap->alloc_color(m_hl_color);
   
   // connect signals
-  song->signal_tempo_changed.connect(mem_fun(*this, &TempoWidget::update));
-  song->signal_length_changed.
+  song->signal_tempo_changed().connect(mem_fun(*this, &TempoWidget::update));
+  song->signal_length_changed().
     connect(mem_fun(*this, &TempoWidget::length_changed));
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
@@ -109,38 +109,42 @@ bool TempoWidget::on_expose_event(GdkEventExpose* event) {
   for (iter = m_song->tempo_begin(); iter != m_song->tempo_end(); ++iter) {
     if (&(*iter) == m_active_tempo)
       continue;
-    Rectangle bounds(int(iter->beat * m_col_width), 0, 
+    Rectangle bounds(int(iter->get_beat() * m_col_width), 0, 
 		     int(m_col_width * 1.5) + 1, height);
     m_gc->set_clip_rectangle(bounds);
     vector<Point> points;
-    points.push_back(Point(int(iter->beat * m_col_width), 0));
-    points.push_back(Point(int((iter->beat + 1) * m_col_width), 0));
-    points.push_back(Point(int((iter->beat + 1.5) * m_col_width), height / 2));
-    points.push_back(Point(int((iter->beat + 1.5) * m_col_width), height-1));
-    points.push_back(Point(int(iter->beat * m_col_width), height-1));
+    points.push_back(Point(int(iter->get_beat() * m_col_width), 0));
+    points.push_back(Point(int((iter->get_beat() + 1) * m_col_width), 0));
+    points.push_back(Point(int((iter->get_beat() + 1.5) * m_col_width), 
+			   height / 2));
+    points.push_back(Point(int((iter->get_beat() + 1.5) * m_col_width), 
+			   height-1));
+    points.push_back(Point(int(iter->get_beat() * m_col_width), height-1));
     m_gc->set_foreground(m_fg_color);
     win->draw_polygon(m_gc, true, points);
     m_gc->set_foreground(m_edge_color);
     win->draw_polygon(m_gc, false, points); 
     RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
-    sprintf(tmp, "%d", iter->bpm);
+    sprintf(tmp, "%d", iter->get_bpm());
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    win->draw_layout(m_gc, int(iter->beat * m_col_width + 2), 
+    win->draw_layout(m_gc, int(iter->get_beat() * m_col_width + 2), 
 		     (height - lHeight) / 2, l);
   }
   
   if (m_active_tempo) {
     const TempoMap::TempoChange* tempo = m_active_tempo;
-    Rectangle bounds(int(tempo->beat * m_col_width), 0, 
+    Rectangle bounds(int(tempo->get_beat() * m_col_width), 0, 
 		     int(m_col_width * 1.5) + 1, height);
     m_gc->set_clip_rectangle(bounds);
     vector<Point> points;
-    points.push_back(Point(int(tempo->beat * m_col_width), 0));
-    points.push_back(Point(int((tempo->beat + 1) * m_col_width), 0));
-    points.push_back(Point(int((tempo->beat + 1.5) * m_col_width), height / 2));
-    points.push_back(Point(int((tempo->beat + 1.5) * m_col_width), height-1));
-    points.push_back(Point(int(tempo->beat * m_col_width), height-1));
+    points.push_back(Point(int(tempo->get_beat() * m_col_width), 0));
+    points.push_back(Point(int((tempo->get_beat() + 1) * m_col_width), 0));
+    points.push_back(Point(int((tempo->get_beat() + 1.5) * m_col_width), 
+			   height / 2));
+    points.push_back(Point(int((tempo->get_beat() + 1.5) * m_col_width), 
+			   height-1));
+    points.push_back(Point(int(tempo->get_beat() * m_col_width), height-1));
     m_gc->set_foreground(m_hl_color);
     win->draw_polygon(m_gc, true, points);
     m_gc->set_foreground(m_edge_color);
@@ -149,7 +153,7 @@ bool TempoWidget::on_expose_event(GdkEventExpose* event) {
     sprintf(tmp, "%.0f", float(m_editing_bpm));
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    win->draw_layout(m_gc, int(tempo->beat * m_col_width + 2), 
+    win->draw_layout(m_gc, int(tempo->get_beat() * m_col_width + 2), 
 		     (height - lHeight) / 2, l);
   }
   
@@ -168,7 +172,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
       if (iter != m_song->tempo_end()) {
 	m_active_tempo = &*iter;
 	m_drag_start_y = int(event->y);
-	m_editing_bpm = int(m_active_tempo->bpm);
+	m_editing_bpm = int(m_active_tempo->get_bpm());
 	update();
       }
     }
@@ -177,10 +181,10 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     
   case 2: {
     Song::TempoIterator iter = m_song->tempo_find(beat);
-    if (iter != m_song->tempo_end() && iter->beat == beat) {
+    if (iter != m_song->tempo_end() && iter->get_beat() == beat) {
       m_active_tempo = &*iter;
       m_drag_start_y = int(event->y);
-      m_editing_bpm = int(m_active_tempo->bpm);
+      m_editing_bpm = int(m_active_tempo->get_bpm());
       update();
     }
     else
@@ -190,7 +194,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     
   case 3:
     Song::TempoIterator iter = m_song->tempo_find(beat);
-    if (iter != m_song->tempo_end() && iter->beat == beat)
+    if (iter != m_song->tempo_end() && iter->get_beat() == beat)
       m_song->remove_tempo_change(iter);
     return true;
   } 
@@ -201,7 +205,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
 
 bool TempoWidget::on_button_release_event(GdkEventButton* event) {
   if ((event->button == 2 || event->button == 1)&& m_active_tempo) {
-    m_song->add_tempo_change(m_active_tempo->beat, m_editing_bpm);
+    m_song->add_tempo_change(m_active_tempo->get_beat(), m_editing_bpm);
     m_active_tempo = 0;
     update();
   }
@@ -211,7 +215,8 @@ bool TempoWidget::on_button_release_event(GdkEventButton* event) {
 
 bool TempoWidget::on_motion_notify_event(GdkEventMotion* event) {
   if (m_active_tempo) {
-    int new_bpm = int(m_active_tempo->bpm + (m_drag_start_y - event->y) / 2);
+    int new_bpm = int(m_active_tempo->get_bpm() + 
+		      (m_drag_start_y - event->y) / 2);
     new_bpm = new_bpm < 1 ? 1 : new_bpm;
     if (new_bpm != m_editing_bpm) {
       m_editing_bpm = new_bpm;

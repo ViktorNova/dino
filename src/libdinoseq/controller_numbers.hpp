@@ -25,10 +25,12 @@
 
 namespace Dino {
   
-  static const long g_controller_cc_bits = 0x20000000;
-  static const long g_controller_nrpn_bits = 0x40000000;
   
-  static const long g_controller_none = -1;
+  namespace {
+    const long g_controller_cc_bits = 0x20000000;
+    const long g_controller_nrpn_bits = 0x40000000;
+    const long g_controller_none = -1;
+  }
   
   
   /** Returns an invalid ID. */

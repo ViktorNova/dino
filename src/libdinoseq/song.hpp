@@ -21,6 +21,7 @@
 #ifndef SONG_HPP
 #define SONG_HPP
 
+#include <iterator>
 #include <map>
 #include <string>
 
@@ -48,7 +49,8 @@ namespace Dino {
     class ConstTrackIterator;
     
     /** An iterator class that is used to access the tracks in the song. */
-    class TrackIterator {
+    class TrackIterator : 
+      public std::iterator<std::forward_iterator_tag, Track> {
     public:      
       TrackIterator();
       const Track& operator*() const;
@@ -58,6 +60,7 @@ namespace Dino {
       bool operator==(const TrackIterator& iter) const;
       bool operator!=(const TrackIterator& iter) const;      
       TrackIterator& operator++();
+      TrackIterator operator++(int);
     private:
       
       friend class Song;
@@ -71,7 +74,8 @@ namespace Dino {
 
     /** An iterator class that is used to access the tracks in the song, 
 	without changing them. */
-    class ConstTrackIterator {
+    class ConstTrackIterator : 
+      public std::iterator<std::forward_iterator_tag, Track> {
     public:
       ConstTrackIterator();
       ConstTrackIterator(const TrackIterator& iter);
@@ -80,6 +84,7 @@ namespace Dino {
       bool operator==(const ConstTrackIterator& iter) const;
       bool operator!=(const ConstTrackIterator& iter) const;
       ConstTrackIterator& operator++();
+      ConstTrackIterator operator++(int);
       
     private:
       
@@ -97,23 +102,25 @@ namespace Dino {
 	Song to modify the tempo map.
 	@see Song::add_tempo_change(), Song::remove_tempo_change()
     */
-    class TempoIterator {
+    class TempoIterator : 
+      public std::iterator<std::forward_iterator_tag, TempoMap::TempoChange> {
     public:
 
       TempoIterator();
-      const TempoMap::TempoChange& operator*() const;
-      const TempoMap::TempoChange* operator->() const;
+      TempoMap::TempoChange& operator*();
+      TempoMap::TempoChange* operator->();
       bool operator==(const TempoIterator& iter) const;
       bool operator!=(const TempoIterator& iter) const;
       TempoIterator& operator++();
+      TempoIterator operator++(int);
       
     private:
       
-      TempoIterator(const TempoMap::TempoChange* tempo);
+      TempoIterator(TempoMap::TempoChange* tempo);
       
       friend class Song;
 
-      const TempoMap::TempoChange* m_tempo;
+      TempoMap::TempoChange* m_tempo;
     };
     
     
@@ -174,13 +181,13 @@ namespace Dino {
     
     /// @name Signals
     //@{
-    mutable sigc::signal<void, const string&> signal_title_changed;
-    mutable sigc::signal<void, const string&> signal_author_changed;
-    mutable sigc::signal<void, const string&> signal_info_changed;
-    mutable sigc::signal<void, int> signal_length_changed;
-    mutable sigc::signal<void, int> signal_track_added;
-    mutable sigc::signal<void, int> signal_track_removed;
-    mutable sigc::signal<void> signal_tempo_changed;
+    sigc::signal<void, const string&>& signal_title_changed() const;
+    sigc::signal<void, const string&>& signal_author_changed() const;
+    sigc::signal<void, const string&>& signal_info_changed() const;
+    sigc::signal<void, int>& signal_length_changed() const;
+    sigc::signal<void, int>& signal_track_added() const;
+    sigc::signal<void, int>& signal_track_removed() const;
+    sigc::signal<void>& signal_tempo_changed() const;
     //@}
     
   private:
@@ -198,6 +205,15 @@ namespace Dino {
     TempoMap m_tempo_map;
   
     mutable bool m_dirty;
+
+    mutable sigc::signal<void, const string&> m_signal_title_changed;
+    mutable sigc::signal<void, const string&> m_signal_author_changed;
+    mutable sigc::signal<void, const string&> m_signal_info_changed;
+    mutable sigc::signal<void, int> m_signal_length_changed;
+    mutable sigc::signal<void, int> m_signal_track_added;
+    mutable sigc::signal<void, int> m_signal_track_removed;
+    mutable sigc::signal<void> m_signal_tempo_changed;
+    
   };
 
 }

@@ -21,6 +21,7 @@
 #include <iostream>
 #include <typeinfo>
 
+#include "note.hpp"
 #include "patternselection.hpp"
 
 
@@ -30,13 +31,13 @@ using namespace std;
 namespace Dino {
 
 
-  const Note* PatternSelection::Iterator::operator*() const {
-    return **m_iter;
+  Note& PatternSelection::Iterator::operator*() {
+    return const_cast<Note&>(**m_iter);
   }
   
   
-  const Note* PatternSelection::Iterator::operator->() const {
-    return **m_iter;
+  Note* PatternSelection::Iterator::operator->() {
+    return const_cast<Note*>((*m_iter).operator->());
   }
 
   
@@ -60,6 +61,13 @@ namespace Dino {
     return *this;
   }
   
+
+  PatternSelection::Iterator PatternSelection::Iterator::operator++(int) {
+    Iterator result = *this;
+    ++(*this);
+    return result;
+  }
+  
     
   PatternSelection::Iterator::
   Iterator(const std::set<Pattern::NoteIterator>::iterator& iterator) 
@@ -71,7 +79,7 @@ namespace Dino {
   PatternSelection::PatternSelection(Pattern* pat) 
     : m_pat(pat) {
     if (m_pat) {
-      m_pat->signal_note_removed.
+      m_pat->signal_note_removed().
 	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
     }
   }
@@ -81,7 +89,7 @@ namespace Dino {
     : m_data(sel.m_data),
       m_pat(sel.m_pat) {
     if (m_pat)
-      m_pat->signal_note_removed.
+      m_pat->signal_note_removed().
 	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
   }
 
@@ -91,7 +99,7 @@ namespace Dino {
     m_data = sel.m_data;
     m_pat = sel.m_pat;
     if (m_pat)
-      m_pat->signal_note_removed.
+      m_pat->signal_note_removed().
 	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
     return *this;
   }
@@ -135,7 +143,7 @@ namespace Dino {
     Iterator iter;
     cout<<"The selection contains "<<m_data.size()<<" elements:"<<endl;
     for (iter = begin(); iter != end(); ++iter)
-      cout<<"  "<<(*iter)->get_step()<<", "<<int((*iter)->get_key())<<endl;
+      cout<<"  "<<iter->get_step()<<", "<<int(iter->get_key())<<endl;
   }
 
   
@@ -143,11 +151,22 @@ namespace Dino {
     const Note* ptr = &note;
     std::set<Pattern::NoteIterator>::iterator iter;
     for (iter = m_data.begin(); iter != m_data.end(); ++iter) {
-      if (**iter == ptr) {
+      if (&**iter == ptr) {
 	m_data.erase(iter);
 	break;
       }
     }
   }
+
+  
+  Pattern* PatternSelection::get_pattern() {
+    return m_pat;
+  }
+  
+  
+  const Pattern* PatternSelection::get_pattern() const {
+    return m_pat;
+  }
+
 
 }

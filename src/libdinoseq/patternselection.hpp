@@ -21,6 +21,7 @@
 #ifndef PATTERNSELECTION_HPP
 #define PATTERNSELECTION_HPP
 
+#include <iterator>
 #include <set>
 
 #include <sigc++/trackable.h>
@@ -42,16 +43,16 @@ namespace Dino {
 	so it can be used with all functions that expect a Pattern::NoteIterator
 	object as a parameter.
     */
-    class Iterator {
+    class Iterator : public std::iterator<std::forward_iterator_tag, Note> {
     public:
       
       /** Create an invalid iterator. */
       Iterator() { }
       
+      /** Dereference the iterator to get a constant Note reference. */
+      Note& operator*();
       /** Dereference the iterator to get a constant Note pointer. */
-      const Note* operator*() const;
-      /** Dereference the iterator to get a constant Note pointer. */
-      const Note* operator->() const;
+      Note* operator->();
       /** Compare two iterators for equality. */
       bool operator==(const Iterator& iter) const;
       /** Compare two iterators for inequality. */
@@ -62,6 +63,7 @@ namespace Dino {
       
       /** Advance the iterator one step. */
       Iterator& operator++();
+      Iterator operator++(int);
       
     protected:
       
@@ -95,6 +97,9 @@ namespace Dino {
 	that note is not in this selection. */
     Iterator find(const Pattern::NoteIterator& iter) const;
     
+    /** Returns the Pattern that this object is a selection over. */
+    Pattern* get_pattern();
+    const Pattern* get_pattern() const;
     /** Adds a note to the selection. */
     Iterator add_note(const Pattern::NoteIterator& iter);
     /** Removes a note from the selection. */

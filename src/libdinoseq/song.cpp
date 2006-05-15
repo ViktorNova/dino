@@ -78,6 +78,13 @@ namespace Dino {
   }
 
 
+  Song::TrackIterator Song::TrackIterator::operator++(int) {
+    TrackIterator result = *this;
+    ++(*this);
+    return result;
+  }
+  
+
   Song::TrackIterator::
   TrackIterator(const std::map<int, Track*>::iterator& iter)
     : m_iterator(iter) {
@@ -124,6 +131,13 @@ namespace Dino {
   }
   
   
+  Song::ConstTrackIterator Song::ConstTrackIterator::operator++(int) {
+    ConstTrackIterator result = *this;
+    ++(*this);
+    return result;
+  }
+  
+  
   Song::ConstTrackIterator::
   ConstTrackIterator(const std::map<int, Track*>::const_iterator& iter)
     : m_iterator(iter) {
@@ -136,12 +150,12 @@ namespace Dino {
   }
       
   
-  const TempoMap::TempoChange& Song::TempoIterator::operator*() const {
+  TempoMap::TempoChange& Song::TempoIterator::operator*() {
     return *m_tempo;
   }
   
       
-  const TempoMap::TempoChange* Song::TempoIterator::operator->() const {
+  TempoMap::TempoChange* Song::TempoIterator::operator->() {
     return m_tempo;
   }
   
@@ -157,12 +171,19 @@ namespace Dino {
   
   
   Song::TempoIterator& Song::TempoIterator::operator++() {
-    m_tempo = m_tempo->next;
+    m_tempo = m_tempo->get_next();
     return *this;
   }
   
   
-  Song::TempoIterator::TempoIterator(const TempoMap::TempoChange* tempo) 
+  Song::TempoIterator Song::TempoIterator::operator++(int) {
+    TempoIterator iter = *this;
+    ++(*this);
+    return iter;
+  }
+  
+  
+  Song::TempoIterator::TempoIterator(TempoMap::TempoChange* tempo) 
     : m_tempo(tempo) { 
   
   }
@@ -175,9 +196,12 @@ namespace Dino {
   
     dbg1<<"Initialising song"<<endl;
   
-    m_tempo_map.signal_tempochange_added.connect(hide(signal_tempo_changed));
-    m_tempo_map.signal_tempochange_changed.connect(hide(signal_tempo_changed));
-    m_tempo_map.signal_tempochange_removed.connect(hide(signal_tempo_changed));
+    m_tempo_map.signal_tempochange_added.
+      connect(hide(signal_tempo_changed()));
+    m_tempo_map.signal_tempochange_changed.
+      connect(hide(signal_tempo_changed()));
+    m_tempo_map.signal_tempochange_removed.
+      connect(hide(signal_tempo_changed()));
   
   }
 
@@ -231,7 +255,7 @@ namespace Dino {
       dbg1<<"Changing song title to \""<<title<<"\""<<endl;
       m_title = title;
       m_dirty = true;
-      signal_title_changed(m_title);
+      m_signal_title_changed(m_title);
     }
   }
 
@@ -241,7 +265,7 @@ namespace Dino {
       dbg1<<"Changing song author to \""<<author<<"\""<<endl;
       m_author = author;
       m_dirty = true;
-      signal_author_changed(m_author);
+      m_signal_author_changed(m_author);
     }
   }
 
@@ -250,7 +274,7 @@ namespace Dino {
     if (info != m_info) {
       m_info = info;
       m_dirty = true;
-      signal_info_changed(m_info);
+      m_signal_info_changed(m_info);
     }
   }
 
@@ -261,7 +285,7 @@ namespace Dino {
       map<int, Track*>::iterator iter;
       for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter)
 	iter->second->set_length(length);
-      signal_length_changed(length);
+      m_signal_length_changed(length);
     }
   }
 
@@ -281,7 +305,7 @@ namespace Dino {
     m_tracks = new_tracks;
     Deleter::queue(old_tracks);
     
-    signal_track_added(id);
+    m_signal_track_added(id);
     return TrackIterator(m_tracks->find(id));
   }
 
@@ -304,7 +328,7 @@ namespace Dino {
     Deleter::queue(trk);
 
     m_dirty = true;
-    signal_track_removed(id);
+    m_signal_track_removed(id);
     return true;
   }
 
@@ -316,7 +340,7 @@ namespace Dino {
 
   void Song::remove_tempo_change(TempoIterator& iter) {
     assert(iter != tempo_end());
-    m_tempo_map.remove_tempo_change(iter->beat);
+    m_tempo_map.remove_tempo_change(iter->get_beat());
   }
 
 
@@ -341,7 +365,7 @@ namespace Dino {
 
   
   Song::TempoIterator Song::tempo_begin() const {
-    return TempoIterator(m_tempo_map.get_changes(0));
+    return TempoIterator(const_cast<TempoMap::TempoChange*>(m_tempo_map.get_changes(0)));
   }
   
   
@@ -351,12 +375,12 @@ namespace Dino {
   
   
   Song::TempoIterator Song::tempo_find(int beat) const {
-    return TempoIterator(m_tempo_map.get_changes(beat));
+    return TempoIterator(const_cast<TempoMap::TempoChange*>(m_tempo_map.get_changes(beat)));
   }
   
   
   double Song::get_current_tempo(int beat, int tick) {
-    return double(m_tempo_map.get_changes(beat)->bpm);
+    return double(m_tempo_map.get_changes(beat)->get_bpm());
   }
 
 
@@ -389,12 +413,12 @@ namespace Dino {
     // write the tempomap
     const TempoMap::TempoChange* tc = m_tempo_map.get_changes(0);
     Element* tmap_elt = dino_elt->add_child("tempomap");
-    for ( ; tc != 0; tc = tc->next) {
+    for ( ; tc != 0; tc = tc->get_next()) {
       Element* tc_elt = tmap_elt->add_child("tempochange");
       char tmp_txt[10];
-      sprintf(tmp_txt, "%d", int(tc->beat));
+      sprintf(tmp_txt, "%d", int(tc->get_beat()));
       tc_elt->set_attribute("beat", tmp_txt);
-      sprintf(tmp_txt, "%d", tc->bpm);
+      sprintf(tmp_txt, "%d", tc->get_bpm());
       tc_elt->set_attribute("bpm", tmp_txt);
     }
   
@@ -460,7 +484,7 @@ namespace Dino {
       sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
       (*new_tracks)[id] = new Track(id, m_length);
       (*new_tracks)[id]->parse_xml_node(track_elt);
-      signal_track_added(id);
+      m_signal_track_added(id);
     }
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
@@ -510,6 +534,41 @@ namespace Dino {
     tick = int32_t(tick_d);
     double frames_per_tick = framerate * 60 / (bpm * ticks_per_beat);
     frame_offset = (tick_d - tick) * frames_per_tick;
+  }
+
+
+  sigc::signal<void, const string&>& Song::signal_title_changed() const {
+    return m_signal_title_changed;
+  }
+
+
+  sigc::signal<void, const string&>& Song::signal_author_changed() const {
+    return m_signal_author_changed;
+  }
+
+
+  sigc::signal<void, const string&>& Song::signal_info_changed() const {
+    return m_signal_info_changed;
+  }
+
+
+  sigc::signal<void, int>& Song::signal_length_changed() const {
+    return m_signal_length_changed;
+  }
+
+
+  sigc::signal<void, int>& Song::signal_track_added() const {
+    return m_signal_track_added;
+  }
+
+
+  sigc::signal<void, int>& Song::signal_track_removed() const {
+    return m_signal_track_removed;
+  }
+
+
+  sigc::signal<void>& Song::signal_tempo_changed() const {
+    return m_signal_tempo_changed;
   }
 
 

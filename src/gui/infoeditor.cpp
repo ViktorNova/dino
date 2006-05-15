@@ -83,9 +83,11 @@ InfoEditor::InfoEditor(Dino::Song& song)
      so we have to use operator->() to get it */  
   TextBuffer* buf = m_text_info->get_buffer().operator->();
   
-  m_song.signal_title_changed.connect(mem_fun(m_ent_title, &Entry::set_text));
-  m_song.signal_author_changed.connect(mem_fun(m_ent_author,&Entry::set_text));
-  m_song.signal_info_changed.connect(mem_fun(*this, &InfoEditor::update_info));
+  m_song.signal_title_changed().connect(mem_fun(m_ent_title, &Entry::set_text));
+  m_song.signal_author_changed().
+    connect(mem_fun(m_ent_author, &Entry::set_text));
+  m_song.signal_info_changed().
+    connect(mem_fun(*this, &InfoEditor::update_info));
   
   slot<void> set_title = compose(mem_fun(m_song, &Song::set_title),
 				 mem_fun(m_ent_title, &Entry::get_text));

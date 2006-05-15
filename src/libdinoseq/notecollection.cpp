@@ -20,6 +20,7 @@
 
 #include <iostream>
 
+#include "note.hpp"
 #include "notecollection.hpp"
 #include "patternselection.hpp"
 

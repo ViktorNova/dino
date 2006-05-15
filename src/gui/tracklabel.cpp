@@ -54,7 +54,7 @@ void TrackLabel::set_track(int id, Track* track) {
   m_track = track;
   m_id = id;
   m_name_connection.disconnect();
-  m_name_connection = m_track->signal_name_changed.
+  m_name_connection = m_track->signal_name_changed().
     connect(mem_fun(*this, &TrackLabel::slot_name_changed));
   slot_name_changed(track->get_name());
 }

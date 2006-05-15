@@ -24,16 +24,17 @@
 #include <string>
 #include <vector>
 
-#include "interpolatedevent.hpp"
-
 
 namespace Dino {
 
+
+  class InterpolatedEvent;
+  
   
   /** This class represents a sequence of MIDI CC events used in a Pattern. */
   class Controller {
   public:
-    
+
     /** Create a new controller with the given parameters. */
     Controller(const std::string& name, unsigned int size, 
 	       long param, int min, int max);
@@ -68,7 +69,7 @@ namespace Dino {
     //@}
 
   private:
-    
+        
     std::string m_name;
     std::vector<InterpolatedEvent*> m_events;
     long m_param;

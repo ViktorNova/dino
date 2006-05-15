@@ -40,7 +40,6 @@ namespace Dino {
     unsigned char get_velocity() const;
     /** Returns the pattern step that the note starts on. */
     unsigned int get_step() const;
-    
     /** Returns the note on event. */
     NoteEvent* get_note_on();
     /** Returns the note off event. */

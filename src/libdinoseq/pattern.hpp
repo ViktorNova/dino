@@ -18,10 +18,11 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ****************************************************************************/
 
-#ifndef PATTERN_H
-#define PATTERN_H
+#ifndef PATTERN_HPP
+#define PATTERN_HPP
 
 #include <cassert>
+#include <iterator>
 #include <list>
 #include <map>
 #include <vector>
@@ -30,9 +31,6 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
-#include "controller.hpp"
-#include "note.hpp"
-#include "noteevent.hpp"
 #include "xmlserialisable.hpp"
 
 
@@ -45,9 +43,12 @@ using namespace xmlpp;
 namespace Dino {
   
   
+  class Controller;
   class InterpolatedEvent;
   class MIDIBuffer;
+  class Note;
   class NoteCollection;
+  class NoteEvent;
   class PatternSelection;
   
 
@@ -70,16 +71,16 @@ namespace Dino {
 	
 	@see Pattern::notes_begin(), Pattern::notes_end(), Pattern::find_note()
     */
-    class NoteIterator {
+    class NoteIterator : public std::iterator<std::forward_iterator_tag, Note> {
     public:
       
       /** Create an invalid iterator. */
       NoteIterator();
       
+      /** Dereference the iterator to get a constant Note reference. */
+      Note& operator*() const;
       /** Dereference the iterator to get a constant Note pointer. */
-      const Note* operator*() const;
-      /** Dereference the iterator to get a constant Note pointer. */
-      const Note* operator->() const;
+      Note* operator->() const;
       /** Returns @c true if the two iterators refer to the same note. */
       bool operator==(const NoteIterator& iter) const;
       /** Returns @c true if the two iterators does not refer to the 
@@ -91,12 +92,7 @@ namespace Dino {
       bool operator<(const NoteIterator& iter) const;
       /** Advances the iterator to the next note. */
       NoteIterator& operator++();
-      /** If the iterator is definitely invalid, this will return @c false.
-	  However, it might return @c true for an iterator that has been 
-	  invalidated by removing the note it refers to, for example. */
-      /*operator bool() const {
-	return (m_pattern != 0 && m_note != 0);
-	}*/
+      NoteIterator operator++(int);
 	  
     private:
       
@@ -111,7 +107,8 @@ namespace Dino {
     
     /** A ControllerIterator is a const_iterator type that can be used to
 	access data from controllers in the pattern. */
-    class ControllerIterator {
+    class ControllerIterator : 
+      public std::iterator<std::forward_iterator_tag, Controller> {
     public:
       
       /** Create an invalid iterator. */
@@ -235,27 +232,27 @@ namespace Dino {
     /// @name Signals
     //@{
     /** Emitted when the pattern name has changed. */
-    sigc::signal<void, string> signal_name_changed;
+    sigc::signal<void, string>& signal_name_changed();
     /** Emitted when the length in beats has changed. */
-    sigc::signal<void, int> signal_length_changed;
+    sigc::signal<void, int>& signal_length_changed();
     /** Emitted when the number of steps per beat has changed. */
-    sigc::signal<void, int> signal_steps_changed;
+    sigc::signal<void, int>& signal_steps_changed();
     /** Emitted when a note has been added. */
-    sigc::signal<void, Note const&> signal_note_added;
+    sigc::signal<void, Note const&>& signal_note_added();
     /** Emitted when an existing note has been changed. */
-    sigc::signal<void, Note const&> signal_note_changed;
+    sigc::signal<void, Note const&>& signal_note_changed();
     /** Emitted when a note has been removed. */
-    sigc::signal<void, Note const&> signal_note_removed;
+    sigc::signal<void, Note const&>& signal_note_removed();
     /** Emitted when a CC control point has been added. */
-    sigc::signal<void, int, int, int> signal_cc_added;
+    sigc::signal<void, int, int, int>& signal_cc_added();
     /** Emitted when the value for a CC control point has changed. */
-    sigc::signal<void, int, int, int> signal_cc_changed;
+    sigc::signal<void, int, int, int>& signal_cc_changed();
     /** Emitted when a CC control point has been removed. */
-    sigc::signal<void, int, int> signal_cc_removed;
+    sigc::signal<void, int, int>& signal_cc_removed();
     /** Emitted when a whole controller has been added. */
-    sigc::signal<void, int> signal_controller_added;
+    sigc::signal<void, int>& signal_controller_added();
     /** Emitted when a whole controller has been removed. */
-    sigc::signal<void, int> signal_controller_removed;
+    sigc::signal<void, int>& signal_controller_removed();
     //@}
     
   private:
@@ -266,33 +263,16 @@ namespace Dino {
 	sequencer with a single pointer assignment (for lock-free 
 	thread safety). */
     struct SeqData {
-      
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
 	      std::vector<Controller*>* controllers,
-	      unsigned int l, unsigned int s)
-	: ons(note_ons), offs(note_offs), ctrls(controllers),
-	  length(l), steps(s) {
-	assert(ons != 0);
-	assert(offs != 0);
-	assert(ctrls != 0);
-	assert(length > 0);
-	assert(steps > 0);
-      }
-      
-      ~SeqData() {
-	delete ons;
-	delete offs;
-	for (unsigned i = 0; i < ctrls->size(); ++i)
-	  delete (*ctrls)[i];
-	delete ctrls;
-      }
+	      unsigned int l, unsigned int s);
+      ~SeqData();
       
       NoteEventList* ons;
       NoteEventList* offs;
       std::vector<Controller*>* ctrls;
       unsigned int length;
       unsigned int steps;
-      
     };
     
     // no copying for now
@@ -320,7 +300,19 @@ namespace Dino {
   
     // dirty rect
     int m_min_step, m_min_note, m_max_step, m_max_note;
-  
+
+    sigc::signal<void, string> m_signal_name_changed;
+    sigc::signal<void, int> m_signal_length_changed;
+    sigc::signal<void, int> m_signal_steps_changed;
+    sigc::signal<void, Note const&> m_signal_note_added;
+    sigc::signal<void, Note const&> m_signal_note_changed;
+    sigc::signal<void, Note const&> m_signal_note_removed;
+    sigc::signal<void, int, int, int> m_signal_cc_added;
+    sigc::signal<void, int, int, int> m_signal_cc_changed;
+    sigc::signal<void, int, int> m_signal_cc_removed;
+    sigc::signal<void, int> m_signal_controller_added;
+    sigc::signal<void, int> m_signal_controller_removed;
+
   };
 
 

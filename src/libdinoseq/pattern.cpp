@@ -26,10 +26,13 @@
 #include <iostream>
 #include <set>
 
+#include "controller.hpp"
 #include "controller_numbers.hpp"
 #include "debug.hpp"
 #include "deleter.hpp"
+#include "interpolatedevent.hpp"
 #include "midibuffer.hpp"
+#include "note.hpp"
 #include "notecollection.hpp"
 #include "noteevent.hpp"
 #include "pattern.hpp"
@@ -56,12 +59,12 @@ namespace Dino {
   }
   
   
-  const Note* Pattern::NoteIterator::operator*() const {
-    return m_note;
+  Note& Pattern::NoteIterator::operator*() const {
+    return *m_note;
   }
   
   
-  const Note* Pattern::NoteIterator::operator->() const {
+  Note* Pattern::NoteIterator::operator->() const {
     return m_note;
   }
   
@@ -103,6 +106,13 @@ namespace Dino {
     
     m_note = 0;
     return *this;
+  }
+
+
+  Pattern::NoteIterator Pattern::NoteIterator::operator++(int) {
+    NoteIterator result = *this;
+    ++(*this);
+    return result;
   }
 
   
@@ -229,7 +239,7 @@ namespace Dino {
       dbg1<<"Changing pattern name from \""<<m_name<<"\" to \""
 	  <<name<<"\""<<endl;
       m_name = name;
-      signal_name_changed(m_name);
+      m_signal_name_changed(m_name);
     }
   }
 
@@ -289,7 +299,7 @@ namespace Dino {
 		       length, old_sd->steps);
     Deleter::queue(old_sd);
 
-    signal_length_changed(m_sd->length);
+    m_signal_length_changed(m_sd->length);
   }
 
 
@@ -352,7 +362,7 @@ namespace Dino {
     for (unsigned i = 0; i < starts.size(); ++i)
       add_note(starts[i], keys[i], velocities[i], lengths[i]);
     
-    signal_steps_changed(m_sd->length);
+    m_signal_steps_changed(m_sd->length);
   }
 
 
@@ -412,7 +422,7 @@ namespace Dino {
       old_note_on->set_previous(note_on);
     (*m_sd->ons)[step] = note_on;
     
-    signal_note_added(*note);
+    m_signal_note_added(*note);
     
     return NoteIterator(this, note);
   }
@@ -480,7 +490,7 @@ namespace Dino {
       (*m_sd->ons)[note->m_note_on->get_step()] = next;
     
     // delete the note object and queue the events for deletion
-    signal_note_removed(*note);
+    m_signal_note_removed(*note);
     Deleter::queue(note->m_note_on);
     Deleter::queue(note->m_note_off);
     Deleter::queue(note);
@@ -529,7 +539,7 @@ namespace Dino {
       old_note_off->set_previous(note->m_note_off);
     (*m_sd->offs)[note->get_step() + new_length - 1] = note->m_note_off;
     
-    signal_note_changed(*note);
+    m_signal_note_changed(*note);
     
     return note->get_length();
   }
@@ -542,7 +552,7 @@ namespace Dino {
     
     iterator.m_note->m_note_on->set_velocity(velocity);
     
-    signal_note_changed(**iterator);
+    m_signal_note_changed(*iterator);
   }
 
 
@@ -572,7 +582,7 @@ namespace Dino {
     
     dbg1<<"Added controller \""<<name<<"\" with parameter "<<param<<endl;
     
-    signal_controller_added(param);
+    m_signal_controller_added(param);
     return ControllerIterator(new_vector->begin() + i);
   }
   
@@ -599,21 +609,21 @@ namespace Dino {
     
     dbg1<<"Removed controller"<<endl;
 
-    signal_controller_removed(param);
+    m_signal_controller_removed(param);
   }
 
   
   void Pattern::add_cc(ControllerIterator iter, unsigned int step, int value) {
     assert(step <= m_sd->length * m_sd->steps);
     (*iter.m_iterator)->add_point(step, value);
-    signal_cc_added((*iter.m_iterator)->get_param(), step, value);
+    m_signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }
 
 
   void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
     assert(step < m_sd->length * m_sd->steps);
     (*iter.m_iterator)->remove_point(step);
-    signal_cc_removed((*iter.m_iterator)->get_param(), step);
+    m_signal_cc_removed((*iter.m_iterator)->get_param(), step);
   }
 
   
@@ -690,7 +700,7 @@ namespace Dino {
       const Element* name_elt = dynamic_cast<const Element*>(*nodes.begin());
       if (name_elt) {
 	m_name = name_elt->get_child_text()->get_content();
-	signal_name_changed(m_name);
+	m_signal_name_changed(m_name);
       }
     }
 
@@ -868,7 +878,84 @@ namespace Dino {
     
     return NoteIterator(this, 0);
   }
+
+
+  Pattern::SeqData::SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
+			    std::vector<Controller*>* controllers,
+			    unsigned int l, unsigned int s)
+    : ons(note_ons), offs(note_offs), ctrls(controllers),
+      length(l), steps(s) {
+	assert(ons != 0);
+	assert(offs != 0);
+	assert(ctrls != 0);
+	assert(length > 0);
+	assert(steps > 0);
+  }
+
   
+  Pattern::SeqData::~SeqData() {
+    delete ons;
+    delete offs;
+    for (unsigned i = 0; i < ctrls->size(); ++i)
+      delete (*ctrls)[i];
+    delete ctrls;
+  }
+
+
+  sigc::signal<void, string>& Pattern::signal_name_changed() {
+    return m_signal_name_changed;
+  }
+
+
+  sigc::signal<void, int>& Pattern::signal_length_changed() {
+    return m_signal_length_changed;
+  }
+
+
+  sigc::signal<void, int>& Pattern::signal_steps_changed() {
+    return m_signal_steps_changed;
+  }
+
+
+  sigc::signal<void, Note const&>& Pattern::signal_note_added() {
+    return m_signal_note_added;
+  }
+
+
+  sigc::signal<void, Note const&>& Pattern::signal_note_changed() {
+    return m_signal_note_changed;
+  }
+
+
+  sigc::signal<void, Note const&>& Pattern::signal_note_removed() {
+    return m_signal_note_removed;
+  }
+
+
+  sigc::signal<void, int, int, int>& Pattern::signal_cc_added() {
+    return m_signal_cc_added;
+  }
+
+
+  sigc::signal<void, int, int, int>& Pattern::signal_cc_changed() {
+    return m_signal_cc_changed;
+  }
+
+
+  sigc::signal<void, int, int>& Pattern::signal_cc_removed() {
+    return m_signal_cc_removed;
+  }
+
+
+  sigc::signal<void, int>& Pattern::signal_controller_added() {
+    return m_signal_controller_added;
+  }
+
+
+  sigc::signal<void, int>& Pattern::signal_controller_removed() {
+    return m_signal_controller_removed;
+  }
+
 
 }
 

@@ -61,8 +61,9 @@ namespace Dino {
 
     m_valid = true;
 
-    m_song.signal_track_added.connect(mem_fun(*this, &Sequencer::track_added));
-    m_song.signal_track_removed.
+    m_song.signal_track_added().
+      connect(mem_fun(*this, &Sequencer::track_added));
+    m_song.signal_track_removed().
       connect(mem_fun(*this, &Sequencer::track_removed));
 
     Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::beat_checker), 20);
@@ -376,7 +377,7 @@ namespace Dino {
     int current_beat = m_current_beat;
     if (current_beat != m_old_current_beat) {
       m_old_current_beat = current_beat;
-      signal_beat_changed(const_cast<int&>(m_current_beat));
+      m_signal_beat_changed(const_cast<int&>(m_current_beat));
     }
     return true;
   }
@@ -386,10 +387,19 @@ namespace Dino {
     int ports_changed = m_ports_changed;
     if (ports_changed != m_old_ports_changed) {
       m_old_ports_changed = ports_changed;
-      signal_instruments_changed();
+      m_signal_instruments_changed();
     }
     return true;
   }
 
+
+  sigc::signal<void, int>& Sequencer::signal_beat_changed() { 
+    return m_signal_beat_changed; 
+  }
+  
+  
+  sigc::signal<void>& Sequencer::signal_instruments_changed() {
+    return m_signal_instruments_changed;
+  }
 
 }

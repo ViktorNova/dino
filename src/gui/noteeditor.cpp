@@ -22,6 +22,7 @@
 #include <iostream>
 
 #include "debug.hpp"
+#include "note.hpp"
 #include "noteeditor.hpp"
 
 
@@ -99,11 +100,11 @@ void NoteEditor::set_pattern(Pattern* pattern) {
       
       namespace s = sigc;
       sigc::slot<void> draw = mem_fun(*this, &NoteEditor::queue_draw);
-      m_pat->signal_note_added.connect(s::hide(draw));
-      m_pat->signal_note_removed.connect(s::hide(draw));
-      m_pat->signal_note_changed.connect(s::hide(draw));
-      m_pat->signal_length_changed.connect(s::hide(draw));
-      m_pat->signal_steps_changed.connect(s::hide(draw));
+      m_pat->signal_note_added().connect(s::hide(draw));
+      m_pat->signal_note_removed().connect(s::hide(draw));
+      m_pat->signal_note_changed().connect(s::hide(draw));
+      m_pat->signal_length_changed().connect(s::hide(draw));
+      m_pat->signal_steps_changed().connect(s::hide(draw));
       set_size_request(m_pat->get_length() * m_pat->get_steps() * 
 		       m_col_width + 1, m_max_note * m_row_height + 1);
       queue_draw();

@@ -362,7 +362,7 @@ namespace Dino {
       if (port) {
 	void* port_buf = jack_port_get_buffer(port, nframes);
 	jack_midi_clear_buffer(port_buf, nframes);
-	MIDIBuffer buffer(port_buf);
+	MIDIBuffer buffer(port_buf, start, pos.beats_per_minute,pos.frame_rate);
 	buffer.set_period_size(nframes);
 	buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
 	iter->sequence(buffer, start, end);

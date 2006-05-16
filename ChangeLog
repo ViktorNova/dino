@@ -1,2 +1,11 @@
+Version 0.2.1 (2006-05-17)
+	* Added #include <cassert> in noteevent.hpp (reported by
+	  Apage43 on #lad)
+	* Bumped the JACK requirement to version 0.102.5, which is available
+	  in anonymous CVS and has MIDI support - no more patching needed!
+	* Fixed a rather embarrassing timestamping bug that forced all events
+	  to happen on JACK period boundaries, adding lots of jitter at large
+	  period sizes
+	
 Version 0.2.0 (2006-05-06):
 	* First release

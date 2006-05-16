@@ -19,6 +19,7 @@
 ****************************************************************************/
 
 #include <cassert>
+#include <iostream>
 
 #include "noteevent.hpp"
 

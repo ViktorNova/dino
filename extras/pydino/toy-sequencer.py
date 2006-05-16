@@ -5,6 +5,8 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import dino
+import gc
+from weakref import ref
 
 
 class ToggleInfo:
@@ -89,7 +91,9 @@ class ToySequencer:
 
         # initialise the sequencer
         self.sequencer = dino.Sequencer("Toy sequencer", self.song)
-        self.sequencer.signal_instruments_changed(self.update_combo)
+        # XXX without ref() this creates a reference cycle that the GC doesn't
+        # detect - bad!
+        self.sequencer.signal_instruments_changed(ref(self.update_combo))
 
         # create the window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -108,7 +112,10 @@ class ToySequencer:
         playbtn.connect("clicked", self.on_play)
         stopbtn.connect("clicked", self.on_stop)
         backbtn.connect("clicked", self.on_back)
-        bpmctrl = gtk.SpinButton(gtk.Adjustment(100, 0, 200, 1))
+        for b in self.song.tempochanges:
+            bpm = b.bpm
+            break
+        bpmctrl = gtk.SpinButton(gtk.Adjustment(bpm, 0, 200, 1))
         bpmctrl.connect("value_changed", self.on_bpm_change)
         self.instcombo = gtk.combo_box_new_text()
         self.update_combo()
@@ -173,7 +180,7 @@ class ToySequencer:
         gtk.main()
 
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) > 1:
         toyseq = ToySequencer(4, sys.argv[1])
     else:
@@ -183,3 +190,8 @@ if __name__ == "__main__":
         toyseq.save(sys.argv[1])
     else:
         toyseq.save("toyseq.song")
+
+if __name__ == "__main__":
+    main()
+    gc.collect()
+    

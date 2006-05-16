@@ -274,7 +274,8 @@ BOOST_PYTHON_MODULE(dino) {
 					       const std::string&, int, int>());
   class_<PatternSelection> _PatternSelection("PatternSelection",
 					     init<Pattern*>());
-  class_<Sequencer> _Sequencer("Sequencer", init<const std::string&, Song&>());
+  class_<Sequencer> _Sequencer("Sequencer", init<const std::string&, Song&>()
+			       [with_custodian_and_ward<1, 3>()]);
   scope* SequencerScope = new scope(_Sequencer);
   class_<Sequencer::InstrumentInfo> _InstrumentInfo("InstrumentInfo",
 						    init<const std::string&>());

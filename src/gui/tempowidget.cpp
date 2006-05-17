@@ -167,7 +167,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
   switch (event->button) {
   case 1: {
     if (beat >= 0 && beat < unsigned(m_song->get_length())) {
-      double bpm = m_song->get_current_tempo(beat, 0);
+      double bpm = m_song->get_current_tempo(beat);
       Song::TempoIterator iter = m_song->add_tempo_change(beat, bpm);
       if (iter != m_song->tempo_end()) {
 	m_active_tempo = &*iter;

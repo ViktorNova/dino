@@ -109,6 +109,9 @@ namespace Dino {
     void jack_timebase_callback(jack_transport_state_t state, 
 				jack_nframes_t nframes, jack_position_t* pos, 
 				int new_pos);
+    void jack_timebase_callback2(jack_transport_state_t state, 
+				jack_nframes_t nframes, jack_position_t* pos, 
+				int new_pos);
     /** This is called once for each JACK cycle. MIDI is sequenced from here. 
 	@callgraph
     */
@@ -125,8 +128,8 @@ namespace Dino {
 					jack_nframes_t nframes,
 					jack_position_t* pos, int new_pos,
 					void* arg) {
-      static_cast<Sequencer*>(arg)->jack_timebase_callback(state, nframes, 
-							   pos, new_pos);
+      static_cast<Sequencer*>(arg)->jack_timebase_callback2(state, nframes, 
+							    pos, new_pos);
     }
     static int jack_process_callback_(jack_nframes_t nframes, void* arg) {
       return static_cast<Sequencer*>(arg)->jack_process_callback(nframes);
@@ -175,7 +178,8 @@ namespace Dino {
     double m_time_to_next_cc;
     int m_last_beat;
     int m_last_tick;
-
+    double m_next_beat;
+    
     bool m_sent_all_off;
     volatile int m_current_beat;
     volatile int m_old_current_beat;

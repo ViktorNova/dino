@@ -32,7 +32,8 @@ namespace Dino {
     
     /** Create a new MIDIBuffer as a wrapper for the JACK MIDI output buffer
 	@c port_buffer. */
-    MIDIBuffer(void* port_buffer);
+    MIDIBuffer(void* port_buffer, double start_beat, 
+	       double bpm, unsigned long framerate);
     
     /** Set the JACK MIDI period size (this is needed when adding events to
 	JACK MIDI buffers, not sure why). */
@@ -64,6 +65,16 @@ namespace Dino {
     
     /** The desired CC resolution. */
     double m_cc_resolution;
+    
+    /** The beat position at the beginning of the buffer. */
+    double m_start_beat;
+    
+    /** The BPM (constant). */
+    double m_bpm;
+    
+    /** The sample rate. */
+    unsigned long m_samplerate;
+    
   };
 
 

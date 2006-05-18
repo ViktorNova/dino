@@ -94,36 +94,36 @@ bool Ruler::on_expose_event(GdkEventExpose* event) {
   get_pango_context()->set_font_description(fd);
   char tmp[10];
   
-  if (m_loop_start != -1 || m_loop_end != -1) {
-    
-    if (m_loop_start != -1 && m_loop_start < m_loop_end) {
-      m_gc->set_foreground(m_loop_bg);
-      win->draw_rectangle(m_gc, true, m_loop_start * m_div_size, 0,
-			  (m_loop_end - m_loop_start) * m_div_size, m_height);
-    }
-    
-    m_gc->set_foreground(m_loop_marker);
-    if (m_loop_start != -1) {
-      win->draw_rectangle(m_gc, true, 
-			  m_loop_start * m_div_size, 0, 3, m_height);
-      win->draw_rectangle(m_gc, true, m_loop_start * m_div_size + 4,
-			  m_height / 3 - 1, 3, 3);
-      win->draw_rectangle(m_gc, true, m_loop_start * m_div_size + 4,
-			  2 * m_height / 3 - 1, 3, 3);
-    }
-    
-    if (m_loop_end != -1) {
-      win->draw_rectangle(m_gc, true, 
-			  m_loop_end * m_div_size - 2, 0, 3, m_height);
-      win->draw_rectangle(m_gc, true, m_loop_end * m_div_size - 6,
-			  m_height / 3 - 1, 3, 3);
-      win->draw_rectangle(m_gc, true, m_loop_end * m_div_size - 6,
-			  2 * m_height / 3 - 1, 3, 3);
-    }
+  // if we are looping over an interval, draw a yellow background
+  if (m_loop_start != -1 && m_loop_start < m_loop_end) {
+    m_gc->set_foreground(m_loop_bg);
+    win->draw_rectangle(m_gc, true, m_loop_start * m_div_size, 0,
+			(m_loop_end - m_loop_start) * m_div_size, m_height);
   }
   
-  m_gc->set_foreground(m_fg);
+  // draw the loop start marker
+  m_gc->set_foreground(m_loop_marker);
+  if (m_loop_start != -1) {
+    win->draw_rectangle(m_gc, true, 
+			m_loop_start * m_div_size, 0, 3, m_height);
+    win->draw_rectangle(m_gc, true, m_loop_start * m_div_size + 4,
+			m_height / 3 - 1, 3, 3);
+    win->draw_rectangle(m_gc, true, m_loop_start * m_div_size + 4,
+			2 * m_height / 3 - 1, 3, 3);
+  }
   
+  // and the loop end marker
+  if (m_loop_end != -1) {
+    win->draw_rectangle(m_gc, true, 
+			m_loop_end * m_div_size - 2, 0, 3, m_height);
+    win->draw_rectangle(m_gc, true, m_loop_end * m_div_size - 6,
+			m_height / 3 - 1, 3, 3);
+    win->draw_rectangle(m_gc, true, m_loop_end * m_div_size - 6,
+			2 * m_height / 3 - 1, 3, 3);
+  }
+  
+  // draw the ticks and numbers
+  m_gc->set_foreground(m_fg);
   for (int i = 0; i <= m_length; ++i) {
     win->draw_line(m_gc, i * m_div_size, m_height - 4, 
 		   i * m_div_size, m_height);

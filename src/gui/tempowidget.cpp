@@ -54,7 +54,7 @@ TempoWidget::TempoWidget(Song* song)
   m_colormap->alloc_color(m_hl_color);
   
   // connect signals
-  song->signal_tempo_changed().connect(mem_fun(*this, &TempoWidget::update));
+  song->signal_tempo_changed().connect(mem_fun(*this, &TempoWidget::queue_draw));
   song->signal_length_changed().
     connect(mem_fun(*this, &TempoWidget::length_changed));
   

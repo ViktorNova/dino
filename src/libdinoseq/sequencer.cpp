@@ -237,67 +237,10 @@ namespace Dino {
 
   void Sequencer::jack_timebase_callback(jack_transport_state_t state, 
 					 jack_nframes_t nframes, 
-					 jack_position_t* pos, 
-					 int new_pos) {
-    pos->beats_per_bar = 4;
-    pos->ticks_per_beat = 10000;
-    
-    int32_t beat, tick;
-    double dbeat;
-    m_song.get_timebase_info(pos->frame, pos->frame_rate, 
-			     pos->beats_per_minute, dbeat);
-    beat = int32_t(dbeat);
-    double dtick = (dbeat - beat) * pos->ticks_per_beat;
-    tick = int32_t(dtick);
-    double frames_per_tick = pos->frame_rate * 60 / (pos->beats_per_minute * 
-						     pos->ticks_per_beat);
-    pos->bbt_offset = jack_nframes_t((dtick - tick) * frames_per_tick);
-    
-    // if we are standing still or if we just relocated, calculate 
-    // the new position
-    if (new_pos || state != JackTransportRolling) {
-      pos->beat = beat;
-      pos->tick = tick;
-    }
-    // otherwise, just increase the BBT by a period
-    else {
-      double db = nframes * pos->beats_per_minute / (pos->frame_rate * 60.0);
-      pos->beat = m_last_beat + int32_t(db);
-      pos->tick = m_last_tick + int32_t((db - int(db)) * pos->ticks_per_beat);
-      if (pos->tick >= pos->ticks_per_beat) {
-	pos->tick -= int32_t(pos->ticks_per_beat);
-	++pos->beat;
-      }
-    }
-
-    m_last_beat = pos->beat;
-    m_last_tick = pos->tick;
-
-    pos->bar = int32_t(pos->beat / pos->beats_per_bar);
-    pos->beat %= int(pos->beats_per_bar);
-    pos->valid = jack_position_bits_t(JackPositionBBT | JackBBTFrameOffset);
-    
-    // bars and beats start from 1 by convention (but ticks don't!)
-    ++pos->bar;
-    ++pos->beat;
-    
-    // loop test
-    if (pos->bar > 1)
-      jack_transport_locate(m_jack_client, 0);
-	
-  }
-
-
-  void Sequencer::jack_timebase_callback2(jack_transport_state_t state, 
-					 jack_nframes_t nframes, 
-					 jack_position_t* pos, 
-					  int new_pos) {
-    
-    cerr<<"current frame == "<<pos->frame<<endl;
-    
-    int loop_end = 8;
-    int loop_start = 4;
-    
+					 jack_position_t* pos, int new_pos) {
+    int loop_end = m_song.get_loop_end();
+    int loop_start = m_song.get_loop_start();
+    bool looping = (loop_end >= 0 && loop_start >= 0);
     
     // these are always the same in Dino
     pos->beats_per_bar = 4;
@@ -318,20 +261,18 @@ namespace Dino {
     
     // if we are looping we may need to adjust the BPM so the loop boundary
     // coincides with a JACK period boundary
-    if (beat < loop_end) {
+    if (looping && beat < loop_end) {
       double beats_left = loop_end - beat;
       double periods_left = 60 * (beats_left / bpm) * 
 	pos->frame_rate / double(nframes);
       int whole_periods = int(floor(periods_left + 0.5));
       whole_periods = whole_periods == 0 ? 1 : whole_periods;
-      cerr<<beats_left<<", "<<periods_left<<", "<<whole_periods<<endl;
       bpm = 60 * (beats_left / whole_periods) * 
 	pos->frame_rate / double(nframes);
       
       // if this is the last period before the loop end, skip back to the loop
       // start
       if (whole_periods <= 1) {
-	cerr<<loop_start<<" == "<<m_song.bt2frame(loop_start)<<endl;
 	jack_transport_locate(m_jack_client, m_song.bt2frame(loop_start));
 	m_next_beat = loop_start;
       }

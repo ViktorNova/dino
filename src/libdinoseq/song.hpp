@@ -140,6 +140,8 @@ namespace Dino {
     TempoIterator tempo_find(int beat) const;
     const size_t get_number_of_tracks() const;
     int get_length() const;
+    int get_loop_start() const;
+    int get_loop_end() const;
     
     // non-const accessors
     TrackIterator tracks_begin();
@@ -157,6 +159,9 @@ namespace Dino {
     bool remove_track(const TrackIterator& iterator);
     TempoIterator add_tempo_change(int beat, double bpm);
     void remove_tempo_change(TempoIterator& iter);
+    void set_loop_start(int start);
+    void set_loop_end(int end);
+    
     //@}
     
     /// @name Sequencing
@@ -200,9 +205,12 @@ namespace Dino {
     string m_info;
     map<int, Track*>* volatile m_tracks;
     volatile int m_length;
-  
+    
     TempoMap m_tempo_map;
-  
+    
+    int m_loop_start;
+    int m_loop_end;
+    
     mutable bool m_dirty;
 
     mutable sigc::signal<void, const string&> m_signal_title_changed;

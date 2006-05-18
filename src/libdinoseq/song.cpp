@@ -192,6 +192,8 @@ namespace Dino {
   Song::Song() 
     : m_tracks(new map<int, Track*>()), 
       m_length(32), 
+      m_loop_start(-1),
+      m_loop_end(-1),
       m_dirty(false) {
   
     dbg1<<"Initialising song"<<endl;
@@ -342,7 +344,17 @@ namespace Dino {
     assert(iter != tempo_end());
     m_tempo_map.remove_tempo_change(iter->get_beat());
   }
-
+  
+  
+  void Song::set_loop_start(int start) {
+    m_loop_start = start;
+  }
+  
+  
+  void Song::set_loop_end(int end) {
+    m_loop_end = end;
+  }
+  
 
   const string& Song::get_title() const {
     return m_title;
@@ -361,6 +373,16 @@ namespace Dino {
   
   int Song::get_length() const {
     return m_length;
+  }
+
+  
+  int Song::get_loop_start() const {
+    return m_loop_start;
+  }
+  
+  
+  int Song::get_loop_end() const {
+    return m_loop_end;
   }
 
   

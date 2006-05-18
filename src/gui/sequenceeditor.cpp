@@ -154,7 +154,7 @@ SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
     connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
   m_dlg_track->update_ports(&m_seq);
   m_sequence_ruler.signal_clicked.
-  connect(sigc::hide(mem_fun(m_seq, &Sequencer::go_to_beat)));
+    connect(mem_fun(*this, &SequenceEditor::ruler_clicked));
   
   reset_gui();
 }
@@ -267,3 +267,14 @@ void SequenceEditor::set_active_track(int track) {
   m_active_track = track;
   reset_gui();
 }
+
+
+void SequenceEditor::ruler_clicked(double beat, int button) {
+  if (button == 2)
+    m_seq.go_to_beat(beat);
+  else if (button == 1)
+    m_song.set_loop_start(beat);
+  else if (button == 3)
+    m_song.set_loop_end(beat);
+}
+

@@ -426,6 +426,9 @@ BOOST_PYTHON_MODULE(dino) {
   _Song.add_property("author", &Song_get_author, &Song::set_author);
   _Song.add_property("info", &Song_get_info, &Song::set_info);
   _Song.add_property("length", &Song::get_length, &Song::set_length);
+  _Song.add_property("loop_start", &Song::get_loop_start, 
+		     &Song::set_loop_start);
+  _Song.add_property("loop_end", &Song::get_loop_end, &Song::set_loop_end);
   _Song.def("get_number_of_tracks", &Song::get_number_of_tracks);
   _Song.def("add_track", &Song_add_track, return_internal_reference<1>());
   _Song.def("remove_track", &Song_remove_track);

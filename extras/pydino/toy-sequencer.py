@@ -88,6 +88,8 @@ class ToySequencer:
             pat = self.pattern = track.add_pattern("Single pattern",
                                                    beats, steps)
             track.set_sequence_entry(0, pat.id, beats)
+            self.song.loop_start = 0
+            self.song.loop_end = beats
 
         # initialise the sequencer
         self.sequencer = dino.Sequencer("Toy sequencer", self.song)

@@ -37,7 +37,9 @@ public:
   void set_subdivisions(int subs);
   void set_interval(int interval);
   void set_division_size(int size);
-
+  void set_loop_start(int start);
+  void set_loop_end(int end);
+  
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
   virtual bool on_button_press_event(GdkEventButton* event);
@@ -53,6 +55,10 @@ private:
   int m_interval;
   int m_div_size;
   int m_height;
+  int m_loop_start;
+  int m_loop_end;
+  
+  Gdk::Color m_fg, m_loop_bg, m_loop_marker;
   
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;

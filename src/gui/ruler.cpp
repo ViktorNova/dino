@@ -32,8 +32,22 @@ using namespace Dino;
 
 
 Ruler::Ruler(int length, int subs, int interval, int size, int height)
-  : m_length(length), m_subs(subs), m_interval(interval), 
-    m_div_size(size), m_height(height) {
+  : m_length(length), 
+    m_subs(subs), 
+    m_interval(interval), 
+    m_div_size(size), 
+    m_height(height),
+    m_loop_start(-1),
+    m_loop_end(-1) {
+  
+  m_fg.set_rgb(0, 0, 0);
+  m_loop_bg.set_rgb(65000, 65000, 40000);
+  m_loop_marker.set_rgb(60000, 40000, 0);
+  m_colormap = Colormap::get_system();
+  m_colormap->alloc_color(m_fg);
+  m_colormap->alloc_color(m_loop_bg);
+  m_colormap->alloc_color(m_loop_marker);
+  
   set_size_request(m_length * m_div_size + 1, m_height);
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
 }
@@ -80,6 +94,36 @@ bool Ruler::on_expose_event(GdkEventExpose* event) {
   get_pango_context()->set_font_description(fd);
   char tmp[10];
   
+  if (m_loop_start != -1 || m_loop_end != -1) {
+    
+    if (m_loop_start != -1 && m_loop_start < m_loop_end) {
+      m_gc->set_foreground(m_loop_bg);
+      win->draw_rectangle(m_gc, true, m_loop_start * m_div_size, 0,
+			  (m_loop_end - m_loop_start) * m_div_size, m_height);
+    }
+    
+    m_gc->set_foreground(m_loop_marker);
+    if (m_loop_start != -1) {
+      win->draw_rectangle(m_gc, true, 
+			  m_loop_start * m_div_size, 0, 3, m_height);
+      win->draw_rectangle(m_gc, true, m_loop_start * m_div_size + 4,
+			  m_height / 3 - 1, 3, 3);
+      win->draw_rectangle(m_gc, true, m_loop_start * m_div_size + 4,
+			  2 * m_height / 3 - 1, 3, 3);
+    }
+    
+    if (m_loop_end != -1) {
+      win->draw_rectangle(m_gc, true, 
+			  m_loop_end * m_div_size - 2, 0, 3, m_height);
+      win->draw_rectangle(m_gc, true, m_loop_end * m_div_size - 6,
+			  m_height / 3 - 1, 3, 3);
+      win->draw_rectangle(m_gc, true, m_loop_end * m_div_size - 6,
+			  2 * m_height / 3 - 1, 3, 3);
+    }
+  }
+  
+  m_gc->set_foreground(m_fg);
+  
   for (int i = 0; i <= m_length; ++i) {
     win->draw_line(m_gc, i * m_div_size, m_height - 4, 
 		   i * m_div_size, m_height);
@@ -100,6 +144,7 @@ bool Ruler::on_expose_event(GdkEventExpose* event) {
 		     m_height);
     }
   }
+  
   return true;
 }
 
@@ -108,6 +153,18 @@ bool Ruler::on_button_press_event(GdkEventButton* event) {
   double pos = event->x / m_div_size;
   signal_clicked(pos, event->button);
   return true;
+}
+
+
+void Ruler::set_loop_start(int start) {
+  m_loop_start = start;
+  queue_draw();
+}
+
+
+void Ruler::set_loop_end(int end) {
+  m_loop_end = end;
+  queue_draw();
 }
 
 

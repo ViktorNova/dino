@@ -240,7 +240,8 @@ namespace Dino {
 					 jack_position_t* pos, int new_pos) {
     int loop_end = m_song.get_loop_end();
     int loop_start = m_song.get_loop_start();
-    bool looping = (loop_end >= 0 && loop_start >= 0);
+    bool looping = (loop_end >= 0 && loop_start >= 0 && 
+		    loop_end != loop_start);
     
     // these are always the same in Dino
     pos->beats_per_bar = 4;

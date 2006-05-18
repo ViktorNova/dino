@@ -348,11 +348,13 @@ namespace Dino {
   
   void Song::set_loop_start(int start) {
     m_loop_start = start;
+    m_signal_loop_start_changed(m_loop_start);
   }
   
   
   void Song::set_loop_end(int end) {
     m_loop_end = end;
+    m_signal_loop_end_changed(m_loop_end);
   }
   
 
@@ -583,6 +585,16 @@ namespace Dino {
 
   sigc::signal<void>& Song::signal_tempo_changed() const {
     return m_signal_tempo_changed;
+  }
+
+
+  sigc::signal<void, int>& Song::signal_loop_start_changed() const {
+    return m_signal_loop_start_changed;
+  }
+
+
+  sigc::signal<void, int>& Song::signal_loop_end_changed() const {
+    return m_signal_loop_end_changed;
   }
 
 

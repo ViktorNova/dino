@@ -148,7 +148,11 @@ SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
   		    mem_fun(*m_spb_song_length, &SpinButton::get_value_as_int)));
   m_song.signal_length_changed().
     connect(mem_fun(m_sequence_ruler, &::Ruler::set_length));
-
+  m_song.signal_loop_start_changed().
+    connect(mem_fun(m_sequence_ruler, &::Ruler::set_loop_start));
+  m_song.signal_loop_end_changed().
+    connect(mem_fun(m_sequence_ruler, &::Ruler::set_loop_end));
+  
   // connect to sequencer
   m_seq.signal_instruments_changed().
     connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
@@ -273,8 +277,8 @@ void SequenceEditor::ruler_clicked(double beat, int button) {
   if (button == 2)
     m_seq.go_to_beat(beat);
   else if (button == 1)
-    m_song.set_loop_start(beat);
+    m_song.set_loop_start(floor(beat));
   else if (button == 3)
-    m_song.set_loop_end(beat);
+    m_song.set_loop_end(ceil(beat));
 }
 

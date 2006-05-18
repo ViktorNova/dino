@@ -192,6 +192,8 @@ namespace Dino {
     sigc::signal<void, int>& signal_track_added() const;
     sigc::signal<void, int>& signal_track_removed() const;
     sigc::signal<void>& signal_tempo_changed() const;
+    sigc::signal<void, int>& signal_loop_start_changed() const;
+    sigc::signal<void, int>& signal_loop_end_changed() const;
     //@}
     
   private:
@@ -220,6 +222,8 @@ namespace Dino {
     mutable sigc::signal<void, int> m_signal_track_added;
     mutable sigc::signal<void, int> m_signal_track_removed;
     mutable sigc::signal<void> m_signal_tempo_changed;
+    mutable sigc::signal<void, int> m_signal_loop_start_changed;
+    mutable sigc::signal<void, int> m_signal_loop_end_changed;
     
   };
 

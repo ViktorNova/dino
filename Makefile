@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.24
+PACKAGE_VERSION = 0.3.25
 PKG_DEPS = \
 	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \
@@ -91,7 +91,7 @@ libdinoseq_gui_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6` -Isrc/li
 
 
 # The GUI plugins
-MODULES = sequenceeditor.so patterneditor.so infoeditor.so coreactions.so testplugin.so
+MODULES = sequenceeditor.so patterneditor.so infoeditor.so coreactions.so
 
 # The sequence editor
 sequenceeditor_so_SOURCES = \
@@ -129,11 +129,7 @@ coreactions_so_SOURCEDIR = src/gui
 coreactions_so_LDFLAGS = `pkg-config --libs gtkmm-2.4` -L. -ldinoseq
 coreactions_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
 
-# Silly test plugin
-testplugin_so_SOURCES = testplugin.cpp
-testplugin_so_SOURCEDIR = src/gui
-testplugin_so_CFLAGS = `pkg-config --cflags gtkmm-2.4` -Isrc/libdinoseq
-testplugin_so_LDFLAGS = `pkg-config --libs gtkmm-2.4` -L. -ldinoseq_gui -ldinoseq
+
 
 # Do the magic
 include Makefile.template

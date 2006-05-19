@@ -35,7 +35,7 @@ using namespace Pango;
 
 
 TrackLabel::TrackLabel(const Song* song) 
-  : m_song(song), m_width(100), m_height(20), m_is_active(false) {
+  : m_song(song), m_width(122), m_height(20), m_is_active(false) {
   assert(song);
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(30000, 30000, 60000);
@@ -46,6 +46,8 @@ TrackLabel::TrackLabel(const Song* song)
 
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   set_size_request(m_width, m_height + 4);
+  
+  m_kb_icon = Pixbuf::create_from_file(DATA_DIR "/tinykeyboard.png");
 }
   
 
@@ -79,9 +81,13 @@ bool TrackLabel::on_expose_event(GdkEventExpose* event) {
     m_gc->set_foreground(m_bg_color);
     win->draw_rectangle(m_gc, true, 0, 4, m_width, m_height + 4);
   }
+  
+  win->draw_pixbuf(m_gc, m_kb_icon, 0, 0, 2, 4 + m_height / 2 - 8, 18, 16, 
+		   RGB_DITHER_NONE, 0, 0);
+  
   m_gc->set_foreground(m_fg_color);
   int lHeight = m_layout->get_pixel_logical_extents().get_height();
-  win->draw_layout(m_gc, 2, 4 + (m_height - lHeight)/2, m_layout);
+  win->draw_layout(m_gc, 24, 4 + (m_height - lHeight)/2, m_layout);
   return true;
 }
 

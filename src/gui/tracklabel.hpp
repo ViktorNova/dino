@@ -65,6 +65,7 @@ private:
   Glib::RefPtr<Gdk::Colormap> m_colormap;
   Gdk::Color m_bg_color, m_fg_color;
   Glib::RefPtr<Pango::Layout> m_layout;
+  Glib::RefPtr<Gdk::Pixbuf> m_kb_icon;
 };
 
 

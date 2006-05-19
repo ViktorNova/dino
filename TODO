@@ -22,9 +22,9 @@ Later (before 0.4?):
 
  [ ] Record MIDI note events
  [ ] Record MIDI CC and pitch bend events
- [ ] Play loops, set loop points
+ [X] Play loops, set loop points
  [ ] Support libmpmd or equivalent
- [ ] Wrap libdinoseq in Python
+ [X] Wrap libdinoseq in Python
  [ ] Embed a Python interpreter
  
 Crazy ideas:

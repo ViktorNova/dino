@@ -35,7 +35,7 @@ using namespace Pango;
 
 
 TempoLabel::TempoLabel(const Song* song) 
-  : m_song(song), m_width(100), m_height(20) {
+  : m_song(song), m_width(122), m_height(20) {
   assert(song);
   m_colormap  = Colormap::get_system();
   m_fg_color.set_rgb(0, 0, 0);
@@ -63,7 +63,7 @@ bool TempoLabel::on_expose_event(GdkEventExpose* event) {
   //win->clear();
   m_gc->set_foreground(m_fg_color);
   int lHeight = m_layout->get_pixel_logical_extents().get_height();
-  win->draw_layout(m_gc, 2, (m_height - lHeight)/2, m_layout);
+  win->draw_layout(m_gc, 24, (m_height - lHeight)/2, m_layout);
   return true;
 }
 

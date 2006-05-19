@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.25
+PACKAGE_VERSION = 0.3.26
 PKG_DEPS = \
 	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \
@@ -9,7 +9,7 @@ PKG_DEPS = \
 
 
 # Data files
-DATA = dino.glade pixmaps/midisaurus.png pixmaps/head.png
+DATA = dino.glade pixmaps/midisaurus.png pixmaps/head.png pixmaps/tinykeyboard.png
 DOCS = AUTHORS COPYING README TODO ChangeLog
 
 
@@ -104,6 +104,7 @@ sequenceeditor_so_SOURCES = \
 sequenceeditor_so_SOURCEDIR = src/gui
 sequenceeditor_so_LDFLAGS = `pkg-config --libs gtkmm-2.4` -L. -ldinoseq_gui -ldinoseq
 sequenceeditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
+tracklabel_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
 
 # The pattern editor
 patterneditor_so_SOURCES = \

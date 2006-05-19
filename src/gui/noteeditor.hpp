@@ -30,6 +30,9 @@
 #include "patternselection.hpp"
 
 
+class PluginInterface;
+
+
 class NoteEditor : public Gtk::DrawingArea {
 public:
   NoteEditor();
@@ -43,6 +46,8 @@ public:
   void paste();
   void delete_selection();
   void select_all();
+  
+  void update_menu(PluginInterface& plif);
   
 protected:
   
@@ -106,10 +111,15 @@ private:
   Dino::NoteCollection m_clipboard;
   Dino::NoteCollection m_moved_notes;
   
+  Dino::PatternSelection& get_selection() {
+    return m_selection;
+  }
+  
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   Dino::Pattern* m_pat;
   Glib::RefPtr<Pango::Layout> m_layout;
   Gtk::Adjustment* m_vadj;
+  Gtk::Menu m_menu;
 };
 
 

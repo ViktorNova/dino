@@ -29,6 +29,7 @@
 #include "tempolabel.hpp"
 #include "trackwidget.hpp"
 #include "tracklabel.hpp"
+#include "plugininterface.hpp"
 
 
 using namespace Glib;
@@ -40,6 +41,11 @@ using namespace Dino;
 namespace {
   SequenceEditor* m_se;
   PluginInterface* m_plif;
+  
+  void print_action_name(::Action& action) {
+    std::cerr<<"Action added: "<<action.get_name()<<std::endl;
+  }
+  
 }
 
 
@@ -51,8 +57,9 @@ extern "C" {
   
   void dino_load_plugin(PluginInterface& plif) {
     m_plif = &plif;
-    m_se = manage(new SequenceEditor(plif.get_song(), plif.get_sequencer()));
+    m_se = manage(new SequenceEditor(plif));
     plif.add_page("Arrangement", *m_se);
+    plif.signal_action_added().connect(&print_action_name);
   }
   
   void dino_unload_plugin() {
@@ -61,12 +68,13 @@ extern "C" {
 }
 
 
-SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
+SequenceEditor::SequenceEditor(PluginInterface& plif)
   : m_sequence_ruler(32, 1, 4, 20, 20),
     m_dlg_track(0),
     m_active_track(-1),
-    m_song(song),
-    m_seq(seq) {
+    m_song(plif.get_song()),
+    m_seq(plif.get_sequencer()),
+    m_plif(plif) {
   
   VBox* v = manage(new VBox);
   
@@ -166,13 +174,21 @@ SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
 
 void SequenceEditor::reset_gui() {
   
+  // reset the song length spinbutton to the actual song length
   m_spb_song_length->set_value(m_song.get_length());
   
+  // clear out all the old track and tempo widgets
   m_vbx_track_editor->children().clear();
   m_vbx_track_labels->children().clear();
   
+  // add a new tempo widget and a tempo label
   TempoWidget* tmpw = manage(new TempoWidget(&m_song));
   m_vbx_track_editor->pack_start(*tmpw, PACK_SHRINK);
+  slot<void> update_menu = bind(mem_fun(*tmpw, &TempoWidget::update_menu), 
+				ref(m_plif));
+  m_plif.signal_action_added().connect(sigc::hide(update_menu));
+  m_plif.signal_action_removed().connect(sigc::hide(update_menu));
+  update_menu();
   TempoLabel* tmpl = manage(new TempoLabel(&m_song));
   m_vbx_track_labels->pack_start(*tmpl, PACK_SHRINK);
   
@@ -186,6 +202,7 @@ void SequenceEditor::reset_gui() {
   }
   m_active_track = new_active;
   
+  // add track labels and widgets for all tracks in the song
   for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
     TrackWidget* tw = manage(new TrackWidget(&m_song));
     tw->set_track(&*iter);
@@ -277,8 +294,8 @@ void SequenceEditor::ruler_clicked(double beat, int button) {
   if (button == 2)
     m_seq.go_to_beat(beat);
   else if (button == 1)
-    m_song.set_loop_start(floor(beat));
+    m_song.set_loop_start(int(beat));
   else if (button == 3)
-    m_song.set_loop_end(ceil(beat));
+    m_song.set_loop_end(int(ceil(beat)));
 }
 

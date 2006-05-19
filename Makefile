@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.23
+PACKAGE_VERSION = 0.3.24
 PKG_DEPS = \
 	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \
@@ -16,6 +16,7 @@ DOCS = AUTHORS COPYING README TODO ChangeLog
 # The main program (we need to link it with -Wl,-E to allow RTTI with plugins)
 PROGRAMS = dino
 dino_SOURCES = \
+	action.hpp \
 	evilscrolledwindow.hpp \
 	main.cpp \
 	dinogui.cpp dinogui.hpp \
@@ -23,7 +24,7 @@ dino_SOURCES = \
 	plugininterfaceimplementation.cpp plugininterfaceimplementation.hpp \
 	plugininterface.hpp \
 	pluginlibrary.cpp pluginlibrary.hpp 
-dino_HEADERS = plugininterface.hpp
+dino_HEADERS = plugininterface.hpp action.hpp
 dino_SOURCEDIR = src/gui
 dino_CFLAGS = `pkg-config --cflags libglademm-2.4 jack libxml++-2.6 lash-1.0` -Isrc/libdinoseq -Isrc
 dino_LDFLAGS = `pkg-config --libs libglademm-2.4 lash-1.0` -Wl,-E -L. -ldinoseq
@@ -90,7 +91,7 @@ libdinoseq_gui_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6` -Isrc/li
 
 
 # The GUI plugins
-MODULES = sequenceeditor.so patterneditor.so infoeditor.so testplugin.so
+MODULES = sequenceeditor.so patterneditor.so infoeditor.so coreactions.so testplugin.so
 
 # The sequence editor
 sequenceeditor_so_SOURCES = \
@@ -122,10 +123,16 @@ infoeditor_so_SOURCEDIR = src/gui
 infoeditor_so_LDFLAGS = `pkg-config --libs gtkmm-2.4` -L. -ldinoseq_gui -ldinoseq
 infoeditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
 
+# Core actions
+coreactions_so_SOURCES = coreactions.cpp
+coreactions_so_SOURCEDIR = src/gui
+coreactions_so_LDFLAGS = `pkg-config --libs gtkmm-2.4` -L. -ldinoseq
+coreactions_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
+
 # Silly test plugin
 testplugin_so_SOURCES = testplugin.cpp
 testplugin_so_SOURCEDIR = src/gui
-testplugin_so_CFLAGS = `pkg-config --cflags gtkmm-2.4`
+testplugin_so_CFLAGS = `pkg-config --cflags gtkmm-2.4` -Isrc/libdinoseq
 testplugin_so_LDFLAGS = `pkg-config --libs gtkmm-2.4` -L. -ldinoseq_gui -ldinoseq
 
 # Do the magic

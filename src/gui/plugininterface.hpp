@@ -1,8 +1,13 @@
 #ifndef PLUGININTERFACE_HPP
 #define PLUGININTERFACE_HPP
 
+#include <iterator>
 #include <string>
+#include <set>
+
 #include <gtkmm.h>
+
+#include "action.hpp"
 
 
 namespace Dino {
@@ -44,6 +49,8 @@ private:
 class PluginInterface {
 public:
   
+  typedef std::set< ::Action*>::iterator action_iterator;
+  
   virtual ~PluginInterface() { }
   
   /** Add a page to the main notebook. */
@@ -52,11 +59,26 @@ public:
   /** Remove a page from the main notebook. */
   virtual void remove_page(GUIPage& widget) = 0;
   
+  /** Add an action. */
+  virtual void add_action(::Action& action) = 0;
+  
+  /** Remove an action. */
+  virtual void remove_action(::Action& action) = 0;
+  
   /** Returns the used Dino::Song object. */
   virtual Dino::Song& get_song() = 0;
   
   /** Returns the used Dino::Sequencer object. */
   virtual Dino::Sequencer& get_sequencer() = 0;
+  
+  /** Returns an iterator pointing to the beginning of the action list. */
+  virtual action_iterator actions_begin() = 0;
+
+  /** Returns an iterator pointing to the end of the action list. */
+  virtual action_iterator actions_end() = 0;
+  
+  virtual sigc::signal<void, ::Action&>& signal_action_added() = 0;
+  virtual sigc::signal<void, ::Action&>& signal_action_removed() = 0;
   
 };
 

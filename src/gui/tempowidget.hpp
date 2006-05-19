@@ -29,6 +29,9 @@ namespace Dino {
 }
 
 
+class PluginInterface;
+
+
 class TempoWidget : public Gtk::DrawingArea {
 public:
   
@@ -41,6 +44,7 @@ public:
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   
   void update();
+  void update_menu(PluginInterface& plif);
   
 private:
   
@@ -58,6 +62,8 @@ private:
   int m_drag_start_y;
   int m_editing_bpm;
   const Dino::TempoMap::TempoChange* m_active_tempo;
+  
+  Gtk::Menu m_menu;
 };
 
 

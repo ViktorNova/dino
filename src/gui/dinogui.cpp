@@ -322,6 +322,9 @@ void DinoGUI::slot_plugins_manage() {
 
 void DinoGUI::load_plugins(int argc, char** argv) {
   PluginLibrary::iterator iter;
+  iter = m_plib.find("Core actions");
+  if (iter != m_plib.end())
+    m_plib.load_plugin(iter);
   iter = m_plib.find("Sequence editor");
   if (iter != m_plib.end())
     m_plib.load_plugin(iter);

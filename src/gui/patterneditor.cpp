@@ -49,9 +49,9 @@ extern "C" {
   }
   
   void dino_load_plugin(PluginInterface& plif) {
+    m_plif = &plif;
     m_pe = manage(new PatternEditor(plif.get_song()));
     plif.add_page("Patterns", *m_pe);
-    m_plif = &plif;
   }
   
   
@@ -189,6 +189,11 @@ void PatternEditor::reset_gui() {
   update_track_combo();
   update_pattern_combo();
   update_controller_combo();
+  slot<void> update_menu = bind(mem_fun(m_ne, &NoteEditor::update_menu), 
+				ref(*m_plif));
+  m_plif->signal_action_added().connect(sigc::hide(update_menu));
+  m_plif->signal_action_removed().connect(sigc::hide(update_menu));
+  update_menu();
 }
 
 

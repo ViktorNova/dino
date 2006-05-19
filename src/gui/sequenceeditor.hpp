@@ -36,10 +36,13 @@ namespace Dino {
 }
 
 
+class PluginInterface;
+
+
 class SequenceEditor : public GUIPage {
 public:
   
-  SequenceEditor(Dino::Song& song, Dino::Sequencer& seq);
+  SequenceEditor(PluginInterface& plif);
   
   void reset_gui();
   
@@ -75,6 +78,7 @@ protected:
   
   Dino::Song& m_song;
   Dino::Sequencer& m_seq;
+  PluginInterface& m_plif;
 };
 
 

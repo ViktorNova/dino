@@ -24,6 +24,7 @@
 #include "debug.hpp"
 #include "note.hpp"
 #include "noteeditor.hpp"
+#include "plugininterface.hpp"
 
 
 using namespace Gdk;
@@ -312,20 +313,24 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       break;
     }
     
-    // Ctrl-Button3 deletes or drags
+    // Ctrl-Button3 deletes or pops up menu
     case 3: {
-      if (event->state & GDK_CONTROL_MASK) {
-	Pattern::NoteIterator iterator = m_pat->find_note(step, note);
-	if (iterator != m_pat->notes_end()) {
-	  // if shift isn't pressed the selection is set to this single note
-	  if (m_selection.find(iterator) == m_selection.end()) {
-	    m_selection.clear();
-	    m_selection.add_note(iterator);
-	  }
+      Pattern::NoteIterator iterator = m_pat->find_note(step, note);
+      if (iterator != m_pat->notes_end()) {
+	// if shift isn't pressed the selection is set to this single note
+	if (m_selection.find(iterator) == m_selection.end()) {
+	  m_selection.clear();
+	  m_selection.add_note(iterator);
+	}
+	if (event->state & GDK_CONTROL_MASK)
 	  delete_selection();
+	else {
+	  queue_draw();
+	  m_menu.popup(event->button, event->time);
 	}
       }
-      m_drag_operation = DragDeletingNotes;
+      if (event->state & GDK_CONTROL_MASK)
+	m_drag_operation = DragDeletingNotes;
       break;
     }
       
@@ -692,3 +697,20 @@ void NoteEditor::draw_outline(const Dino::NoteCollection& notes,
 			iter->length * m_col_width, m_row_height);
   }
 }
+
+
+void NoteEditor::update_menu(PluginInterface& plif) {
+  using namespace Menu_Helpers;
+  m_menu.items().clear();
+  PluginInterface::action_iterator iter;
+  PatternSelectionAction* psa;
+  Song& song = plif.get_song();
+  for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
+    if ((psa = dynamic_cast<PatternSelectionAction*>(*iter))) {
+      slot<void> aslot = compose(mem_fun(*psa, &PatternSelectionAction::run),
+				 mem_fun(*this, &NoteEditor::get_selection));
+      m_menu.items().push_back(MenuElem((*iter)->get_name(), aslot));
+    }
+  }
+}
+

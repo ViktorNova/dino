@@ -29,6 +29,7 @@
 #include <jack/jack.h>
 
 #include "debug.hpp"
+#include "ringbuffer.hpp"
 
 
 using namespace std;
@@ -185,7 +186,16 @@ namespace Dino {
 
     sigc::signal<void, int> m_signal_beat_changed;
     sigc::signal<void> m_signal_instruments_changed;
-
+    
+    struct MIDIEvent {
+      double beat;
+			unsigned char data[3];
+    };
+    
+    Ringbuffer<MIDIEvent> m_recorded_events;
+    
+    bool recorder();
+    
   };
 
 }

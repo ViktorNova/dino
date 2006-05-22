@@ -187,7 +187,7 @@ namespace Dino {
     /** Change the number of steps per beat. */
     void set_steps(unsigned int steps);
     /** Add a note at the given step with the given key, velocity, and length
-	(in steps). */
+				(in steps). */
     NoteIterator add_note(unsigned step, int key, int velocity, int length);
     /** Add a collection of notes with the given step and key offsets. 
 	Can be used as a "paste" command. */

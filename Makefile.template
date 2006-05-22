@@ -198,7 +198,7 @@ dist: Makefile.deps
 
 
 # PKG-CONFIG DEPENDENCY CHECK
-PKG_DEPDIRS = `pkg-config --cflags $(filter-out =%,$(subst >, ,$(PKG_DEPS)))`
+PKG_DEPDIRS = `pkg-config --cflags $(filter-out =%,$(subst >, ,$(PKG_DEPS))) 2> /dev/null`
 check-pkg-deps:
 	@$(foreach pkg, $(PKG_DEPS), if pkg-config --atleast-version $(sort $(subst >=, ,$(pkg))) ; then true; else echo "*** You don't have $(pkg), which you need in order to build this software."; false; fi && ) true
 

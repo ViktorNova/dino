@@ -760,59 +760,59 @@ namespace Dino {
       
       // write CCs
       for ( ; cc_pos < (step + 1) / double(sd->steps) && cc_pos < to; 
-	    cc_pos += buffer.get_cc_resolution()) {
-	++cc_steps;
-	for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
-	  const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
-	  if (event) {
-	    unsigned char* data = buffer.
-	      reserve(offset + cc_pos, 3);
-	    if (data && is_cc((*sd->ctrls)[c]->get_param())) {
-	      data[0] = 0xB0 | (unsigned char)channel;
-	      data[1] = cc_number((*sd->ctrls)[c]->get_param());
-	      data[2] = (unsigned char)
-		(event->get_start() + (cc_pos * sd->steps - event->get_step()) *
-		 ((event->get_end() - event->get_start()) /
-		  double(event->get_length())));
-	    }
-	    else if (data && is_pbend((*sd->ctrls)[c]->get_param())) {
-	      data[0] = 0xE0 | (unsigned char)channel;
-	      int value = int(event->get_start() + 
-			      (cc_pos * sd->steps - event->get_step()) *
-			      ((event->get_end() - event->get_start()) /
-			       double(event->get_length())));
-	      data[1] = (value + 8192) & 0x7F;
-	      data[2] = ((value + 8192) >> 7) & 0x7F;
-	    }
-	  }
-	}
+						cc_pos += buffer.get_cc_resolution()) {
+				++cc_steps;
+				for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
+					const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
+					if (event) {
+						unsigned char* data = buffer.
+							reserve(offset + cc_pos, 3);
+						if (data && is_cc((*sd->ctrls)[c]->get_param())) {
+							data[0] = 0xB0 | (unsigned char)channel;
+							data[1] = cc_number((*sd->ctrls)[c]->get_param());
+							data[2] = (unsigned char)
+								(event->get_start() + (cc_pos * sd->steps - event->get_step()) *
+								 ((event->get_end() - event->get_start()) /
+									double(event->get_length())));
+						}
+						else if (data && is_pbend((*sd->ctrls)[c]->get_param())) {
+							data[0] = 0xE0 | (unsigned char)channel;
+							int value = int(event->get_start() + 
+															(cc_pos * sd->steps - event->get_step()) *
+															((event->get_end() - event->get_start()) /
+															 double(event->get_length())));
+							data[1] = (value + 8192) & 0x7F;
+							data[2] = ((value + 8192) >> 7) & 0x7F;
+						}
+					}
+				}
       }
       
       // write note offs
       if (((step + 1) / double(sd->steps) - off_d < to) &&
-	  ((step + 1) / double(sd->steps) - off_d >= from)){
-	event = (*sd->offs)[step];
-	while (event) {
-	  unsigned char* data = 
-	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 3);
-	  if (data) {
-	    memcpy(data, event->get_data(), 3);
-	    data[0] |= (unsigned char)channel;
-	  }
-	  event = event->get_next();
-	}
-	
-	// write all notes off if this is the end of the sequence entry
-	if (step == pattern_length * sd->steps - 1) {
-	  unsigned char all_notes_off[] = { 0xB0, 123, 0 };
-	  unsigned char* data = 
-	    buffer.reserve(offset + step / double(sd->steps) + 1 - off_d, 3);
-	  if (data) {
-	    memcpy(data, all_notes_off, 3);
-	    data[0] |= (unsigned char)channel;
-	  }
-	}
-
+					((step + 1) / double(sd->steps) - off_d >= from)){
+				event = (*sd->offs)[step];
+				while (event) {
+					unsigned char* data = 
+						buffer.reserve(offset + (step + 1) / double(sd->steps) - off_d, 3);
+					if (data) {
+						memcpy(data, event->get_data(), 3);
+						data[0] |= (unsigned char)channel;
+					}
+					event = event->get_next();
+				}
+				
+				// write all notes off if this is the end of the sequence entry
+				if (step == pattern_length * sd->steps - 1) {
+					unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+					unsigned char* data = 
+						buffer.reserve(offset + (step + 1) / double(sd->steps) - off_d, 3);
+					if (data) {
+						memcpy(data, all_notes_off, 3);
+						data[0] |= (unsigned char)channel;
+					}
+				}
+				
       }
       
     }

@@ -33,6 +33,7 @@ extern "C" {
 #include "song.hpp"
 #include "track.hpp"
 #include "midibuffer.hpp"
+#include "pattern.hpp"
 
 
 namespace Dino {
@@ -50,7 +51,8 @@ namespace Dino {
       m_current_beat(0), 
       m_old_current_beat(-1),
       m_ports_changed(0),
-      m_old_ports_changed(0) {
+      m_old_ports_changed(0),
+      m_recorded_events(256) {
   
     dbg1<<"Initialising sequencer"<<endl;
   
@@ -69,6 +71,8 @@ namespace Dino {
 
     Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::beat_checker), 20);
     Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::ports_checker),20);
+    Glib::signal_timeout().connect(mem_fun(*this, &Sequencer::recorder), 20);
+    
     reset_ports();
   }
 
@@ -206,11 +210,9 @@ namespace Dino {
     memset(&pos, 0, sizeof(pos));
     jack_transport_stop(m_jack_client);
     jack_transport_reposition(m_jack_client, &pos);
-    /*
-      m_input_port = jack_port_register(m_jack_client, "MIDI input", 
-      JACK_DEFAULT_MIDI_TYPE, 
-      JackPortIsInput, 0);
-    */
+    m_input_port = jack_port_register(m_jack_client, "MIDI input", 
+				      JACK_DEFAULT_MIDI_TYPE, 
+				      JackPortIsInput, 0);
     return true;
   }
 
@@ -324,7 +326,23 @@ namespace Dino {
     }
   
     sequence_midi(state, pos, nframes);
-  
+    
+    // record MIDI
+    void* input_buf = jack_port_get_buffer(m_input_port, nframes);
+    jack_midi_event_t input_event;
+    jack_nframes_t input_event_index = 0;
+    jack_nframes_t input_event_count = 
+      jack_midi_port_get_info(input_buf, nframes)->event_count;
+    jack_nframes_t timestamp;
+    for (unsigned int i = 0; i < input_event_count; ++i) {
+      jack_midi_event_get(&input_event, input_buf, i, nframes);
+      MIDIEvent event;
+      event.beat = m_current_beat;
+			memcpy(event.data, input_event.buffer, 
+						 input_event.size < 3 ? input_event.size : 3);
+      m_recorded_events.push(event);
+    }
+    
     return 0;
   }
 
@@ -355,15 +373,15 @@ namespace Dino {
     Song::ConstTrackIterator iter;
     if (state != JackTransportRolling) {
       for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
-	jack_port_t* port = m_output_ports[iter->get_id()];
-	if (port) {
-	  void* port_buf = jack_port_get_buffer(port, nframes);
-	  jack_midi_clear_buffer(port_buf, nframes);
-	  unsigned char all_notes_off[] = { 0xB0, 123, 0 };
-	  if (!m_sent_all_off)
-	    jack_midi_event_write(port_buf, 0, all_notes_off, 3, nframes);
-	}
-	m_sent_all_off = true;
+				jack_port_t* port = m_output_ports[iter->get_id()];
+				if (port) {
+					void* port_buf = jack_port_get_buffer(port, nframes);
+					jack_midi_clear_buffer(port_buf, nframes);
+					unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+					if (!m_sent_all_off)
+						jack_midi_event_write(port_buf, 0, all_notes_off, 3, nframes);
+				}
+				m_sent_all_off = true;
       }
       return;
     }
@@ -384,12 +402,13 @@ namespace Dino {
       // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->get_id()];
       if (port) {
-	void* port_buf = jack_port_get_buffer(port, nframes);
-	jack_midi_clear_buffer(port_buf, nframes);
-	MIDIBuffer buffer(port_buf, start, pos.beats_per_minute,pos.frame_rate);
-	buffer.set_period_size(nframes);
-	buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
-	iter->sequence(buffer, start, end);
+				void* port_buf = jack_port_get_buffer(port, nframes);
+				jack_midi_clear_buffer(port_buf, nframes);
+				MIDIBuffer buffer(port_buf, start, 
+													pos.beats_per_minute,	pos.frame_rate);
+				buffer.set_period_size(nframes);
+				buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
+				iter->sequence(buffer, start, end);
       }
     }
 
@@ -424,5 +443,27 @@ namespace Dino {
   sigc::signal<void>& Sequencer::signal_instruments_changed() {
     return m_signal_instruments_changed;
   }
+  
+  
+  bool Sequencer::recorder() {
+    MIDIEvent e;
+		Song::TrackIterator titer = m_song.tracks_find(1);
+		if (titer == m_song.tracks_end())
+			return true;
+		Track::PatternIterator piter = titer->pat_find(1);
+		if (piter == titer->pat_end())
+			return true;
+    while (m_recorded_events.pop(e)) {
+      dbg1<<"MIDI event received at beat "<<e.beat<<endl;
+			if ((e.data[0] & 0xF0) == 0x90) {
+				piter->add_note(unsigned(e.beat * piter->get_steps()), 
+												e.data[1], e.data[2], 1);
+			}
+		}
+    return true;
+  }
 
 }
+
+
+

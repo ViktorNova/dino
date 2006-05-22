@@ -54,7 +54,7 @@ namespace Dino {
   unsigned char* MIDIBuffer::reserve(double beat, size_t data_size) {
     // XXX optimise this
     jack_nframes_t timestamp = jack_nframes_t((beat - m_start_beat) * 
-					      60 / (m_bpm * m_samplerate));
+																							m_samplerate * 60 / m_bpm);
     return jack_midi_event_reserve(m_buffer, timestamp, data_size, m_nframes);
   }
     
@@ -63,9 +63,9 @@ namespace Dino {
 			unsigned char* data, size_t data_size) {
     // XXX optimise this
     jack_nframes_t timestamp = jack_nframes_t((beat - m_start_beat) * 
-					      60 / (m_bpm * m_samplerate));
+																							m_samplerate * 60 / m_bpm);
     return jack_midi_event_write(m_buffer, timestamp, (jack_midi_data_t*)data, 
-				 data_size, m_nframes);
+																 data_size, m_nframes);
   }
 
 

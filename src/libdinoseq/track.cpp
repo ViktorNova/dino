@@ -62,7 +62,7 @@ namespace Dino {
     do {
       ++m_iter;
     } while (m_iter != m_vector->end() && 
-	     (*m_iter == old_ptr || *m_iter == 0));
+       (*m_iter == old_ptr || *m_iter == 0));
     return *this;
   }
   
@@ -75,11 +75,11 @@ namespace Dino {
   
 
   Track::SequenceIterator::SequenceIterator(const 
-					    std::vector<SequenceEntry*>::
-					    const_iterator& 
-					    iter,
-					    const std::vector<SequenceEntry*>&
-					    vec) 
+              std::vector<SequenceEntry*>::
+              const_iterator& 
+              iter,
+              const std::vector<SequenceEntry*>&
+              vec) 
     : m_iter(iter),
       m_vector(&vec) {
     
@@ -212,7 +212,7 @@ namespace Dino {
     SequenceEntry* ptr = 0;
     for (unsigned int i = 0; i < m_sequence->size(); ++i) {
       if ((*m_sequence)[i] != ptr)
-	delete (*m_sequence)[i];
+  delete (*m_sequence)[i];
       ptr = (*m_sequence)[i];
     }
     delete m_sequence;
@@ -266,7 +266,7 @@ namespace Dino {
     unsigned i;
     for (i = 0; i < m_sequence->size(); ++i) {
       if ((*m_sequence)[i] != 0)
-	break;
+  break;
     }
     return SequenceIterator(m_sequence->begin() + i, *m_sequence);
   }
@@ -307,7 +307,7 @@ namespace Dino {
 
   /** Creates and adds a new pattern in this track with the given parameters.*/
   Track::PatternIterator Track::add_pattern(const string& name, int length, 
-					    int steps) {
+              int steps) {
     /* This does not actually need to be threadsafe since the sequencer
        never accesses the patterns through the map, only through the 
        sequence entries. */
@@ -350,8 +350,8 @@ namespace Dino {
     if (iter != m_patterns.end()) {
       
       for (unsigned int i = 0; i < m_sequence->size(); ++i) {
-	if ((*m_sequence)[i] != 0 && (*m_sequence)[i]->pattern == iter->second)
-	  remove_sequence_entry(seq_find(i));
+  if ((*m_sequence)[i] != 0 && (*m_sequence)[i]->pattern == iter->second)
+    remove_sequence_entry(seq_find(i));
       }
       
       Deleter::queue(iter->second);
@@ -364,8 +364,8 @@ namespace Dino {
   /** Set the sequency entry at the given beat to the given pattern 
       and length. */
   Track::SequenceIterator Track::set_sequence_entry(int beat, 
-						    int pattern, 
-						    unsigned int length) {
+                int pattern, 
+                unsigned int length) {
     assert(beat >= 0);
     assert(beat < int(m_sequence->size()));
     assert(m_patterns.find(pattern) != m_patterns.end());
@@ -384,29 +384,29 @@ namespace Dino {
     if (se) {
       int stop = se->start + se->length;
       for (int i = stop - 1; i >= beat; --i)
-	(*m_sequence)[i] = 0;
+  (*m_sequence)[i] = 0;
       if (se->start == unsigned(beat))
-	Deleter::queue(se);
+  Deleter::queue(se);
       else
-	se->length = beat - se->start;
+  se->length = beat - se->start;
     }
   
     // make sure the new sequence entry fits
     for (int i = beat; i < beat + newLength; ++i) {
       if (i >= int(m_sequence->size()) || (*m_sequence)[i]) {
-	newLength = i - beat;
-	break;
+  newLength = i - beat;
+  break;
       }
     }
   
     se  = new SequenceEntry(pattern, m_patterns.find(pattern)->second, 
-			    beat, newLength);
+          beat, newLength);
     int i;
     for (i = beat; i < beat + newLength; ++i)
       (*m_sequence)[i] = se;
     
     m_signal_sequence_entry_added(beat, (*m_sequence)[beat]->pattern->get_id(), 
-				  newLength);
+          newLength);
     return SequenceIterator(m_sequence->begin() + i, *m_sequence);
   }
 
@@ -420,9 +420,9 @@ namespace Dino {
     else if (length > se->length) {
       unsigned int i;
       for (i = se->start + se->length; i < se->start + length; ++i) {
-	if ((*m_sequence)[i])
-	  break;
-	(*m_sequence)[i] = se;
+  if ((*m_sequence)[i])
+    break;
+  (*m_sequence)[i] = se;
       }
       se->length = i - se->start;
     }
@@ -430,7 +430,7 @@ namespace Dino {
       int tmp = se->length;
       se->length = length;
       for (int i = se->start + tmp - 1; i >= int(se->start + se->length); --i)
-	(*m_sequence)[i] = 0;
+  (*m_sequence)[i] = 0;
     }
     m_signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length);
   }
@@ -448,7 +448,7 @@ namespace Dino {
     if (se) {
       int start = se->start;
       for (int i = se->start + se->length - 1; i >= int(se->start); --i)
-	(*m_sequence)[i] = 0;
+  (*m_sequence)[i] = 0;
       Deleter::queue(se);
       m_signal_sequence_entry_removed(start);
       return true;
@@ -463,15 +463,15 @@ namespace Dino {
     assert(length > 0);
     if (length != int(m_sequence->size())) {
       for (unsigned i = length; i < m_sequence->size(); ++i) {
-	if ((*m_sequence)[i]) {
-	  if ((*m_sequence)[i]->start < (unsigned)length) {
-	    set_seq_entry_length(seq_find((*m_sequence)[i]->start), 
-				 length - (*m_sequence)[i]->start);
-	  }
-	  else {
-	    remove_sequence_entry(seq_find(i));
-	  }
-	}
+  if ((*m_sequence)[i]) {
+    if ((*m_sequence)[i]->start < (unsigned)length) {
+      set_seq_entry_length(seq_find((*m_sequence)[i]->start), 
+         length - (*m_sequence)[i]->start);
+    }
+    else {
+      remove_sequence_entry(seq_find(i));
+    }
+  }
       }
       
       vector<SequenceEntry*>* new_seq = new vector<SequenceEntry*>(*m_sequence);
@@ -497,9 +497,9 @@ namespace Dino {
     if (m_dirty)
       return true;
     for (map<int, Pattern*>::const_iterator iter = m_patterns.begin();
-	 iter != m_patterns.end(); ++iter) {
+   iter != m_patterns.end(); ++iter) {
       if (iter->second->is_dirty())
-	return true;
+  return true;
     }
     return false;
   }
@@ -508,7 +508,7 @@ namespace Dino {
   void Track::make_clean() const {
     m_dirty = false;
     for (map<int, Pattern*>::const_iterator iter = m_patterns.begin();
-	 iter != m_patterns.end(); ++iter)
+   iter != m_patterns.end(); ++iter)
       iter->second->make_clean();
   }
 
@@ -524,7 +524,7 @@ namespace Dino {
  
     // the patterns
     for (map<int, Pattern*>::const_iterator iter = m_patterns.begin();
-	 iter != m_patterns.end(); ++iter) {
+   iter != m_patterns.end(); ++iter) {
       Element* pat_elt = elt->add_child("pattern");
       char id_txt[10];
       sprintf(id_txt, "%d", iter->first);
@@ -537,13 +537,13 @@ namespace Dino {
     for (unsigned int i = 0; i < m_sequence->size(); ++i) {
       SequenceEntry* se = (*m_sequence)[i];
       if (se && se->start == i) {
-	Element* entry_elt = seq_elt->add_child("entry");
-	sprintf(tmp_txt, "%d", se->start);
-	entry_elt->set_attribute("beat", tmp_txt);
-	sprintf(tmp_txt, "%d", se->pattern_id);
-	entry_elt->set_attribute("pattern", tmp_txt);
-	sprintf(tmp_txt, "%d", se->length);
-	entry_elt->set_attribute("length", tmp_txt);
+  Element* entry_elt = seq_elt->add_child("entry");
+  sprintf(tmp_txt, "%d", se->start);
+  entry_elt->set_attribute("beat", tmp_txt);
+  sprintf(tmp_txt, "%d", se->pattern_id);
+  entry_elt->set_attribute("pattern", tmp_txt);
+  sprintf(tmp_txt, "%d", se->length);
+  entry_elt->set_attribute("length", tmp_txt);
       }
     }
   
@@ -558,7 +558,7 @@ namespace Dino {
     // MIDI channel
     int channel;
     sscanf(elt->get_attribute("channel")->get_value().c_str(), 
-	   "%d", &channel);
+     "%d", &channel);
     m_channel = channel;
     m_name = elt->get_attribute("name")->get_value();
   
@@ -567,13 +567,13 @@ namespace Dino {
     for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
       const Element* pat_elt = dynamic_cast<const Element*>(*iter);
       if (!pat_elt)
-	continue;
+  continue;
       int id, length, steps;
       sscanf(pat_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
       sscanf(pat_elt->get_attribute("length")->get_value().c_str(), 
-	     "%d", &length);
+       "%d", &length);
       sscanf(pat_elt->get_attribute("steps")->get_value().c_str(), 
-	     "%d", &steps);
+       "%d", &steps);
       string name = pat_elt->get_attribute("name")->get_value();
       m_patterns[id] = new Pattern(id, name, length, steps);
       m_patterns[id]->parse_xml_node(pat_elt);
@@ -584,21 +584,21 @@ namespace Dino {
     if (nodes.begin() != nodes.end()) {
       const Element* seq_elt = dynamic_cast<const Element*>(*nodes.begin());
       if (seq_elt) {
-	Node::NodeList e_nodes = (*nodes.begin())->get_children("entry");
-	Node::NodeList::const_iterator e_iter;
-	for (e_iter = e_nodes.begin(); e_iter != e_nodes.end(); ++e_iter) {
-	  const Element* entry_elt = dynamic_cast<const Element*>(*e_iter);
-	  if (!entry_elt)
-	    continue;
-	  int beat, pattern, length;
-	  sscanf(entry_elt->get_attribute("beat")->get_value().c_str(), 
-		 "%d", &beat);
-	  sscanf(entry_elt->get_attribute("pattern")->get_value().c_str(), 
-		 "%d", &pattern);
-	  sscanf(entry_elt->get_attribute("length")->get_value().c_str(), 
-		 "%d", &length);
-	  set_sequence_entry(beat, pattern, length);
-	}
+  Node::NodeList e_nodes = (*nodes.begin())->get_children("entry");
+  Node::NodeList::const_iterator e_iter;
+  for (e_iter = e_nodes.begin(); e_iter != e_nodes.end(); ++e_iter) {
+    const Element* entry_elt = dynamic_cast<const Element*>(*e_iter);
+    if (!entry_elt)
+      continue;
+    int beat, pattern, length;
+    sscanf(entry_elt->get_attribute("beat")->get_value().c_str(), 
+     "%d", &beat);
+    sscanf(entry_elt->get_attribute("pattern")->get_value().c_str(), 
+     "%d", &pattern);
+    sscanf(entry_elt->get_attribute("length")->get_value().c_str(), 
+     "%d", &length);
+    set_sequence_entry(beat, pattern, length);
+  }
       }
     }
     return true;
@@ -619,20 +619,20 @@ namespace Dino {
     unsigned beat = unsigned(from);
     while (beat < to) {
       if (sequence[beat]) {
-	SequenceEntry* const& se = sequence[beat];
-	se->pattern->sequence(buffer, from - se->start, 
-			      to - se->start, se->start, 
-			      se->length, m_channel);
-	beat += sequence[beat]->start + sequence[beat]->length - beat;
+  SequenceEntry* const& se = sequence[beat];
+  se->pattern->sequence(buffer, from - se->start, 
+            to - se->start, se->start, 
+            se->length, m_channel);
+  beat += sequence[beat]->start + sequence[beat]->length - beat;
       }
       else {
-	unsigned char all_notes_off[] = { 0xB0, 123, 0 };
-	unsigned char* data = buffer.reserve(beat, 3);
-	if (data) {
-	  memcpy(data, all_notes_off, 3);
-	  data[0] |= (unsigned char)m_channel;
-	}
-	++beat;
+  unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+  unsigned char* data = buffer.reserve(beat, 3);
+  if (data) {
+    memcpy(data, all_notes_off, 3);
+    data[0] |= (unsigned char)m_channel;
+  }
+  ++beat;
       }
     }
 

@@ -34,7 +34,7 @@ namespace Dino {
   class DeletableBase {
   public:
     /** Need a virtual destructor so the destructors of the subclasses get
-	called. */
+  called. */
     virtual ~DeletableBase() { }
   };
   
@@ -56,12 +56,12 @@ namespace Dino {
   public:
   
     /** This constructor initialises the two ringbuffers and sets up a cleanup
-	function to delete objects every 100 milliseconds. */
+  function to delete objects every 100 milliseconds. */
     Deleter() : m_objects_not_used(1000), m_objects_to_delete(1000) {
       using namespace sigc;
       dbg1<<"Initialising threadsafe deallocator"<<endl;
       m_connection = Glib::signal_timeout().
-	connect(bind_return(mem_fun(*this, &Deleter::do_delete), true), 100);
+  connect(bind_return(mem_fun(*this, &Deleter::do_delete), true), 100);
     }
     
     ~Deleter() {
@@ -81,31 +81,31 @@ namespace Dino {
     }
     
     /** This is the function that does the actual deallocation of the objects.
-	It is run automatically a couple of times every second. */
+  It is run automatically a couple of times every second. */
     void do_delete() {
       DeletableBase* pointer;
       while (m_objects_to_delete.pop(pointer)) {
-	delete pointer;
+  delete pointer;
       }
     }
     
     /** This is the function that is called in the sequencer thread to confirm
-	that the objects queued to be deleted are not in use. It simply pops
-	pointers from one queue and pushes them onto another. */
+  that the objects queued to be deleted are not in use. It simply pops
+  pointers from one queue and pushes them onto another. */
     void confirm(unsigned int n = 100) {
       DeletableBase* pointer;
       for (unsigned int i = 0; i < n && m_objects_not_used.pop(pointer); ++i) 
-	m_objects_to_delete.push(pointer);
+  m_objects_to_delete.push(pointer);
     }
   
   private:
   
     /** A ringbuffer containing pointers to the objects that are no longer 
-	used by the deleting thread but still not safe to delete. */
+  used by the deleting thread but still not safe to delete. */
     Ringbuffer<DeletableBase*> m_objects_not_used;
     
     /** A ringbuffer containing pointers to the objects that are now safe
-	to delete. */
+  to delete. */
     Ringbuffer<DeletableBase*> m_objects_to_delete;
     
     sigc::connection m_connection;

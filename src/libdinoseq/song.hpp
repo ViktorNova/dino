@@ -73,7 +73,7 @@ namespace Dino {
 
 
     /** An iterator class that is used to access the tracks in the song, 
-	without changing them. */
+  without changing them. */
     class ConstTrackIterator : 
       public std::iterator<std::forward_iterator_tag, Track> {
     public:
@@ -91,16 +91,16 @@ namespace Dino {
       friend class Song;
 
       explicit ConstTrackIterator(const std::map<int, Track*>::const_iterator&
-				  iter);
+          iter);
       
       std::map<int, Track*>::const_iterator m_iterator;
     };
     
     
     /** An iterator class that is used to access the tempo changes in the song.
-	It is a read-only iterator, you have to use the member functions in 
-	Song to modify the tempo map.
-	@see Song::add_tempo_change(), Song::remove_tempo_change()
+  It is a read-only iterator, you have to use the member functions in 
+  Song to modify the tempo map.
+  @see Song::add_tempo_change(), Song::remove_tempo_change()
     */
     class TempoIterator : 
       public std::iterator<std::forward_iterator_tag, TempoMap::TempoChange> {
@@ -167,7 +167,7 @@ namespace Dino {
     /// @name Sequencing
     //@{
     void get_timebase_info(unsigned long frame, unsigned long frame_rate,
-			   double& bpm, double& beat) const;
+         double& bpm, double& beat) const;
     double get_current_tempo(double beat);
     unsigned long bt2frame(double);
     pair<int, int> frame2bt(unsigned long frame);

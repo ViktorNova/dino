@@ -34,7 +34,7 @@ namespace Dino {
   public:
     
     /** This creates a new node with the given number of children and the given
-	maximum depth. */
+  maximum depth. */
     CDTreeNode(unsigned int children = 16, unsigned int depth = 5);
     ~CDTreeNode();
     
@@ -55,7 +55,7 @@ namespace Dino {
     CDTreeNode& operator=(const CDTreeNode&) { assert(0); return *this; }
     
     /** A node is prunable for a given value if all its children have the
-	same value. */
+  same value. */
     bool is_prunable(const T& data) const;
     /** Helper function to delete the data and set the data pointer to 0. */
     void delete_data();
@@ -75,7 +75,7 @@ namespace Dino {
     unsigned int result = 1;
     if (m_children) {
       for (unsigned int i = 0; i < m_size; ++i)
-	result += m_children[i]->count_nodes();
+  result += m_children[i]->count_nodes();
     }
     return result;
   }
@@ -114,11 +114,11 @@ namespace Dino {
     // if we're not at a leaf and we don't have any children, initialise them
     if (m_data) {
       if (data == *m_data)
-	return true;
+  return true;
       m_children = new CDTreeNode<T>*[m_size];
       for (unsigned int i = 0; i < m_size; ++i) {
-	m_children[i] = new CDTreeNode<T>(m_size, m_depth - 1);
-	m_children[i]->fill(0, m_segmentsize, *m_data);
+  m_children[i] = new CDTreeNode<T>(m_size, m_depth - 1);
+  m_children[i]->fill(0, m_segmentsize, *m_data);
       }
       delete_data();
     }
@@ -127,10 +127,10 @@ namespace Dino {
     if (m_children[i / m_segmentsize]->set(i % m_segmentsize, data)) {
       bool prunable = true;
       for (unsigned int j = 0; j < m_size && prunable; ++j) {
-	if (j != i / m_segmentsize) {
-	  if (!(prunable = m_children[j]->is_prunable(data)))
-	    return false;
-	}
+  if (j != i / m_segmentsize) {
+    if (!(prunable = m_children[j]->is_prunable(data)))
+      return false;
+  }
       }
       m_data = new T(data);
       delete_children();
@@ -167,16 +167,16 @@ namespace Dino {
       // if we're supposed to fill the whole subtree or the subtree value
       // is the same as the new value, just set the subtree value
       if ((start == 0 && end == m_size * m_segmentsize) || *m_data == data) {
-	//cerr<<"whole subtree"<<endl;
-	*m_data = data;
-	return true;
+  //cerr<<"whole subtree"<<endl;
+  *m_data = data;
+  return true;
       }
     
       // if we're only supposed to fill part of the tree we need children
       m_children = new CDTreeNode<T>*[m_size];
       for (unsigned int i = 0; i < m_size; ++i) {
-	m_children[i] = new CDTreeNode<T>(m_size, m_depth - 1);
-	m_children[i]->fill(0, m_segmentsize, *m_data);
+  m_children[i] = new CDTreeNode<T>(m_size, m_depth - 1);
+  m_children[i]->fill(0, m_segmentsize, *m_data);
       }
       delete_data();
     }
@@ -196,7 +196,7 @@ namespace Dino {
     // check if we can prune
     for (unsigned int j = 0; j < m_size; ++j) {
       if (!m_children[j]->is_prunable(data))
-	return false;
+  return false;
     }
     m_data = new T(data);
     delete_children();
@@ -211,14 +211,14 @@ namespace Dino {
     // if we're at a leaf or pruned subtree, just check the data
     if (m_data) {
       if (*m_data == data)
-	return true;
+  return true;
       return false;
     }
   
     // otherwise check recursively
     for (unsigned int i = 0; i < m_size; ++i) {
       if (!m_children[i]->is_prunable(data))
-	return false;
+  return false;
     }
   
     return true;
@@ -236,7 +236,7 @@ namespace Dino {
   void CDTreeNode<T>::delete_children() {
     if (m_children) {
       for (unsigned int i = 0; i < m_size; ++i)
-	delete m_children[i];
+  delete m_children[i];
       delete [] m_children;
       m_children = 0;
     }
@@ -252,9 +252,9 @@ namespace Dino {
   public:
   
     /** This constructor creates a new CDTree object with room for @c size
-	elements. */
+  elements. */
     CDTree(unsigned long size = 20, 
-	   unsigned int children = 16, unsigned int depth = 6);
+     unsigned int children = 16, unsigned int depth = 6);
   
     /** This sets the ith element to @c data. */
     void set(unsigned long i, const T& data);
@@ -275,7 +275,7 @@ namespace Dino {
 
   template <class T>
   CDTree<T>::CDTree(unsigned long size, 
-		    unsigned int children, unsigned int depth)
+        unsigned int children, unsigned int depth)
     : m_size(size), 
       m_segmentsize(int(pow(float(children), int(depth - 1)))),
       m_children(new CDTreeNode<T>*[m_size / m_segmentsize + 1]) {

@@ -39,13 +39,13 @@ namespace Dino {
     ~Ringbuffer();
   
     /** This pushes another object onto the queue. Returns @c false if the
-	queue is full. */
+  queue is full. */
     bool push(const T& thing);
     /** This removes the last object from the queue and copies it to 
-	@c thing. Returns @c false if the queue is empty. */
+  @c thing. Returns @c false if the queue is empty. */
     bool pop(T& thing);
     /** This removes the last object from the queue and returns a copy of it. 
-	If the queue is empty the behaviour is undefined. */
+  If the queue is empty the behaviour is undefined. */
     T pop();
     
     /** This clears the buffer (not threadsafe!) */

@@ -40,9 +40,9 @@ namespace Dino {
   /* Macros are ugly, but in this case they are the only way to get the 
      __FILE__ and __LINE__ from the caller. */
 #define dbg0 (cerr<<"\033[31;1m"<<'['<<setw(16)<<setfill(' ')<<__FILE__<<':' \
-	      <<setw(3)<<setfill('0')<<__LINE__<<"] "<<"\033[0m")
+        <<setw(3)<<setfill('0')<<__LINE__<<"] "<<"\033[0m")
 #define dbg1 (cerr<<"\033[32;1m"<<'['<<setw(16)<<setfill(' ')<<__FILE__<<':' \
-	      <<setw(3)<<setfill('0')<<__LINE__<<"] "<<"\033[0m")
+        <<setw(3)<<setfill('0')<<__LINE__<<"] "<<"\033[0m")
 
 
 #else

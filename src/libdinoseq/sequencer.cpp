@@ -84,7 +84,7 @@ namespace Dino {
       go_to_beat(0);
       m_valid = false;
       if (m_jack_client)
-	jack_client_close(m_jack_client);
+  jack_client_close(m_jack_client);
     }
   }
   
@@ -120,25 +120,25 @@ namespace Dino {
       // check if the given track is connected to a port
       string connected_instrument;
       if (track != -1) {
-	map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
-	assert(iter != m_output_ports.end());
-	const char** connected = jack_port_get_connections(iter->second);
-	if (connected && connected[0])
-	  connected_instrument = connected[0];
-	free(connected);
+  map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
+  assert(iter != m_output_ports.end());
+  const char** connected = jack_port_get_connections(iter->second);
+  if (connected && connected[0])
+    connected_instrument = connected[0];
+  free(connected);
       }
     
       const char** ports = jack_get_ports(m_jack_client, 0, 
-					  JACK_DEFAULT_MIDI_TYPE, 
-					  JackPortIsInput);
+            JACK_DEFAULT_MIDI_TYPE, 
+            JackPortIsInput);
       if (ports) {
-	for (size_t i = 0; ports[i]; ++i) {
-	  InstrumentInfo ii = ports[i];
-	  if (connected_instrument == ports[i])
-	    ii.connected = true;
-	  instruments.push_back(ii);
-	}
-	free(ports);
+  for (size_t i = 0; ports[i]; ++i) {
+    InstrumentInfo ii = ports[i];
+    if (connected_instrument == ports[i])
+      ii.connected = true;
+    instruments.push_back(ii);
+  }
+  free(ports);
       }
     }
     return instruments;
@@ -150,23 +150,23 @@ namespace Dino {
     
       map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
       if (iter == m_output_ports.end()) {
-	dbg0<<"Trying to connect nonexistant output port "<<track
-	    <<" to instrument "<<instrument<<endl;
-	return;
+  dbg0<<"Trying to connect nonexistant output port "<<track
+      <<" to instrument "<<instrument<<endl;
+  return;
       }
 
       // remove old connections from this port
       const char** ports = jack_port_get_connections(iter->second);
       if (ports) {
-	for (size_t i = 0; ports[i]; ++i)
-	  jack_disconnect(m_jack_client, jack_port_name(iter->second), ports[i]);
-	free(ports);
+  for (size_t i = 0; ports[i]; ++i)
+    jack_disconnect(m_jack_client, jack_port_name(iter->second), ports[i]);
+  free(ports);
       }
     
       // connect the new instrument
       if (instrument != "None") {
-	jack_connect(m_jack_client, 
-		     jack_port_name(iter->second), instrument.c_str());
+  jack_connect(m_jack_client, 
+         jack_port_name(iter->second), instrument.c_str());
       }
     }
   }
@@ -189,16 +189,16 @@ namespace Dino {
       return false;
     int err;
     if ((err = jack_set_timebase_callback(m_jack_client, 1, 
-					  &Sequencer::jack_timebase_callback_,
-					  this)) != 0)
+            &Sequencer::jack_timebase_callback_,
+            this)) != 0)
       return false;
     if ((err = jack_set_process_callback(m_jack_client,
-					 &Sequencer::jack_process_callback_,
-					 this)) != 0)
+           &Sequencer::jack_process_callback_,
+           this)) != 0)
       return false;
     if ((err = jack_set_port_registration_callback(m_jack_client,
-						   &Sequencer::jack_port_registration_callback_,
-						   this)) != 0)
+               &Sequencer::jack_port_registration_callback_,
+               this)) != 0)
       return false;
     
     jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
@@ -211,8 +211,8 @@ namespace Dino {
     jack_transport_stop(m_jack_client);
     jack_transport_reposition(m_jack_client, &pos);
     m_input_port = jack_port_register(m_jack_client, "MIDI input", 
-				      JACK_DEFAULT_MIDI_TYPE, 
-				      JackPortIsInput, 0);
+              JACK_DEFAULT_MIDI_TYPE, 
+              JackPortIsInput, 0);
     return true;
   }
 
@@ -222,8 +222,8 @@ namespace Dino {
       char track_name[10];
       sprintf(track_name, "Track %d", track);
       jack_port_t* port = jack_port_register(m_jack_client, track_name, 
-					     JACK_DEFAULT_MIDI_TYPE, 
-					     JackPortIsOutput, 0);
+               JACK_DEFAULT_MIDI_TYPE, 
+               JackPortIsOutput, 0);
       m_output_ports[track] = port;
     }
   }
@@ -238,12 +238,12 @@ namespace Dino {
 
 
   void Sequencer::jack_timebase_callback(jack_transport_state_t state, 
-					 jack_nframes_t nframes, 
-					 jack_position_t* pos, int new_pos) {
+           jack_nframes_t nframes, 
+           jack_position_t* pos, int new_pos) {
     int loop_end = m_song.get_loop_end();
     int loop_start = m_song.get_loop_start();
     bool looping = (loop_end >= 0 && loop_start >= 0 && 
-		    loop_end != loop_start);
+        loop_end != loop_start);
     
     // these are always the same in Dino
     pos->beats_per_bar = 4;
@@ -267,21 +267,21 @@ namespace Dino {
     if (looping && beat < loop_end) {
       double beats_left = loop_end - beat;
       double periods_left = 60 * (beats_left / bpm) * 
-	pos->frame_rate / double(nframes);
+  pos->frame_rate / double(nframes);
       int whole_periods = int(floor(periods_left + 0.5));
       whole_periods = whole_periods == 0 ? 1 : whole_periods;
       bpm = 60 * (beats_left / whole_periods) * 
-	pos->frame_rate / double(nframes);
+  pos->frame_rate / double(nframes);
       
       // if this is the last period before the loop end, skip back to the loop
       // start
       if (whole_periods <= 1) {
-	jack_transport_locate(m_jack_client, m_song.bt2frame(loop_start));
-	m_next_beat = loop_start;
+  jack_transport_locate(m_jack_client, m_song.bt2frame(loop_start));
+  m_next_beat = loop_start;
       }
       // otherwise, keep rolling
       else
-	m_next_beat = beat + bpm * double(nframes) / (60 * pos->frame_rate);
+  m_next_beat = beat + bpm * double(nframes) / (60 * pos->frame_rate);
     }
 
     // fill in the JACK position structure
@@ -291,8 +291,8 @@ namespace Dino {
     pos->beat %= int(pos->beats_per_bar);
     pos->beats_per_minute = bpm;
     pos->bbt_offset = jack_nframes_t((beat - pos->beat - pos->tick / 
-				      pos->ticks_per_beat) * 
-				     pos->frame_rate * 60 / bpm);
+              pos->ticks_per_beat) * 
+             pos->frame_rate * 60 / bpm);
     pos->valid = jack_position_bits_t(JackPositionBBT | JackBBTFrameOffset);
     
     // bars and beats start from 1 by convention (but ticks don't!)
@@ -338,8 +338,8 @@ namespace Dino {
       jack_midi_event_get(&input_event, input_buf, i, nframes);
       MIDIEvent event;
       event.beat = m_current_beat;
-			memcpy(event.data, input_event.buffer, 
-						 input_event.size < 3 ? input_event.size : 3);
+      memcpy(event.data, input_event.buffer, 
+             input_event.size < 3 ? input_event.size : 3);
       m_recorded_events.push(event);
     }
     
@@ -360,28 +360,28 @@ namespace Dino {
       int flags = jack_port_flags(jack_port_by_id(m_jack_client, port));
       const char* type = jack_port_type(jack_port_by_id(m_jack_client, port));
       if ((flags & JackPortIsInput) && !strcmp(type, JACK_DEFAULT_MIDI_TYPE))
-	m_ports_changed = m_ports_changed + 1;
+  m_ports_changed = m_ports_changed + 1;
     }
   }
 
 
   void Sequencer::sequence_midi(jack_transport_state_t state, 
-				const jack_position_t& pos, 
-				jack_nframes_t nframes) {
+        const jack_position_t& pos, 
+        jack_nframes_t nframes) {
     
     // if we're not rolling, turn off all notes and return
     Song::ConstTrackIterator iter;
     if (state != JackTransportRolling) {
       for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
-				jack_port_t* port = m_output_ports[iter->get_id()];
-				if (port) {
-					void* port_buf = jack_port_get_buffer(port, nframes);
-					jack_midi_clear_buffer(port_buf, nframes);
-					unsigned char all_notes_off[] = { 0xB0, 123, 0 };
-					if (!m_sent_all_off)
-						jack_midi_event_write(port_buf, 0, all_notes_off, 3, nframes);
-				}
-				m_sent_all_off = true;
+        jack_port_t* port = m_output_ports[iter->get_id()];
+        if (port) {
+          void* port_buf = jack_port_get_buffer(port, nframes);
+          jack_midi_clear_buffer(port_buf, nframes);
+          unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+          if (!m_sent_all_off)
+            jack_midi_event_write(port_buf, 0, all_notes_off, 3, nframes);
+        }
+        m_sent_all_off = true;
       }
       return;
     }
@@ -402,13 +402,13 @@ namespace Dino {
       // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->get_id()];
       if (port) {
-				void* port_buf = jack_port_get_buffer(port, nframes);
-				jack_midi_clear_buffer(port_buf, nframes);
-				MIDIBuffer buffer(port_buf, start, 
-													pos.beats_per_minute,	pos.frame_rate);
-				buffer.set_period_size(nframes);
-				buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
-				iter->sequence(buffer, start, end);
+        void* port_buf = jack_port_get_buffer(port, nframes);
+        jack_midi_clear_buffer(port_buf, nframes);
+        MIDIBuffer buffer(port_buf, start, 
+                          pos.beats_per_minute, pos.frame_rate);
+        buffer.set_period_size(nframes);
+        buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
+        iter->sequence(buffer, start, end);
       }
     }
 
@@ -447,19 +447,19 @@ namespace Dino {
   
   bool Sequencer::recorder() {
     MIDIEvent e;
-		Song::TrackIterator titer = m_song.tracks_find(1);
-		if (titer == m_song.tracks_end())
-			return true;
-		Track::PatternIterator piter = titer->pat_find(1);
-		if (piter == titer->pat_end())
-			return true;
+    Song::TrackIterator titer = m_song.tracks_find(1);
+    if (titer == m_song.tracks_end())
+      return true;
+    Track::PatternIterator piter = titer->pat_find(1);
+    if (piter == titer->pat_end())
+      return true;
     while (m_recorded_events.pop(e)) {
       dbg1<<"MIDI event received at beat "<<e.beat<<endl;
-			if ((e.data[0] & 0xF0) == 0x90) {
-				piter->add_note(unsigned(e.beat * piter->get_steps()), 
-												e.data[1], e.data[2], 1);
-			}
-		}
+      if ((e.data[0] & 0xF0) == 0x90) {
+        piter->add_note(unsigned(e.beat * piter->get_steps()), 
+                        e.data[1], e.data[2], 1);
+      }
+    }
     return true;
   }
 

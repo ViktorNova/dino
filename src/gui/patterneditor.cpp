@@ -119,11 +119,11 @@ PatternEditor::PatternEditor(Song& song)
   cb_box->set_spacing(5);
   cb_box->pack_start(*manage(new Label("Controller:")), false, false);
   cb_box->pack_start(m_cmb_controller, true, true);
-  table->attach(*cb_box, 1, 5, 3, 4, FILL|EXPAND, FILL);
+  table->attach(*cb_box, 1, 5, 3, 4, FILL | EXPAND, FILL);
   
   // add scrollbars
-  table->attach(*hscroll, 1, 5, 5, 6, FILL|EXPAND, FILL);
-  table->attach(*vscroll, 5, 6, 2, 3, FILL, FILL|EXPAND);
+  table->attach(*hscroll, 1, 5, 5, 6, FILL | EXPAND, FILL);
+  table->attach(*vscroll, 5, 6, 2, 3, FILL, FILL | EXPAND);
 
   // connect the combo boxes
   m_cmb_track.set_sensitive(false);
@@ -137,7 +137,7 @@ PatternEditor::PatternEditor(Song& song)
 		    mem_fun(m_cmb_pattern, &SingleTextCombo::get_active_id)));
   m_cmb_controller.signal_changed().
     connect(compose(mem_fun(*this, &PatternEditor::set_active_controller),
-		    mem_fun(m_cmb_controller,&SingleTextCombo::get_active_id)));
+		    mem_fun(m_cmb_controller, &SingleTextCombo::get_active_id)));
 
   // synchronise scrolling
   scw_ruler->set_hadjustment(scw_note->get_hadjustment());

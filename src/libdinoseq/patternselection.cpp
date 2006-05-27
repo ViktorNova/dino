@@ -80,7 +80,7 @@ namespace Dino {
     : m_pat(pat) {
     if (m_pat) {
       m_pat->signal_note_removed().
-	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
+  connect(mem_fun(*this, &PatternSelection::remove_note_internal));
     }
   }
 
@@ -90,7 +90,7 @@ namespace Dino {
       m_pat(sel.m_pat) {
     if (m_pat)
       m_pat->signal_note_removed().
-	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
+  connect(mem_fun(*this, &PatternSelection::remove_note_internal));
   }
 
 
@@ -100,7 +100,7 @@ namespace Dino {
     m_pat = sel.m_pat;
     if (m_pat)
       m_pat->signal_note_removed().
-	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
+  connect(mem_fun(*this, &PatternSelection::remove_note_internal));
     return *this;
   }
 
@@ -152,8 +152,8 @@ namespace Dino {
     std::set<Pattern::NoteIterator>::iterator iter;
     for (iter = m_data.begin(); iter != m_data.end(); ++iter) {
       if (&**iter == ptr) {
-	m_data.erase(iter);
-	break;
+  m_data.erase(iter);
+  break;
       }
     }
   }

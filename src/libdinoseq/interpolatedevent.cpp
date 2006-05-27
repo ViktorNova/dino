@@ -25,7 +25,7 @@ namespace Dino {
 
 
   InterpolatedEvent::InterpolatedEvent(int start, int end, 
-				       unsigned step, unsigned length) 
+               unsigned step, unsigned length) 
     : m_start(start),
       m_end(end),
       m_step(step),

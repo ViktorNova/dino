@@ -58,7 +58,7 @@ namespace Dino {
     };
   
     /** This will create a new Sequencer object with the JACK client name 
-	@c client_name and the Song object @c song. */
+  @c client_name and the Song object @c song. */
     Sequencer(const string& client_name, Song& song);
     ~Sequencer();
     
@@ -78,12 +78,12 @@ namespace Dino {
     /// @name Instrument control
     //@{
     /** This returns a vector of all instruments that are available for
-	the sequencer to play. */
+  the sequencer to play. */
     vector<InstrumentInfo> get_instruments(int track = -1) const;
     /** This assigns the given instrument to the given track, i.e. connects
-	the track's output port to the instruments input port. This is not
-	saved in the .dino file since all connections are supposed to be
-	restored by LASH. */
+  the track's output port to the instruments input port. This is not
+  saved in the .dino file since all connections are supposed to be
+  restored by LASH. */
     void set_instrument(int track, const string& instrument);
     /** This creates new MIDI output ports for all tracks. */
     void reset_ports();
@@ -106,12 +106,12 @@ namespace Dino {
     /// @name JACK callbacks
     //@{
     /** This function is called whenever the JACK daemon wants to know the
-	beat and tick for a given frame position. */
+  beat and tick for a given frame position. */
     void jack_timebase_callback(jack_transport_state_t state, 
-				jack_nframes_t nframes, jack_position_t* pos, 
-				int new_pos);
+        jack_nframes_t nframes, jack_position_t* pos, 
+        int new_pos);
     /** This is called once for each JACK cycle. MIDI is sequenced from here. 
-	@callgraph
+  @callgraph
     */
     int jack_process_callback(jack_nframes_t nframes);
     /** This is called when the JACK daemon is being shut down. */
@@ -123,11 +123,11 @@ namespace Dino {
     /// @name JACK callback wrappers
     //@{
     static void jack_timebase_callback_(jack_transport_state_t state,
-					jack_nframes_t nframes,
-					jack_position_t* pos, int new_pos,
-					void* arg) {
+          jack_nframes_t nframes,
+          jack_position_t* pos, int new_pos,
+          void* arg) {
       static_cast<Sequencer*>(arg)->jack_timebase_callback(state, nframes, 
-							   pos, new_pos);
+                 pos, new_pos);
     }
     static int jack_process_callback_(jack_nframes_t nframes, void* arg) {
       return static_cast<Sequencer*>(arg)->jack_process_callback(nframes);
@@ -136,7 +136,7 @@ namespace Dino {
       static_cast<Sequencer*>(arg)->jack_shutdown_handler();
     }
     static void jack_port_registration_callback_(jack_port_id_t port, int m,
-						 void* arg) {
+             void* arg) {
       static_cast<Sequencer*>(arg)->jack_port_registration_callback(port, m);
     }
     static void jack_error_function(const char* msg) {
@@ -146,24 +146,24 @@ namespace Dino {
     //@}
     
     /** This function should be called when a new track has been added to the
-	song. */
+  song. */
     void track_added(int track);
     /** This function should be called when a track has been removed from the
-	song. */
+  song. */
     void track_removed(int track);
   
     /** This function does the actual MIDI playback (i.e. it puts the MIDI
-	events on the JACK MIDI output buffers). */
+  events on the JACK MIDI output buffers). */
     void sequence_midi(jack_transport_state_t state,
-		       const jack_position_t& pos, jack_nframes_t nframes);
+           const jack_position_t& pos, jack_nframes_t nframes);
   
     string m_client_name;
     /* XXX The below is false, I think. Everything should be readable by
        the audio thread at all times without locking any mutii. */
     /** No one is allowed to read or write anything in this variable without
-	locking m_song.get_big_mutex() - the exception is the list of tempo 
-	changes, which always must be readable for the JACK timebase 
-	callback. */
+  locking m_song.get_big_mutex() - the exception is the list of tempo 
+  changes, which always must be readable for the JACK timebase 
+  callback. */
     Song& m_song;
     /** This is @c true if JACK and ALSA has been initialised succesfully. */
     bool m_valid;
@@ -189,7 +189,7 @@ namespace Dino {
     
     struct MIDIEvent {
       double beat;
-			unsigned char data[3];
+      unsigned char data[3];
     };
     
     Ringbuffer<MIDIEvent> m_recorded_events;

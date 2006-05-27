@@ -39,7 +39,7 @@ namespace Dino {
     /** A description of a single note. */
     struct NoteDescription {
       NoteDescription(unsigned int start, unsigned int length,
-		      unsigned char key, unsigned char velocity);
+          unsigned char key, unsigned char velocity);
       unsigned int start;
       unsigned int length;
       unsigned char key;
@@ -47,11 +47,11 @@ namespace Dino {
     };
     
     /** An iterator type that iterates over the NoteDescription objects in
-	this collection. */
+  this collection. */
     typedef std::vector<NoteDescription>::iterator Iterator;
     
     /** A const iterator type that iterates over the NoteDescription objects in
-	this collection. */
+  this collection. */
     typedef std::vector<NoteDescription>::const_iterator ConstIterator;
     
     /** Create a new empty NoteCollection. */

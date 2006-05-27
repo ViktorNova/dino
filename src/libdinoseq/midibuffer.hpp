@@ -31,24 +31,24 @@ namespace Dino {
   public:
     
     /** Create a new MIDIBuffer as a wrapper for the JACK MIDI output buffer
-	@c port_buffer. */
+  @c port_buffer. */
     MIDIBuffer(void* port_buffer, double start_beat, 
-	       double bpm, unsigned long framerate);
+         double bpm, unsigned long framerate);
     
     /** Set the JACK MIDI period size (this is needed when adding events to
-	JACK MIDI buffers, not sure why). */
+  JACK MIDI buffers, not sure why). */
     void set_period_size(unsigned long nframes);
     
     /** Set the desired CC resolution in beats. */
     void set_cc_resolution(double beats);
     
     /** Return the desired CC resolution in beats. Anyone who fills this buffer
-	should try to add continuous controller events at least this close
-	to each other. */
+  should try to add continuous controller events at least this close
+  to each other. */
     double get_cc_resolution() const;
     
     /** Retrieves a buffer to write MIDI data to, or 0 if there is no more space
-	in the buffer. */
+  in the buffer. */
     unsigned char* reserve(double beat, size_t data_size);
     
     /** Copy MIDI data to the buffer. */
@@ -60,7 +60,7 @@ namespace Dino {
     void* m_buffer;
     
     /** The number of frames in this JACK cycle, needed when adding JACK MIDI
-	events. */
+  events. */
     unsigned long m_nframes;
     
     /** The desired CC resolution. */

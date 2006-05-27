@@ -45,18 +45,18 @@ namespace Dino {
     NoteEvent(unsigned char type, int stp, int val, int vel);
 
     /** Return the second data byte of this event. For a note event this will
-	be the MIDI note number, between 0 and 127. */
+  be the MIDI note number, between 0 and 127. */
     unsigned char get_key() const;
     /** Return the third data byte of this event. For a note event this will be
-	the key velocity, between 0 and 127. */
+  the key velocity, between 0 and 127. */
     unsigned char get_velocity() const;
     /** Return the pattern step where this event occurs. */
     unsigned int get_step() const;
     /** Return a pointer to the previous event at the same pattern step. */
     NoteEvent* get_previous() const;
     /** Return a pointer to the next note event at the same pattern step.
-	This is overridden from MIDIEvent so we don't have to static_cast
-	the returned event pointer to a NoteEvent* every time. */
+  This is overridden from MIDIEvent so we don't have to static_cast
+  the returned event pointer to a NoteEvent* every time. */
     NoteEvent* get_next() const;
     /** Return a pointer to the Note object that owns this event. */
     Note* get_note();
@@ -64,10 +64,10 @@ namespace Dino {
     const unsigned char* get_data() const;
     
     /** Set the second byte of the event. For note events this is the MIDI
-	note number (from 0 to 127). */
+  note number (from 0 to 127). */
     void set_key(unsigned char note);
     /** Set the third byte of the event. For note events this is the key
-	velocity (from 0 to 127). */
+  velocity (from 0 to 127). */
     void set_velocity(unsigned char vel);
     /** Set the pattern step where this event occurs. */
     void set_step(unsigned int step);

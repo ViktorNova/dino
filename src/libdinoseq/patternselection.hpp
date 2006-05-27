@@ -39,9 +39,9 @@ namespace Dino {
   public:
     
     /** This iterator provides a way to iterate over all notes in this
-	selection. It can be automatically casted to a Pattern::NoteIterator,
-	so it can be used with all functions that expect a Pattern::NoteIterator
-	object as a parameter.
+  selection. It can be automatically casted to a Pattern::NoteIterator,
+  so it can be used with all functions that expect a Pattern::NoteIterator
+  object as a parameter.
     */
     class Iterator : public std::iterator<std::forward_iterator_tag, Note> {
     public:
@@ -58,7 +58,7 @@ namespace Dino {
       /** Compare two iterators for inequality. */
       bool operator!=(const Iterator& iter) const;
       /** A cast operator that casts this iterator to a Pattern::NoteIterator
-	  that can be used with the mutator functions in the Pattern class. */
+    that can be used with the mutator functions in the Pattern class. */
       operator Pattern::NoteIterator () const;
       
       /** Advance the iterator one step. */
@@ -68,11 +68,11 @@ namespace Dino {
     protected:
       
       /** PatternSelection is a friend since we only want that class to be
-	  able to create new valid iterators. */
+    able to create new valid iterators. */
       friend class PatternSelection;
       
       /** This constructor is used by PatternSelection to create valid 
-	  iterators. */
+    iterators. */
       Iterator(const std::set<Pattern::NoteIterator>::iterator& iterator);
       
       /** The actual iterator over the selection set. */
@@ -81,7 +81,7 @@ namespace Dino {
     
     
     /** Creates a new selection. If @c pat is 0 the selection is invalid
-	and should not be used for anything. */
+  and should not be used for anything. */
     PatternSelection(Pattern* pat = 0);
     /** Copy a selection. */
     PatternSelection(const PatternSelection& sel);
@@ -91,10 +91,10 @@ namespace Dino {
     /** Returns an iterator to the first note in the selection. */
     Iterator begin() const;
     /** Returns an iterator to the end of the selection that can be used
-	to compare other iterators to. */
+  to compare other iterators to. */
     Iterator end() const;
     /** Returns an iterator to the given Pattern::NoteIterator, or end() if
-	that note is not in this selection. */
+  that note is not in this selection. */
     Iterator find(const Pattern::NoteIterator& iter) const;
     
     /** Returns the Pattern that this object is a selection over. */
@@ -113,7 +113,7 @@ namespace Dino {
   protected:
     
     /** Used to remove notes from the selection automatically when they are
-	removed from the pattern. */
+  removed from the pattern. */
     void remove_note_internal(const Note& note);
     
     /** The actual set of selected notes. */

@@ -18,6 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <cassert>
+
 #include "debug.hpp"
 #include "plugindialog.hpp"
 #include "pluginlibrary.hpp"
@@ -27,6 +29,7 @@ using namespace Glib;
 using namespace Gtk;
 using namespace Gnome::Glade;
 using namespace Dino;
+using namespace std;
 
 
 PluginDialog::PluginDialog(BaseObjectType* cobject, const RefPtr<Xml>& xml)
@@ -64,7 +67,7 @@ void PluginDialog::row_changed(const TreeModel::iterator& iter) {
   PluginLibrary::iterator piter = m_plib->find((*iter)[m_columns.name]);
   if (piter == m_plib->end()) {
     dbg0<<"Trying to load or unload \""<<string((*iter)[m_columns.name])<<"\", "
-	<<"which doesn't exist"<<endl;
+        <<"which doesn't exist"<<endl;
     return;
   }
   if ((*iter)[m_columns.loaded])

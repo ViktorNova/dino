@@ -1,10 +1,10 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.29
+PACKAGE_VERSION = 0.3.30
 PKG_DEPS = \
 	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
-	jack>=0.99.0 \
+	jack>=0.102.6 \
 	lash-1.0>=0.5.0
 
 

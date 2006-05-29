@@ -395,8 +395,7 @@ namespace Dino {
     // if we are rolling, sequence MIDI
     double offset;
     if (pos.valid & JackBBTFrameOffset) {
-      double offset = pos.bbt_offset * pos.beats_per_minute / 
-        (pos.frame_rate * 60);
+      offset = pos.bbt_offset * pos.beats_per_minute / (pos.frame_rate * 60);
     }
     else
       offset = 0;

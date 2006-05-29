@@ -174,8 +174,8 @@ namespace Dino {
     
     double m_cc_resolution;
     double m_time_to_next_cc;
-    int m_last_beat;
-    int m_last_tick;
+    double m_last_end;
+    bool m_was_rolling;
     double m_next_beat;
     
     bool m_sent_all_off;

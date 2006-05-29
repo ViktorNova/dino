@@ -44,8 +44,8 @@ namespace Dino {
       m_valid(false),
       m_cc_resolution(0.01),
       m_time_to_next_cc(0),
-      m_last_beat(0), 
-      m_last_tick(0), 
+      m_last_end(0),
+      m_was_rolling(false),
       m_next_beat(0),
       m_sent_all_off(false),
       m_current_beat(0), 
@@ -377,6 +377,7 @@ namespace Dino {
     // if we're not rolling, turn off all notes and return
     Song::ConstTrackIterator iter;
     if (state != JackTransportRolling) {
+      m_was_rolling = false;
       for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
         jack_port_t* port = m_output_ports[iter->get_id()];
         if (port) {
@@ -400,8 +401,14 @@ namespace Dino {
       offset = 0;
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
       pos.tick / double(pos.ticks_per_beat) + offset;
+    // XXX this is very ugly! need some safe way to check if we have relocated
+    if (m_was_rolling && abs(m_last_end - start) < 0.001)
+      start = m_last_end;
     double end = start + pos.beats_per_minute * nframes / 
       (60 * pos.frame_rate) + offset;
+    m_was_rolling = true;
+    m_last_end = end;
+    
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
 
       // get the MIDI buffer

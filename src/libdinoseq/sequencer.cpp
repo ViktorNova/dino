@@ -399,7 +399,7 @@ namespace Dino {
         (pos.frame_rate * 60);
     }
     else
-      double offset = 0;
+      offset = 0;
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
       pos.tick / double(pos.ticks_per_beat) + offset;
     double end = start + pos.beats_per_minute * nframes / 

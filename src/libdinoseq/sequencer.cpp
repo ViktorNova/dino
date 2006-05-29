@@ -292,12 +292,12 @@ namespace Dino {
     // fill in the JACK position structure
     pos->beat = int32_t(beat);
     pos->tick = int32_t((beat - pos->beat) * pos->ticks_per_beat);
+    pos->bbt_offset = 
+      jack_nframes_t((beat - pos->beat - pos->tick / pos->ticks_per_beat) * 
+                     pos->frame_rate * 60 / bpm);
     pos->bar = int32_t(pos->beat / pos->beats_per_bar);
     pos->beat %= int(pos->beats_per_bar);
     pos->beats_per_minute = bpm;
-    pos->bbt_offset = jack_nframes_t((beat - pos->beat - pos->tick / 
-                                      pos->ticks_per_beat) * 
-                                     pos->frame_rate * 60 / bpm);
     pos->valid = jack_position_bits_t(JackPositionBBT | JackBBTFrameOffset);
     
     // bars and beats start from 1 by convention (but ticks don't!)
@@ -393,8 +393,13 @@ namespace Dino {
     m_sent_all_off = false;
     
     // if we are rolling, sequence MIDI
-    double offset = pos.bbt_offset * pos.beats_per_minute / 
-      (pos.frame_rate * 60);
+    double offset;
+    if (pos.valid & JackBBTFrameOffset) {
+      double offset = pos.bbt_offset * pos.beats_per_minute / 
+        (pos.frame_rate * 60);
+    }
+    else
+      double offset = 0;
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
       pos.tick / double(pos.ticks_per_beat) + offset;
     double end = start + pos.beats_per_minute * nframes / 

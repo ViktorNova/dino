@@ -445,6 +445,20 @@ namespace Dino {
       sprintf(tmp_txt, "%d", tc->get_bpm());
       tc_elt->set_attribute("bpm", tmp_txt);
     }
+    
+    // write the loop
+    if (get_loop_start() != -1) {
+      char tmp_txt[10];
+      sprintf(tmp_txt, "%d", get_loop_start());
+      Element* loop_start_elt = dino_elt->add_child("loop_start");
+      loop_start_elt->set_attribute("beat", tmp_txt);
+    }
+    if (get_loop_end() != -1) {
+      char tmp_txt[10];
+      sprintf(tmp_txt, "%d", get_loop_end());
+      Element* loop_end_elt = dino_elt->add_child("loop_end");
+      loop_end_elt->set_attribute("beat", tmp_txt);
+    }
   
     // write all tracks
     map<int, Track*>::const_iterator iter;
@@ -454,7 +468,7 @@ namespace Dino {
       sprintf(id_txt, "%d", iter->first);
       track_elt->set_attribute("id", id_txt);
       if (!iter->second->fill_xml_node(track_elt))
-  return false;
+        return false;
     }
   
     doc.write_to_file_formatted(filename);
@@ -491,14 +505,34 @@ namespace Dino {
       const Element* elt = dynamic_cast<Element*>(*nodes.begin());
       Node::NodeList nodes2 = elt->get_children("tempochange");
       for (iter = nodes2.begin(); iter != nodes2.end(); ++iter) {
-  const Element* tc_elt = dynamic_cast<Element*>(*iter);
-  int beat, bpm;
-  sscanf(tc_elt->get_attribute("beat")->get_value().c_str(), "%d", &beat);
-  sscanf(tc_elt->get_attribute("bpm")->get_value().c_str(), "%d", &bpm);
-  m_tempo_map.add_tempo_change(beat, bpm);
+        const Element* tc_elt = dynamic_cast<Element*>(*iter);
+        int beat, bpm;
+        sscanf(tc_elt->get_attribute("beat")->get_value().c_str(), "%d",&beat);
+        sscanf(tc_elt->get_attribute("bpm")->get_value().c_str(), "%d", &bpm);
+        m_tempo_map.add_tempo_change(beat, bpm);
       }
     }
-  
+    
+    // parse loop
+    nodes = dino_elt->get_children("loop_start");
+    if (nodes.begin() != nodes.end()) {
+      const Element* elt = dynamic_cast<Element*>(*nodes.begin());
+      if (elt) {
+        int beat;
+        sscanf(elt->get_attribute("beat")->get_value().c_str(), "%d", &beat);
+        set_loop_start(beat);
+      }
+    }
+    nodes = dino_elt->get_children("loop_end");
+    if (nodes.begin() != nodes.end()) {
+      const Element* elt = dynamic_cast<Element*>(*nodes.begin());
+      if (elt) {
+        int beat;
+        sscanf(elt->get_attribute("beat")->get_value().c_str(), "%d", &beat);
+        set_loop_end(beat);
+      }
+    }
+    
     // parse all tracks
     nodes = dino_elt->get_children("track");
     map<int, Track*>* new_tracks = new map<int, Track*>();

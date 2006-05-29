@@ -69,9 +69,12 @@ namespace Dino {
     m_song.signal_track_removed().
       connect(mem_fun(*this, &Sequencer::track_removed));
 
-    Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::beat_checker), 20);
-    Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::ports_checker),20);
-    Glib::signal_timeout().connect(mem_fun(*this, &Sequencer::recorder), 20);
+    Glib::signal_timeout().
+      connect(mem_fun(*this, &Sequencer::beat_checker), 20);
+    Glib::signal_timeout().
+      connect(mem_fun(*this, &Sequencer::ports_checker), 20);
+    Glib::signal_timeout().
+      connect(mem_fun(*this, &Sequencer::recorder), 20);
     
     reset_ports();
   }
@@ -84,7 +87,7 @@ namespace Dino {
       go_to_beat(0);
       m_valid = false;
       if (m_jack_client)
-  jack_client_close(m_jack_client);
+        jack_client_close(m_jack_client);
     }
   }
   
@@ -113,7 +116,8 @@ namespace Dino {
   }
 
 
-  vector<Sequencer::InstrumentInfo> Sequencer::get_instruments(int track) const {
+  vector<Sequencer::InstrumentInfo> 
+  Sequencer::get_instruments(int track) const {
     vector<InstrumentInfo> instruments;
     if (m_jack_client) {
     
@@ -150,100 +154,101 @@ namespace Dino {
     
       map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
       if (iter == m_output_ports.end()) {
-  dbg0<<"Trying to connect nonexistant output port "<<track
-      <<" to instrument "<<instrument<<endl;
-  return;
+        dbg0<<"Trying to connect nonexistant output port "<<track
+            <<" to instrument "<<instrument<<endl;
+        return;
       }
-
+      
       // remove old connections from this port
       const char** ports = jack_port_get_connections(iter->second);
       if (ports) {
-  for (size_t i = 0; ports[i]; ++i)
-    jack_disconnect(m_jack_client, jack_port_name(iter->second), ports[i]);
-  free(ports);
+        for (size_t i = 0; ports[i]; ++i)
+          jack_disconnect(m_jack_client, 
+                          jack_port_name(iter->second), ports[i]);
+        free(ports);
       }
-    
+      
       // connect the new instrument
       if (instrument != "None") {
-  jack_connect(m_jack_client, 
-         jack_port_name(iter->second), instrument.c_str());
+        jack_connect(m_jack_client, 
+                     jack_port_name(iter->second), instrument.c_str());
       }
     }
   }
-
-
+  
+  
   void Sequencer::reset_ports() {
     Song::ConstTrackIterator iter;
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter)
       track_added(iter->get_id());
   }
-
+  
   
   bool Sequencer::init_jack(const string& client_name) {
   
     dbg1<<"Initialising JACK client"<<endl;
-  
+    
     jack_set_error_function(&Sequencer::jack_error_function);
     m_jack_client = jack_client_new(client_name.c_str());
     if (!m_jack_client)
       return false;
     int err;
     if ((err = jack_set_timebase_callback(m_jack_client, 1, 
-            &Sequencer::jack_timebase_callback_,
-            this)) != 0)
+                                          &Sequencer::jack_timebase_callback_,
+                                          this)) != 0)
       return false;
     if ((err = jack_set_process_callback(m_jack_client,
-           &Sequencer::jack_process_callback_,
-           this)) != 0)
+                                         &Sequencer::jack_process_callback_,
+                                         this)) != 0)
       return false;
     if ((err = jack_set_port_registration_callback(m_jack_client,
-               &Sequencer::jack_port_registration_callback_,
-               this)) != 0)
+                                                   &Sequencer::jack_port_registration_callback_,
+                                                   this)) != 0)
       return false;
     
     jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
     
     if ((err = jack_activate(m_jack_client)) != 0)
       return false;
-  
+    
     jack_position_t pos;
     memset(&pos, 0, sizeof(pos));
     jack_transport_stop(m_jack_client);
     jack_transport_reposition(m_jack_client, &pos);
     m_input_port = jack_port_register(m_jack_client, "MIDI input", 
-              JACK_DEFAULT_MIDI_TYPE, 
-              JackPortIsInput, 0);
+                                      JACK_DEFAULT_MIDI_TYPE, 
+                                      JackPortIsInput, 0);
     return true;
   }
-
-
+  
+  
   void Sequencer::track_added(int track) {
     if (m_valid) {
       char track_name[10];
       sprintf(track_name, "Track %d", track);
       jack_port_t* port = jack_port_register(m_jack_client, track_name, 
-               JACK_DEFAULT_MIDI_TYPE, 
-               JackPortIsOutput, 0);
+                                             JACK_DEFAULT_MIDI_TYPE, 
+                                             JackPortIsOutput, 0);
       m_output_ports[track] = port;
     }
   }
-
-
+  
+  
   void Sequencer::track_removed(int track) {
     if (m_valid) {
       jack_port_unregister(m_jack_client, m_output_ports[track]);
       m_output_ports.erase(track);
     }
   }
-
-
+  
+  
   void Sequencer::jack_timebase_callback(jack_transport_state_t state, 
-           jack_nframes_t nframes, 
-           jack_position_t* pos, int new_pos) {
+                                         jack_nframes_t nframes, 
+                                         jack_position_t* pos, int new_pos) {
     int loop_end = m_song.get_loop_end();
     int loop_start = m_song.get_loop_start();
     bool looping = (loop_end >= 0 && loop_start >= 0 && 
-        loop_end != loop_start);
+                    loop_end != loop_start);
     
     // these are always the same in Dino
     pos->beats_per_bar = 4;
@@ -267,23 +272,23 @@ namespace Dino {
     if (looping && beat < loop_end) {
       double beats_left = loop_end - beat;
       double periods_left = 60 * (beats_left / bpm) * 
-  pos->frame_rate / double(nframes);
+        pos->frame_rate / double(nframes);
       int whole_periods = int(floor(periods_left + 0.5));
       whole_periods = whole_periods == 0 ? 1 : whole_periods;
       bpm = 60 * (beats_left / whole_periods) * 
-  pos->frame_rate / double(nframes);
+        pos->frame_rate / double(nframes);
       
       // if this is the last period before the loop end, skip back to the loop
       // start
       if (whole_periods <= 1) {
-  jack_transport_locate(m_jack_client, m_song.bt2frame(loop_start));
-  m_next_beat = loop_start;
+        jack_transport_locate(m_jack_client, m_song.bt2frame(loop_start));
+        m_next_beat = loop_start;
       }
       // otherwise, keep rolling
       else
-  m_next_beat = beat + bpm * double(nframes) / (60 * pos->frame_rate);
+        m_next_beat = beat + bpm * double(nframes) / (60 * pos->frame_rate);
     }
-
+    
     // fill in the JACK position structure
     pos->beat = int32_t(beat);
     pos->tick = int32_t((beat - pos->beat) * pos->ticks_per_beat);
@@ -291,8 +296,8 @@ namespace Dino {
     pos->beat %= int(pos->beats_per_bar);
     pos->beats_per_minute = bpm;
     pos->bbt_offset = jack_nframes_t((beat - pos->beat - pos->tick / 
-              pos->ticks_per_beat) * 
-             pos->frame_rate * 60 / bpm);
+                                      pos->ticks_per_beat) * 
+                                     pos->frame_rate * 60 / bpm);
     pos->valid = jack_position_bits_t(JackPositionBBT | JackBBTFrameOffset);
     
     // bars and beats start from 1 by convention (but ticks don't!)
@@ -300,21 +305,21 @@ namespace Dino {
     ++pos->beat;
     
   }
-
-
+  
+  
   int Sequencer::jack_process_callback(jack_nframes_t nframes) {
     jack_position_t pos;
     jack_transport_state_t state = jack_transport_query(m_jack_client, &pos);
     --pos.bar;
     --pos.beat;
-  
+    
     // first, tell the GUI thread that it's OK to delete unused objects
     Deleter::get_instance().confirm();
-  
+    
     // no valid time info, don't do anything
     if (!(pos.valid & JackTransportBBT))
       return 0;
-  
+    
     // set the current beat
     m_current_beat = pos.bar * int(pos.beats_per_bar) + pos.beat;
     
@@ -324,7 +329,7 @@ namespace Dino {
       jack_transport_locate(m_jack_client, 0);
       return 0;
     }
-  
+    
     sequence_midi(state, pos, nframes);
     
     // record MIDI
@@ -345,14 +350,14 @@ namespace Dino {
     
     return 0;
   }
-
-
+  
+  
   void Sequencer::jack_shutdown_handler() {
     // XXX do something useful here
     dbg0<<"JACK has shut down!"<<endl;
   }
   
-
+  
   void Sequencer::jack_port_registration_callback(jack_port_id_t port, int m) {
     if (m == 0)
       m_ports_changed = m_ports_changed + 1;
@@ -360,14 +365,14 @@ namespace Dino {
       int flags = jack_port_flags(jack_port_by_id(m_jack_client, port));
       const char* type = jack_port_type(jack_port_by_id(m_jack_client, port));
       if ((flags & JackPortIsInput) && !strcmp(type, JACK_DEFAULT_MIDI_TYPE))
-  m_ports_changed = m_ports_changed + 1;
+        m_ports_changed = m_ports_changed + 1;
     }
   }
-
-
+  
+  
   void Sequencer::sequence_midi(jack_transport_state_t state, 
-        const jack_position_t& pos, 
-        jack_nframes_t nframes) {
+                                const jack_position_t& pos, 
+                                jack_nframes_t nframes) {
     
     // if we're not rolling, turn off all notes and return
     Song::ConstTrackIterator iter;
@@ -388,11 +393,8 @@ namespace Dino {
     m_sent_all_off = false;
     
     // if we are rolling, sequence MIDI
-    /* can't abuse this field, some transport masters actually set it
-       to bar * bpm * tpb (what's the point in that?) */
-    /*double offset = pos.bar_start_tick * pos.beats_per_minute / 
-      (pos.frame_rate * 60);*/
-    double offset = 0;
+    double offset = pos.bbt_offset * pos.beats_per_minute / 
+      (pos.frame_rate * 60);
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
       pos.tick / double(pos.ticks_per_beat) + offset;
     double end = start + pos.beats_per_minute * nframes / 
@@ -433,8 +435,8 @@ namespace Dino {
     }
     return true;
   }
-
-
+  
+  
   sigc::signal<void, int>& Sequencer::signal_beat_changed() { 
     return m_signal_beat_changed; 
   }
@@ -462,7 +464,7 @@ namespace Dino {
     }
     return true;
   }
-
+  
 }
 
 

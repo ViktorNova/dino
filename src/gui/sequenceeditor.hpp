@@ -58,6 +58,9 @@ protected:
   
   void set_active_track(int track);
   
+  void add_toolbutton(Gtk::Toolbar* tbar, Gtk::ToolButton*& tbutton, 
+                      Gtk::BuiltinStockID stock, const std::string& tip,
+                      void (SequenceEditor::*button_slot)());
 
   sigc::signal<void, int> signal_active_track_changed_internal;
 
@@ -73,6 +76,7 @@ protected:
   Gtk::ToolButton* m_tbn_go_to_start;
   Gtk::SpinButton* m_spb_song_length;
   TrackDialog* m_dlg_track;
+  Gtk::Tooltips m_tooltips;
   
   int m_active_track;
   

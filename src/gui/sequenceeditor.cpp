@@ -79,27 +79,32 @@ SequenceEditor::SequenceEditor(PluginInterface& plif)
   VBox* v = manage(new VBox);
   
   // initialise the toolbar
+  m_tooltips.enable();
   Toolbar* tbar = manage(new Toolbar);
   tbar->set_toolbar_style(TOOLBAR_ICONS);
-  m_tbn_add_track = manage(new ToolButton(*manage(new Image(Stock::ADD, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_add_track, mem_fun(*this, &SequenceEditor::add_track));
-  m_tbn_delete_track = manage(new ToolButton(*manage(new Image(Stock::DELETE, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_delete_track, mem_fun(*this, &SequenceEditor::delete_track));
-  m_tbn_edit_track_properties = manage(new ToolButton(*manage(new Image(Stock::PROPERTIES, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_edit_track_properties, mem_fun(*this, &SequenceEditor::edit_track_properties));
+  add_toolbutton(tbar, m_tbn_add_track, Stock::ADD, "Create new track",
+                 &SequenceEditor::add_track);
+  add_toolbutton(tbar, m_tbn_delete_track, Stock::DELETE, 
+                 "Delete the selected track", &SequenceEditor::delete_track);
+  add_toolbutton(tbar, m_tbn_edit_track_properties, Stock::PROPERTIES, 
+                 "Edit track properties", 
+                 &SequenceEditor::edit_track_properties);
+
   tbar->append(*manage(new SeparatorToolItem));
-  m_tbn_play = manage(new ToolButton(*manage(new Image(Stock::MEDIA_PLAY, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_play, mem_fun(*this, &SequenceEditor::play));
-  m_tbn_stop = manage(new ToolButton(*manage(new Image(Stock::MEDIA_PAUSE, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_stop, mem_fun(*this, &SequenceEditor::stop));
-  m_tbn_go_to_start = manage(new ToolButton(*manage(new Image(Stock::MEDIA_PREVIOUS, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_go_to_start, mem_fun(*this, &SequenceEditor::go_to_start));
+  add_toolbutton(tbar, m_tbn_play, Stock::MEDIA_PLAY, "Play",
+                 &SequenceEditor::play);
+  add_toolbutton(tbar, m_tbn_stop, Stock::MEDIA_PAUSE, "Stop",
+                 &SequenceEditor::stop);
+  add_toolbutton(tbar, m_tbn_go_to_start, Stock::MEDIA_PREVIOUS, "Go to start",
+                 &SequenceEditor::go_to_start);
+  
   tbar->append(*manage(new SeparatorToolItem));
   HBox* thbx = manage(new HBox(false, 5));
   thbx->pack_start(*manage(new Label("Song length:")));
   m_spb_song_length = manage(new SpinButton);
   m_spb_song_length->set_range(1, 10000);
   m_spb_song_length->set_increments(1, 16);
+  m_tooltips.set_tip(*m_spb_song_length, "Set song length");
   thbx->pack_start(*m_spb_song_length);
   ToolItem* ti = manage(new ToolItem);
   ti->add(*thbx);
@@ -297,5 +302,17 @@ void SequenceEditor::ruler_clicked(double beat, int button) {
     m_song.set_loop_start(int(beat));
   else if (button == 3)
     m_song.set_loop_end(int(ceil(beat)));
+}
+
+
+void SequenceEditor::add_toolbutton(Gtk::Toolbar* tbar, 
+                                    Gtk::ToolButton*& tbutton, 
+                                    Gtk::BuiltinStockID stock, 
+                                    const std::string& tip,
+                                    void (SequenceEditor::*button_slot)()) {
+  Image* img = manage(new Image(stock, ICON_SIZE_SMALL_TOOLBAR));
+  tbutton = manage(new ToolButton(*img));
+  tbutton->set_tooltip(m_tooltips, tip);
+  tbar->append(*tbutton, mem_fun(*this, button_slot));
 }
 

@@ -201,7 +201,7 @@ namespace Dino {
     void set_velocity(NoteIterator note, unsigned char velocity);
     /** Add a controller for this pattern. */
     ControllerIterator add_controller(const std::string& name, long param, 
-              int min, int max);
+                                      int min, int max);
     /** Remove a controller. */
     void remove_controller(ControllerIterator iter);
     /** Add a CC event to the given controller. */

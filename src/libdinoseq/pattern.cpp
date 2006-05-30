@@ -669,7 +669,7 @@ namespace Dino {
 
 
   bool Pattern::fill_xml_node(Element* elt) const {
-    char tmp_txt[10];
+    char tmp_txt[256];
     elt->set_attribute("name", m_name);
     sprintf(tmp_txt, "%d", get_length());
     elt->set_attribute("length", tmp_txt);
@@ -687,6 +687,36 @@ namespace Dino {
       note_elt->set_attribute("length", tmp_txt);
       sprintf(tmp_txt, "%d", iter->get_velocity());
       note_elt->set_attribute("velocity", tmp_txt);
+    }
+    
+    ControllerIterator citer;
+    for (citer = ctrls_begin(); citer != ctrls_end(); ++citer) {
+      Element* ctrl_elt = elt->add_child("controller");
+      ctrl_elt->set_attribute("name", citer->get_name());
+      sprintf(tmp_txt, "%lu", citer->get_param());
+      ctrl_elt->set_attribute("param", tmp_txt);
+      sprintf(tmp_txt, "%d", citer->get_min());
+      ctrl_elt->set_attribute("min", tmp_txt);
+      sprintf(tmp_txt, "%d", citer->get_max());
+      ctrl_elt->set_attribute("max", tmp_txt);
+      for (unsigned i = 0; i < citer->get_size(); ++i) {
+        const InterpolatedEvent* e = citer->get_event(i);
+        if (e && e->get_step() == i) {
+          Element* pt_elt = ctrl_elt->add_child("point");
+          sprintf(tmp_txt, "%lu", e->get_step());
+          pt_elt->set_attribute("step", tmp_txt);
+          sprintf(tmp_txt, "%d", e->get_start());
+          pt_elt->set_attribute("value", tmp_txt);
+        }
+      }
+      if (citer->get_event(citer->get_size() - 1)) {
+        Element* pt_elt = ctrl_elt->add_child("point");
+        sprintf(tmp_txt, "%lu", citer->get_size());
+        pt_elt->set_attribute("step", tmp_txt);
+        sprintf(tmp_txt, "%d", 
+                citer->get_event(citer->get_size() - 1)->get_end());
+        pt_elt->set_attribute("value", tmp_txt);
+      }
     }
     
     return true;
@@ -714,6 +744,37 @@ namespace Dino {
       }
       add_note(step, value, velocity, length);
     }
+
+    nodes = elt->get_children("controller");
+    for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
+      const Element* ctrl_elt = dynamic_cast<const Element*>(*iter);
+      if (!ctrl_elt)
+        continue;
+      unsigned long param;
+      int min, max;
+      string name;
+      sscanf(ctrl_elt->get_attribute("param")->get_value().c_str(), 
+             "%lu", &param);
+      sscanf(ctrl_elt->get_attribute("min")->get_value().c_str(), "%d", &min);
+      sscanf(ctrl_elt->get_attribute("max")->get_value().c_str(), "%d", &max);
+      name = ctrl_elt->get_attribute("name")->get_value();
+      ControllerIterator citer = add_controller(name, param, min, max);
+      Node::NodeList nodes2 = ctrl_elt->get_children("point");
+      Node::NodeList::const_iterator iter2;
+      for (iter2 = nodes2.begin(); iter2 != nodes2.end(); ++iter2) {
+        const Element* pt_elt = dynamic_cast<const Element*>(*iter2);
+        if (!pt_elt)
+          continue;
+        unsigned long step;
+        int value;
+        sscanf(pt_elt->get_attribute("step")->get_value().c_str(),
+               "%lu", &step);
+        sscanf(pt_elt->get_attribute("value")->get_value().c_str(),
+               "%d", &value);
+        add_cc(citer, step, value);
+      }
+    }
+    
     return true;
   }
   

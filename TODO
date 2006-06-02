@@ -26,6 +26,7 @@ Later (before 0.4?):
  [ ] Support libmpmd or equivalent
  [X] Wrap libdinoseq in Python
  [ ] Embed a Python interpreter
+ [ ] Add track controllers (same as pattern controllers, but not bound to a pattern)
  
 Crazy ideas:
 

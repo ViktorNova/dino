@@ -181,13 +181,13 @@ install: install-libraries install-modules install-programs install-data install
 # DISTRIBUTION
 THIS_FILE = $(patsubst ./%,%,$(firstword $(filter %/Makefile.template,$(patsubst %,./%,$(MAKEFILE_LIST)))))
 CONFIGURE_SCRIPT = $(if $(__path_to_configure),$(__path_to_configure),configure)
-dist: Makefile.deps
+dist: 
 	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2
 	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
 	mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 	@echo "Copying files to $(PACKAGE_NAME)-$(PACKAGE_VERSION)/..."
-	cp $(THIS_FILE) Makefile.deps $(CONFIGURE_SCRIPT) $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	cp $(THIS_FILE) $(CONFIGURE_SCRIPT) $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 	cat Makefile | sed s/$(subst /,\\/,$(THIS_FILE))/Makefile.template/ > $(PACKAGE_NAME)-$(PACKAGE_VERSION)/Makefile
 	@$(foreach file, $(patsubst %,./%,$(ALL_SOURCES) $(DATA) $(DOCS)), mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)/`echo $(file) | sed 's/\/[^\/]*$$//'` &&) true
 	@$(foreach file, $(ALL_SOURCES) $(DATA) $(DOCS), cp $(file) $(PACKAGE_NAME)-$(PACKAGE_VERSION)/$(file) &&) true

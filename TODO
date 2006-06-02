@@ -36,6 +36,7 @@ Crazy ideas:
    monophonic patterns with slide and accent, free-form MIDI event patterns etc.
 
  * Add OSC sequencing, both for CC-like control values and arbitrary OSC events.
+   (will probably not happen until JACK supports OSC)
 
  * Add export to Ogg Vorbis or other audio formats using JACK freewheeling 
    and recording.

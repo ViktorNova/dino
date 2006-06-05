@@ -177,6 +177,7 @@ namespace Dino {
     double m_last_end;
     bool m_was_rolling;
     double m_next_beat;
+    unsigned long m_next_frame;
     
     bool m_sent_all_off;
     volatile int m_current_beat;

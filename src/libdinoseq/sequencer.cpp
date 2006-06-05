@@ -47,6 +47,7 @@ namespace Dino {
       m_last_end(0),
       m_was_rolling(false),
       m_next_beat(0),
+      m_next_frame(0),
       m_sent_all_off(false),
       m_current_beat(0), 
       m_old_current_beat(-1),
@@ -266,7 +267,7 @@ namespace Dino {
       bpm = m_song.get_current_tempo(beat);
     }
     m_next_beat = beat + bpm * double(nframes) / (60 * pos->frame_rate);
-    
+
     // if we are looping we may need to adjust the BPM so the loop boundary
     // coincides with a JACK period boundary
     if (looping && beat < loop_end) {
@@ -402,12 +403,13 @@ namespace Dino {
     double start = pos.bar * pos.beats_per_bar + pos.beat + 
       pos.tick / double(pos.ticks_per_beat) + offset;
     // XXX this is very ugly! need some safe way to check if we have relocated
-    if (m_was_rolling && abs(m_last_end - start) < 0.001)
+    if (m_was_rolling && pos.frame == m_next_frame)
       start = m_last_end;
     double end = start + pos.beats_per_minute * nframes / 
-      (60 * pos.frame_rate) + offset;
+      (60 * pos.frame_rate);
     m_was_rolling = true;
     m_last_end = end;
+    m_next_frame = pos.frame + nframes;
     
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
 

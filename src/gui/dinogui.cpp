@@ -46,12 +46,12 @@
 #include "track.hpp"
 
 
-using namespace sigc;
-using namespace Gtk;
+using namespace Dino;
 using namespace Gdk;
 using namespace Glib;
 using namespace Gnome::Glade;
-using namespace Dino;
+using namespace Gtk;
+using namespace sigc;
 
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 

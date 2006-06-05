@@ -411,6 +411,12 @@ namespace Dino {
     m_last_end = end;
     m_next_frame = pos.frame + nframes;
     
+    // XXX this is bad - if we are not the timebase master we are not looping,
+    // and then we shouldn't change the end
+    double loop_end = m_song.get_loop_end();
+    if (end > loop_end)
+      end = loop_end;
+    
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
 
       // get the MIDI buffer

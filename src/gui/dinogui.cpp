@@ -61,13 +61,13 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   
   if (!m_seq.is_valid()) {
     MessageDialog dlg("Could not initialise the sequencer! You will not be "
-		      "able to play anything.", false, MESSAGE_WARNING);
+                      "able to play anything.", false, MESSAGE_WARNING);
     dlg.run();
   }
   
   if (!init_lash(argc, argv)) {
     MessageDialog dlg("Could not initialise LASH! You will not be able "
-		      "to save your session.", false, MESSAGE_WARNING);
+                      "to save your session.", false, MESSAGE_WARNING);
     dlg.run();
   }
   
@@ -76,7 +76,7 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   // initialise the "About" dialog
   m_about_dialog = w<AboutDialog>(xml, "dlg_about");
   m_about_dialog->set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
-				"<larsl@users.sourceforge.net>");
+                                "<larsl@users.sourceforge.net>");
   m_about_dialog->set_version(VERSION);
   
   // initialise the "Plugins" dialog
@@ -254,12 +254,12 @@ void DinoGUI::init_menus(RefPtr<Xml>& xml) {
 bool DinoGUI::init_lash(int argc, char** argv) {
   dbg1<<"Initialising LASH client"<<endl;
   m_lash_client = lash_init(lash_extract_args(&argc, &argv), "dino", 
-			    LASH_Config_File, LASH_PROTOCOL(2, 0));
+                            LASH_Config_File, LASH_PROTOCOL(2, 0));
   
   if (m_lash_client) {
     lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
     lash_event_set_string(event, "Dino");
-    lash_send_event(m_lash_client, event);			
+    lash_send_event(m_lash_client, event);      
     lash_jack_client_name(m_lash_client, "Dino");
     signal_timeout().
       connect(mem_fun(*this, &DinoGUI::slot_check_ladcca_events), 500);
@@ -277,17 +277,17 @@ bool DinoGUI::slot_check_ladcca_events() {
     // save
     if (lash_event_get_type(event) == LASH_Save_File) {
       if (m_song.write_file(string(lash_event_get_string(event)) + "/song")) {
-	lash_send_event(m_lash_client, 
-			lash_event_new_with_type(LASH_Save_File));
+        lash_send_event(m_lash_client, 
+                        lash_event_new_with_type(LASH_Save_File));
       }
     }
     
     // restore
     else if (lash_event_get_type(event) == LASH_Restore_File) {
       if (m_song.load_file(string(lash_event_get_string(event)) + "/song")) {
-	reset_gui();
-	lash_send_event(m_lash_client,
-			lash_event_new_with_type(LASH_Restore_File));
+        reset_gui();
+        lash_send_event(m_lash_client,
+                        lash_event_new_with_type(LASH_Restore_File));
       }
     }
     

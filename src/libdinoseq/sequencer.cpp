@@ -109,6 +109,17 @@ namespace Dino {
   }
   
  
+  void Sequencer::record_to_track(Song::TrackIterator iter) {
+    Track* trk;
+    if (iter == m_song.tracks_end())
+      trk = 0;
+    else
+      trk = &*iter;
+    m_rec.set_track(trk);
+    m_signal_record_to_track(iter);
+  }
+  
+
   bool Sequencer::is_valid() const {
     return m_valid;
   }
@@ -228,7 +239,6 @@ namespace Dino {
                                              JACK_DEFAULT_MIDI_TYPE, 
                                              JackPortIsOutput, 0);
       m_output_ports[track] = port;
-      m_rec.set_track(&*m_song.tracks_find(track));
     }
   }
   

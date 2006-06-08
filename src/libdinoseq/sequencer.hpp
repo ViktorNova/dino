@@ -31,6 +31,7 @@
 #include "debug.hpp"
 #include "recorder.hpp"
 #include "ringbuffer.hpp"
+#include "song.hpp"
 
 
 using namespace std;
@@ -71,6 +72,8 @@ namespace Dino {
     void stop();
     /** This seeks to the given beat in the song. */
     void go_to_beat(double beat);
+    /** This starts recording the given track. */
+    void record_to_track(Song::TrackIterator iter);
     //@}
     
     /** Returns @c true if this Sequencer object is valid. */
@@ -94,6 +97,7 @@ namespace Dino {
     //@{
     sigc::signal<void, int>& signal_beat_changed();
     sigc::signal<void>& signal_instruments_changed();
+    sigc::signal<void, Dino::Song::TrackIterator> signal_record_to_track();
     //@}
     
   private:
@@ -156,15 +160,15 @@ namespace Dino {
     /** This function does the actual MIDI playback (i.e. it puts the MIDI
   events on the JACK MIDI output buffers). */
     void sequence_midi(jack_transport_state_t state,
-           const jack_position_t& pos, jack_nframes_t nframes);
+                       const jack_position_t& pos, jack_nframes_t nframes);
   
     string m_client_name;
     /* XXX The below is false, I think. Everything should be readable by
        the audio thread at all times without locking any mutii. */
     /** No one is allowed to read or write anything in this variable without
-  locking m_song.get_big_mutex() - the exception is the list of tempo 
-  changes, which always must be readable for the JACK timebase 
-  callback. */
+        locking m_song.get_big_mutex() - the exception is the list of tempo 
+        changes, which always must be readable for the JACK timebase 
+        callback. */
     Song& m_song;
     /** This is @c true if JACK and ALSA has been initialised succesfully. */
     bool m_valid;
@@ -188,6 +192,7 @@ namespace Dino {
 
     sigc::signal<void, int> m_signal_beat_changed;
     sigc::signal<void> m_signal_instruments_changed;
+    sigc::signal<void, Dino::Song::TrackIterator> m_signal_record_to_track;
     
     struct MIDIEvent {
       double beat;

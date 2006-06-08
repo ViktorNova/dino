@@ -47,6 +47,7 @@ public:
   
   void update();
   void set_active_track(int id);
+  void set_recording(bool recording);
   
   sigc::signal<void, int> signal_clicked;
   
@@ -60,6 +61,7 @@ private:
   int m_id;
   int m_width, m_height;
   bool m_is_active;
+  bool m_is_recording;
 
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;

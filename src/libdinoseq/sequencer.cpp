@@ -52,8 +52,7 @@ namespace Dino {
       m_current_beat(0), 
       m_old_current_beat(-1),
       m_ports_changed(0),
-      m_old_ports_changed(0),
-      m_recorded_events(256) {
+      m_old_ports_changed(0) {
   
     dbg1<<"Initialising sequencer"<<endl;
   
@@ -74,8 +73,6 @@ namespace Dino {
       connect(mem_fun(*this, &Sequencer::beat_checker), 20);
     Glib::signal_timeout().
       connect(mem_fun(*this, &Sequencer::ports_checker), 20);
-    Glib::signal_timeout().
-      connect(mem_fun(*this, &Sequencer::recorder), 20);
     
     reset_ports();
   }
@@ -231,6 +228,7 @@ namespace Dino {
                                              JACK_DEFAULT_MIDI_TYPE, 
                                              JackPortIsOutput, 0);
       m_output_ports[track] = port;
+      m_rec.set_track(&*m_song.tracks_find(track));
     }
   }
   
@@ -333,22 +331,6 @@ namespace Dino {
     
     sequence_midi(state, pos, nframes);
     
-    // record MIDI
-    void* input_buf = jack_port_get_buffer(m_input_port, nframes);
-    jack_midi_event_t input_event;
-    jack_nframes_t input_event_index = 0;
-    jack_nframes_t input_event_count = 
-      jack_midi_port_get_info(input_buf, nframes)->event_count;
-    jack_nframes_t timestamp;
-    for (unsigned int i = 0; i < input_event_count; ++i) {
-      jack_midi_event_get(&input_event, input_buf, i, nframes);
-      MIDIEvent event;
-      event.beat = m_current_beat;
-      memcpy(event.data, input_event.buffer, 
-             input_event.size < 3 ? input_event.size : 3);
-      m_recorded_events.push(event);
-    }
-    
     return 0;
   }
   
@@ -374,10 +356,20 @@ namespace Dino {
   void Sequencer::sequence_midi(jack_transport_state_t state, 
                                 const jack_position_t& pos, 
                                 jack_nframes_t nframes) {
+    // compute the start beat
+    double offset;
+    if (pos.valid & JackBBTFrameOffset)
+      offset = pos.bbt_offset * pos.beats_per_minute / (pos.frame_rate * 60);
+    else
+      offset = 0;
+    double start = pos.bar * pos.beats_per_bar + pos.beat + 
+      pos.tick / double(pos.ticks_per_beat) + offset;
     
     // if we're not rolling, turn off all notes and return
     Song::ConstTrackIterator iter;
     if (state != JackTransportRolling) {
+      if (m_was_rolling)
+        m_rec.stop(start);
       m_was_rolling = false;
       for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
         jack_port_t* port = m_output_ports[iter->get_id()];
@@ -390,23 +382,21 @@ namespace Dino {
         }
         m_sent_all_off = true;
       }
+      m_last_end = start;
       return;
     }
     m_sent_all_off = false;
     
     // if we are rolling, sequence MIDI
-    double offset;
-    if (pos.valid & JackBBTFrameOffset)
-      offset = pos.bbt_offset * pos.beats_per_minute / (pos.frame_rate * 60);
-    else
-      offset = 0;
-    double start = pos.bar * pos.beats_per_bar + pos.beat + 
-      pos.tick / double(pos.ticks_per_beat) + offset;
     // XXX this is very ugly! need some safe way to check if we have relocated
     if (m_was_rolling && pos.frame == m_next_frame)
       start = m_last_end;
     double end = start + pos.beats_per_minute * nframes / 
       (60 * pos.frame_rate);
+    if (m_was_rolling && pos.frame != m_next_frame)
+      m_rec.relocate(m_last_end, start);
+    if (!m_was_rolling)
+      m_rec.start(start);
     m_was_rolling = true;
     m_last_end = end;
     m_next_frame = pos.frame + nframes;
@@ -430,6 +420,20 @@ namespace Dino {
         buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
         iter->sequence(buffer, start, end);
       }
+    }
+    
+    // record MIDI
+    void* input_buf = jack_port_get_buffer(m_input_port, nframes);
+    jack_midi_event_t input_event;
+    jack_nframes_t input_event_index = 0;
+    jack_nframes_t input_event_count = 
+      jack_midi_port_get_info(input_buf, nframes)->event_count;
+    jack_nframes_t timestamp;
+    double bpf = pos.beats_per_minute / (60 * pos.frame_rate);
+    for (unsigned int i = 0; i < input_event_count; ++i) {
+      jack_midi_event_get(&input_event, input_buf, i, nframes);
+      double beat = start + input_event.time * bpf;
+      m_rec.record_event(beat, input_event.size, input_event.buffer);
     }
 
   }
@@ -464,24 +468,6 @@ namespace Dino {
     return m_signal_instruments_changed;
   }
   
-  
-  bool Sequencer::recorder() {
-    MIDIEvent e;
-    Song::TrackIterator titer = m_song.tracks_find(1);
-    if (titer == m_song.tracks_end())
-      return true;
-    Track::PatternIterator piter = titer->pat_find(1);
-    if (piter == titer->pat_end())
-      return true;
-    while (m_recorded_events.pop(e)) {
-      dbg1<<"MIDI event received at beat "<<e.beat<<endl;
-      if ((e.data[0] & 0xF0) == 0x90) {
-        piter->add_note(unsigned(e.beat * piter->get_steps()), 
-                        e.data[1], e.data[2], 1);
-      }
-    }
-    return true;
-  }
   
 }
 

@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.45
+PACKAGE_VERSION = 0.3.46
 PKG_DEPS = \
 	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \
@@ -49,6 +49,7 @@ libdinoseq_so_SOURCES = \
 	noteevent.cpp noteevent.hpp \
 	pattern.cpp pattern.hpp \
 	patternselection.cpp patternselection.hpp \
+	recorder.cpp \
 	ringbuffer.hpp \
 	sequencer.cpp sequencer.hpp \
 	song.cpp song.hpp \
@@ -68,6 +69,7 @@ libdinoseq_so_HEADERS = \
 	noteevent.hpp \
 	pattern.hpp \
 	patternselection.hpp \
+	recorder.hpp \
 	ringbuffer.hpp \
 	sequencer.hpp \
 	song.hpp \

@@ -29,6 +29,7 @@
 #include <jack/jack.h>
 
 #include "debug.hpp"
+#include "recorder.hpp"
 #include "ringbuffer.hpp"
 
 
@@ -193,9 +194,8 @@ namespace Dino {
       unsigned char data[3];
     };
     
-    Ringbuffer<MIDIEvent> m_recorded_events;
-    
-    bool recorder();
+
+    Recorder m_rec;
     
   };
 

@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.50
+PACKAGE_VERSION = 0.3.51
 PKG_DEPS = \
 	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \

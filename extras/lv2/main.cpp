@@ -4,6 +4,7 @@
 
 #include <jack/jack.h>
 #include <lo/lo.h>
+#include <lo/lo_lowlevel.h>
 
 #include "lv2host.hpp"
 
@@ -31,7 +32,8 @@ int control_callback(const char* path, const char* types,
                      lo_arg** argv, int argc, lo_message msg, void* user_data) {
   LV2Host* host = static_cast<LV2Host*>(user_data);
   int port = argv[0]->i;
-  float value = argv[0]->f;
+  float value = argv[1]->f;
+  cerr<<"in dino-lv2host: "<<port<<" "<<value<<endl;
   if (port < host->get_ports().size())
     // XXX not threadsafe
     *static_cast<float*>(host->get_ports()[port].buffer) = value;
@@ -73,10 +75,12 @@ int main(int argc, char** argv) {
     jack_activate(jack_client);
     
     // initialise OSC server
-    lo_server_thread osc_server = lo_server_thread_new(0, 0);
+    lo_server_thread osc_server = lo_server_thread_new("23483", 0);
     lo_server_thread_add_method(osc_server, "/control", "if", 
                                 &control_callback, &lv2h);
     lo_server_thread_start(osc_server);
+    
+    cerr<<"Listening on URL <"<<lo_server_thread_get_url(osc_server)<<">"<<endl;
     
     // wait until we are killed
     while (true)

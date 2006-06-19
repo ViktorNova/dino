@@ -29,6 +29,8 @@ namespace Dino {
   class Track;
 }
 
+class PluginInterface;
+
 
 class TrackWidget : public Gtk::DrawingArea {
 public:
@@ -49,7 +51,8 @@ public:
   void update();
   
   void set_current_beat(int beat);
-  
+  void update_menu(PluginInterface& plif);
+
   sigc::signal<void, int> signal_clicked;
   
 private:
@@ -68,6 +71,7 @@ private:
   int m_current_beat;
   
   Gtk::Menu m_pattern_menu;
+  Gtk::Menu m_action_menu;
 };
 
 

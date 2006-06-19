@@ -97,7 +97,7 @@ namespace Dino {
     //@{
     sigc::signal<void, int>& signal_beat_changed();
     sigc::signal<void>& signal_instruments_changed();
-    sigc::signal<void, Dino::Song::TrackIterator> signal_record_to_track();
+    sigc::signal<void, Dino::Song::TrackIterator>& signal_record_to_track();
     //@}
     
   private:

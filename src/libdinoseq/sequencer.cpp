@@ -477,6 +477,11 @@ namespace Dino {
   sigc::signal<void>& Sequencer::signal_instruments_changed() {
     return m_signal_instruments_changed;
   }
+
+
+  sigc::signal<void, Song::TrackIterator>& Sequencer::signal_record_to_track(){
+    return m_signal_record_to_track;
+  }
   
   
 }

@@ -28,15 +28,17 @@
 #include "plugininterface.hpp"
 #include "debug.hpp"
 #include "ruler.hpp"
+#include "song.hpp"
 #include "trackdialog.hpp"
+
 
 namespace Dino {
   class Sequencer;
-  class Song;
 }
 
-
 class PluginInterface;
+class TrackLabel;
+class TrackWidget;
 
 
 class SequenceEditor : public GUIPage {
@@ -61,7 +63,9 @@ protected:
   void add_toolbutton(Gtk::Toolbar* tbar, Gtk::ToolButton*& tbutton, 
                       Gtk::BuiltinStockID stock, const std::string& tip,
                       void (SequenceEditor::*button_slot)());
-
+  
+  void set_recording_track(Song::TrackIterator iter);
+  
   sigc::signal<void, int> signal_active_track_changed_internal;
 
 
@@ -83,6 +87,15 @@ protected:
   Dino::Song& m_song;
   Dino::Sequencer& m_seq;
   PluginInterface& m_plif;
+  
+  struct SingleTrackGUI {
+    SingleTrackGUI(TrackLabel* l = 0, TrackWidget* w = 0) 
+      : label(l), widget(w) { }
+    TrackLabel* label;
+    TrackWidget* widget;
+  };
+  
+  std::map<int, SingleTrackGUI> m_track_map;
 };
 
 

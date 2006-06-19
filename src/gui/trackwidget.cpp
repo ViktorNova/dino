@@ -25,6 +25,7 @@
 #include "debug.hpp"
 #include "trackwidget.hpp"
 #include "pattern.hpp"
+#include "plugininterface.hpp"
 #include "song.hpp"
 #include "track.hpp"
 
@@ -181,8 +182,12 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 3:
-    m_track->remove_sequence_entry(m_track->seq_find(beat));
-    update();
+    if (event->state & GDK_CONTROL_MASK) {
+      m_track->remove_sequence_entry(m_track->seq_find(beat));
+      update();
+    }
+    else
+      m_action_menu.popup(event->button, event->time);
     return true;
   } 
   
@@ -241,3 +246,18 @@ void TrackWidget::set_current_beat(int beat) {
     update();
   }
 }
+
+
+void TrackWidget::update_menu(PluginInterface& plif) {
+  using namespace Menu_Helpers;
+  m_action_menu.items().clear();
+  PluginInterface::action_iterator iter;
+  TrackAction* ta;
+  for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
+    if ((ta = dynamic_cast<TrackAction*>(*iter))) {
+      slot<void> aslot = bind(mem_fun(*ta, &TrackAction::run), ref(*m_track));
+      m_action_menu.items().push_back(MenuElem((*iter)->get_name(), aslot));
+    }
+  }
+}
+

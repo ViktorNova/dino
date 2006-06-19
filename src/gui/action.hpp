@@ -44,6 +44,11 @@ struct SongAction : public Action {
 };
 
 
+struct TrackAction : public Action {
+  virtual void run(Track& track) = 0;
+};
+
+
 struct PatternSelectionAction : public Action {
   virtual void run(PatternSelection& selection) = 0;
 };

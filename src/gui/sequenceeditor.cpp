@@ -174,6 +174,8 @@ SequenceEditor::SequenceEditor(PluginInterface& plif)
     connect(mem_fun(*this, &SequenceEditor::ruler_clicked));
   
   reset_gui();
+  m_seq.signal_record_to_track().
+    connect(mem_fun(*this, &SequenceEditor::set_recording_track));
 }
 
 
@@ -190,7 +192,7 @@ void SequenceEditor::reset_gui() {
   TempoWidget* tmpw = manage(new TempoWidget(&m_song));
   m_vbx_track_editor->pack_start(*tmpw, PACK_SHRINK);
   slot<void> update_menu = bind(mem_fun(*tmpw, &TempoWidget::update_menu), 
-				ref(m_plif));
+                                ref(m_plif));
   m_plif.signal_action_added().connect(sigc::hide(update_menu));
   m_plif.signal_action_removed().connect(sigc::hide(update_menu));
   update_menu();
@@ -208,9 +210,14 @@ void SequenceEditor::reset_gui() {
   m_active_track = new_active;
   
   // add track labels and widgets for all tracks in the song
+  m_track_map.clear();
   for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
     TrackWidget* tw = manage(new TrackWidget(&m_song));
     tw->set_track(&*iter);
+    update_menu = bind(mem_fun(*tw, &TrackWidget::update_menu), ref(m_plif));
+    m_plif.signal_action_added().connect(sigc::hide(update_menu));
+    m_plif.signal_action_removed().connect(sigc::hide(update_menu));
+    update_menu();
     tw->signal_clicked.
       connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
 			      iter->get_id())));
@@ -224,6 +231,7 @@ void SequenceEditor::reset_gui() {
 			iter->get_id())));
     m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
     tl->set_active_track(m_active_track);
+    m_track_map[iter->get_id()] = SingleTrackGUI(tl, tw);
   }
   m_vbx_track_editor->show_all();
   m_vbx_track_labels->show_all();
@@ -316,3 +324,9 @@ void SequenceEditor::add_toolbutton(Gtk::Toolbar* tbar,
   tbar->append(*tbutton, mem_fun(*this, button_slot));
 }
 
+
+void SequenceEditor::set_recording_track(Song::TrackIterator iter) {
+  std::map<int, SingleTrackGUI>::iterator i;
+  for (i = m_track_map.begin(); i != m_track_map.end(); ++i)
+    i->second.label->set_recording(i->first == iter->get_id());
+}

@@ -170,14 +170,14 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
   case 1: {
     if (event->state & GDK_CONTROL_MASK) {
       if (beat >= 0 && beat < unsigned(m_song->get_length())) {
-	double bpm = m_song->get_current_tempo(beat);
-	Song::TempoIterator iter = m_song->add_tempo_change(beat, bpm);
-	if (iter != m_song->tempo_end()) {
-	  m_active_tempo = &*iter;
-	  m_drag_start_y = int(event->y);
-	  m_editing_bpm = int(m_active_tempo->get_bpm());
-	  update();
-	}
+        double bpm = m_song->get_current_tempo(beat);
+        Song::TempoIterator iter = m_song->add_tempo_change(beat, bpm);
+        if (iter != m_song->tempo_end()) {
+          m_active_tempo = &*iter;
+          m_drag_start_y = int(event->y);
+          m_editing_bpm = int(m_active_tempo->get_bpm());
+          update();
+        }
       }
     }
     return true;
@@ -187,13 +187,13 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     if (event->state & GDK_CONTROL_MASK) {
       Song::TempoIterator iter = m_song->tempo_find(beat);
       if (iter != m_song->tempo_end() && iter->get_beat() == beat) {
-	m_active_tempo = &*iter;
-	m_drag_start_y = int(event->y);
-	m_editing_bpm = int(m_active_tempo->get_bpm());
-	update();
+        m_active_tempo = &*iter;
+        m_drag_start_y = int(event->y);
+        m_editing_bpm = int(m_active_tempo->get_bpm());
+        update();
       }
       else
-	m_active_tempo = 0;
+        m_active_tempo = 0;
     }
     return true;
   }
@@ -202,7 +202,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     if (event->state & GDK_CONTROL_MASK) {
       Song::TempoIterator iter = m_song->tempo_find(beat);
       if (iter != m_song->tempo_end() && iter->get_beat() == beat)
-	m_song->remove_tempo_change(iter);
+        m_song->remove_tempo_change(iter);
     }
     else {
       m_menu.popup(event->button, event->time);

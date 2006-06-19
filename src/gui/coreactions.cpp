@@ -21,11 +21,13 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "plugininterface.hpp"
-#include "song.hpp"
+#include "note.hpp"
 #include "pattern.hpp"
 #include "patternselection.hpp"
-#include "note.hpp"
+#include "plugininterface.hpp"
+#include "sequencer.hpp"
+#include "song.hpp"
+#include "track.hpp"
 
 
 using namespace Dino;
@@ -44,6 +46,23 @@ namespace {
   }* clearloop;
   
   
+  // Change the track to record to
+  struct RecordToTrackAction : public TrackAction {
+    RecordToTrackAction(PluginInterface& plif) 
+      : m_song(plif.get_song()),
+        m_seq(plif.get_sequencer()) { 
+    
+    }
+    std::string get_name() const { return "Record to track"; }
+    void run(Track& track) {
+      Song::TrackIterator iter = m_song.tracks_find(track.get_id());
+      if (iter != m_song.tracks_end())
+        m_seq.record_to_track(iter);
+    }
+    Song& m_song;
+    Sequencer& m_seq;
+  }* recordtotrack;
+  
   // Interpolate the velocity for a pattern selection
   struct InterpolateVelocityAction : public PatternSelectionAction {
     std::string get_name() const { return "Interpolate velocity"; }
@@ -52,19 +71,19 @@ namespace {
       unsigned char start_vel, end_vel;
       PatternSelection::Iterator iter = selection.begin();
       if (iter == selection.end())
-	return;
+        return;
       start_step = iter->get_step();
       start_vel = iter->get_velocity();
       for ( ; iter != selection.end(); ++iter) {
-	end_step = iter->get_step();
-	end_vel = iter->get_velocity();
+        end_step = iter->get_step();
+        end_vel = iter->get_velocity();
       }
       for (iter = selection.begin(); iter != selection.end(); ++iter) {
-	double phase = double(iter->get_step() - start_step) / 
-	  (end_step - start_step);
-	unsigned char vel = (unsigned char)(start_vel + (end_vel - start_vel) *
-					    phase);
-	selection.get_pattern()->set_velocity(iter, vel);
+        double phase = double(iter->get_step() - start_step) / 
+          (end_step - start_step);
+        unsigned char vel = (unsigned char)(start_vel + (end_vel - start_vel) *
+                                            phase);
+        selection.get_pattern()->set_velocity(iter, vel);
       }
     }
   }* interpolatevelocity;
@@ -78,19 +97,19 @@ namespace {
       unsigned char max_vel = 1;
       PatternSelection::Iterator iter = selection.begin();
       if (iter == selection.end())
-	return;
+        return;
       for ( ; iter != selection.end(); ++iter) {
-	unsigned char vel = iter->get_velocity();
-	min_vel = vel < min_vel ? vel : min_vel;
-	max_vel = vel > max_vel ? vel : max_vel;
+        unsigned char vel = iter->get_velocity();
+        min_vel = vel < min_vel ? vel : min_vel;
+        max_vel = vel > max_vel ? vel : max_vel;
       }
       for (iter = selection.begin(); iter != selection.end(); ++iter) {
-	selection.get_pattern()->set_velocity(iter, min_vel + rand() % 
-					      (max_vel - min_vel + 1));
+        selection.get_pattern()->set_velocity(iter, min_vel + rand() % 
+                                              (max_vel - min_vel + 1));
       }
     }
   }* randomisevelocity;
-
+  
   
   PluginInterface* m_plif = 0;
 }
@@ -105,6 +124,7 @@ extern "C" {
     plif.add_action(*(clearloop = new ClearLoopAction));
     plif.add_action(*(interpolatevelocity = new InterpolateVelocityAction));
     plif.add_action(*(randomisevelocity = new RandomiseVelocityAction));
+    plif.add_action(*(recordtotrack = new RecordToTrackAction(plif)));
     m_plif = &plif;
   }
   
@@ -112,6 +132,7 @@ extern "C" {
     m_plif->remove_action(*clearloop);
     m_plif->remove_action(*interpolatevelocity);
     m_plif->remove_action(*randomisevelocity);
+    m_plif->remove_action(*recordtotrack);
     delete clearloop;
   }
 }

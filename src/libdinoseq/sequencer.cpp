@@ -193,6 +193,14 @@ namespace Dino {
   }
   
   
+  Dino::Song::TrackIterator Sequencer::get_recording_track() {
+    Track* trk;
+    if (trk = m_rec.get_track())
+      return m_song.tracks_find(trk->get_id());
+    return m_song.tracks_end();
+  }
+  
+  
   bool Sequencer::init_jack(const string& client_name) {
   
     dbg1<<"Initialising JACK client"<<endl;

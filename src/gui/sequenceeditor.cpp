@@ -211,6 +211,10 @@ void SequenceEditor::reset_gui() {
   
   // add track labels and widgets for all tracks in the song
   m_track_map.clear();
+  int rec_track_id = -1;
+  Song::TrackIterator rec_track = m_seq.get_recording_track();
+  if (rec_track != m_song.tracks_end())
+    rec_track_id = rec_track->get_id();
   for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
     TrackWidget* tw = manage(new TrackWidget(&m_song));
     tw->set_track(&*iter);
@@ -231,6 +235,8 @@ void SequenceEditor::reset_gui() {
 			iter->get_id())));
     m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
     tl->set_active_track(m_active_track);
+    if (iter->get_id() == rec_track_id)
+      tl->set_recording(true);
     m_track_map[iter->get_id()] = SingleTrackGUI(tl, tw);
   }
   m_vbx_track_editor->show_all();

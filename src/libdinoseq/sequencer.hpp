@@ -82,15 +82,18 @@ namespace Dino {
     /// @name Instrument control
     //@{
     /** This returns a vector of all instruments that are available for
-  the sequencer to play. */
+        the sequencer to play. */
     vector<InstrumentInfo> get_instruments(int track = -1) const;
     /** This assigns the given instrument to the given track, i.e. connects
-  the track's output port to the instruments input port. This is not
-  saved in the .dino file since all connections are supposed to be
-  restored by LASH. */
+        the track's output port to the instruments input port. This is not
+        saved in the .dino file since all connections are supposed to be
+        restored by LASH. */
     void set_instrument(int track, const string& instrument);
     /** This creates new MIDI output ports for all tracks. */
     void reset_ports();
+    /** Returns an iterator to the track that is currently being recorded to.*/
+    Dino::Song::TrackIterator get_recording_track();
+    
     //@}
     
     /// @name Signals

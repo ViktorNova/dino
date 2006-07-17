@@ -40,7 +40,7 @@ TempoLabel::TempoLabel(const Song* song)
   m_colormap  = Colormap::get_system();
   m_fg_color.set_rgb(0, 0, 0);
   m_colormap->alloc_color(m_fg_color);
-  m_layout = Layout::create(get_pango_context());
+  m_layout = Pango::Layout::create(get_pango_context());
   m_layout->set_text("BPM");
   set_size_request(m_width, m_height);
 }

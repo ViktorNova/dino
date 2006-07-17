@@ -47,7 +47,7 @@ TrackLabel::TrackLabel(const Song* song)
   m_fg_color.set_rgb(0, 0, 0);
   m_colormap->alloc_color(m_bg_color);
   m_colormap->alloc_color(m_fg_color);
-  m_layout = Layout::create(get_pango_context());
+  m_layout = Pango::Layout::create(get_pango_context());
 
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
   set_size_request(m_width, m_height + 4);

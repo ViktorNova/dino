@@ -347,15 +347,17 @@ void PatternEditor::set_active_pattern(int pattern) {
   // update connections
   m_conn_cont_added.disconnect();
   m_conn_cont_removed.disconnect();
+  Pattern* pptr = 0;
   if (m_active_pattern != -1) {
     slot<void> uslot = mem_fun(*this, &PatternEditor::update_controller_combo);
     m_conn_cont_added = p->signal_controller_added().connect(sigc::hide(uslot));
     m_conn_cont_removed = p->signal_controller_removed().
       connect(sigc::hide(uslot));
+    pptr = &*p;
   }
 
   update_controller_combo();
-  m_ne.set_pattern(&*p);
+  m_ne.set_pattern(pptr);
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);
 
   bool active = (m_active_pattern != -1);

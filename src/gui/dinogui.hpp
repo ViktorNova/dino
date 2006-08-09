@@ -25,17 +25,12 @@
 #include <libglademm.h>
 #include <lash/lash.h>
 
-#include "cceditor.hpp"
 #include "debug.hpp"
-#include "octavelabel.hpp"
-#include "patterneditor.hpp"
 #include "plugindialog.hpp"
 #include "plugininterfaceimplementation.hpp"
 #include "pluginlibrary.hpp"
 #include "ringbuffer.hpp"
-#include "ruler.hpp"
 #include "sequencer.hpp"
-#include "singletextcombo.hpp"
 #include "song.hpp"
 
 

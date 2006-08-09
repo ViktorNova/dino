@@ -27,23 +27,10 @@
 
 #include <gtkmm/messagedialog.h>
 
-#include "cceditor.hpp"
-#include "controller_numbers.hpp"
-#include "controllerdialog.hpp"
-#include "deleter.hpp"
 #include "dinogui.hpp"
-#include "evilscrolledwindow.hpp"
-#include "pattern.hpp"
-#include "patterndialog.hpp"
-#include "patterneditor.hpp"
 #include "plugindialog.hpp"
 #include "plugininterfaceimplementation.hpp"
-#include "ruler.hpp"
-#include "sequenceeditor.hpp"
 #include "song.hpp"
-#include "tempolabel.hpp"
-#include "tempowidget.hpp"
-#include "track.hpp"
 
 
 using namespace Dino;

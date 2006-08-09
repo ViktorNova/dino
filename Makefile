@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.58
+PACKAGE_VERSION = 0.3.59
 PKG_DEPS = \
 	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \
@@ -9,7 +9,7 @@ PKG_DEPS = \
 
 
 # Data files
-DATA = dino.glade pixmaps/midisaurus.png pixmaps/head.png pixmaps/tinykeyboard.png
+DATA = src/gui/dino.glade src/gui/pixmaps/midisaurus.png src/gui/pixmaps/head.png src/gui/pixmaps/tinykeyboard.png
 DOCS = AUTHORS COPYING README TODO ChangeLog
 
 

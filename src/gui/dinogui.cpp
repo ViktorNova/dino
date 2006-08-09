@@ -141,6 +141,8 @@ void DinoGUI::slot_file_save_as() {
 
 
 void DinoGUI::slot_file_clear_all() {
+  m_seq.stop();
+  m_seq.go_to_beat(0);
   m_song.clear();
   m_song.set_length(32);
   reset_gui();

@@ -70,9 +70,9 @@ InfoEditor::InfoEditor(Dino::Song& song)
   scw->add(*m_text_info);
   scw->set_shadow_type(SHADOW_IN);
   t->attach(*scw, 1, 2, 2, 3);
-  t->set_col_spacings(5);
-  t->set_row_spacings(5);
-  t->set_border_width(5);
+  t->set_col_spacings(9);
+  t->set_row_spacings(3);
+  t->set_border_width(3);
   pack_start(*t);
 
   /* ugly hack #1: TextBuffer::get_text is ambiguous so we need to disambiguate

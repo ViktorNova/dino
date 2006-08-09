@@ -83,8 +83,9 @@ PatternEditor::PatternEditor(Song& song)
   v->pack_start(*tbar, false, true);
   
   Table* table = manage(new Table(6, 3));
-  table->set_row_spacings(2);
-  table->set_col_spacings(2);
+  table->set_row_spacings(3);
+  table->set_col_spacings(3);
+  table->set_border_width(3);
   v->pack_start(*table);
   
   // add track and pattern combos

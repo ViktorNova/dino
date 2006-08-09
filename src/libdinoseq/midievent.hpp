@@ -2,7 +2,7 @@
     
     midievent.hpp - A MIDI event implementation for the Dino sequencer
     
-    Copyright (C) 2006  Lars Luthman <larsl@users.sourceforge.net>
+    Copyright (C) 2006  Lars Luthman <lars.luthman@gmail.com>
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

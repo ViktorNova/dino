@@ -1,7 +1,7 @@
 /****************************************************************************
    Dino - A simple pattern based MIDI sequencer
    
-   Copyright (C) 2006  Lars Luthman <larsl@users.sourceforge.net>
+   Copyright (C) 2006  Lars Luthman <lars.luthman@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -139,5 +139,5 @@ private:
     But it's not meant to be a complete API reference, so many functions and
     types will be undocumented.
     
-    Send questions and comments to larsl@users.sourceforge.net. 
+    Send questions and comments to lars.luthman@gmail.com. 
 */

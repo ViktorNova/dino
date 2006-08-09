@@ -29,6 +29,7 @@
 #include "debug.hpp"
 #include "octavelabel.hpp"
 #include "patterneditor.hpp"
+#include "plugindialog.hpp"
 #include "plugininterfaceimplementation.hpp"
 #include "pluginlibrary.hpp"
 #include "ringbuffer.hpp"
@@ -38,7 +39,6 @@
 #include "song.hpp"
 
 
-class PluginDialog;
 class GUIPage;
 
 
@@ -123,7 +123,7 @@ private:
   Gtk::Notebook* m_nb;
   
   Gtk::AboutDialog m_about_dialog;
-  PluginDialog* m_plug_dialog;
+  PluginDialog m_plug_dialog;
   
   Dino::Sequencer m_seq;
   

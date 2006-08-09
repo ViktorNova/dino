@@ -27,15 +27,21 @@
 
 using namespace Glib;
 using namespace Gtk;
-using namespace Gnome::Glade;
 using namespace Dino;
 using namespace std;
 
 
-PluginDialog::PluginDialog(BaseObjectType* cobject, const RefPtr<Xml>& xml)
-  : Dialog(cobject) {
-  m_view = dynamic_cast<TreeView*>(xml->get_widget("trv_plugins"));
-  assert(m_view);
+PluginDialog::PluginDialog() {
+  set_title("Plugins");
+  ScrolledWindow* scw = manage(new ScrolledWindow);
+  scw->set_policy(POLICY_NEVER, POLICY_NEVER);
+  scw->set_shadow_type(SHADOW_IN);
+  scw->add(m_view);
+  m_view.set_rules_hint(true);
+  scw->set_border_width(6);
+  get_vbox()->pack_start(*scw);
+  scw->show_all();
+  add_button(Stock::CLOSE, 0);
 }
 
 
@@ -56,10 +62,10 @@ void PluginDialog::set_library(PluginLibrary& plib) {
   plib.signal_plugin_loaded.connect(mem_fun(*this, &PluginDialog::loaded));
   plib.signal_plugin_unloaded.connect(mem_fun(*this, &PluginDialog::unloaded));
   
-  m_view->set_model(m_store);
-  m_view->append_column_editable("Loaded", m_columns.loaded);
-  m_view->append_column("Name", m_columns.name);
-  m_view->append_column("Filename", m_columns.filename);
+  m_view.set_model(m_store);
+  m_view.append_column_editable("Loaded", m_columns.loaded);
+  m_view.append_column("Name", m_columns.name);
+  m_view.append_column("Filename", m_columns.filename);
 }
 
 

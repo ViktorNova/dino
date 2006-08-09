@@ -54,6 +54,7 @@ using namespace Gtk;
 using namespace sigc;
 
 
+// needed for the about dialog
 #define GPL_TEXT \
 "		    GNU GENERAL PUBLIC LICENSE\n" \
 "		       Version 2, June 1991\n" \
@@ -427,10 +428,7 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
     set_logo(Pixbuf::create_from_file(DATA_DIR "/midisaurus.png"));
   
   // initialise the "Plugins" dialog
-  m_plug_dialog = xml->get_widget_derived("dlg_plugins", m_plug_dialog);
-  m_plug_dialog->set_library(m_plib);
-  w<Button>(xml, "dlg_plugins_close")->signal_clicked().
-    connect(mem_fun(*m_plug_dialog, &Dialog::hide));
+  m_plug_dialog.set_library(m_plib);
   
   m_nb = w<Notebook>(xml, "main_notebook");
   m_nb->signal_switch_page().
@@ -664,7 +662,8 @@ void DinoGUI::page_switched(guint index) {
 
 
 void DinoGUI::slot_plugins_manage() {
-  m_plug_dialog->present();
+  m_plug_dialog.run();
+  m_plug_dialog.hide();
 }
 
 

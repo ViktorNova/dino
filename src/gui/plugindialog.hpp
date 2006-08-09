@@ -22,7 +22,6 @@
 #define PLUGINDIALOG_HPP
 
 #include <gtkmm.h>
-#include <libglademm.h>
 
 #include "pluginlibrary.hpp"
 
@@ -30,8 +29,7 @@
 class PluginDialog : public Gtk::Dialog {
 public:
   
-  PluginDialog(BaseObjectType* cobject, 
-	       const Glib::RefPtr<Gnome::Glade::Xml>& refGlade);
+  PluginDialog();
   
   void set_library(PluginLibrary& plib);
   
@@ -60,7 +58,7 @@ protected:
   
   PluginLibrary* m_plib;
   
-  Gtk::TreeView* m_view;
+  Gtk::TreeView m_view;
 };
 
 

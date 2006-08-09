@@ -71,6 +71,8 @@ PatternEditor::PatternEditor(Song& song)
   
   VBox* v = manage(new VBox);
   
+  m_tooltips.enable();
+  
   // get all the widgets from the glade file
   Scrollbar* hscroll = manage(new HScrollbar);
   Scrollbar* vscroll = manage(new VScrollbar);
@@ -152,19 +154,21 @@ PatternEditor::PatternEditor(Song& song)
   m_dlg_controller = new ControllerDialog;
   
   // the toolbuttons
-  m_tbn_add_pattern = manage(new ToolButton(*manage(new Image(Stock::ADD, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_add_pattern, mem_fun(*this, &PatternEditor::add_pattern));
-  m_tbn_delete_pattern = manage(new ToolButton(*manage(new Image(Stock::DELETE, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_delete_pattern, mem_fun(*this, &PatternEditor::delete_pattern));
-  m_tbn_duplicate_pattern = manage(new ToolButton(*manage(new Image(Stock::COPY, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_duplicate_pattern, mem_fun(*this, &PatternEditor::duplicate_pattern));
-  m_tbn_set_pattern_properties = manage(new ToolButton(*manage(new Image(Stock::PROPERTIES, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_set_pattern_properties, mem_fun(*this, &PatternEditor::edit_pattern_properties));
+  add_toolbutton(tbar, m_tbn_add_pattern, Stock::ADD, "Create new pattern",
+                 &PatternEditor::add_pattern);
+  add_toolbutton(tbar, m_tbn_delete_pattern, Stock::DELETE, "Delete pattern",
+                 &PatternEditor::delete_pattern);
+  add_toolbutton(tbar, m_tbn_duplicate_pattern, Stock::COPY, 
+                 "Duplicate pattern", &PatternEditor::duplicate_pattern);
+  add_toolbutton(tbar, m_tbn_set_pattern_properties, Stock::PROPERTIES, 
+                 "Edit pattern properties", 
+                 &PatternEditor::edit_pattern_properties);
   tbar->append(*manage(new SeparatorToolItem));
-  m_tbn_add_controller = manage(new ToolButton(*manage(new Image(Stock::ADD, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_add_controller, mem_fun(*this, &PatternEditor::add_controller));
-  m_tbn_delete_controller = manage(new ToolButton(*manage(new Image(Stock::DELETE, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_delete_controller, mem_fun(*this, &PatternEditor::delete_controller));
+  add_toolbutton(tbar, m_tbn_add_controller, Stock::ADD, "Add controller", 
+                 &PatternEditor::add_controller);
+  add_toolbutton(tbar, m_tbn_delete_controller, Stock::DELETE, 
+                 "Delete controller", &PatternEditor::delete_controller);
+  
   m_tbn_add_pattern->set_sensitive(false);
   m_tbn_delete_pattern->set_sensitive(false);
   m_tbn_duplicate_pattern->set_sensitive(false);
@@ -496,3 +500,17 @@ void PatternEditor::pattern_added(int id) {
       connect(sigc::hide(mem_fun(*this, &PatternEditor::update_pattern_combo)));
   }
 }
+
+
+void PatternEditor::add_toolbutton(Gtk::Toolbar* tbar, 
+                                   Gtk::ToolButton*& tbutton, 
+                                   Gtk::BuiltinStockID stock, 
+                                   const std::string& tip,
+                                   void (PatternEditor::*button_slot)()) {
+  Image* img = manage(new Image(stock, ICON_SIZE_SMALL_TOOLBAR));
+  tbutton = manage(new ToolButton(*img));
+  tbutton->set_tooltip(m_tooltips, tip);
+  tbar->append(*tbutton, mem_fun(*this, button_slot));
+}
+
+

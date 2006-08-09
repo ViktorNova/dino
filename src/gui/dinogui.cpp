@@ -123,10 +123,10 @@ void DinoGUI::remove_page(int pagenum) {
 
 void DinoGUI::slot_file_open() {
   m_seq.stop();
+  m_seq.go_to_beat(0);
   m_song.load_file("output.dino");
   reset_gui();
   m_seq.reset_ports();
-  m_seq.go_to_beat(0);
 }
 
 

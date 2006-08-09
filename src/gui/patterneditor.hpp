@@ -72,6 +72,10 @@ protected:
   void duplicate_pattern();
   void edit_pattern_properties();
 
+  void add_toolbutton(Gtk::Toolbar* tbar, Gtk::ToolButton*& tbutton, 
+                      Gtk::BuiltinStockID stock, const std::string& tip,
+                      void (PatternEditor::*button_slot)());
+
   SingleTextCombo m_cmb_track;
   SingleTextCombo m_cmb_pattern;
   SingleTextCombo m_cmb_controller;
@@ -83,6 +87,8 @@ protected:
 
   PatternDialog* m_dlg_pattern;
   ControllerDialog* m_dlg_controller;
+
+  Gtk::Tooltips m_tooltips;
 
   Gtk::ToolButton* m_tbn_add_pattern;
   Gtk::ToolButton* m_tbn_delete_pattern;

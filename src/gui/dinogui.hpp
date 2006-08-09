@@ -122,7 +122,7 @@ private:
   
   Gtk::Notebook* m_nb;
   
-  Gtk::AboutDialog* m_about_dialog;
+  Gtk::AboutDialog m_about_dialog;
   PluginDialog* m_plug_dialog;
   
   Dino::Sequencer m_seq;

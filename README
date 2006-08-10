@@ -1,7 +1,6 @@
 Dino is a MIDI sequencer for GNU/Linux. It uses the JACK system to send MIDI 
 to other software and to synchronise with JACK transport. You need a version of
-JACK that is patched to handle MIDI as well as audio to use Dino. A patch can
-be found here: http://www.custard.org/~deviant/jack-midi/
+JACK later than 0.102.6 - earlier versions do not have MIDI support.
 
 Dino requires that jackd is running in order to sequence anything (although
 you can still edit songs without it) and that lashd is running in order to be
@@ -74,4 +73,4 @@ Dino does not have any save or load commands. Instead, you should use your
 favourite LASH controller program to save and load entire sessions.
 
 
-Send bug reports and suggestions to Lars Luthman <larsl@users.sourceforge.net>
+Send bug reports and suggestions to Lars Luthman <lars.luthman@gmail.com>

@@ -38,7 +38,7 @@ using namespace Dino;
 
 static void print_version() {
   cout<<"Dino "<<VERSION<<endl
-      <<"Copyright (C) "<<CR_YEAR<<" Lars Luthman <larsl@users.sf.net>"<<endl
+      <<"Copyright (C) "<<CR_YEAR<<" Lars Luthman <lars.luthman@gmail.com>"<<endl
       <<"This program comes with ABSOLUTELY NO WARRANTY."<<endl
       <<"This is free software, and you are welcome to redistribute it"<<endl
       <<"under certain conditions; see the file COPYING or the "<<endl

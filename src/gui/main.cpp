@@ -25,7 +25,6 @@
 #include <glibmm.h>
 #include <gtkmm.h>
 #include <sigc++/slot.h>
-#include <libglademm.h>
 
 #include "debug.hpp"
 #include "dinogui.hpp"
@@ -33,7 +32,6 @@
 
 using namespace std;
 using namespace Gtk;
-using namespace Gnome::Glade;
 using namespace Glib;
 using namespace Dino;
 
@@ -77,17 +75,11 @@ int main(int argc, char** argv) {
   
   dbg1<<"Dino "<<VERSION<<" starting"<<endl;
   
-  // load the GUI
+  // create the GUI
   dbg1<<"Initialising gtkmm"<<endl;
   Main kit(argc, argv);
-  dbg1<<"Loading GUI"<<endl;
-  RefPtr<Xml> refXml;
-  string filename = "dino.glade";
-  if (!file_test(filename, FILE_TEST_EXISTS))
-    filename = DATA_DIR "/dino.glade";
-  refXml = Xml::create(filename);
-    
-  DinoGUI dino(argc, argv, refXml);
+  dbg1<<"Creating GUI"<<endl;
+  DinoGUI dino(argc, argv);
   
   // setup a signal handler and a timeout function that will let us
   // quit cleanly if the user terminates us with a signal
@@ -101,14 +93,8 @@ int main(int argc, char** argv) {
   signal_timeout().connect(&signal_checker, 300);
   
   // run
-  if (dino.get_window()) {
-    dbg1<<"Starting GUI"<<endl;
-    Main::run(*dino.get_window());
-  }
-  else {
-    dbg0<<"Could not load the GUI"<<endl;
-    return 1;
-  }
+  dbg1<<"Starting GUI"<<endl;
+  Main::run(dino.get_window());
   
   dbg1<<"Dino "<<VERSION<<" exiting"<<endl;
   

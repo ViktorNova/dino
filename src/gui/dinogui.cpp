@@ -36,7 +36,6 @@
 using namespace Dino;
 using namespace Gdk;
 using namespace Glib;
-using namespace Gnome::Glade;
 using namespace Gtk;
 using namespace sigc;
 
@@ -385,7 +384,7 @@ using namespace sigc;
 "Public License instead of this License.\n"
 
 
-DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 
+DinoGUI::DinoGUI(int argc, char** argv) 
   : m_seq("Dino", m_song),
     m_plif(*this, m_song, m_seq),
     m_plib(m_plif) {
@@ -402,7 +401,17 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
     dlg.run();
   }
   
-  m_window = w<Gtk::Window>(xml, "main_window");
+  // initialise the main window
+  m_window.set_title("Dino");
+  VBox* vbox = manage(new VBox(false, 3));
+  m_window.add(*vbox);
+  MenuBar* mbar = manage(new MenuBar);
+  init_menus(*mbar);
+  vbox->pack_start(*mbar, PACK_SHRINK);
+  vbox->pack_start(m_nb);
+  Statusbar* sbar = manage(new Statusbar);
+  sbar->set_has_resize_grip(false);
+  vbox->pack_start(*sbar, PACK_SHRINK);
   
   // initialise the "About" dialog
   m_about_dialog.set_name("Dino");
@@ -417,39 +426,36 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   // initialise the "Plugins" dialog
   m_plug_dialog.set_library(m_plib);
   
-  m_nb = w<Notebook>(xml, "main_notebook");
-  m_nb->signal_switch_page().
+  m_nb.signal_switch_page().
     connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
-  
-  init_menus(xml);
   
   load_plugins(argc, argv);
   
   reset_gui();
   
-  m_window->show_all();
+  m_window.show_all();
 }
 
 
-Gtk::Window* DinoGUI::get_window() {
+Gtk::Window& DinoGUI::get_window() {
   return m_window;
 }
 
 
 int DinoGUI::add_page(const std::string& label, GUIPage& page) {
-  int result = m_nb->append_page(page, label);
-  m_window->show_all();
+  int result = m_nb.append_page(page, label);
+  m_window.show_all();
   return result;
 }
 
 
 void DinoGUI::remove_page(GUIPage& page) {
-  m_nb->remove_page(page);
+  m_nb.remove_page(page);
 }
 
 
 void DinoGUI::remove_page(int pagenum) {
-  m_nb->remove_page(pagenum);
+  m_nb.remove_page(pagenum);
 }
 
 
@@ -489,7 +495,7 @@ void DinoGUI::slot_file_quit() {
 
 void DinoGUI::slot_edit_cut() {
   GUIPage* page = 
-    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+    dynamic_cast<GUIPage*>(m_nb.get_nth_page(m_nb.get_current_page()));
   assert(page);
   page->cut_selection();
 }
@@ -497,7 +503,7 @@ void DinoGUI::slot_edit_cut() {
 
 void DinoGUI::slot_edit_copy() {
   GUIPage* page = 
-    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+    dynamic_cast<GUIPage*>(m_nb.get_nth_page(m_nb.get_current_page()));
   assert(page);
   page->copy_selection();
 }
@@ -505,7 +511,7 @@ void DinoGUI::slot_edit_copy() {
 
 void DinoGUI::slot_edit_paste() {
   GUIPage* page = 
-    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+    dynamic_cast<GUIPage*>(m_nb.get_nth_page(m_nb.get_current_page()));
   assert(page);
   page->paste();
 }
@@ -513,7 +519,7 @@ void DinoGUI::slot_edit_paste() {
 
 void DinoGUI::slot_edit_delete() {
   GUIPage* page = 
-    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+    dynamic_cast<GUIPage*>(m_nb.get_nth_page(m_nb.get_current_page()));
   assert(page);
   page->delete_selection();
 }
@@ -521,7 +527,7 @@ void DinoGUI::slot_edit_delete() {
 
 void DinoGUI::slot_edit_select_all() {
   GUIPage* page = 
-    dynamic_cast<GUIPage*>(m_nb->get_nth_page(m_nb->get_current_page()));
+    dynamic_cast<GUIPage*>(m_nb.get_nth_page(m_nb.get_current_page()));
   assert(page);
   page->select_all();
 }
@@ -549,7 +555,7 @@ void DinoGUI::slot_help_about_dino() {
 
 
 void DinoGUI::reset_gui() {
-  std::list<Widget*> pages = m_nb->get_children();
+  std::list<Widget*> pages = m_nb.get_children();
   std::list<Widget*>::iterator iter;
   for (iter = pages.begin(); iter != pages.end(); ++iter) {
     GUIPage* page = dynamic_cast<GUIPage*>(*iter);
@@ -559,28 +565,93 @@ void DinoGUI::reset_gui() {
 }
 
 
-void DinoGUI::init_menus(RefPtr<Xml>& xml) {
-  map<string, void (DinoGUI::*)(void)> menuSlots;
-  menuSlots["file_clear_all"] = &DinoGUI::slot_file_clear_all;
-  menuSlots["file_quit"] = &DinoGUI::slot_file_quit;
-  menuSlots["edit_cut"] = &DinoGUI::slot_edit_cut;
-  menuSlots["edit_copy"] = &DinoGUI::slot_edit_copy;
-  menuSlots["edit_paste"] = &DinoGUI::slot_edit_paste;
-  menuSlots["edit_delete"] = &DinoGUI::slot_edit_delete;
-  menuSlots["edit_select_all"] = &DinoGUI::slot_edit_select_all;
-  menuSlots["transport_play"] = &DinoGUI::slot_transport_play;
-  menuSlots["transport_stop"] = &DinoGUI::slot_transport_stop;
-  menuSlots["transport_go_to_start"] = &DinoGUI::slot_transport_go_to_start;
-  menuSlots["plugins_manage_plugins"] = &DinoGUI::slot_plugins_manage;
+void DinoGUI::init_menus(MenuBar& mbar) {
 
-  menuSlots["help_about"] = &DinoGUI::slot_help_about_dino;
-  map<string, void (DinoGUI::*)(void)>::const_iterator iter;
-  for (iter = menuSlots.begin(); iter != menuSlots.end(); ++iter) {
-    MenuItem* mi = w<MenuItem>(xml, iter->first);
-    assert(mi);
-    mi->signal_activate().connect(mem_fun(*this, iter->second));
-    m_menuitems[iter->first] = mi;
-  }
+  MenuItem* file_item = manage(new MenuItem("_File", true));
+  Menu* file_menu = manage(new Menu);
+  file_item->set_submenu(*file_menu);
+  mbar.append(*file_item);
+  create_menu_item(*file_menu, "Clear all", "file_clear_all",
+                   Stock::CLEAR, &DinoGUI::slot_file_clear_all);
+  file_menu->append(*manage(new SeparatorMenuItem));
+  create_menu_item(*file_menu, Stock::QUIT, "file_quit", 
+                   &DinoGUI::slot_file_quit);
+  
+  MenuItem* edit_item = manage(new MenuItem("_Edit", true));
+  Menu* edit_menu = manage(new Menu);
+  edit_item->set_submenu(*edit_menu);
+  mbar.append(*edit_item);
+  create_menu_item(*edit_menu, Stock::CUT, "edit_cut", 
+                   &DinoGUI::slot_edit_cut);
+  create_menu_item(*edit_menu, Stock::COPY, "edit_copy", 
+                   &DinoGUI::slot_edit_copy);
+  create_menu_item(*edit_menu, Stock::PASTE, "edit_paste", 
+                   &DinoGUI::slot_edit_paste);
+  create_menu_item(*edit_menu, Stock::DELETE, "edit_delete", 
+                   &DinoGUI::slot_edit_delete);
+  edit_menu->append(*manage(new SeparatorMenuItem));
+  create_menu_item(*edit_menu, "Select all", "edit_select_all", 
+                   &DinoGUI::slot_edit_select_all);
+  
+  MenuItem* transport_item = manage(new MenuItem("_Transport", true));
+  Menu* transport_menu = manage(new Menu);
+  transport_item->set_submenu(*transport_menu);
+  mbar.append(*transport_item);
+  create_menu_item(*transport_menu, Stock::MEDIA_PLAY, "transport_play", 
+                   &DinoGUI::slot_transport_play);
+  create_menu_item(*transport_menu, "_Stop", "transport_stop", 
+                   Stock::MEDIA_PAUSE, &DinoGUI::slot_transport_stop);
+  create_menu_item(*transport_menu, "_Go to start", "transport_go_to_start", 
+                   Stock::MEDIA_PREVIOUS,&DinoGUI::slot_transport_go_to_start);
+  
+  MenuItem* plugins_item = manage(new MenuItem("_Plugins", true));
+  Menu* plugins_menu = manage(new Menu);
+  plugins_item->set_submenu(*plugins_menu);
+  mbar.append(*plugins_item);
+  create_menu_item(*plugins_menu, "_Manage plugins", "plugins_manage_plugins", 
+                   Stock::DISCONNECT, &DinoGUI::slot_plugins_manage);
+
+  MenuItem* help_item = manage(new MenuItem("_Help", true));
+  Menu* help_menu = manage(new Menu);
+  help_item->set_submenu(*help_menu);
+  mbar.append(*help_item);
+  create_menu_item(*help_menu, "_About Dino", "help_about", 
+                   Stock::ABOUT, &DinoGUI::slot_help_about_dino);
+}
+
+
+MenuItem* DinoGUI::create_menu_item(Gtk::Menu& menu, const std::string& label,
+                                    const std::string& name, 
+                                    const Gtk::StockID& id,
+                                    void (DinoGUI::*mslot)(void)) {
+  using namespace Menu_Helpers;
+  Gtk::Image* img = manage(new Gtk::Image(id, ICON_SIZE_MENU));
+  ImageMenuElem elem(label, *img, mem_fun(*this, mslot));
+  m_menuitems[name] = elem.get_child().operator->();
+  menu.items().push_back(elem);
+  return elem.get_child().operator->();
+}
+
+
+MenuItem* DinoGUI::create_menu_item(Gtk::Menu& menu, const std::string& label,
+                                    const std::string& name,
+                                    void (DinoGUI::*mslot)(void)) {
+  using namespace Menu_Helpers;
+  MenuElem elem(label, mem_fun(*this, mslot));
+  m_menuitems[name] = elem.get_child().operator->();
+  menu.items().push_back(elem);
+  return elem.get_child().operator->();
+}
+
+
+MenuItem* DinoGUI::create_menu_item(Gtk::Menu& menu, const StockID& id,
+                                    const std::string& name,
+                                    void (DinoGUI::*mslot)(void)) {
+  using namespace Menu_Helpers;
+  StockMenuElem elem(id, mem_fun(*this, mslot));
+  m_menuitems[name] = elem.get_child().operator->();
+  menu.items().push_back(elem);
+  return elem.get_child().operator->();
 }
 
 
@@ -636,7 +707,7 @@ bool DinoGUI::slot_check_ladcca_events() {
 
 
 void DinoGUI::page_switched(guint index) {
-  GUIPage* page = dynamic_cast<GUIPage*>(m_nb->get_nth_page(index));
+  GUIPage* page = dynamic_cast<GUIPage*>(m_nb.get_nth_page(index));
   if (!page)
     return;
   bool clipboard_active = page->get_flags() & GUIPage::PageSupportsClipboard;

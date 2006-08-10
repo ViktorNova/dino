@@ -1,7 +1,6 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.63
+PACKAGE_VERSION = 0.3.64
 PKG_DEPS = \
-	libglademm-2.4>=2.4.1 \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
 	jack>=0.102.6 \
@@ -9,7 +8,7 @@ PKG_DEPS = \
 
 
 # Data files
-DATA = src/gui/dino.glade src/gui/pixmaps/midisaurus.png src/gui/pixmaps/head.png src/gui/pixmaps/tinykeyboard.png
+DATA = src/gui/pixmaps/midisaurus.png src/gui/pixmaps/head.png src/gui/pixmaps/tinykeyboard.png
 DOCS = AUTHORS COPYING README TODO ChangeLog
 
 
@@ -26,8 +25,8 @@ dino_SOURCES = \
 	pluginlibrary.cpp pluginlibrary.hpp 
 dino_HEADERS = plugininterface.hpp action.hpp
 dino_SOURCEDIR = src/gui
-dino_CFLAGS = `pkg-config --cflags libglademm-2.4 jack libxml++-2.6 lash-1.0` -Isrc/libdinoseq -Isrc
-dino_LDFLAGS = `pkg-config --libs libglademm-2.4 lash-1.0` -Wl,-E -Lsrc/gui -Lsrc/libdinoseq -ldinoseq
+dino_CFLAGS = `pkg-config --cflags gtkmm-2.4 jack libxml++-2.6 lash-1.0` -Isrc/libdinoseq -Isrc
+dino_LDFLAGS = `pkg-config --libs gtkmm-2.4 lash-1.0` -Wl,-E -Lsrc/gui -Lsrc/libdinoseq -ldinoseq
 main_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\" -DVERSION=\"$(PACKAGE_VERSION)\" -DCR_YEAR=\"2006\"
 dinogui_cpp_CFLAGS = $(main_cpp_CFLAGS)
 pluginlibrary_cpp_CFLAGS = -DPLUGIN_DIR=\"$(pkglibdir)\"

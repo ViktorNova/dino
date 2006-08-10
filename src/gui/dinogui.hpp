@@ -22,7 +22,6 @@
 #define DINOGUI_HPP
 
 #include <gtkmm.h>
-#include <libglademm.h>
 #include <lash/lash.h>
 
 #include "debug.hpp"
@@ -41,9 +40,9 @@ class GUIPage;
     GUI and sets up all signals and initial values. */
 class DinoGUI {
 public:
-  DinoGUI(int argc, char** argv, Glib::RefPtr<Gnome::Glade::Xml> xml);
+  DinoGUI(int argc, char** argv);
   
-  Gtk::Window* get_window();
+  Gtk::Window& get_window();
   
   int add_page(const std::string& label, GUIPage& page);
   void remove_page(GUIPage& page);
@@ -76,34 +75,18 @@ private:
   
   void load_plugins(int argc, char** argv);
   
-  /** This is a convenience function that returns a pointer of type @c T* to
-      the widget with name @c name. If there is no widget in @c xml with that
-      name it returns 0. */
-  template <class T>
-  inline T* w(Glib::RefPtr<Gnome::Glade::Xml>& xml, const string& name) {
-    using namespace Dino;
-    T* widget = dynamic_cast<T*>(xml->get_widget(name));
-    if (widget == 0)
-      dbg0<<"Could not load widget "<<name<<" of type "
-	  <<demangle(typeid(T).name())<<endl;
-    return widget;
-  }
-  
-  /** This is a convenience function that returns a pointer of type @c T* to
-      the widget with name @c name. If there is no widget in @c xml with that
-      name it returns 0. */
-  template <class T>
-  inline T* wd(Glib::RefPtr<Gnome::Glade::Xml>& xml, const string& name) {
-    using namespace Dino;
-    T* widget = xml->get_widget_derived(name, widget);
-    if (widget == 0)
-      dbg0<<"Could not load derived widget "<<name<<" of type "
-	  <<demangle(typeid(T).name())<<endl;
-    return widget;
-  }
-  
   void reset_gui();
-  void init_menus(Glib::RefPtr<Gnome::Glade::Xml>& xml);
+  void init_menus(Gtk::MenuBar& mbar);
+  Gtk::MenuItem* create_menu_item(Gtk::Menu& menu, const std::string& label,
+                                  const std::string& name, 
+                                  const Gtk::StockID& id,
+                                  void (DinoGUI::*mslot)(void));
+  Gtk::MenuItem* create_menu_item(Gtk::Menu& menu, const std::string& label,
+                                  const std::string& name, 
+                                  void (DinoGUI::*mslot)(void));
+  Gtk::MenuItem* create_menu_item(Gtk::Menu& menu, const Gtk::StockID& id,
+                                  const std::string& name, 
+                                  void (DinoGUI::*mslot)(void));
   bool init_lash(int argc, char** argv);
   
   // internal callbacks
@@ -112,10 +95,10 @@ private:
   
   Dino::Song m_song;
   
-  Gtk::Window* m_window;
+  Gtk::Window m_window;
   std::map<std::string, Gtk::MenuItem*> m_menuitems;
   
-  Gtk::Notebook* m_nb;
+  Gtk::Notebook m_nb;
   
   Gtk::AboutDialog m_about_dialog;
   PluginDialog m_plug_dialog;

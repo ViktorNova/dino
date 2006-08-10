@@ -335,7 +335,8 @@ void SequenceEditor::add_toolbutton(Gtk::Toolbar* tbar,
 
 
 void SequenceEditor::set_recording_track(Song::TrackIterator iter) {
+  int id = (iter == m_song.tracks_end() ? -1 : iter->get_id());
   std::map<int, SingleTrackGUI>::iterator i;
   for (i = m_track_map.begin(); i != m_track_map.end(); ++i)
-    i->second.label->set_recording(i->first == iter->get_id());
+    i->second.label->set_recording(i->first == id);
 }

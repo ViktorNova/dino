@@ -164,7 +164,10 @@ namespace Dino {
   events on the JACK MIDI output buffers). */
     void sequence_midi(jack_transport_state_t state,
                        const jack_position_t& pos, jack_nframes_t nframes);
-  
+    
+    void rec_track_changed(int id);
+    
+    
     string m_client_name;
     /* XXX The below is false, I think. Everything should be readable by
        the audio thread at all times without locking any mutii. */

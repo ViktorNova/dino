@@ -73,6 +73,13 @@ namespace Dino {
       connect(mem_fun(*this, &Sequencer::beat_checker), 20);
     Glib::signal_timeout().
       connect(mem_fun(*this, &Sequencer::ports_checker), 20);
+    Glib::signal_timeout().
+      connect(bind_return(mem_fun(m_rec, &Recorder::run_editing_thread), true),
+              20);
+    
+    m_rec.signal_track_set.
+      connect(mem_fun(*this, &Sequencer::rec_track_changed));
+
     
     reset_ports();
   }
@@ -115,7 +122,6 @@ namespace Dino {
       m_rec.set_track(0);
     else
       m_rec.set_track(iter->get_id());
-    m_signal_record_to_track(iter);
   }
   
 
@@ -347,6 +353,7 @@ namespace Dino {
     }
     
     sequence_midi(state, pos, nframes);
+    m_rec.run_audio_thread();
     
     return 0;
   }
@@ -484,6 +491,10 @@ namespace Dino {
     return m_signal_record_to_track;
   }
   
+
+  void Sequencer::rec_track_changed(int id) {
+    m_signal_record_to_track(m_song.tracks_find(id));
+  }
   
 }
 

@@ -112,10 +112,9 @@ namespace Dino {
   void Sequencer::record_to_track(Song::TrackIterator iter) {
     Track* trk;
     if (iter == m_song.tracks_end())
-      trk = 0;
+      m_rec.set_track(0);
     else
-      trk = &*iter;
-    m_rec.set_track(trk);
+      m_rec.set_track(iter->get_id());
     m_signal_record_to_track(iter);
   }
   
@@ -194,9 +193,9 @@ namespace Dino {
   
   
   Dino::Song::TrackIterator Sequencer::get_recording_track() {
-    Track* trk;
+    int trk;
     if (trk = m_rec.get_track())
-      return m_song.tracks_find(trk->get_id());
+      return m_song.tracks_find(trk);
     return m_song.tracks_end();
   }
   
@@ -386,8 +385,6 @@ namespace Dino {
     // if we're not rolling, turn off all notes and return
     Song::ConstTrackIterator iter;
     if (state != JackTransportRolling) {
-      if (m_was_rolling)
-        m_rec.stop(start);
       m_was_rolling = false;
       for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
         jack_port_t* port = m_output_ports[iter->get_id()];
@@ -411,10 +408,6 @@ namespace Dino {
       start = m_last_end;
     double end = start + pos.beats_per_minute * nframes / 
       (60 * pos.frame_rate);
-    if (m_was_rolling && pos.frame != m_next_frame)
-      m_rec.relocate(m_last_end, start);
-    if (!m_was_rolling)
-      m_rec.start(start);
     m_was_rolling = true;
     m_last_end = end;
     m_next_frame = pos.frame + nframes;
@@ -451,7 +444,7 @@ namespace Dino {
     for (unsigned int i = 0; i < input_event_count; ++i) {
       jack_midi_event_get(&input_event, input_buf, i, nframes);
       double beat = start + input_event.time * bpf;
-      m_rec.record_event(beat, input_event.size, input_event.buffer);
+      //m_rec.record_event(beat, input_event.size, input_event.buffer);
     }
 
   }

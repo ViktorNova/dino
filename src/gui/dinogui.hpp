@@ -48,6 +48,8 @@ public:
   void remove_page(GUIPage& page);
   void remove_page(int pagenum);
   
+  bool is_valid() const;
+  
 private:
 
   /// @name Menu and toolbutton callbacks
@@ -109,6 +111,8 @@ private:
   
   PluginInterfaceImplementation m_plif;
   PluginLibrary m_plib;
+  
+  bool m_valid;
 };
 
 

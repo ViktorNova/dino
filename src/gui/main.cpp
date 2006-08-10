@@ -80,21 +80,25 @@ int main(int argc, char** argv) {
   Main kit(argc, argv);
   dbg1<<"Creating GUI"<<endl;
   DinoGUI dino(argc, argv);
-  
-  // setup a signal handler and a timeout function that will let us
-  // quit cleanly if the user terminates us with a signal
-  std::signal(SIGHUP, &signal_handler);
-  std::signal(SIGINT, &signal_handler);
-  std::signal(SIGPIPE, &signal_handler);
-  std::signal(SIGALRM, &signal_handler);
-  std::signal(SIGTERM, &signal_handler);
-  std::signal(SIGUSR1, &signal_handler);
-  std::signal(SIGUSR2, &signal_handler);
-  signal_timeout().connect(&signal_checker, 300);
-  
-  // run
-  dbg1<<"Starting GUI"<<endl;
-  Main::run(dino.get_window());
+
+  if (dino.is_valid()) {
+    
+    // setup a signal handler and a timeout function that will let us
+    // quit cleanly if the user terminates us with a signal
+    std::signal(SIGHUP, &signal_handler);
+    std::signal(SIGINT, &signal_handler);
+    std::signal(SIGPIPE, &signal_handler);
+    std::signal(SIGALRM, &signal_handler);
+    std::signal(SIGTERM, &signal_handler);
+    std::signal(SIGUSR1, &signal_handler);
+    std::signal(SIGUSR2, &signal_handler);
+    signal_timeout().connect(&signal_checker, 300);
+    
+    // run
+    dbg1<<"Starting GUI"<<endl;
+    dino.get_window().show_all();
+    Main::run(dino.get_window());
+  }
   
   dbg1<<"Dino "<<VERSION<<" exiting"<<endl;
   

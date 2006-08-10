@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <list>
 #include <sstream>
@@ -387,19 +388,24 @@ using namespace sigc;
 DinoGUI::DinoGUI(int argc, char** argv) 
   : m_seq("Dino", m_song),
     m_plif(*this, m_song, m_seq),
-    m_plib(m_plif) {
+    m_plib(m_plif),
+    m_valid(false) {
   
   if (!m_seq.is_valid()) {
-    MessageDialog dlg("Could not initialise the sequencer! You will not be "
-                      "able to play anything.", false, MESSAGE_WARNING);
+    MessageDialog dlg("Could not initialise the sequencer!", 
+                      false, MESSAGE_ERROR);
     dlg.run();
+    return;
   }
   
   if (!init_lash(argc, argv)) {
-    MessageDialog dlg("Could not initialise LASH! You will not be able "
-                      "to save your session.", false, MESSAGE_WARNING);
+    MessageDialog dlg("Could not initialise LASH!", 
+                      false, MESSAGE_ERROR);
     dlg.run();
+    return;
   }
+  
+  m_valid = true;
   
   // initialise the main window
   m_window.set_title("Dino");
@@ -432,8 +438,6 @@ DinoGUI::DinoGUI(int argc, char** argv)
   load_plugins(argc, argv);
   
   reset_gui();
-  
-  m_window.show_all();
 }
 
 
@@ -739,4 +743,9 @@ void DinoGUI::load_plugins(int argc, char** argv) {
   iter = m_plib.find("Info editor");
   if (iter != m_plib.end())
     m_plib.load_plugin(iter);
+}
+
+
+bool DinoGUI::is_valid() const {
+  return m_valid;
 }

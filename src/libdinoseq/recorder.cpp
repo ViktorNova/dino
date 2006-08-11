@@ -137,6 +137,14 @@ namespace Dino {
           else if (status == 0x80 || (status == 0x90 && data[2] == 0))
             handle_note_off(e.beat, data[1], *titer);
           
+          // CONTROLLER
+          else if (status == 0xB0)
+            handle_controller(e.beat, make_cc(data[1]), data[2], *titer);
+          
+          // PITCHBEND
+          else if (status == 0xE0)
+            handle_controller(e.beat, make_pbend(), 
+                              data[1] + (data[2] << 7) - 0x2000, *titer);
         }
         
         break;
@@ -281,5 +289,20 @@ namespace Dino {
     k.held = false;
   }
   
+  
+  void Recorder::handle_controller(double beat, long param, int value, 
+                                   Track& track) {
+    Track::SequenceIterator siter = track.seq_find(int(beat));
+    if (siter != track.seq_end()) {
+      Pattern& pat = siter->get_pattern();
+      Pattern::ControllerIterator citer = pat.ctrls_find(param);
+      if (citer != pat.ctrls_end()) {
+        unsigned long step = (unsigned long)((beat - siter->get_start()) * 
+                                             pat.get_steps());
+        pat.add_cc(citer, step, value);
+      }
+    }
+  }
+
 }
 

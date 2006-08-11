@@ -117,6 +117,7 @@ namespace Dino {
     void handle_note_on(double beat, unsigned char key, unsigned char velocity,
                         Track& track);
     void handle_note_off(double beat, unsigned char key, Track& track);
+    void handle_controller(double beat, long param, int value, Track& track);
     
     // variables that can only be accessed by the editing thread
     int m_track;

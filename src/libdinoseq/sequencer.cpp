@@ -52,7 +52,8 @@ namespace Dino {
       m_current_beat(0), 
       m_old_current_beat(-1),
       m_ports_changed(0),
-      m_old_ports_changed(0) {
+      m_old_ports_changed(0),
+      m_rec(song) {
   
     dbg1<<"Initialising sequencer"<<endl;
   
@@ -353,7 +354,9 @@ namespace Dino {
     }
     
     sequence_midi(state, pos, nframes);
-    m_rec.run_audio_thread();
+    void* input_buf = jack_port_get_buffer(m_input_port, nframes);
+    m_rec.run_audio_thread(state, pos, nframes, input_buf,
+                           jack_get_sample_rate(m_jack_client));
     
     return 0;
   }

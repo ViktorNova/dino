@@ -39,9 +39,15 @@ using namespace Pango;
 
 
 TrackWidget::TrackWidget(const Song* song) 
-  : m_song(song), m_col_width(20), m_drag_beat(-1), m_drag_pattern(-1),
+  : m_song(song), 
+    m_col_width(20), 
+    //m_drag_beat(-1), 
+    //m_drag_pattern(-1),
+    m_drag_seqid(-1),
     m_current_beat(0) {
+  
   assert(song);
+  
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
   m_bg_color2.set_rgb(65535, 60000, 50000);
@@ -173,8 +179,9 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
   case 2: {
     Track::SequenceIterator se = m_track->seq_find(beat);
     if (se != m_track->seq_end()) {
-      m_drag_beat = se->get_start();
-      m_drag_pattern = se->get_pattern_id();
+      //m_drag_beat = se->get_start();
+      //m_drag_pattern = se->get_pattern_id();
+      m_drag_seqid = se->get_id();
       m_track->set_seq_entry_length(se, beat - se->get_start() + 1);
       update();
     }
@@ -197,22 +204,22 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
 
 bool TrackWidget::on_button_release_event(GdkEventButton* event) {
   if (event->button == 2)
-    m_drag_beat = -1;
+    m_drag_seqid = -1;
   return true;
 }
 
 
 bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
   int beat = int(event->x) / m_col_width;
-
-  if ((event->state & GDK_BUTTON2_MASK) && m_drag_beat != -1 &&
-      beat >= m_drag_beat && 
-      beat - m_drag_beat + 1 <= 
-      int(m_track->pat_find(m_drag_pattern)->get_length())) {
-    m_track->set_sequence_entry(m_drag_beat, m_drag_pattern, 
-				beat - m_drag_beat + 1);
-    update();
-    return true;
+  
+  if ((event->state & GDK_BUTTON2_MASK) && m_drag_seqid != -1) {
+    Track::SequenceIterator siter = m_track->seq_find_by_id(m_drag_seqid);
+    if (siter != m_track->seq_end() && beat >= siter->get_start() &&
+        beat - siter->get_start() + 1 <= siter->get_pattern().get_length()) {
+      m_track->set_seq_entry_length(siter, beat - siter->get_start() + 1);
+      update();
+      return true;
+    }
   }
   
   return false;

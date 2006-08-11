@@ -46,6 +46,22 @@ namespace {
   }* clearloop;
   
   
+  // Set the recording track to 0
+  struct StopRecordingAction : SongAction {
+    StopRecordingAction(PluginInterface& plif)
+      : m_seq(plif.get_sequencer()),
+        m_song(plif.get_song()){
+
+    }
+    std::string get_name() const { return "Stop recording"; }
+    void run(Song& song) {
+      m_seq.record_to_track(m_song.tracks_end());
+    }
+    Song& m_song;
+    Sequencer& m_seq;
+  }* stoprecording;
+  
+  
   // Change the track to record to
   struct RecordToTrackAction : public TrackAction {
     RecordToTrackAction(PluginInterface& plif) 
@@ -122,6 +138,7 @@ extern "C" {
   
   void dino_load_plugin(PluginInterface& plif) {
     plif.add_action(*(clearloop = new ClearLoopAction));
+    plif.add_action(*(stoprecording = new StopRecordingAction(plif)));
     plif.add_action(*(interpolatevelocity = new InterpolateVelocityAction));
     plif.add_action(*(randomisevelocity = new RandomiseVelocityAction));
     plif.add_action(*(recordtotrack = new RecordToTrackAction(plif)));
@@ -130,6 +147,7 @@ extern "C" {
   
   void dino_unload_plugin() {
     m_plif->remove_action(*clearloop);
+    m_plif->remove_action(*stoprecording);
     m_plif->remove_action(*interpolatevelocity);
     m_plif->remove_action(*randomisevelocity);
     m_plif->remove_action(*recordtotrack);

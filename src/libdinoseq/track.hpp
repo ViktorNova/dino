@@ -52,18 +52,19 @@ namespace Dino {
   public:
     
     /** This struct contains information about a sequence entry, i.e. a
-  scheduled start and length for a pattern. */
+        scheduled start and length for a pattern. */
     class SequenceEntry {
     public:
 
       SequenceEntry(int patID, Pattern* patPtr, 
-        unsigned int st, unsigned int len) 
-  : pattern_id(patID), pattern(patPtr), start(st), length(len) { }
+                    unsigned int st, unsigned int len) 
+        : pattern_id(patID), pattern(patPtr), start(st), length(len), id(-1) { }
       
       int get_pattern_id() const { return pattern_id; }
       Pattern& get_pattern() { return *pattern; }
       unsigned int get_start() const { return start; }
       unsigned int get_length() const { return length; }
+      int get_id() const { return id; }
       
     private:
       
@@ -73,14 +74,15 @@ namespace Dino {
       Pattern* pattern;
       unsigned int start;
       unsigned int length;
+      int id;
     };
     
     
     /** This is an iterator class that is used to access the sequence entries
-  in this track. It can not be used to modify the sequence entries,
-  for that you should use the member functions in Track.
-  @see Track::set_sequence_entry(), Track::set_seq_entry_length(),
-       Track::remove_sequence_entry() 
+        in this track. It can not be used to modify the sequence entries,
+        for that you should use the member functions in Track.
+        @see Track::set_sequence_entry(), Track::set_seq_entry_length(),
+        Track::remove_sequence_entry() 
     */
     class SequenceIterator : 
       public std::iterator<std::forward_iterator_tag, SequenceEntry> {
@@ -98,7 +100,7 @@ namespace Dino {
       friend class Track;
       
       SequenceIterator(const std::vector<SequenceEntry*>::const_iterator& iter,
-           const std::vector<SequenceEntry*>& vec);
+                       const std::vector<SequenceEntry*>& vec);
       
       std::vector<SequenceEntry*>::const_iterator m_iter;
       const std::vector<SequenceEntry*>* m_vector;
@@ -109,7 +111,7 @@ namespace Dino {
     
     
     /** An iterator class that can be used to access and modify the patterns
-  in this track. */
+        in this track. */
     class PatternIterator : 
       public std::iterator<std::forward_iterator_tag, Pattern> {
     public:
@@ -135,7 +137,7 @@ namespace Dino {
     
     
     /** A read-only iterator class that can be used to access the patterns in
-  this track. */
+        this track. */
     class ConstPatternIterator 
       : public std::iterator<std::forward_iterator_tag, Pattern> {
     public:
@@ -174,6 +176,7 @@ namespace Dino {
     SequenceIterator seq_begin() const;
     SequenceIterator seq_end() const;
     SequenceIterator seq_find(unsigned int beat) const;
+    SequenceIterator seq_find_by_id(int id) const;
     
     // non-const accessors
     PatternIterator pat_begin();
@@ -188,7 +191,7 @@ namespace Dino {
     PatternIterator duplicate_pattern(ConstPatternIterator iterator);
     void remove_pattern(int id);
     SequenceIterator set_sequence_entry(int beat, int pattern, 
-          unsigned int length = 0);
+                                        unsigned int length = 0);
     void set_seq_entry_length(SequenceIterator iterator, unsigned int length);
     bool remove_sequence_entry(SequenceIterator iterator);
     void set_length(int length);
@@ -226,9 +229,10 @@ namespace Dino {
     int m_id;
     string m_name;
     map<int, Pattern*> m_patterns;
+    int m_next_sid;
     volatile int m_channel;
     vector<SequenceEntry*>* volatile m_sequence;
-  
+    
     mutable bool m_dirty;
   
     signal<void, const string&> m_signal_name_changed;

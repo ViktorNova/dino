@@ -59,17 +59,17 @@ namespace Dino {
   public:
     
     /** This class is used to access the note data in a Pattern.
-  @b Example:
-  @code
-  int count_notes(const Dino::Pattern& pat) {
-    Dino::Pattern::NoteIterator iter;
-    int n = 0;
-    for (iter = pat.notes_begin(); iter != pat.notes_end(); ++iter, ++n);
-    return n;
-  }
-  @endcode
+        @b Example:
+        @code
+        int count_notes(const Dino::Pattern& pat) {
+        Dino::Pattern::NoteIterator iter;
+        int n = 0;
+        for (iter = pat.notes_begin(); iter != pat.notes_end(); ++iter, ++n);
+        return n;
+        }
+        @endcode
   
-  @see Pattern::notes_begin(), Pattern::notes_end(), Pattern::find_note()
+        @see Pattern::notes_begin(), Pattern::notes_end(), Pattern::find_note()
     */
     class NoteIterator : public std::iterator<std::forward_iterator_tag, Note> {
     public:
@@ -84,11 +84,11 @@ namespace Dino {
       /** Returns @c true if the two iterators refer to the same note. */
       bool operator==(const NoteIterator& iter) const;
       /** Returns @c true if the two iterators does not refer to the 
-    same note. */
+          same note. */
       bool operator!=(const NoteIterator& iter) const;
       /** Returns @c true if the (step, key) pair for the first iterator
-    is smaller than the pair for the second iterator. Needed for storing
-    this class in std::sets. */
+          is smaller than the pair for the second iterator. Needed for storing
+          this class in std::sets. */
       bool operator<(const NoteIterator& iter) const;
       /** Advances the iterator to the next note. */
       NoteIterator& operator++();
@@ -106,7 +106,7 @@ namespace Dino {
     
     
     /** A ControllerIterator is a const_iterator type that can be used to
-  access data from controllers in the pattern. */
+        access data from controllers in the pattern. */
     class ControllerIterator : 
       public std::iterator<std::forward_iterator_tag, Controller> {
     public:
@@ -120,11 +120,11 @@ namespace Dino {
       const Controller* operator->() const { return *m_iterator; }
       /** Returns @c true if the two iterators refer to the same Controller. */
       bool operator==(const ControllerIterator& iter) const {
-  return (m_iterator == iter.m_iterator);
+        return (m_iterator == iter.m_iterator);
       }
       /** Returns @c false if the two iterators refer to the same Controller. */
       bool operator!=(const ControllerIterator& iter) const {
-  return (m_iterator != iter.m_iterator);
+        return (m_iterator != iter.m_iterator);
       }
       /** Advances the iterator to the next controller. */
       ControllerIterator& operator++() { ++m_iterator; return *this; }
@@ -134,7 +134,7 @@ namespace Dino {
       friend class Pattern;
 
       ControllerIterator(const std::vector<Controller*>::iterator& iter) 
-  : m_iterator(iter) { 
+        : m_iterator(iter) { 
       }
       
       std::vector<Controller*>::iterator m_iterator;
@@ -155,27 +155,27 @@ namespace Dino {
     /** Return an iterator that refers to the first note in the pattern. */
     NoteIterator notes_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator
-  has passed the last note in this pattern. */
+        has passed the last note in this pattern. */
     NoteIterator notes_end() const;
     /** Return an iterator for the note with key @c value that is playing at
-  step @c step, or an invalid iterator if there is no such note. */
+        step @c step, or an invalid iterator if there is no such note. */
     NoteIterator find_note(unsigned int step, int value) const;
     /** Return an iterator that refers to the first controller in the pattern.*/
     ControllerIterator ctrls_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator
-  has passed the last controller in the pattern. */
+        has passed the last controller in the pattern. */
     ControllerIterator ctrls_end() const;
     /** Return an iterator for the controller with parameter @c param, or an
-  invalid iterator if no such controller exists. */
+        invalid iterator if no such controller exists. */
     ControllerIterator ctrls_find(long param) const;
     /** Return the number of steps per beat. */
     unsigned int get_steps() const;
     /** Return the length in beats. */
     unsigned int get_length() const;
     /** Return the bounding rectangle in the (step, key) plane for all notes
-  that have been changed since the last call to reset_dirty_rect(). */
+        that have been changed since the last call to reset_dirty_rect(). */
     void get_dirty_rect(int* min_step, int* min_note, 
-      int* max_step, int* max_note) const;
+                        int* max_step, int* max_note) const;
     //@}
     
     /// @name Mutators
@@ -190,9 +190,9 @@ namespace Dino {
         (in steps). */
     NoteIterator add_note(unsigned step, int key, int velocity, int length);
     /** Add a collection of notes with the given step and key offsets. 
-  Can be used as a "paste" command. */
+        Can be used as a "paste" command. */
     void add_notes(const NoteCollection& notes, unsigned step, int key,
-       PatternSelection* selection = 0);
+                   PatternSelection* selection = 0);
     /** Delete a note. */
     void delete_note(NoteIterator note);
     /** Change the length of a note. */
@@ -209,7 +209,7 @@ namespace Dino {
     /** Remove a CC event. */
     void remove_cc(ControllerIterator iter, unsigned int step);
     /** Reset the "dirty rect".
-  @see get_dirty_rect(). */
+        @see get_dirty_rect(). */
     void reset_dirty_rect();
     //@}
     
@@ -260,12 +260,12 @@ namespace Dino {
     typedef vector<NoteEvent*> NoteEventList;
     
     /** This struct is used internally so we can swap all data used by the
-  sequencer with a single pointer assignment (for lock-free 
-  thread safety). */
+        sequencer with a single pointer assignment (for lock-free 
+        thread safety). */
     struct SeqData {
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
-        std::vector<Controller*>* controllers,
-        unsigned int l, unsigned int s);
+              std::vector<Controller*>* controllers,
+              unsigned int l, unsigned int s);
       ~SeqData();
       
       NoteEventList* ons;
@@ -280,7 +280,7 @@ namespace Dino {
     Pattern& operator=(const Pattern&) { assert(0); return *this; }
     
     /** Find a note on event with the specified @c key between the steps
-  @c start and @c end. */
+        @c start and @c end. */
     NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
     /** Delete a note in a safe way. */
     void delete_note(Note* note);
@@ -292,8 +292,8 @@ namespace Dino {
     /** The name of the pattern */
     string m_name;
     /** The data used by the sequencing functions need to be stored in a
-  single structure so we can modify it in a lock-free way by swapping 
-  a single pointer. */
+        single structure so we can modify it in a lock-free way by swapping 
+        a single pointer. */
     SeqData* volatile m_sd;
     
     mutable bool m_dirty;

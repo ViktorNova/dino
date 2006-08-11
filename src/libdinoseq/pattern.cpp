@@ -458,7 +458,7 @@ namespace Dino {
   void Pattern::delete_note(NoteIterator iterator) {
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
-    
+
     delete_note(iterator.m_note);
   }
 

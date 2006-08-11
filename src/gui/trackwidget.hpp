@@ -66,7 +66,8 @@ private:
   Gdk::Color m_bg_color, m_bg_color2, m_fg_color, m_grid_color, m_edge_color, 
     m_hl_color;
   
-  int m_drag_beat, m_drag_pattern;
+  int m_drag_seqid;
+  //int m_drag_beat, m_drag_pattern;
   
   int m_current_beat;
   

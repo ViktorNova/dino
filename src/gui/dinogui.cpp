@@ -409,7 +409,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
   
   // initialise the main window
   m_window.set_title("Dino");
-  VBox* vbox = manage(new VBox(false, 3));
+  VBox* vbox = manage(new VBox);
   m_window.add(*vbox);
   MenuBar* mbar = manage(new MenuBar);
   init_menus(*mbar);

@@ -78,6 +78,12 @@ PluginInterface::action_iterator PluginInterfaceImplementation::actions_end() {
 }
 
 
+unsigned PluginInterfaceImplementation::set_status(const std::string& status,
+                                                   int timeout) {
+  return m_gui.set_status(status, timeout);
+}
+
+
 sigc::signal<void, ::Action&>& 
 PluginInterfaceImplementation::signal_action_added() {
   return m_signal_action_added;
@@ -88,3 +94,5 @@ sigc::signal<void, ::Action&>&
 PluginInterfaceImplementation::signal_action_removed() {
   return m_signal_action_removed;
 }
+
+

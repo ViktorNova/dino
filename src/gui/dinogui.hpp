@@ -40,6 +40,7 @@ class GUIPage;
     GUI and sets up all signals and initial values. */
 class DinoGUI {
 public:
+
   DinoGUI(int argc, char** argv);
   
   Gtk::Window& get_window();
@@ -47,6 +48,8 @@ public:
   int add_page(const std::string& label, GUIPage& page);
   void remove_page(GUIPage& page);
   void remove_page(int pagenum);
+  
+  unsigned set_status(const std::string& str, int timeout = 3000);
   
   bool is_valid() const;
   
@@ -99,6 +102,7 @@ private:
   
   Gtk::Window m_window;
   std::map<std::string, Gtk::MenuItem*> m_menuitems;
+  Gtk::Statusbar m_statusbar;
   
   Gtk::Notebook m_nb;
   

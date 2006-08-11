@@ -60,6 +60,9 @@ public:
   /** Returns an iterator pointing to the end of the action list. */
   virtual action_iterator actions_end();
 
+  /** Set the string in the status bar. */
+  virtual unsigned set_status(const std::string& status, int timeout);
+
   virtual sigc::signal<void, ::Action&>& signal_action_added();
   virtual sigc::signal<void, ::Action&>& signal_action_removed();
   

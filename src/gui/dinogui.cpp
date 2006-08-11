@@ -415,9 +415,8 @@ DinoGUI::DinoGUI(int argc, char** argv)
   init_menus(*mbar);
   vbox->pack_start(*mbar, PACK_SHRINK);
   vbox->pack_start(m_nb);
-  Statusbar* sbar = manage(new Statusbar);
-  sbar->set_has_resize_grip(false);
-  vbox->pack_start(*sbar, PACK_SHRINK);
+  m_statusbar.set_has_resize_grip(false);
+  vbox->pack_start(m_statusbar, PACK_SHRINK);
   m_nb.set_border_width(3);
   
   // initialise the "About" dialog
@@ -439,6 +438,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
   load_plugins(argc, argv);
   
   reset_gui();
+  set_status("Welcome to Dino!");
 }
 
 
@@ -685,6 +685,7 @@ bool DinoGUI::slot_check_ladcca_events() {
     
     // save
     if (lash_event_get_type(event) == LASH_Save_File) {
+      set_status("Received LASH Save command");
       if (m_song.write_file(string(lash_event_get_string(event)) + "/song")) {
         lash_send_event(m_lash_client, 
                         lash_event_new_with_type(LASH_Save_File));
@@ -693,6 +694,7 @@ bool DinoGUI::slot_check_ladcca_events() {
     
     // restore
     else if (lash_event_get_type(event) == LASH_Restore_File) {
+      set_status("Received LASH Restore command");
       if (m_song.load_file(string(lash_event_get_string(event)) + "/song")) {
         reset_gui();
         lash_send_event(m_lash_client,
@@ -750,3 +752,16 @@ void DinoGUI::load_plugins(int argc, char** argv) {
 bool DinoGUI::is_valid() const {
   return m_valid;
 }
+
+
+unsigned DinoGUI::set_status(const std::string& str, int timeout) {
+  unsigned message_id = m_statusbar.push(str);
+  if (timeout) {
+    signal_timeout().
+      connect(bind_return(bind(bind(mem_fun(m_statusbar, 
+                                            &Statusbar::remove_message), 
+                               0), message_id), false), timeout);
+  }
+  return message_id;
+}
+

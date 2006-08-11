@@ -231,16 +231,18 @@ namespace Dino {
     
     jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
     
-    if ((err = jack_activate(m_jack_client)) != 0)
-      return false;
-    
+    m_input_port = jack_port_register(m_jack_client, "MIDI input", 
+                                      JACK_DEFAULT_MIDI_TYPE, 
+                                      JackPortIsInput, 0);
+
     jack_position_t pos;
     memset(&pos, 0, sizeof(pos));
     jack_transport_stop(m_jack_client);
     jack_transport_reposition(m_jack_client, &pos);
-    m_input_port = jack_port_register(m_jack_client, "MIDI input", 
-                                      JACK_DEFAULT_MIDI_TYPE, 
-                                      JackPortIsInput, 0);
+    
+    if ((err = jack_activate(m_jack_client)) != 0)
+      return false;
+
     return true;
   }
   

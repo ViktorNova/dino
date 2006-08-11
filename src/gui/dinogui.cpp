@@ -418,6 +418,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
   Statusbar* sbar = manage(new Statusbar);
   sbar->set_has_resize_grip(false);
   vbox->pack_start(*sbar, PACK_SHRINK);
+  m_nb.set_border_width(3);
   
   // initialise the "About" dialog
   m_about_dialog.set_name("Dino");

@@ -1,10 +1,13 @@
 #ifndef RECORDER_HPP
 #define RECORDER_HPP
 
+#include <map>
+
 #include <sigc++/signal.h>
 #include <jack/jack.h>
 #include <jack/transport.h>
 
+#include "pattern.hpp"
 #include "ringbuffer.hpp"
 
 
@@ -60,7 +63,7 @@ namespace Dino {
     
     enum EventType {
       EventTypeTrackSet,
-      EventTypeBeat,
+      EventTypeTick,
       EventTypeStart,
       EventTypeStop,
       EventTypeRelocation,
@@ -71,7 +74,7 @@ namespace Dino {
       int track;
     };
     
-    struct EventBeat {
+    struct EventTick {
 
     };
     
@@ -97,7 +100,7 @@ namespace Dino {
       double beat;
       union {
         EventTrackSet track_set;
-        EventBeat beat_event;
+        EventTick tick_event;
         EventStart start;
         EventStop stop;
         EventRelocation relocation;
@@ -118,16 +121,22 @@ namespace Dino {
                         Track& track);
     void handle_note_off(double beat, unsigned char key, Track& track);
     void handle_controller(double beat, long param, int value, Track& track);
+    void record_cc_point(Pattern& pat, 
+                         Pattern::ControllerIterator& citer, 
+                         unsigned long step, int value);
     
     // variables that can only be accessed by the editing thread
     int m_track;
     Key m_keys[128];
     Song& m_song;
     int m_last_sid;
+    std::map<long, int> m_ctrl_values;
+    bool m_is_recording;
+    double m_last_edit_beat;
     
     // variables that can only be accessed by the audio thread
     bool m_track_set;
-    int m_last_beat;
+    int m_last_tick;
     jack_transport_state_t m_last_state;
     double m_expected_beat;
     jack_nframes_t m_expected_frame;

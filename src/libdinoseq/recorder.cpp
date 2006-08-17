@@ -3,6 +3,8 @@
 
 #include <glibmm.h>
 
+#include "controller.hpp"
+#include "interpolatedevent.hpp"
 #include "controller_numbers.hpp"
 #include "debug.hpp"
 #include "pattern.hpp"
@@ -25,8 +27,10 @@ namespace Dino {
     : m_track(0),
       m_song(song),
       m_last_sid(-1),
+      m_is_recording(false),
+      m_last_edit_beat(0),
       m_track_set(false),
-      m_last_beat(-666),
+      m_last_tick(-666),
       m_last_state(JackTransportStopped),
       m_to_audio(1024),
       m_from_audio(1024),
@@ -55,7 +59,7 @@ namespace Dino {
     Event e;
     while (m_from_audio.pop(e)) {
       
-      // if we are in a different sequence entry, stop all notes in the last
+      // if we are in a different sequence entry, stop all notes from the last
       int sid = -1;
       if (titer != m_song.tracks_end()) {
         Track::SequenceIterator siter = titer->seq_find(int(e.beat));
@@ -70,6 +74,58 @@ namespace Dino {
         }
       }
       m_last_sid = sid;
+      
+      // record controllers
+      if (titer != m_song.tracks_end() && m_is_recording && 
+          m_last_edit_beat < e.beat) {
+       
+        cerr<<m_last_edit_beat<<" -- "<<e.beat<<endl;
+        
+        // iterate over all beats that intersect with the period
+        int first_beat = int(floor(m_last_edit_beat));
+        int last_beat = int(floor(e.beat));
+        
+        cerr<<"["<<first_beat<<" -- "<<last_beat<<"]"<<endl;
+        
+        for (int beat = first_beat; beat <= last_beat; ++beat) {
+          
+          cerr<<beat<<":"<<endl;
+          
+          // is there a sequence entry at this beat?
+          Track::SequenceIterator siter = titer->seq_find(beat);
+          if (siter != titer->seq_end()) {
+            
+            Pattern& pat = siter->get_pattern();
+            unsigned int offset = siter->get_start();
+            unsigned int steps = pat.get_steps();
+            unsigned int first_step = (beat - offset) * steps;
+            if (first_step < (m_last_edit_beat - offset) * steps)
+              first_step = (unsigned int)ceil((m_last_edit_beat - offset) * 
+                                              steps);
+            unsigned int last_step = (beat - offset + 1) * steps - 1;
+            if (last_step >= (e.beat - offset) * steps)
+              last_step = (unsigned int)floor((e.beat - offset) * steps);
+            
+            cerr<<"<"<<first_step<<" -- "<<last_step<<">"<<endl;
+            
+            // iterate over the active controllers
+            map<long, int>::const_iterator miter;
+            for (miter = m_ctrl_values.begin(); miter != m_ctrl_values.end();
+                 ++miter) {
+              Pattern::ControllerIterator citer = pat.ctrls_find(miter->first);
+              if (citer != pat.ctrls_end()) {
+                for (unsigned int step = first_step; step <= last_step; ++step)
+                  record_cc_point(pat, citer, step, miter->second);
+                  //pat.remove_cc(citer, step);
+              }
+            }
+            
+            
+          }
+        }
+      }
+      
+      m_last_edit_beat = e.beat;
       
       switch (e.type) {
         
@@ -91,26 +147,36 @@ namespace Dino {
         }
         break;
         
-      case EventTypeBeat:
-        cerr<<"BEAT: "<<e.beat<<endl;
+      case EventTypeTick:
+        cerr<<"TICK: "<<e.beat<<endl;
         break;
         
       case EventTypeStart:
         cerr<<"START: "<<e.beat<<endl;
+        m_is_recording = true;
         break;
 
       case EventTypeStop:
         cerr<<"STOP: "<<e.beat<<endl;
+        
         if (titer != m_song.tracks_end()) {
+          
+          // release all held notes
           for (int i = 0; i < 128; ++i) {
             if (m_keys[i].held)
               handle_note_off(e.beat, i, *titer);
           }
+          
+          m_ctrl_values.clear();
+          m_is_recording = false;
         }
+        
+        
         break;
         
       case EventTypeRelocation:
         cerr<<"RELOCATION: "<<e.beat<<" -> "<<e.relocation.to<<endl;
+        m_last_edit_beat = e.relocation.to;
         if (titer != m_song.tracks_end()) {
           for (int i = 0; i < 128; ++i) {
             if (m_keys[i].held)
@@ -150,6 +216,7 @@ namespace Dino {
         break;
         
       }
+      
     }
   }
     
@@ -202,11 +269,11 @@ namespace Dino {
     if (state != JackTransportRolling || !m_track_set)
       return;
 
-    // send new beat
-    if (int(start_beat) != m_last_beat) {
-      Event e = { EventTypeBeat, start_beat };
+    // send new tick
+    if (int(start_beat * 8) != m_last_tick) {
+      Event e = { EventTypeTick, start_beat };
       m_from_audio.push(e);
-      m_last_beat = int(start_beat);
+      m_last_tick = int(start_beat * 8);
     }
     
     // send MIDI events
@@ -245,7 +312,8 @@ namespace Dino {
   }
 
   
-  void Recorder::handle_note_off(double beat, unsigned char key, Track& track) {
+  void Recorder::handle_note_off(double beat, unsigned char key, 
+                                 Track& track) {
     Key& k = m_keys[key];
     // XXX shouldn't use the ID, should connect to the seq_entry_removed 
     // signal instead
@@ -292,17 +360,40 @@ namespace Dino {
   
   void Recorder::handle_controller(double beat, long param, int value, 
                                    Track& track) {
-    Track::SequenceIterator siter = track.seq_find(int(beat));
-    if (siter != track.seq_end()) {
-      Pattern& pat = siter->get_pattern();
-      Pattern::ControllerIterator citer = pat.ctrls_find(param);
-      if (citer != pat.ctrls_end()) {
-        unsigned long step = (unsigned long)((beat - siter->get_start()) * 
-                                             pat.get_steps());
-        pat.add_cc(citer, step, value);
-      }
-    }
+    m_ctrl_values[param] = value;
   }
+
+
+  void Recorder::record_cc_point(Pattern& pat, 
+                                 Pattern::ControllerIterator& citer, 
+                                 unsigned long step, int value) {
+    cerr<<"adding "<<step<<", "<<value<<endl;
+    
+    const InterpolatedEvent* ev;
+
+    // check if we actually need to do anything
+    if ((step == 0 && (ev = citer->get_event(step)) && 
+         ev->get_start() == value) ||
+        ((ev = citer->get_event(step)) && ev->get_start() == value &&
+         ev->get_end() == value))
+      return;
+    
+    // else, check if we need to add guard points
+    if (step + 1 < citer->get_size() && (ev = citer->get_event(step + 1))) {
+      float v = ev->get_start() + (ev->get_end() - ev->get_start()) * 
+        (float(step + 1 - ev->get_step()) / ev->get_length());
+      pat.add_cc(citer, step + 1, int(v));
+    }
+    if (step > 0 && (ev = citer->get_event(step - 1))) {
+      float v = ev->get_start() + (ev->get_end() - ev->get_start()) * 
+        (float(step - 1 - ev->get_step()) / ev->get_length());
+      pat.add_cc(citer, step - 1, int(v));
+    }
+    
+    // add the actual point
+    pat.add_cc(citer, step, value);
+  }
+  
 
 }
 

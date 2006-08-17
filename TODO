@@ -20,7 +20,7 @@ Should be done before 0.2:
 
 Later (before 0.4?):
 
- [/] Record MIDI note events
+ [X] Record MIDI note events
  [/] Record MIDI CC and pitch bend events
  [X] Play loops, set loop points
  [ ] Support libmpmd or equivalent

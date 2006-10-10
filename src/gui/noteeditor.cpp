@@ -80,7 +80,7 @@ NoteEditor::NoteEditor()
     m_colormap->alloc_color(m_note_colors[i]);
     m_colormap->alloc_color(m_selected_note_colors[i]);
   }
-  m_layout = Layout::create(get_pango_context());
+  m_layout = Pango::Layout::create(get_pango_context());
   m_layout->set_text("127");
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | 
 	     BUTTON_MOTION_MASK | SCROLL_MASK | POINTER_MOTION_MASK);

@@ -1,3 +1,8 @@
+Version 0.2.2 (2006-10-10)
+	* Added namespace prefix Pango:: in a couple of places to avoid 
+	  ambiguity (Pango::Layout vs Gtk::Layout) that stopped the 
+	  compilation, reported by nedko on #lad
+
 Version 0.2.1 (2006-05-17)
 	* Added #include <cassert> in noteevent.hpp (reported by
 	  Apage43 on #lad)

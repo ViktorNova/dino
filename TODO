@@ -18,7 +18,7 @@ Should be done before 0.2:
  [X] Playing MIDI CC and pitch bend events
  [X] Duplicate patterns
 
-Later (before 0.4?):
+Should be done before 0.4:
 
  [X] Record MIDI note events
  [/] Record MIDI CC and pitch bend events
@@ -34,10 +34,11 @@ Crazy ideas:
  * Redesign the pattern and sequencer classes so there can be different pattern
    types with plugins (DSSI maybe?) that provides editor GUI and sequencing
    for particular pattern types. There could be drum patterns, 303-like 
-   monophonic patterns with slide and accent, free-form MIDI event patterns etc.
+   monophonic patterns with slide and accent, free-form MIDI event patterns 
+   etc.
 
- * Add OSC sequencing, both for CC-like control values and arbitrary OSC events.
-   (will probably not happen until JACK supports OSC)
+ * Add OSC sequencing, both for CC-like control values and arbitrary OSC 
+   events. (will probably not happen until JACK supports OSC)
 
  * Add export to Ogg Vorbis or other audio formats using JACK freewheeling 
    and recording.

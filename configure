@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Check that we have at least Bash 3.0 (need it for =~)
+if test $BASH_VERSINFO -lt 3; then
+    echo "You need Bash 3.0 or newer to run this script."
+    exit
+fi
+
 # First, print help message if needed
 for arg in "$@"; do
     if test "$arg" = "--help"; then

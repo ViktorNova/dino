@@ -280,7 +280,7 @@ namespace Dino {
    jack_midi_event_t input_event;
    jack_nframes_t input_event_index = 0;
    jack_nframes_t input_event_count = 
-     jack_midi_port_get_info(input_buf, nframes)->event_count;
+     jack_midi_get_event_count(input_buf, nframes);
    double bpf = pos.beats_per_minute / (60 * pos.frame_rate);
    for (unsigned int i = 0; i < input_event_count; ++i) {
      jack_midi_event_get(&input_event, input_buf, i, nframes);

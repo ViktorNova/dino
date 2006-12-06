@@ -28,7 +28,8 @@ namespace Dino {
                                  const std::string& name)
     : m_type(type),
       m_default(0),
-      m_name(name) {
+      m_name(name),
+      m_global(m_type != MIDI_PITCH) {
     if (m_type == MIDI_CC)
       m_default = 64;
     else if (m_type == MIDI_PITCH)
@@ -50,20 +51,31 @@ namespace Dino {
     return m_name;
   }
   
+  
+  bool ControllerInfo::get_global() const {
+    return m_global;
+  }
+  
     
   void ControllerInfo::set_type(ControllerType type) {
     m_type = type;
   }
   
   
-  void ControllerInfo::set_default(int default) {
-    m_default = default;
+  void ControllerInfo::set_default(int def) {
+    m_default = def;
   }
   
   
   void ControllerInfo::set_name(const std::string& name) {
     m_name = name;
   }
-
+  
+  
+  void ControllerInfo::set_global(bool global) {
+    m_global = global;
+  }
+  
+  
 }
 

@@ -20,8 +20,8 @@
 
 #include <iostream>
 
+#include "curve.hpp"
 #include "cceditor.hpp"
-#include "controller.hpp"
 #include "controller_numbers.hpp"
 #include "interpolatedevent.hpp"
 #include "pattern.hpp"

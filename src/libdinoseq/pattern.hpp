@@ -43,7 +43,7 @@ using namespace xmlpp;
 namespace Dino {
   
   
-  class Controller;
+  class Curve;
   class InterpolatedEvent;
   class MIDIBuffer;
   class Note;
@@ -108,17 +108,17 @@ namespace Dino {
     /** A ControllerIterator is a const_iterator type that can be used to
         access data from controllers in the pattern. */
     class ControllerIterator : 
-      public std::iterator<std::forward_iterator_tag, Controller> {
+      public std::iterator<std::forward_iterator_tag, Curve> {
     public:
       
       /** Create an invalid iterator. */
       ControllerIterator() { }
       
       /** Dereference the iterator to get a constant Controller reference. */
-      const Controller& operator*() const { return **m_iterator; }
+      const Curve& operator*() const { return **m_iterator; }
       /** Dereference the iterator to get a constant Controller pointer. */
-      const Controller* operator->() const { return *m_iterator; }
-      /** Returns @c true if the two iterators refer to the same Controller. */
+      const Curve* operator->() const { return *m_iterator; }
+      /** Returns @c true if the two iterators refer to the same Curve. */
       bool operator==(const ControllerIterator& iter) const {
         return (m_iterator == iter.m_iterator);
       }
@@ -133,11 +133,11 @@ namespace Dino {
       
       friend class Pattern;
 
-      ControllerIterator(const std::vector<Controller*>::iterator& iter) 
+      ControllerIterator(const std::vector<Curve*>::iterator& iter) 
         : m_iterator(iter) { 
       }
       
-      std::vector<Controller*>::iterator m_iterator;
+      std::vector<Curve*>::iterator m_iterator;
     };
 
     /** Create a new pattern. */
@@ -264,13 +264,13 @@ namespace Dino {
         thread safety). */
     struct SeqData {
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
-              std::vector<Controller*>* controllers,
+              std::vector<Curve*>* controllers,
               unsigned int l, unsigned int s);
       ~SeqData();
       
       NoteEventList* ons;
       NoteEventList* offs;
-      std::vector<Controller*>* ctrls;
+      std::vector<Curve*>* ctrls;
       unsigned int length;
       unsigned int steps;
     };

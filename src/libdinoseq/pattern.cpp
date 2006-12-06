@@ -26,7 +26,7 @@
 #include <iostream>
 #include <set>
 
-#include "controller.hpp"
+#include "curve.hpp"
 #include "controller_numbers.hpp"
 #include "debug.hpp"
 #include "deleter.hpp"
@@ -121,7 +121,7 @@ namespace Dino {
       m_name(name),
       m_sd(new SeqData(new NoteEventList(length * steps),
                        new NoteEventList(length * steps),
-                       new vector<Controller*>(), length, steps)),
+                       new vector<Curve*>(), length, steps)),
       m_dirty(false) {
     
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
@@ -141,7 +141,7 @@ namespace Dino {
       m_name(pat.get_name()),
       m_sd(new SeqData(new NoteEventList(pat.get_length() * pat.get_steps()),
                        new NoteEventList(pat.get_length() * pat.get_steps()),
-                       new vector<Controller*>(), 
+                       new vector<Curve*>(), 
                        pat.get_length(), pat.get_steps())),
       m_dirty(false) {
 
@@ -269,17 +269,17 @@ namespace Dino {
     
     NoteEventList* new_note_ons = new NoteEventList(*m_sd->ons);
     NoteEventList* new_note_offs = new NoteEventList(*m_sd->offs);
-    vector<Controller*>* new_controllers = new vector<Controller*>();
+    vector<Curve*>* new_controllers = new vector<Curve*>();
     
     new_note_ons->resize(length * m_sd->steps);
     new_note_offs->resize(length * m_sd->steps);
     
     // iterate over all controllers
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-      const Controller* c = (*m_sd->ctrls)[i];
+      const Curve* c = (*m_sd->ctrls)[i];
       
       // create a new controller with the same settings but different size
-      Controller* new_c = new Controller(c->get_name(), length * m_sd->steps,
+      Curve* new_c = new Curve(c->get_name(), length * m_sd->steps,
                                          c->get_param(), 
                                          c->get_min(), c->get_max());
       new_controllers->push_back(new_c);
@@ -312,7 +312,7 @@ namespace Dino {
     // allocate new data structures
     NoteEventList* new_note_ons = new NoteEventList(steps * m_sd->length);
     NoteEventList* new_note_offs = new NoteEventList(steps * m_sd->length);
-    vector<Controller*>* new_controllers = new vector<Controller*>();
+    vector<Curve*>* new_controllers = new vector<Curve*>();
     
     // copy information about the notes
     NoteIterator iter;
@@ -333,10 +333,10 @@ namespace Dino {
     
     // iterate over all controllers in the old controller list
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-      const Controller* c = (*m_sd->ctrls)[i];
+      const Curve* c = (*m_sd->ctrls)[i];
       
       // create a new controller with the same settings but different size
-      Controller* new_c = new Controller(c->get_name(), m_sd->length * steps,
+      Curve* new_c = new Curve(c->get_name(), m_sd->length * steps,
                                          c->get_param(), 
                                          c->get_min(), c->get_max());
       new_controllers->push_back(new_c);
@@ -570,13 +570,13 @@ namespace Dino {
     }
     
     // make a copy of the controller vector and insert the new one
-    vector<Controller*>* new_vector = new vector<Controller*>(*m_sd->ctrls);
+    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->ctrls);
     new_vector->insert(new_vector->begin() + i, 
-                       new Controller(name, m_sd->steps * m_sd->length, 
+                       new Curve(name, m_sd->steps * m_sd->length, 
                                       param, min, max));
     
     // delete the old vector
-    vector<Controller*>* tmp = m_sd->ctrls;
+    vector<Curve*>* tmp = m_sd->ctrls;
     m_sd->ctrls = new_vector;
     Deleter::queue(tmp);
     
@@ -598,12 +598,12 @@ namespace Dino {
       return;
     
     // make a copy of the old vector
-    vector<Controller*>* new_vector = new vector<Controller*>(*m_sd->ctrls);
+    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->ctrls);
     long param = (*m_sd->ctrls)[i]->get_param();
     new_vector->erase(new_vector->begin() + i);
     
     // delete the old vector
-    vector<Controller*>* tmp = m_sd->ctrls;
+    vector<Curve*>* tmp = m_sd->ctrls;
     m_sd->ctrls = new_vector;
     Deleter::queue(tmp);
     
@@ -933,7 +933,7 @@ namespace Dino {
 
 
   Pattern::SeqData::SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
-                            std::vector<Controller*>* controllers,
+                            std::vector<Curve*>* controllers,
                             unsigned int l, unsigned int s)
     : ons(note_ons), offs(note_offs), ctrls(controllers),
       length(l), steps(s) {

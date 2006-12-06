@@ -41,16 +41,19 @@ namespace Dino {
     ControllerType get_type() const;
     int get_default() const;
     const std::string& get_name() const;
+    bool get_global() const;
     
     void set_type(ControllerType type);
     void set_default(int def);
     void set_name(const std::string& name);
+    void set_global(bool global);
     
   protected:
     
     ControllerType m_type;
     int m_default;
     std::string m_name;
+    bool m_global;
     
   };
 

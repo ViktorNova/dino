@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.80
+PACKAGE_VERSION = 0.3.81
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -37,8 +37,9 @@ LIBRARIES = libdinoseq.so libdinoseq_gui.so
 # The library with the sequencer and the song structures
 libdinoseq_so_SOURCES = \
 	cdtree.hpp \
+	controllerinfo.cpp \
 	controller_numbers.hpp \
-	controller.cpp controller.hpp \
+	curve.cpp curve.hpp \
 	debug.cpp debug.hpp \
 	deleter.hpp \
 	instrumentinfo.cpp \
@@ -58,8 +59,9 @@ libdinoseq_so_SOURCES = \
 	xmlserialisable.hpp
 libdinoseq_so_HEADERS = \
 	cdtree.hpp \
+	controllerinfo.hpp \
 	controller_numbers.hpp \
-	controller.hpp \
+	curve.hpp \
 	debug.hpp \
 	deleter.hpp \
 	instrumentinfo.hpp \

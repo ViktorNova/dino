@@ -18,8 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef CONTROLLER_HPP
-#define CONTROLLER_HPP
+#ifndef CURVE_HPP
+#define CURVE_HPP
 
 #include <string>
 #include <vector>
@@ -32,13 +32,13 @@ namespace Dino {
   
   
   /** This class represents a sequence of MIDI CC events used in a Pattern. */
-  class Controller {
+  class Curve {
   public:
 
     /** Create a new controller with the given parameters. */
-    Controller(const std::string& name, unsigned int size, 
+    Curve(const std::string& name, unsigned int size, 
 	       long param, int min, int max);
-    ~Controller();
+    ~Curve();
     
     /// @name Accessors
     //@{
@@ -51,8 +51,8 @@ namespace Dino {
     /** Return the maximum possible value for this controller. */
     int get_max() const;
     /** Return the parameter number for this controller (not the same as the
-	CC or NRPN number, use the inline functions in controller_numbers.hpp
-	to get those). */
+        CC or NRPN number, use the inline functions in controller_numbers.hpp
+        to get those). */
     long get_param() const;
     /** Return the number of time steps in this controller. */
     unsigned int get_size() const;

@@ -3,7 +3,7 @@
 
 #include <glibmm.h>
 
-#include "controller.hpp"
+#include "curve.hpp"
 #include "interpolatedevent.hpp"
 #include "controller_numbers.hpp"
 #include "debug.hpp"

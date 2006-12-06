@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-#include "controller.hpp"
+#include "curve.hpp"
 #include "controllerdialog.hpp"
 #include "controller_numbers.hpp"
 #include "evilscrolledwindow.hpp"

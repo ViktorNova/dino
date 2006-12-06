@@ -18,11 +18,14 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef CONTROLLERINFO_HPP
-#define CONTROLLERINFO_HPP
+#ifndef INSTRUMENTINFO_HPP
+#define INSTRUMENTINFO_HPP
 
 
 #include <string>
+#include <vector>
+
+#include "controllerinfo.hpp"
 
 
 namespace Dino {
@@ -38,14 +41,15 @@ namespace Dino {
     
     const std::string& get_name() const;
     bool get_connected() const;
+    const std::vector<ControllerInfo>& get_controllers() const;
     
     void set_connected(bool connected);
     
   protected:
     
     std::string m_name;
+    std::vector<ControllerInfo> m_ctrls;
     bool m_connected;
-
   };
   
 

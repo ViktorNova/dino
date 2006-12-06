@@ -18,44 +18,44 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#include "instrumentinfo.hpp"
+#ifndef CONTROLLERINFO_HPP
+#define CONTROLLERINFO_HPP
+
+
+#include <string>
 
 
 namespace Dino {
   
-
-  InstrumentInfo::InstrumentInfo(const std::string& str)
-    : m_name(str),
-      m_connected(false) {
-
-  }
+  enum ControllerType {
+    MIDI_CC,
+    MIDI_PITCH,
+  };
   
   
-  InstrumentInfo::InstrumentInfo(const char* str)
-    : m_name(str),
-      m_connected(false) {
-
-  }
-
-
-  const std::string& InstrumentInfo::get_name() const {
-    return m_name;
-  }
-  
-  
-  bool InstrumentInfo::get_connected() const {
-    return m_connected;
-  }
-  
-  
-  const std::vector<ControllerInfo>& InstrumentInfo::get_controllers() const {
-    return m_ctrls;
-  }
-  
-  
-  void InstrumentInfo::set_connected(bool connected) {
-    m_connected = connected;
-  }
+  class ControllerInfo {
+  public:
     
+    ControllerInfo(const ControllerType& type, const std::string& name);
+    
+    ControllerType get_type() const;
+    int get_default() const;
+    const std::string& get_name() const;
+    
+    void set_type(ControllerType type);
+    void set_default(int def);
+    void set_name(const std::string& name);
+    
+  protected:
+    
+    ControllerType m_type;
+    int m_default;
+    std::string m_name;
+    
+  };
+
 
 }
+
+
+#endif

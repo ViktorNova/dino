@@ -18,44 +18,52 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#include "instrumentinfo.hpp"
+#include "controllerinfo.hpp"
 
 
 namespace Dino {
   
-
-  InstrumentInfo::InstrumentInfo(const std::string& str)
-    : m_name(str),
-      m_connected(false) {
-
-  }
   
-  
-  InstrumentInfo::InstrumentInfo(const char* str)
-    : m_name(str),
-      m_connected(false) {
-
-  }
-
-
-  const std::string& InstrumentInfo::get_name() const {
-    return m_name;
-  }
-  
-  
-  bool InstrumentInfo::get_connected() const {
-    return m_connected;
-  }
-  
-  
-  const std::vector<ControllerInfo>& InstrumentInfo::get_controllers() const {
-    return m_ctrls;
-  }
-  
-  
-  void InstrumentInfo::set_connected(bool connected) {
-    m_connected = connected;
+  ControllerInfo::ControllerInfo(const ControllerType& type, 
+                                 const std::string& name)
+    : m_type(type),
+      m_default(0),
+      m_name(name) {
+    if (m_type == MIDI_CC)
+      m_default = 64;
+    else if (m_type == MIDI_PITCH)
+      m_default = 8192;
   }
     
 
+  ControllerType ControllerInfo::get_type() const {
+    return m_type;
+  }
+  
+  
+  int ControllerInfo::get_default() const {
+    return m_default;
+  }
+  
+  
+  const std::string& ControllerInfo::get_name() const {
+    return m_name;
+  }
+  
+    
+  void ControllerInfo::set_type(ControllerType type) {
+    m_type = type;
+  }
+  
+  
+  void ControllerInfo::set_default(int default) {
+    m_default = default;
+  }
+  
+  
+  void ControllerInfo::set_name(const std::string& name) {
+    m_name = name;
+  }
+
 }
+

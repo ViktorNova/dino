@@ -131,7 +131,7 @@ namespace Dino {
   }
 
 
-  vector<Sequencer::InstrumentInfo> 
+  vector<InstrumentInfo> 
   Sequencer::get_instruments(int track) const {
     vector<InstrumentInfo> instruments;
     if (m_jack_client) {
@@ -154,7 +154,7 @@ namespace Dino {
   for (size_t i = 0; ports[i]; ++i) {
     InstrumentInfo ii = ports[i];
     if (connected_instrument == ports[i])
-      ii.connected = true;
+      ii.set_connected(true);
     instruments.push_back(ii);
   }
   free(ports);

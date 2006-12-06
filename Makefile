@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.78
+PACKAGE_VERSION = 0.3.79
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -41,6 +41,7 @@ libdinoseq_so_SOURCES = \
 	controller.cpp controller.hpp \
 	debug.cpp debug.hpp \
 	deleter.hpp \
+	instrumentinfo.cpp \
 	interpolatedevent.cpp interpolatedevent.hpp \
 	midibuffer.cpp midibuffer.hpp \
 	note.cpp note.hpp \
@@ -61,6 +62,7 @@ libdinoseq_so_HEADERS = \
 	controller.hpp \
 	debug.hpp \
 	deleter.hpp \
+	instrumentinfo.hpp \
 	interpolatedevent.hpp \
 	midibuffer.hpp \
 	note.hpp \

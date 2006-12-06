@@ -29,6 +29,7 @@
 #include <jack/jack.h>
 
 #include "debug.hpp"
+#include "instrumentinfo.hpp"
 #include "recorder.hpp"
 #include "ringbuffer.hpp"
 #include "song.hpp"
@@ -50,14 +51,6 @@ namespace Dino {
       to one of those instruments. */
   class Sequencer : public sigc::trackable {
   public:
-  
-    /** This struct contains information about a writable MIDI port. */
-    struct InstrumentInfo {
-      InstrumentInfo(const string& str) : name(str), connected(false) { }
-      InstrumentInfo(const char* str) : name(str), connected(false) { }
-      string name;
-      bool connected;
-    };
   
     /** This will create a new Sequencer object with the JACK client name 
   @c client_name and the Song object @c song. */

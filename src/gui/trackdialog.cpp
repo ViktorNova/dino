@@ -82,9 +82,9 @@ void TrackDialog::update_ports(const Dino::Sequencer* seq) {
   m_cmb_port.append_text("None", -1);
   m_cmb_port.set_active_id(-1);
   if (seq != 0) {
-    vector<Sequencer::InstrumentInfo> info = seq->get_instruments();
+    vector<InstrumentInfo> info = seq->get_instruments();
     for (size_t i = 0; i < info.size(); ++i)
-      m_cmb_port.append_text(info[i].name, i);
+      m_cmb_port.append_text(info[i].get_name(), i);
   }
 }
 

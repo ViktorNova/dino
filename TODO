@@ -26,10 +26,14 @@ Should be done before 0.4:
  [ ] Support libmpmd or equivalent
  [X] Wrap libdinoseq in Python
  [ ] Embed a Python interpreter
- [ ] Add track controllers (same as pattern controllers, but not bound to a 
+ [/] Add track controllers (same as pattern controllers, but not bound to a 
      pattern)
  
 Crazy ideas:
+
+ * Store different arrangements in a song and add functions for switching 
+   between them to allow for things like live looping and "export pattern
+   to audio file" without changing the main arrangement
 
  * Redesign the pattern and sequencer classes so there can be different pattern
    types with plugins (DSSI maybe?) that provides editor GUI and sequencing

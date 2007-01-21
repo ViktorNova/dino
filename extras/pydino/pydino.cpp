@@ -1,5 +1,5 @@
 #include <boost/python.hpp>
-#include <controller.hpp>
+#include <curve.hpp>
 #include <controller_numbers.hpp>
 #include <interpolatedevent.hpp>
 #include <note.hpp>
@@ -21,8 +21,12 @@ using namespace Dino;
 // C++ workarounds for weird Boost.Python errors
 namespace {
   
-  std::string Controller_get_name(Controller& c) {
+  std::string Curve_get_name(Curve& c) {
     return c.get_name();
+  }
+  
+  std::string InstrumentInfo_get_name(InstrumentInfo& ii) {
+    return ii.get_name();
   }
   
   std::string Pattern_get_name(Pattern& p) {
@@ -33,7 +37,7 @@ namespace {
     return *p.find_note(step, key);
   }
 
-  const Controller& Pattern_ctrls_find(Pattern&p, long param) {
+  const Curve& Pattern_ctrls_find(Pattern&p, long param) {
     return *p.ctrls_find(param);
   }
   
@@ -131,7 +135,7 @@ namespace {
   
   boost::python::list Sequencer_get_instruments(Sequencer& seq) {
     boost::python::list result;
-    std::vector<Dino::Sequencer::InstrumentInfo> instrs = seq.get_instruments();
+    std::vector<Dino::InstrumentInfo> instrs = seq.get_instruments();
     for (unsigned i = 0; i < instrs.size(); ++i)
       result.append(instrs[i]);
     return result;
@@ -254,7 +258,7 @@ BOOST_PYTHON_MODULE(dino) {
   
   // Define all classes first so we can use the converters for return values
   // and arguments
-  class_<Controller> _Controller("Controller", 
+  class_<Curve> _Curve("Curve", 
 				 init<const std::string, unsigned int,
 				 long, int, int>());
   class_<InterpolatedEvent> _InterpolatedEvent("InterpolatedEvent",
@@ -277,7 +281,7 @@ BOOST_PYTHON_MODULE(dino) {
   class_<Sequencer> _Sequencer("Sequencer", init<const std::string&, Song&>()
 			       [with_custodian_and_ward<1, 3>()]);
   scope* SequencerScope = new scope(_Sequencer);
-  class_<Sequencer::InstrumentInfo> _InstrumentInfo("InstrumentInfo",
+  class_<InstrumentInfo> _InstrumentInfo("InstrumentInfo",
 						    init<const std::string&>());
   delete SequencerScope;
   class_<Song, boost::noncopyable> _Song("Song", init<>());
@@ -302,17 +306,17 @@ BOOST_PYTHON_MODULE(dino) {
   def("make_pbend", &make_pbend);
   def("is_pbend", &is_pbend);
   
-  // Dino::Controller
-  _Controller.add_property("name", &Controller_get_name, 
-				&Controller::set_name);
-  _Controller.def("get_event", &Controller::get_event, 
+  // Dino::Curve
+  _Curve.add_property("name", &Curve_get_name, 
+				&Curve::set_name);
+  _Curve.def("get_event", &Curve::get_event, 
 		  return_internal_reference<1>());
-  _Controller.add_property("min", &Controller::get_min);
-  _Controller.add_property("max", &Controller::get_max);
-  _Controller.add_property("param", &Controller::get_param);
-  _Controller.add_property("size", &Controller::get_size);
-  _Controller.def("add_point", &Controller::add_point);
-  _Controller.def("remove_point", &Controller::remove_point);
+  _Curve.add_property("min", &Curve::get_min);
+  _Curve.add_property("max", &Curve::get_max);
+  _Curve.add_property("param", &Curve::get_param);
+  _Curve.add_property("size", &Curve::get_size);
+  _Curve.def("add_point", &Curve::add_point);
+  _Curve.def("remove_point", &Curve::remove_point);
   
   // Dino::InterpolatedEvent
   _InterpolatedEvent.add_property("step", &InterpolatedEvent::get_step,
@@ -416,10 +420,10 @@ BOOST_PYTHON_MODULE(dino) {
   _Sequencer.def("signal_instruments_changed", 
 		 &Sequencer_signal_instruments_changed);
   
-  // Dino::Sequencer::InstrumentInfo
-  _InstrumentInfo.def_readwrite("name", &Sequencer::InstrumentInfo::name);
-  _InstrumentInfo.def_readwrite("connected", 
-				&Sequencer::InstrumentInfo::connected);
+  // Dino::InstrumentInfo
+  _InstrumentInfo.def_readonly("name", &InstrumentInfo_get_name);
+  _InstrumentInfo.add_property("connected", &InstrumentInfo::get_connected,
+                               &InstrumentInfo::set_connected);
   
   // Dino::Song
   _Song.add_property("title", &Song_get_title, &Song::set_title);

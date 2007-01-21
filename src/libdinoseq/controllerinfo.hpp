@@ -40,11 +40,15 @@ namespace Dino {
     
     ControllerType get_type() const;
     int get_default() const;
+    int get_min() const;
+    int get_max() const;
     const std::string& get_name() const;
     bool get_global() const;
     
     void set_type(ControllerType type);
     void set_default(int def);
+    void set_min(int min);
+    void set_max(int max);
     void set_name(const std::string& name);
     void set_global(bool global);
     
@@ -52,6 +56,8 @@ namespace Dino {
     
     ControllerType m_type;
     int m_default;
+    int m_min;
+    int m_max;
     std::string m_name;
     bool m_global;
     

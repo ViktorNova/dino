@@ -28,6 +28,7 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
+#include "controllerinfo.hpp"
 #include "xmlserialisable.hpp"
 
 
@@ -229,6 +230,7 @@ namespace Dino {
     int m_id;
     string m_name;
     map<int, Pattern*> m_patterns;
+    vector<ControllerInfo> m_controllers;
     int m_next_sid;
     volatile int m_channel;
     vector<SequenceEntry*>* volatile m_sequence;

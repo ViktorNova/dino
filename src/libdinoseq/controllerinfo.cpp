@@ -27,13 +27,16 @@ namespace Dino {
   ControllerInfo::ControllerInfo(const ControllerType& type, 
                                  const std::string& name)
     : m_type(type),
-      m_default(0),
+      m_default(64),
+      m_min(0),
+      m_max(127),
       m_name(name),
       m_global(m_type != MIDI_PITCH) {
-    if (m_type == MIDI_CC)
-      m_default = 64;
-    else if (m_type == MIDI_PITCH)
+
+    if (m_type == MIDI_PITCH) {
       m_default = 8192;
+      m_max = 16383;
+    }
   }
     
 
@@ -44,6 +47,16 @@ namespace Dino {
   
   int ControllerInfo::get_default() const {
     return m_default;
+  }
+  
+  
+  int ControllerInfo::get_min() const {
+    return m_min;
+  }
+  
+  
+  int ControllerInfo::get_max() const {
+    return m_max;
   }
   
   
@@ -67,6 +80,16 @@ namespace Dino {
   }
   
   
+  void ControllerInfo::set_min(int min) {
+    m_min = min;
+  }
+  
+
+  void ControllerInfo::set_max(int max) {
+    m_max = max;
+  }
+  
+
   void ControllerInfo::set_name(const std::string& name) {
     m_name = name;
   }

@@ -54,11 +54,11 @@ $$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS)
 	ar rcs $$@ $$^ $(LDFLAGS) $$($(2)_LDFLAGS)
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
-	mkdir -p $(pkgincludedir)
-	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(pkgincludedir)
+	mkdir -p $(DESTDIR)/$(pkgincludedir)
+	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(DESTDIR)/$(pkgincludedir)
 
 install-$(2): $$($(2)_BLDPRF)/$(1) $$(if $$($(2)_HEADERS),install-$(2)-headers)
-	mkdir -p $$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1) $$($(2)_INSTDIR)
+	mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1) $(DESTDIR)/$$($(2)_INSTDIR)
 
 endef
 bad_archives = $(filter-out lib%.a,$(ARCHIVES))
@@ -98,11 +98,11 @@ $$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $(ARCHIVES_REAL)
 	$(CXX) -shared -fPIC $$^ $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
-	mkdir -p $(pkgincludedir)
-	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(pkgincludedir)
+	mkdir -p $(DESTDIR)/$(pkgincludedir)
+	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(DESTDIR)/$(pkgincludedir)
 
 install-$(2): $$($(2)_BLDPRF)/$(1) $$(if $$($(2)_HEADERS),install-$(2)-headers)
-	mkdir -p $$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1) $$($(2)_INSTDIR)
+	mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1) $(DESTDIR)/$$($(2)_INSTDIR)
 
 endef
 bad_libraries = $(filter-out lib%.so,$(LIBRARIES))
@@ -151,8 +151,8 @@ $$($(2)_BLDPRF)/$(1): $$($(2)_LIBNAME) $$($(2)_FULLDATA) $$(patsubst %,$$($(2)_S
 	$$(if $$($(2)_FULLDATA),cp $$($(2)_FULLDATA) $$($(2)_BLDPRF)/$(1), )
 
 install-$(2): $$($(2)_BLDPRF)/$(1) $$(if $$($(2)_HEADERS),install-$(2)-headers)
-	rm -rf $$($(2)_INSTDIR)/$(1)
-	mkdir -p $$($(2)_INSTDIR) && cp -R $$($(2)_BLDPRF)/$(1) $$($(2)_INSTDIR)
+	rm -rf $(DESTDIR)/$$($(2)_INSTDIR)/$(1)
+	mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp -R $$($(2)_BLDPRF)/$(1) $(DESTDIR)/$$($(2)_INSTDIR)
 
 endef
 $(foreach lv2,$(LV2_PLUGINS),$(eval $(call LV2_PLUGIN_template,$(lv2),$(subst .,_,$(lv2)))))
@@ -186,11 +186,11 @@ $$($(1)_BLDPRF)/$(1): $$($(1)_OBJECTS) $(LIBRARIES_REAL) $(ARCHIVES_REAL)
 	$(CXX) $$($(1)_OBJECTS) $(LDFLAGS) $$($(1)_LDFLAGS) -o $$@
 
 install-$(1)-headers: $$(patsubst %,$$($(1)_SRCPRF)/%,$$($(1)_HEADERS))
-	mkdir -p $(pkgincludedir)
-	cp $$(patsubst %,$$($(1)_SRCPRF)/%,$$($(1)_HEADERS)) $(pkgincludedir)
+	mkdir -p $(DESTDIR)/$(pkgincludedir)
+	cp $$(patsubst %,$$($(1)_SRCPRF)/%,$$($(1)_HEADERS)) $(DESTDIR)/$(pkgincludedir)
 
 install-$(1): $$($(1)_BLDPRF)/$(1) $$(if $$($(1)_HEADERS),install-$(1)-headers)
-	mkdir -p $(bindir) && cp $$($(1)_BLDPRF)/$(1) $(bindir)
+	mkdir -p $(DESTDIR)/$(bindir) && cp $$($(1)_BLDPRF)/$(1) $(DESTDIR)/$(bindir)
 endef
 $(foreach prog,$(PROGRAMS),$(eval $(call PROGRAM_template,$(prog))))
 # END OF PROGRAMS
@@ -224,11 +224,11 @@ $$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $(LIBRARIES_REAL) $(ARCHIVES_REAL)
 	$(CXX) -shared -fPIC $$($(2)_OBJECTS)  $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
-	mkdir -p $(pkgincludedir)
-	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(pkgincludedir)
+	mkdir -p $(DESTDIR)/$(pkgincludedir)
+	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(DESTDIR)/$(pkgincludedir)
 
 install-$(2): $$($(2)_BLDPRF)/$(1) $$(if $$($(2)_HEADERS),install-$(2)-headers)
-	mkdir -p $$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1) $$($(2)_INSTDIR)
+	mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1) $(DESTDIR)/$$($(2)_INSTDIR)
 
 endef
 $(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod),$(subst .,_,$(mod)))))
@@ -262,23 +262,23 @@ install-libraries: $(patsubst %,install-%,$(subst .,_,$(LIBRARIES)))
 install-lv2-plugins: $(patsubst %,install-%,$(subst .,_,$(LV2_PLUGINS)))
 
 install-data: $(DATA)
-	$(if $(DATA),mkdir -p $(pkgdatadir))
-	$(if $(DATA),cp $(DATA) $(pkgdatadir))
+	$(if $(DATA),mkdir -p $(DESTDIR)/$(pkgdatadir))
+	$(if $(DATA),cp $(DATA) $(DESTDIR)/$(pkgdatadir))
 
 install-docs: $(DOCS)
-	$(if $(DOCS),mkdir -p $(pkgdocdir))
-	$(if $(DOCS),cp $(DOCS) $(pkgdocdir))
+	$(if $(DOCS),mkdir -p $(DESTDIR)/$(pkgdocdir))
+	$(if $(DOCS),cp $(DOCS) $(DESTDIR)/$(pkgdocdir))
 
 install-pcfiles: $(PCFILES)
-	$(if $(PCFILES),mkdir -p $(libdir)/pkgconfig)
+	$(if $(PCFILES),mkdir -p $(DESTDIR)/$(libdir)/pkgconfig)
 	$(if $(PCFILES),@echo Installing pkg-config-files...)
-	@$(foreach pcf,$(PCFILES),echo PACKAGE_NAME = $(PACKAGE_NAME) > $(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo PACKAGE_VERSION = $(PACKAGE_VERSION) >> $(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo libdir = $(libdir) >> $(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo pkglibdir = $(pkglibdir) >> $(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo includedir = $(includedir) >> $(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo pkgincludedir = $(pkgincludedir) >> $(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),cat $(pcf) >> $(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),echo PACKAGE_NAME = $(PACKAGE_NAME) > $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),echo PACKAGE_VERSION = $(PACKAGE_VERSION) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),echo libdir = $(libdir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),echo pkglibdir = $(pkglibdir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),echo includedir = $(includedir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),echo pkgincludedir = $(pkgincludedir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),cat $(pcf) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
 
 install: install-libraries install-modules install-programs install-lv2-plugins install-data install-docs install-pcfiles
 

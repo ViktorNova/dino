@@ -30,6 +30,7 @@
 
 #include "controllerinfo.hpp"
 #include "xmlserialisable.hpp"
+#include "sequencable.hpp"
 
 
 using namespace Glib;
@@ -49,7 +50,7 @@ namespace Dino {
       and how that instrument is played. It has a list of patterns, and a
       sequence that says when those patterns are played. 
   */
-  class Track : public XMLSerialisable {
+  class Track : public XMLSerialisable, public Sequencable {
   public:
     
     /** This struct contains information about a sequence entry, i.e. a
@@ -209,7 +210,8 @@ namespace Dino {
     
     /// @name Sequencing
     //@{
-    void sequence(MIDIBuffer& buffer, double from, double to) const;
+    void sequence(MIDIBuffer& buffer, double from, double to,
+		  unsigned int length, int channel) const;
     //@}
     
   public:

@@ -31,7 +31,8 @@ namespace Dino {
     : m_buffer(port_buffer),
       m_start_beat(start_beat),
       m_bpm(bpm),
-      m_samplerate(framerate) { 
+      m_samplerate(framerate),
+      m_offset(0) { 
   
   }
     
@@ -51,9 +52,14 @@ namespace Dino {
   }
   
   
+  void MIDIBuffer::set_offset(double offset) {
+    m_offset = offset;
+  }
+  
+  
   unsigned char* MIDIBuffer::reserve(double beat, size_t data_size) {
     // XXX optimise this
-    jack_nframes_t timestamp = jack_nframes_t((beat - m_start_beat) * 
+    jack_nframes_t timestamp = jack_nframes_t((beat + m_offset - m_start_beat) *
                                               m_samplerate * 60 / m_bpm);
     return jack_midi_event_reserve(m_buffer, timestamp, data_size, m_nframes);
   }
@@ -62,7 +68,7 @@ namespace Dino {
   int MIDIBuffer::write(double beat, const 
       unsigned char* data, size_t data_size) {
     // XXX optimise this
-    jack_nframes_t timestamp = jack_nframes_t((beat - m_start_beat) * 
+    jack_nframes_t timestamp = jack_nframes_t((beat + m_offset - m_start_beat) *
                                               m_samplerate * 60 / m_bpm);
     return jack_midi_event_write(m_buffer, timestamp, (jack_midi_data_t*)data, 
                                  data_size, m_nframes);

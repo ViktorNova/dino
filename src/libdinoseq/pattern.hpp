@@ -31,6 +31,7 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
+#include "sequencable.hpp"
 #include "xmlserialisable.hpp"
 
 
@@ -55,7 +56,7 @@ namespace Dino {
   /** This class stores information about a pattern. A pattern is a sequence of
       notes and MIDI control changes which can be played at a certain time
       by the sequencer. */
-  class Pattern : public XMLSerialisable {
+  class Pattern : public XMLSerialisable, public Sequencable {
   public:
     
     /** This class is used to access the note data in a Pattern.
@@ -223,7 +224,7 @@ namespace Dino {
     
     /// @name Sequencing
     //@{
-    void sequence(MIDIBuffer& buffer, double from, double to, double offset, 
+    void sequence(MIDIBuffer& buffer, double from, double to,
                   unsigned int pattern_length, int channel) const;
     //@}
     

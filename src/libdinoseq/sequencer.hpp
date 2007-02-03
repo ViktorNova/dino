@@ -89,6 +89,12 @@ namespace Dino {
     
     //@}
     
+    /** Add a new sequencable object to the sequencer. */
+    bool add_sequencable(Sequencable& sqb);
+    
+    /** Remove a sequencable object from the sequencer. */
+    bool remove_sequencable(Sequencable& sqb);
+    
     /// @name Signals
     //@{
     sigc::signal<void, int>& signal_beat_changed();

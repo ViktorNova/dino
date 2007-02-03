@@ -623,7 +623,8 @@ namespace Dino {
   }
 
 
-  void Track::sequence(MIDIBuffer& buffer, double from, double to) const {
+  void Track::sequence(MIDIBuffer& buffer, double from, double to,
+		       unsigned int length, int channel) const {
     assert(from >= 0);
     assert(to >= 0);
     
@@ -638,9 +639,9 @@ namespace Dino {
     while (beat < to) {
       if (sequence[beat]) {
         SequenceEntry* const& se = sequence[beat];
+	buffer.set_offset(se->start);
         se->pattern->sequence(buffer, from - se->start, 
-                              to - se->start, se->start, 
-                              se->length, m_channel);
+                              to - se->start, se->length, m_channel);
         beat += sequence[beat]->start + sequence[beat]->length - beat;
       }
       else {

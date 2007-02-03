@@ -780,8 +780,7 @@ namespace Dino {
   
   
   void Pattern::sequence(MIDIBuffer& buffer, double from, double to, 
-                         double offset, unsigned int pattern_length, 
-                         int channel) const {
+                         unsigned int pattern_length, int channel) const {
     unsigned long cc_steps = 0;
     
     // need to copy this because the editing thread might change it
@@ -800,8 +799,7 @@ namespace Dino {
       NoteEvent* event = (*sd->ons)[step];
       if (step / double(sd->steps) >= from) {
         while (event) {
-          unsigned char* data = buffer.reserve(offset+ step / double(sd->steps),
-                                               3);
+          unsigned char* data = buffer.reserve(step / double(sd->steps), 3);
           if (data) {
             memcpy(data, event->get_data(), 3);
             data[0] |= (unsigned char)channel;
@@ -818,7 +816,7 @@ namespace Dino {
           const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
           if (event) {
             unsigned char* data = buffer.
-              reserve(offset + cc_pos, 3);
+              reserve(cc_pos, 3);
             if (data && is_cc((*sd->ctrls)[c]->get_param())) {
               data[0] = 0xB0 | (unsigned char)channel;
               data[1] = cc_number((*sd->ctrls)[c]->get_param());
@@ -846,7 +844,7 @@ namespace Dino {
         event = (*sd->offs)[step];
         while (event) {
           unsigned char* data = 
-            buffer.reserve(offset + (step + 1) / double(sd->steps) - off_d, 3);
+            buffer.reserve((step + 1) / double(sd->steps) - off_d, 3);
           if (data) {
             memcpy(data, event->get_data(), 3);
             data[0] |= (unsigned char)channel;
@@ -858,7 +856,7 @@ namespace Dino {
         if (step == pattern_length * sd->steps - 1) {
           unsigned char all_notes_off[] = { 0xB0, 123, 0 };
           unsigned char* data = 
-            buffer.reserve(offset + (step + 1) / double(sd->steps) - off_d, 3);
+            buffer.reserve((step + 1) / double(sd->steps) - off_d, 3);
           if (data) {
             memcpy(data, all_notes_off, 3);
             data[0] |= (unsigned char)channel;

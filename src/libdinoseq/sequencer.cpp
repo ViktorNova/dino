@@ -267,6 +267,16 @@ namespace Dino {
   }
   
   
+  bool Sequencer::add_sequencable(Sequencable& sqb) {
+    return false;
+  }
+  
+  
+  bool Sequencer::remove_sequencable(Sequencable& sqb) {
+    return false;
+  }
+  
+  
   void Sequencer::jack_timebase_callback(jack_transport_state_t state, 
                                          jack_nframes_t nframes, 
                                          jack_position_t* pos, int new_pos) {
@@ -441,7 +451,7 @@ namespace Dino {
                           pos.beats_per_minute, pos.frame_rate);
         buffer.set_period_size(nframes);
         buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
-        iter->sequence(buffer, start, end);
+        iter->sequence(buffer, start, end, m_song.get_length(), -1);
       }
     }
     

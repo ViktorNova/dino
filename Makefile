@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.82
+PACKAGE_VERSION = 0.3.83
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -74,6 +74,7 @@ libdinoseq_so_HEADERS = \
 	patternselection.hpp \
 	recorder.hpp \
 	ringbuffer.hpp \
+	sequencable.hpp \
 	sequencer.hpp \
 	song.hpp \
 	tempomap.hpp \

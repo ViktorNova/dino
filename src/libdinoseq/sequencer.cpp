@@ -190,6 +190,11 @@ namespace Dino {
       }
     }
   }
+
+
+  bool Sequencer::set_instrument(Sequencable& sqb, const string& instrument) {
+    return false;
+  }
   
   
   void Sequencer::reset_ports() {
@@ -204,6 +209,11 @@ namespace Dino {
     if (trk = m_rec.get_track())
       return m_song.tracks_find(trk);
     return m_song.tracks_end();
+  }
+  
+
+  Sequencable* Sequencer::get_recording_sequencable() {
+    return 0;
   }
   
   

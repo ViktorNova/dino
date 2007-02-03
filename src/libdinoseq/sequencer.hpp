@@ -1,7 +1,7 @@
 /****************************************************************************
    Dino - A simple pattern based MIDI sequencer
    
-   Copyright (C) 2006  Lars Luthman <lars.luthman@gmail.com>
+   Copyright (C) 2006-2007  Lars Luthman <lars.luthman@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ namespace Dino {
   public:
   
     /** This will create a new Sequencer object with the JACK client name 
-  @c client_name and the Song object @c song. */
+	@c client_name and the Song object @c song. */
     Sequencer(const string& client_name, Song& song);
     ~Sequencer();
     
@@ -82,10 +82,13 @@ namespace Dino {
         saved in the .dino file since all connections are supposed to be
         restored by LASH. */
     void set_instrument(int track, const string& instrument);
+    bool set_instrument(Sequencable& sqb, const string& instrument);
+
     /** This creates new MIDI output ports for all tracks. */
     void reset_ports();
     /** Returns an iterator to the track that is currently being recorded to.*/
     Dino::Song::TrackIterator get_recording_track();
+    Sequencable* get_recording_sequencable();
     
     //@}
     
@@ -103,7 +106,14 @@ namespace Dino {
     //@}
     
   private:
-  
+    
+    struct SeqList {
+      Sequencable* sqb;
+      SeqList* prev;
+      SeqList* next;
+    };
+
+    
     bool beat_checker();
     bool ports_checker();
     
@@ -113,12 +123,12 @@ namespace Dino {
     /// @name JACK callbacks
     //@{
     /** This function is called whenever the JACK daemon wants to know the
-  beat and tick for a given frame position. */
+	beat and tick for a given frame position. */
     void jack_timebase_callback(jack_transport_state_t state, 
-        jack_nframes_t nframes, jack_position_t* pos, 
-        int new_pos);
+				jack_nframes_t nframes, jack_position_t* pos, 
+				int new_pos);
     /** This is called once for each JACK cycle. MIDI is sequenced from here. 
-  @callgraph
+	@callgraph
     */
     int jack_process_callback(jack_nframes_t nframes);
     /** This is called when the JACK daemon is being shut down. */
@@ -130,11 +140,11 @@ namespace Dino {
     /// @name JACK callback wrappers
     //@{
     static void jack_timebase_callback_(jack_transport_state_t state,
-          jack_nframes_t nframes,
-          jack_position_t* pos, int new_pos,
-          void* arg) {
+					jack_nframes_t nframes,
+					jack_position_t* pos, int new_pos,
+					void* arg) {
       static_cast<Sequencer*>(arg)->jack_timebase_callback(state, nframes, 
-                 pos, new_pos);
+							   pos, new_pos);
     }
     static int jack_process_callback_(jack_nframes_t nframes, void* arg) {
       return static_cast<Sequencer*>(arg)->jack_process_callback(nframes);
@@ -143,7 +153,7 @@ namespace Dino {
       static_cast<Sequencer*>(arg)->jack_shutdown_handler();
     }
     static void jack_port_registration_callback_(jack_port_id_t port, int m,
-             void* arg) {
+						 void* arg) {
       static_cast<Sequencer*>(arg)->jack_port_registration_callback(port, m);
     }
     static void jack_error_function(const char* msg) {
@@ -153,14 +163,14 @@ namespace Dino {
     //@}
     
     /** This function should be called when a new track has been added to the
-  song. */
+	song. */
     void track_added(int track);
     /** This function should be called when a track has been removed from the
-  song. */
+	song. */
     void track_removed(int track);
   
     /** This function does the actual MIDI playback (i.e. it puts the MIDI
-  events on the JACK MIDI output buffers). */
+	events on the JACK MIDI output buffers). */
     void sequence_midi(jack_transport_state_t state,
                        const jack_position_t& pos, jack_nframes_t nframes);
     

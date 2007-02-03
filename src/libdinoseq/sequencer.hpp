@@ -107,8 +107,15 @@ namespace Dino {
     
   private:
     
-    struct SeqList {
+    class SeqList {
+    public:
+      SeqList(Sequencable& sqb, jack_client_t* client);
+      ~SeqList();
+      
       Sequencable* sqb;
+      jack_client_t* client;
+      jack_port_t* port;
+	      
       SeqList* prev;
       SeqList* next;
     };

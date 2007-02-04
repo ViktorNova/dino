@@ -22,9 +22,7 @@
 #include <iostream>
 #include <cassert>
 
-extern "C" {
 #include <jack/midiport.h>
-}
 #include <glibmm.h>
 
 #include "debug.hpp"
@@ -53,7 +51,8 @@ namespace Dino {
       m_old_current_beat(-1),
       m_ports_changed(0),
       m_old_ports_changed(0),
-      m_rec(song) {
+      m_rec(song),
+      m_sqbls(0) {
   
     dbg1<<"Initialising sequencer"<<endl;
   
@@ -278,11 +277,36 @@ namespace Dino {
   
   
   bool Sequencer::add_sequencable(Sequencable& sqb) {
+    SeqList* sl = m_sqbls;
+    while (sl) {
+      if (sl->m_sqb == &sqb)
+	return false;
+      if (sl->m_next == 0) {
+	SeqList* nsl = new SeqList(sqb, m_jack_client);
+	nsl->m_prev = sl;
+	sl->m_next = nsl;
+	return true;
+      }
+      sl = sl->m_next;
+    }
+    
+    dbg0<<"Sequencable list is broken"<<endl;
     return false;
   }
   
   
   bool Sequencer::remove_sequencable(Sequencable& sqb) {
+    SeqList* sl = m_sqbls;
+    while (sl) {
+      if (sl->m_sqb == &sqb) {
+	if (sl->m_next)
+	  sl->m_next->m_prev = sl->m_prev;
+	if (sl->m_prev)
+	  sl->m_prev->m_next = sl->m_next;
+	Deleter::queue(sl);
+      }
+      sl = sl->m_next;
+    }
     return false;
   }
   
@@ -521,6 +545,35 @@ namespace Dino {
     m_signal_record_to_track(m_song.tracks_find(id));
   }
   
+
+  Sequencer::SeqList::SeqList(Sequencable& sqb, jack_client_t* client)
+    : m_sqb(&sqb),
+      m_client(client),
+      m_port(0),
+      m_prev(0),
+      m_next(0) {
+    m_port = jack_port_register(m_client, m_sqb->get_label().c_str(),
+				JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+  }
+  
+  
+  Sequencer::SeqList::~SeqList() {
+    if (m_port)
+      jack_port_unregister(m_client, m_port);
+  }
+
+
+  
+  void Sequencer::print_sequencables() const {
+    SeqList* sl = m_sqbls;
+    cerr<<endl<<endl;
+    while (sl) {
+      cerr<<sl->m_sqb->get_label()<<endl;
+      sl = sl->m_next;
+    }
+    cerr<<endl<<endl;
+  }
+
 }
 
 

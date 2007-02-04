@@ -153,6 +153,7 @@ namespace Dino {
     int get_id() const;
     /** Return the name of this pattern. */
     const string& get_name() const;
+    const string& get_label() const;
     /** Return an iterator that refers to the first note in the pattern. */
     NoteIterator notes_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator

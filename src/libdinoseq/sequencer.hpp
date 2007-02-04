@@ -112,14 +112,17 @@ namespace Dino {
       SeqList(Sequencable& sqb, jack_client_t* client);
       ~SeqList();
       
-      Sequencable* sqb;
-      jack_client_t* client;
-      jack_port_t* port;
+      //protected:
+      Sequencable* m_sqb;
+      jack_client_t* m_client;
+      jack_port_t* m_port;
 	      
-      SeqList* prev;
-      SeqList* next;
+      SeqList* m_prev;
+      SeqList* m_next;
     };
-
+    
+    
+    void print_sequencables() const;
     
     bool beat_checker();
     bool ports_checker();
@@ -223,6 +226,8 @@ namespace Dino {
     
 
     Recorder m_rec;
+    
+    SeqList* m_sqbls;
     
   };
 

@@ -220,6 +220,11 @@ namespace Dino {
   }
 
 
+  const string& Pattern::get_label() const {
+    return m_name;
+  }
+
+
   Pattern::NoteIterator Pattern::notes_begin() const {
     for (unsigned i = 0; i < m_sd->length * m_sd->steps; ++i) {
       if ((*m_sd->ons)[i])

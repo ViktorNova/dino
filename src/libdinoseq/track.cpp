@@ -232,6 +232,11 @@ namespace Dino {
   }
 
   
+  const string& Track::get_label() const {
+    return m_name;
+  }
+
+  
   Track::ConstPatternIterator Track::pat_begin() const {
     return ConstPatternIterator(m_patterns.begin());
   }

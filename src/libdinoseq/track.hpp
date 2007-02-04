@@ -170,6 +170,7 @@ namespace Dino {
     //@{
     int get_id() const;
     const string& get_name() const;
+    const string& get_label() const;
     int get_channel() const;
     unsigned int get_length() const;
     ConstPatternIterator pat_begin() const;

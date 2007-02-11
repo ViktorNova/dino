@@ -81,6 +81,8 @@ $(2)_CXXSOURCES = $$(filter %.cpp,$$($(2)_FULLSOURCES))
 $(2)_COBJECTS = $$(subst .c,.o,$$($(2)_CSOURCES))
 $(2)_CXXOBJECTS = $$(subst .cpp,.o,$$($(2)_CXXSOURCES))
 $(2)_OBJECTS = $$($(2)_COBJECTS) $$($(2)_CXXOBJECTS)
+$(2)_LOCALLIBRARIES = $$(patsubst lib%.so,-l%,$$(notdir $$($(2)_LIBRARIES)))
+$(2)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(2)_LIBRARIES))))
 ALL_OBJECTS += $$($(2)_OBJECTS)
 ALL_SOURCES += $$($(2)_FULLSOURCES)
 LIBRARIES_REAL += $$($(2)_BLDPRF)/$(1)
@@ -94,8 +96,8 @@ $$($(2)_COBJECTS): Makefile.config
 $$($(2)_CXXOBJECTS): Makefile.config
 	$(CXX) -c -o $$@ -fPIC -DPIC $(CFLAGS) $(CXXFLAGS) $$($(2)_CFLAGS) $$(subst .o,.cpp,$$@)
 
-$$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $(ARCHIVES_REAL)
-	$(CXX) -shared -fPIC $$^ $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
+$$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $(ARCHIVES_REAL) $$($(2)_LIBRARIES)
+	$(CXX) -shared -fPIC $$^ $$($(2)_LOCALLDFLAGS) $$($(2)_LOCALLIBRARIES) $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
 	mkdir -p $(DESTDIR)/$(pkgincludedir)
@@ -126,6 +128,8 @@ $(2)_COBJECTS = $$(subst .c,.o,$$($(2)_CSOURCES))
 $(2)_CXXOBJECTS = $$(subst .cpp,.o,$$($(2)_CXXSOURCES))
 $(2)_OBJECTS = $$($(2)_COBJECTS) $$($(2)_CXXOBJECTS)
 $(2)_LIBNAME = $$($(2)_SRCPRF)/$$(patsubst %.lv2,%.so,$(1))
+$(2)_LOCALLIBRARIES = $$(patsubst lib%.so,-l%,$$(notdir $$($(2)_LIBRARIES)))
+$(2)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(2)_LIBRARIES))))
 PROGRAMS += $$($(2)_PROGRAMS)
 ALL_OBJECTS += $$($(2)_OBJECTS) $$($(2)_LIBNAME)
 ALL_SOURCES += $$($(2)_FULLSOURCES)
@@ -140,8 +144,8 @@ $$($(2)_COBJECTS): Makefile.config
 $$($(2)_CXXOBJECTS): Makefile.config
 	$(CXX) -c -o $$@ -fPIC -DPIC $(CFLAGS) $(CXXFLAGS) $$($(2)_CFLAGS) $$($$(patsubst %.o,%_cpp_CFLAGS,$$(notdir $$@))) $$(subst .o,.cpp,$$@)
 
-$$($(2)_LIBNAME): $$($(2)_OBJECTS) $(LIBRARIES_REAL) $(ARCHIVES_REAL)
-	$(CXX) -shared -fPIC $$($(2)_OBJECTS)  $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
+$$($(2)_LIBNAME): $$($(2)_OBJECTS) $$($(2)_LIBRARIES) $(ARCHIVES_REAL)
+	$(CXX) -shared -fPIC $$($(2)_OBJECTS) $$($(2)_LOCALLDFLAGS) $$($(2)_LOCALLIBRARIES) $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
 
 $$($(2)_BLDPRF)/$(1): $$($(2)_LIBNAME) $$($(2)_FULLDATA) $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_PROGRAMS))
 	rm -rf $$($(2)_BLDPRF)/$(1)
@@ -171,6 +175,8 @@ $(1)_CXXSOURCES = $$(filter %.cpp,$$($(1)_FULLSOURCES))
 $(1)_COBJECTS = $$(subst .c,.o,$$($(1)_CSOURCES))
 $(1)_CXXOBJECTS = $$(subst .cpp,.o,$$($(1)_CXXSOURCES))
 $(1)_OBJECTS = $$($(1)_COBJECTS) $$($(1)_CXXOBJECTS)
+$(1)_LOCALLIBRARIES = $$(patsubst lib%.so,-l%,$$(notdir $$($(1)_LIBRARIES)))
+$(1)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(1)_LIBRARIES)))) 
 ALL_OBJECTS += $$($(1)_OBJECTS)
 ALL_SOURCES += $$($(1)_FULLSOURCES)
 PROGRAMS_REAL += $$($(1)_BLDPRF)/$(1)
@@ -182,8 +188,8 @@ $$($(1)_COBJECTS): Makefile.config
 $$($(1)_CXXOBJECTS): Makefile.config
 	$(CXX) -c -o $$@ $(CFLAGS) $(CXXFLAGS) $$($(1)_CFLAGS) $$($$(patsubst %.o,%_cpp_CFLAGS,$$(notdir $$@))) $$(subst .o,.cpp,$$@)
 
-$$($(1)_BLDPRF)/$(1): $$($(1)_OBJECTS) $(LIBRARIES_REAL) $(ARCHIVES_REAL)
-	$(CXX) $$($(1)_OBJECTS) $(LDFLAGS) $$($(1)_LDFLAGS) -o $$@
+$$($(1)_BLDPRF)/$(1): $$($(1)_OBJECTS) $$($(1)_LIBRARIES) $(ARCHIVES_REAL) 
+	$(CXX) $$($(1)_OBJECTS) $$($(1)_LOCALLDFLAGS) $$($(1)_LOCALLIBRARIES) $$($(1)_LDFLAGS) $(LDFLAGS) -o $$@
 
 install-$(1)-headers: $$(patsubst %,$$($(1)_SRCPRF)/%,$$($(1)_HEADERS))
 	mkdir -p $(DESTDIR)/$(pkgincludedir)
@@ -208,6 +214,8 @@ $(2)_CXXSOURCES = $$(filter %.cpp,$$($(2)_FULLSOURCES))
 $(2)_COBJECTS = $$(subst .c,.o,$$($(2)_CSOURCES))
 $(2)_CXXOBJECTS = $$(subst .cpp,.o,$$($(2)_CXXSOURCES))
 $(2)_OBJECTS = $$($(2)_COBJECTS) $$($(2)_CXXOBJECTS)
+$(2)_LOCALLIBRARIES = $$(patsubst lib%.so,-l%,$$(notdir $$($(2)_LIBRARIES)))
+$(2)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(2)_LIBRARIES))))
 ALL_OBJECTS += $$($(2)_OBJECTS)
 ALL_SOURCES += $$($(2)_FULLSOURCES)
 MODULES_REAL += $$($(2)_BLDPRF)/$(1)
@@ -220,8 +228,8 @@ $$($(2)_COBJECTS): Makefile.config
 $$($(2)_CXXOBJECTS): Makefile.config
 	$(CXX) -c -o $$@ -fPIC -DPIC $(CFLAGS) $(CXXFLAGS) $$($(2)_CFLAGS) $$($$(patsubst %.o,%_cpp_CFLAGS,$$(notdir $$@))) $$(subst .o,.cpp,$$@)
 
-$$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $(LIBRARIES_REAL) $(ARCHIVES_REAL)
-	$(CXX) -shared -fPIC $$($(2)_OBJECTS)  $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
+$$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $$($(2)_LIBRARIES) $(ARCHIVES_REAL)
+	$(CXX) -shared -fPIC $$($(2)_OBJECTS) $$($(2)_LOCALLDFLAGS) $$($(2)_LOCALLIBRARIES) $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
 	mkdir -p $(DESTDIR)/$(pkgincludedir)

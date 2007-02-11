@@ -92,7 +92,7 @@ private:
   Gtk::MenuItem* create_menu_item(Gtk::Menu& menu, const Gtk::StockID& id,
                                   const std::string& name, 
                                   void (DinoGUI::*mslot)(void));
-  bool init_lash(int argc, char** argv);
+  bool init_lash(int argc, char** argv, const std::string& jack_name);
   
   // internal callbacks
   bool slot_check_ladcca_events();

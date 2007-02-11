@@ -90,6 +90,9 @@ namespace Dino {
     Dino::Song::TrackIterator get_recording_track();
     Sequencable* get_recording_sequencable();
     
+    /** Returns the JACK client name. */
+    const std::string& get_jack_name() const;
+    
     //@}
     
     /** Add a new sequencable object to the sequencer. */

@@ -398,7 +398,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
     return;
   }
   
-  if (!init_lash(argc, argv)) {
+  if (!init_lash(argc, argv, m_seq.get_jack_name())) {
     MessageDialog dlg("Could not initialise LASH!", 
                       false, MESSAGE_ERROR);
     dlg.run();
@@ -660,7 +660,7 @@ MenuItem* DinoGUI::create_menu_item(Gtk::Menu& menu, const StockID& id,
 }
 
 
-bool DinoGUI::init_lash(int argc, char** argv) {
+bool DinoGUI::init_lash(int argc, char** argv, const std::string& jack_name) {
   dbg1<<"Initialising LASH client"<<endl;
   m_lash_client = lash_init(lash_extract_args(&argc, &argv), "dino", 
                             LASH_Config_File, LASH_PROTOCOL(2, 0));
@@ -669,7 +669,7 @@ bool DinoGUI::init_lash(int argc, char** argv) {
     lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
     lash_event_set_string(event, "Dino");
     lash_send_event(m_lash_client, event);      
-    lash_jack_client_name(m_lash_client, "Dino");
+    lash_jack_client_name(m_lash_client, jack_name.c_str());
     signal_timeout().
       connect(mem_fun(*this, &DinoGUI::slot_check_ladcca_events), 500);
   }

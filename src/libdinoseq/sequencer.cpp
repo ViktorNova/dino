@@ -221,23 +221,29 @@ namespace Dino {
     dbg1<<"Initialising JACK client"<<endl;
     
     jack_set_error_function(&Sequencer::jack_error_function);
-    m_jack_client = jack_client_new(client_name.c_str());
+    m_jack_client = jack_client_open(client_name.c_str(), JackNullOption, 0);
     if (!m_jack_client)
       return false;
+    m_client_name = jack_get_client_name(m_jack_client);
+    
     int err;
-    if ((err = jack_set_timebase_callback(m_jack_client, 1, 
+    dbg1<<"Registering JACK timebase callback"<<endl;
+    if ((err = jack_set_timebase_callback(m_jack_client, 0, 
                                           &Sequencer::jack_timebase_callback_,
                                           this)) != 0)
       return false;
+    dbg1<<"Registering JACK process callback"<<endl;
     if ((err = jack_set_process_callback(m_jack_client,
                                          &Sequencer::jack_process_callback_,
                                          this)) != 0)
       return false;
+    dbg1<<"Registering JACK port registration callback"<<endl;
     if ((err = jack_set_port_registration_callback(m_jack_client,
                                                    &Sequencer::jack_port_registration_callback_,
                                                    this)) != 0)
       return false;
     
+    dbg1<<"Registering JACK shutdown callback"<<endl;
     jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
     
     m_input_port = jack_port_register(m_jack_client, "MIDI input", 
@@ -574,6 +580,12 @@ namespace Dino {
     cerr<<endl<<endl;
   }
 
+  
+  const string& Sequencer::get_jack_name() const {
+    return m_client_name;
+  }
+  
+  
 }
 
 

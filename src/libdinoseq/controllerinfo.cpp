@@ -19,29 +19,30 @@
 ****************************************************************************/
 
 #include "controllerinfo.hpp"
+#include "controller_numbers.hpp"
 
 
 namespace Dino {
   
   
-  ControllerInfo::ControllerInfo(const ControllerType& type, 
+  ControllerInfo::ControllerInfo(long number,
                                  const std::string& name)
-    : m_type(type),
+    : m_number(number),
       m_default(64),
       m_min(0),
       m_max(127),
       m_name(name),
-      m_global(m_type != MIDI_PITCH) {
+      m_global(!is_pbend(m_number)) {
 
-    if (m_type == MIDI_PITCH) {
+    if (is_pbend(m_number)) {
       m_default = 8192;
       m_max = 16383;
     }
   }
     
 
-  ControllerType ControllerInfo::get_type() const {
-    return m_type;
+  long ControllerInfo::get_number() const {
+    return m_number;
   }
   
   
@@ -70,8 +71,18 @@ namespace Dino {
   }
   
     
-  void ControllerInfo::set_type(ControllerType type) {
-    m_type = type;
+  const Curve* ControllerInfo::get_global_curve() const {
+    return m_curve;
+  }
+
+
+  Curve* ControllerInfo::get_global_curve() {
+    return m_curve;
+  }
+
+
+  void ControllerInfo::set_number(long number) {
+    m_number = number;
   }
   
   

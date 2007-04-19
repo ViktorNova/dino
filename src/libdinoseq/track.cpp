@@ -312,6 +312,16 @@ namespace Dino {
   }
 
 
+  const std::vector<ControllerInfo>& Track::get_controllers() const {
+    return m_controllers;
+  }
+  
+  
+  std::vector<ControllerInfo>& Track::get_controllers() {
+    return m_controllers;
+  }
+  
+  
   /** Sets the name of this track. */
   void Track::set_name(const string& name) {
     if (name != m_name) {

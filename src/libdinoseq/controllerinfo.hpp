@@ -27,25 +27,25 @@
 
 namespace Dino {
   
-  enum ControllerType {
-    MIDI_CC,
-    MIDI_PITCH,
-  };
+  
+  class Curve;
   
   
   class ControllerInfo {
   public:
     
-    ControllerInfo(const ControllerType& type, const std::string& name);
+    ControllerInfo(long number, const std::string& name);
     
-    ControllerType get_type() const;
+    long get_number() const;
     int get_default() const;
     int get_min() const;
     int get_max() const;
     const std::string& get_name() const;
     bool get_global() const;
+    const Curve* get_global_curve() const;
+    Curve* get_global_curve();
     
-    void set_type(ControllerType type);
+    void set_number(long n);
     void set_default(int def);
     void set_min(int min);
     void set_max(int max);
@@ -54,12 +54,13 @@ namespace Dino {
     
   protected:
     
-    ControllerType m_type;
+    long m_number;
     int m_default;
     int m_min;
     int m_max;
     std::string m_name;
     bool m_global;
+    Curve* m_curve;
     
   };
 

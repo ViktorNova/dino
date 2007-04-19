@@ -29,6 +29,7 @@
 #include <libxml++/libxml++.h>
 
 #include "controllerinfo.hpp"
+#include "curve.hpp"
 #include "xmlserialisable.hpp"
 #include "sequencable.hpp"
 
@@ -161,7 +162,7 @@ namespace Dino {
       std::map<int, Pattern*>::const_iterator m_iter;
     };
     
-  
+    
     Track(int id, int length = 0, const string& name = "Untitled");
   
     ~Track();
@@ -180,11 +181,13 @@ namespace Dino {
     SequenceIterator seq_end() const;
     SequenceIterator seq_find(unsigned int beat) const;
     SequenceIterator seq_find_by_id(int id) const;
+    const std::vector<ControllerInfo>& get_controllers() const;
     
     // non-const accessors
     PatternIterator pat_begin();
     PatternIterator pat_end();
     PatternIterator pat_find(int id);
+    std::vector<ControllerInfo>& get_controllers();
     //@}
     
     /// @name Mutators
@@ -199,6 +202,10 @@ namespace Dino {
     bool remove_sequence_entry(SequenceIterator iterator);
     void set_length(int length);
     void set_channel(int channel);
+    bool add_controller(long number, const std::string& name, int default_v,
+			int min, int max, bool global);
+    bool remove_controller(long number);
+    
     //@}
     
     /// @name XML I/O

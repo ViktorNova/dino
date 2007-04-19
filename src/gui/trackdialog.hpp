@@ -50,6 +50,7 @@ protected:
   Gtk::Entry* m_ent_name;
   SingleTextCombo m_cmb_port;
   Gtk::SpinButton* m_sbn_channel;
+  SingleTextCombo m_cmb_ctrls;
 
 };
 

@@ -27,7 +27,8 @@
 
 namespace Dino {
 
-
+  
+  class ControllerInfo;
   class InterpolatedEvent;
   
   
@@ -36,8 +37,7 @@ namespace Dino {
   public:
 
     /** Create a new controller with the given parameters. */
-    Curve(const std::string& name, unsigned int size, 
-	       long param, int min, int max);
+    Curve(ControllerInfo* info, unsigned int size);
     ~Curve();
     
     /// @name Accessors
@@ -56,6 +56,9 @@ namespace Dino {
     long get_param() const;
     /** Return the number of time steps in this controller. */
     unsigned int get_size() const;
+    /** Return the ControllerInfo struct for this curve. */
+    const ControllerInfo* get_info() const;
+    ControllerInfo* get_info();
     //@}
 
     /// @name Mutators
@@ -69,7 +72,8 @@ namespace Dino {
     //@}
 
   private:
-        
+    
+    ControllerInfo* m_info;
     std::string m_name;
     std::vector<InterpolatedEvent*> m_events;
     long m_param;

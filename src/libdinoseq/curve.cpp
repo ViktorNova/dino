@@ -21,6 +21,7 @@
 #include <cassert>
 
 #include "controller_numbers.hpp"
+#include "controllerinfo.hpp"
 #include "curve.hpp"
 #include "deleter.hpp"
 #include "interpolatedevent.hpp"
@@ -28,13 +29,10 @@
 namespace Dino {
 
 
-  Curve::Curve(const std::string& name, unsigned int size, 
-                                   long param, int min, int max) 
-    : m_name(name),
-      m_events(size, 0),
-      m_param(param),
-      m_min(min),
-      m_max(max) {
+  Curve::Curve(ControllerInfo* info, unsigned int size)
+    : m_info(info),
+      m_events(size, 0) {
+    assert(m_info);
     assert(controller_is_set(m_param));
   }
   
@@ -71,6 +69,16 @@ namespace Dino {
   
   unsigned int Curve::get_size() const {
     return m_events.size();
+  }
+
+
+  const ControllerInfo* Curve::get_info() const {
+    return m_info;
+  }
+
+
+  ControllerInfo* Curve::get_info() {
+    return m_info;
   }
 
 

@@ -281,12 +281,10 @@ namespace Dino {
     
     // iterate over all controllers
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-      const Curve* c = (*m_sd->ctrls)[i];
+      Curve* c = (*m_sd->ctrls)[i];
       
       // create a new controller with the same settings but different size
-      Curve* new_c = new Curve(c->get_name(), length * m_sd->steps,
-                                         c->get_param(), 
-                                         c->get_min(), c->get_max());
+      Curve* new_c = new Curve(c->get_info(), length * m_sd->steps);
       new_controllers->push_back(new_c);
       
       // copy all the controller events that fit into the new size
@@ -338,12 +336,10 @@ namespace Dino {
     
     // iterate over all controllers in the old controller list
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-      const Curve* c = (*m_sd->ctrls)[i];
+      Curve* c = (*m_sd->ctrls)[i];
       
       // create a new controller with the same settings but different size
-      Curve* new_c = new Curve(c->get_name(), m_sd->length * steps,
-                                         c->get_param(), 
-                                         c->get_min(), c->get_max());
+      Curve* new_c = new Curve(c->get_info(), m_sd->length * steps);
       new_controllers->push_back(new_c);
       
       // copy the events from the old controller to the new controller
@@ -564,6 +560,7 @@ namespace Dino {
   Pattern::ControllerIterator Pattern::add_controller(const std::string& name,
                                                       long param, 
                                                       int min, int max) {
+#if 0
     // find the place to insert the new controller
     unsigned i;
     for (i = 0; i < m_sd->ctrls->size(); ++i) {
@@ -578,7 +575,7 @@ namespace Dino {
     vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->ctrls);
     new_vector->insert(new_vector->begin() + i, 
                        new Curve(name, m_sd->steps * m_sd->length, 
-                                      param, min, max));
+				 param, min, max));
     
     // delete the old vector
     vector<Curve*>* tmp = m_sd->ctrls;
@@ -589,6 +586,9 @@ namespace Dino {
     
     m_signal_controller_added(param);
     return ControllerIterator(new_vector->begin() + i);
+#endif
+    
+    return ctrls_end();
   }
   
   

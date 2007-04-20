@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.91
+PACKAGE_VERSION = 0.3.92
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -28,7 +28,7 @@ dino_SOURCEDIR = src/gui
 dino_CFLAGS = `pkg-config --cflags gtkmm-2.4 jack libxml++-2.6 lash-1.0` -Isrc/libdinoseq -Isrc
 dino_LDFLAGS = `pkg-config --libs gtkmm-2.4 lash-1.0` -Wl,-E
 dino_LIBRARIES = src/libdinoseq/libdinoseq.so
-main_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\" -DVERSION=\"$(PACKAGE_VERSION)\" -DCR_YEAR=\"2006\"
+main_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\" -DVERSION=\"$(PACKAGE_VERSION)\" -DCR_YEAR=\"2005-2007\"
 dinogui_cpp_CFLAGS = $(main_cpp_CFLAGS)
 pluginlibrary_cpp_CFLAGS = -DPLUGIN_DIR=\"$(pkglibdir)\"
 

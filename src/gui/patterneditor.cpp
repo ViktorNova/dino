@@ -21,7 +21,6 @@
 #include <iostream>
 
 #include "curve.hpp"
-#include "controllerdialog.hpp"
 #include "controller_numbers.hpp"
 #include "evilscrolledwindow.hpp"
 #include "patterndialog.hpp"
@@ -152,7 +151,6 @@ PatternEditor::PatternEditor(Song& song)
 
   // get the dialogs
   m_dlg_pattern = new PatternDialog;
-  m_dlg_controller = new ControllerDialog;
   
   // the toolbuttons
   add_toolbutton(tbar, m_tbn_add_pattern, Stock::ADD, "Create new pattern",
@@ -164,18 +162,11 @@ PatternEditor::PatternEditor(Song& song)
   add_toolbutton(tbar, m_tbn_set_pattern_properties, Stock::PROPERTIES, 
                  "Edit pattern properties", 
                  &PatternEditor::edit_pattern_properties);
-  tbar->append(*manage(new SeparatorToolItem));
-  add_toolbutton(tbar, m_tbn_add_controller, Stock::ADD, "Add controller", 
-                 &PatternEditor::add_controller);
-  add_toolbutton(tbar, m_tbn_delete_controller, Stock::DELETE, 
-                 "Delete controller", &PatternEditor::delete_controller);
   
   m_tbn_add_pattern->set_sensitive(false);
   m_tbn_delete_pattern->set_sensitive(false);
   m_tbn_duplicate_pattern->set_sensitive(false);
   m_tbn_set_pattern_properties->set_sensitive(false);
-  m_tbn_add_controller->set_sensitive(false);
-  m_tbn_delete_controller->set_sensitive(false);
   
   // connect to song
   m_pattern_ruler.set_song(&song);
@@ -369,7 +360,6 @@ void PatternEditor::set_active_pattern(int pattern) {
   m_tbn_delete_pattern->set_sensitive(active);
   m_tbn_duplicate_pattern->set_sensitive(active);
   m_tbn_set_pattern_properties->set_sensitive(active);
-  m_tbn_add_controller->set_sensitive(active);
 }
 
 
@@ -391,48 +381,6 @@ void PatternEditor::set_active_controller(long controller) {
   m_cce.set_controller(&*p, m_active_controller);
   
   bool active = controller_is_set(m_active_controller);
-  m_tbn_delete_controller->set_sensitive(active);
-}
-
-  
-void PatternEditor::add_controller() {
-  if (m_active_track >= 0 && m_active_pattern >= 0) {
-    m_dlg_controller->set_controller(make_cc(1));
-    m_dlg_controller->refocus();
-    m_dlg_controller->show_all();
-    while (m_dlg_controller->run() == RESPONSE_OK) {
-      int min = 0, max = 127;
-      long controller = m_dlg_controller->get_controller();
-      if (is_pbend(controller)) {
-	min = -8192;
-	max = 8191;
-      }
-      Track::PatternIterator iter = m_song.tracks_find(m_active_track)->
-	pat_find(m_active_pattern);
-      if (iter->ctrls_find(controller) != iter->ctrls_end()) {
-	MessageDialog dlg("That controller already exists!", 
-			  false, MESSAGE_ERROR);
-	dlg.run();
-      }
-      else {
-	iter->add_controller(m_dlg_controller->get_name(), 
-			     controller, min, max);
-	m_cmb_controller.set_active_id(controller);
-	break;
-      }
-    }
-    m_dlg_controller->hide();
-  }
-}
-
-
-void PatternEditor::delete_controller() {
-  if (m_active_track >= 0 && m_active_pattern >= 0 && 
-      m_active_controller >= 0) {
-    Pattern* pat = &*m_song.tracks_find(m_active_track)->
-      pat_find(m_active_pattern);
-    pat->remove_controller(pat->ctrls_find(m_active_controller));
-  }
 }
 
 

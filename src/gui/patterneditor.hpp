@@ -37,7 +37,6 @@ namespace Dino {
 }
 
 class PatternDialog;
-class ControllerDialog;
 
 
 class PatternEditor : public GUIPage {
@@ -65,8 +64,6 @@ protected:
   void set_active_pattern(int pattern);
   void set_active_controller(long pattern);
   
-  void add_controller();
-  void delete_controller();
   void add_pattern();
   void delete_pattern();
   void duplicate_pattern();
@@ -86,7 +83,6 @@ protected:
   CCEditor m_cce;
 
   PatternDialog* m_dlg_pattern;
-  ControllerDialog* m_dlg_controller;
 
   Gtk::Tooltips m_tooltips;
 
@@ -94,8 +90,6 @@ protected:
   Gtk::ToolButton* m_tbn_delete_pattern;
   Gtk::ToolButton* m_tbn_duplicate_pattern;
   Gtk::ToolButton* m_tbn_set_pattern_properties;
-  Gtk::ToolButton* m_tbn_add_controller;
-  Gtk::ToolButton* m_tbn_delete_controller;
 
   sigc::connection m_track_combo_connection;
   sigc::connection m_pattern_combo_connection;

@@ -61,12 +61,12 @@ TrackDialog::TrackDialog() {
 }
 
 
-std::string TrackDialog::get_name() const {
+string TrackDialog::get_name() const {
   return m_ent_name->get_text();
 }
 
 
-std::string TrackDialog::get_port() const {
+string TrackDialog::get_port() const {
   return m_cmb_port.get_active_text();
 }
 
@@ -76,7 +76,12 @@ int TrackDialog::get_channel() const {
 }
 
 
-void TrackDialog::set_name(const std::string& name) {
+const vector<ControllerInfo>& TrackDialog::get_controllers() const {
+  return m_ctrls;
+}
+
+
+void TrackDialog::set_name(const string& name) {
   m_ent_name->set_text(name);
 }
 
@@ -95,6 +100,11 @@ void TrackDialog::update_ports(const Dino::Sequencer* seq) {
     for (size_t i = 0; i < info.size(); ++i)
       m_cmb_port.append_text(info[i].get_name(), i);
   }
+}
+
+
+void TrackDialog::set_controllers(const vector<ControllerInfo>& ctrls) {
+  m_ctrls = ctrls;
 }
 
 

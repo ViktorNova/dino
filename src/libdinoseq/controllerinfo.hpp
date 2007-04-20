@@ -28,9 +28,6 @@
 namespace Dino {
   
   
-  class Curve;
-  
-  
   class ControllerInfo {
   public:
     
@@ -42,8 +39,6 @@ namespace Dino {
     int get_max() const;
     const std::string& get_name() const;
     bool get_global() const;
-    const Curve* get_global_curve() const;
-    Curve* get_global_curve();
     
     void set_number(long n);
     void set_default(int def);
@@ -60,7 +55,6 @@ namespace Dino {
     int m_max;
     std::string m_name;
     bool m_global;
-    Curve* m_curve;
     
   };
 

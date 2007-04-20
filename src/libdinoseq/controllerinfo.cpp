@@ -33,11 +33,12 @@ namespace Dino {
       m_max(127),
       m_name(name),
       m_global(!is_pbend(m_number)) {
-
+    
     if (is_pbend(m_number)) {
       m_default = 8192;
       m_max = 16383;
     }
+    
   }
     
 
@@ -71,16 +72,6 @@ namespace Dino {
   }
   
     
-  const Curve* ControllerInfo::get_global_curve() const {
-    return m_curve;
-  }
-
-
-  Curve* ControllerInfo::get_global_curve() {
-    return m_curve;
-  }
-
-
   void ControllerInfo::set_number(long number) {
     m_number = number;
   }

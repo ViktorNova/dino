@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.92
+PACKAGE_VERSION = 0.3.93
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -103,6 +103,7 @@ MODULES = sequenceeditor.so patterneditor.so infoeditor.so coreactions.so
 
 # The sequence editor
 sequenceeditor_so_SOURCES = \
+	controllerdialog.cpp controllerdialog.hpp \
 	sequenceeditor.cpp sequenceeditor.hpp \
 	tempolabel.cpp tempolabel.hpp \
 	tempowidget.cpp tempowidget.hpp \
@@ -118,7 +119,6 @@ tracklabel_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
 # The pattern editor
 patterneditor_so_SOURCES = \
 	cceditor.cpp cceditor.hpp \
-	controllerdialog.cpp controllerdialog.hpp \
 	noteeditor.cpp noteeditor.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterndialog.cpp patterndialog.hpp \

@@ -42,7 +42,8 @@ public:
   /** Add a string at the beginning of the combo box with the ID number 
       @c id. */
   void prepend_text(const Glib::ustring& text, long id = -1);
-  
+  /** Remove a string with the given ID. */
+  void remove_id(long id);
   /** Returns the ID number for the active entry. */
   long get_active_id() const;
   /** Set the active entry to the one with ID number @c id. If there is no

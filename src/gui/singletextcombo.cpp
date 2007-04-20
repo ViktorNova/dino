@@ -53,6 +53,18 @@ void SingleTextCombo::prepend_text(const ustring& text, long id) {
 }
 
 
+void SingleTextCombo::remove_id(long id) {
+  TreeModel::iterator iter;
+  for (iter = m_store->children().begin(); 
+       iter != m_store->children().end(); ++iter) {
+    if (id == (*iter)[m_text_columns.m_id]) {
+      m_store->erase(iter);
+      return;
+    }
+  }
+}
+
+
 long SingleTextCombo::get_active_id() const {
   long result = -1;
   TreeModel::iterator activeRow = get_active();
@@ -70,10 +82,9 @@ void SingleTextCombo::clear() {
 
 
 bool SingleTextCombo::set_active_id(long ID) {
-  RefPtr<TreeModel> model = get_model();
-  if(model) {
-    for(TreeModel::iterator iter = model->children().begin(); 
-	iter != model->children().end(); ++iter) {
+  if(m_store) {
+    for(TreeModel::iterator iter = m_store->children().begin(); 
+	iter != m_store->children().end(); ++iter) {
       long thisID = (*iter)[m_text_columns.m_id];
       if(thisID == ID) {
         set_active(iter);

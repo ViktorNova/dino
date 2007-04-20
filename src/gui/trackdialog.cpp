@@ -18,8 +18,11 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <cassert>
+
 #include "sequencer.hpp"
 #include "trackdialog.hpp"
+#include "controller_numbers.hpp"
 
 
 using namespace Gtk;
@@ -45,9 +48,12 @@ TrackDialog::TrackDialog() {
   table->attach(*m_sbn_channel, 1, 2, 2, 3);
   table->attach(m_cmb_ctrls, 1, 2, 4, 5);
   HBox* hbox = manage(new HBox(false, 3));
-  hbox->pack_start(*manage(new Button("Add")));
-  hbox->pack_start(*manage(new Button("Remove")));
-  hbox->pack_start(*manage(new Button("Edit")));
+  Button* add_ctrl_btn = manage(new Button("Add"));
+  hbox->pack_start(*add_ctrl_btn);
+  Button* remove_ctrl_btn = manage(new Button("Remove"));
+  hbox->pack_start(*remove_ctrl_btn);
+  Button* modify_ctrl_btn = manage(new Button("Modify"));
+  hbox->pack_start(*modify_ctrl_btn);
   table->attach(*hbox, 1, 2, 5, 6);
   table->attach(*manage(new CheckButton("Update automagically")), 1, 2, 6, 7);
   table->set_border_width(5);
@@ -56,6 +62,13 @@ TrackDialog::TrackDialog() {
   get_vbox()->pack_start(*table);
   add_button(Stock::CANCEL, RESPONSE_CANCEL);
   add_button(Stock::OK, RESPONSE_OK);
+  
+  add_ctrl_btn->signal_clicked().
+    connect(mem_fun(*this, &TrackDialog::add_controller_clicked));
+  remove_ctrl_btn->signal_clicked().
+    connect(mem_fun(*this, &TrackDialog::remove_controller_clicked));
+  modify_ctrl_btn->signal_clicked().
+    connect(mem_fun(*this, &TrackDialog::modify_controller_clicked));
   
   update_ports();
 }
@@ -112,3 +125,119 @@ void TrackDialog::refocus() {
   m_ent_name->select_region(0, -1);
   m_ent_name->grab_focus();
 }
+
+
+bool TrackDialog::add_controller(const ControllerInfo& info) {
+  cerr<<"Adding "<<info.get_number()<<" ("<<info.get_name()<<")"<<endl;
+  for (unsigned i = 0; i < m_ctrls.size(); ++i) {
+    if (info.get_number() == m_ctrls[i].get_number())
+      return false;
+  }
+  m_ctrls.push_back(info);
+  m_cmb_ctrls.append_text(info.get_name(), info.get_number());
+  return true;
+}
+
+
+bool TrackDialog::remove_controller(long number) {
+  for (unsigned i = 0; i < m_ctrls.size(); ++i) {
+    if (number == m_ctrls[i].get_number()) {
+      m_ctrls.erase(m_ctrls.begin() + i);
+      m_cmb_ctrls.remove_id(number);
+      return true;
+    }
+  }
+  return false;
+}
+
+
+void TrackDialog::add_controller_clicked() {
+  m_cdlg.reset();
+  m_cdlg.refocus();
+  m_cdlg.show_all();
+  while (m_cdlg.run() == RESPONSE_OK) {
+    const ControllerInfo& info = m_cdlg.get_info();
+    if (!is_pbend(info.get_number()) && !is_cc(info.get_number())) {
+      cerr<<"Invalid controller!"<<endl;
+    }
+    else if (!add_controller(info)) {
+      cerr<<"Could not add controller!"<<endl;
+    }
+    else {
+      m_cmb_ctrls.set_active_id(info.get_number());
+      break;
+    }
+  }
+  m_cdlg.hide();
+}
+
+
+void TrackDialog::remove_controller_clicked() {
+  if (m_cmb_ctrls.get_active_id() == -1) {
+    cerr<<"No controller selected!"<<endl;
+    return;
+  }
+  
+  unsigned i;
+  for (i = 0; i < m_ctrls.size(); ++i) {
+    if (m_ctrls[i].get_number() == m_cmb_ctrls.get_active_id())
+      break;
+  }
+  if (i == m_ctrls.size()) {
+    assert(!"Non-existing controller selected!");
+    return;
+  }
+
+  remove_controller(m_cmb_ctrls.get_active_id());
+  
+}
+
+
+void TrackDialog::modify_controller_clicked() {
+  if (m_cmb_ctrls.get_active_id() == -1) {
+    cerr<<"No controller selected!"<<endl;
+    return;
+  }
+  
+  unsigned i;
+  for (i = 0; i < m_ctrls.size(); ++i) {
+    if (m_ctrls[i].get_number() == m_cmb_ctrls.get_active_id())
+      break;
+  }
+  if (i == m_ctrls.size()) {
+    assert(!"Non-existing controller selected!");
+    return;
+  }
+  
+  m_cdlg.set_info(m_ctrls[i]);
+  m_cdlg.refocus();
+  m_cdlg.show_all();
+  while (m_cdlg.run() == RESPONSE_OK) {
+    const ControllerInfo& info = m_cdlg.get_info();
+    if (!is_pbend(info.get_number()) && !is_cc(info.get_number())) {
+      cerr<<"Invalid controller!"<<endl;
+    }
+    else {
+      unsigned j;
+      for (j = 0; j < m_ctrls.size(); ++j) {
+	if (j == i)
+	  continue;
+	if (m_ctrls[j].get_number() == info.get_number())
+	  break;
+      }
+      if (j < m_ctrls.size())
+	cerr<<"That controller number is already used!"<<endl;
+      else
+	break;
+    }
+  }
+  
+  m_cmb_ctrls.remove_id(m_ctrls[i].get_number());
+  m_ctrls[i] = m_cdlg.get_info();
+  m_cmb_ctrls.append_text(m_ctrls[i].get_name(), m_ctrls[i].get_number());
+  m_cmb_ctrls.set_active_id(m_ctrls[i].get_number());
+
+  m_cdlg.hide();
+}
+
+

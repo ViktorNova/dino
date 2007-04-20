@@ -23,6 +23,7 @@
 
 #include <gtkmm.h>
 
+#include "controllerinfo.hpp"
 #include "singletextcombo.hpp"
 
 
@@ -31,13 +32,13 @@ public:
   
   ControllerDialog();
   
-  std::string get_name() const;
-  long get_controller() const;
+  const Dino::ControllerInfo& get_info() const;
   
-  void set_name(const std::string& name);
-  void set_controller(long controller);
+  void set_info(const Dino::ControllerInfo& info);
   
   void refocus();
+  
+  void reset();
   
 protected:
   
@@ -45,7 +46,9 @@ protected:
   
   Gtk::Entry* m_ent_name;
   SingleTextCombo m_cmb_controller;
-
+  
+  mutable Dino::ControllerInfo m_info;
+  
   static std::string m_cc_desc[];
 };
 

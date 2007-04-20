@@ -25,6 +25,7 @@
 
 #include <gtkmm.h>
 
+#include "controllerdialog.hpp"
 #include "controllerinfo.hpp"
 #include "singletextcombo.hpp"
 
@@ -32,6 +33,7 @@
 namespace Dino {
   class Sequencer;
 }
+
 
 class TrackDialog : public Gtk::Dialog {
 public:
@@ -51,12 +53,20 @@ public:
   void refocus();
   
 protected:
-
+  
+  bool add_controller(const Dino::ControllerInfo& info);
+  bool remove_controller(long number);
+  
+  void add_controller_clicked();
+  void remove_controller_clicked();
+  void modify_controller_clicked();
+  
   Gtk::Entry* m_ent_name;
   SingleTextCombo m_cmb_port;
   Gtk::SpinButton* m_sbn_channel;
   SingleTextCombo m_cmb_ctrls;
   std::vector<Dino::ControllerInfo> m_ctrls;
+  ControllerDialog m_cdlg;
   
 };
 

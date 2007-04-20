@@ -24,12 +24,16 @@
 #include "controller_numbers.hpp"
 #include "controllerdialog.hpp"
 
+
+using namespace Dino;
 using namespace Glib;
 using namespace Gtk;
 using namespace std;
 
 
-ControllerDialog::ControllerDialog() {
+ControllerDialog::ControllerDialog()
+  : m_info(make_pbend(), "Pitchbend") {
+
   set_title("Controller properties");
   
   m_ent_name = manage(new Entry);
@@ -63,29 +67,38 @@ ControllerDialog::ControllerDialog() {
 }
 
 
-std::string ControllerDialog::get_name() const {
-  return m_ent_name->get_text();
+const ControllerInfo& ControllerDialog::get_info() const {
+  m_info.set_name(m_ent_name->get_text());
+  m_info.set_number(m_cmb_controller.get_active_id());
+  m_info.set_min(0);
+  if (is_pbend(m_info.get_number())) {
+    m_info.set_default(8192);
+    m_info.set_max(16383);
+    m_info.set_global(false);
+  }
+  else {
+    m_info.set_default(64);
+    m_info.set_max(127);
+    m_info.set_global(true);
+  }
 }
 
 
-long ControllerDialog::get_controller() const {
-  return m_cmb_controller.get_active_id();
-}
-  
-
-void ControllerDialog::set_name(const std::string& name) {
-  m_ent_name->set_text(name);
-}
-
-
-void ControllerDialog::set_controller(long controller) {
-  m_cmb_controller.set_active_id(controller);
+void ControllerDialog::set_info(const ControllerInfo& info) {
+  m_info = info;
+  m_cmb_controller.set_active_id(m_info.get_number());
+  m_ent_name->set_text(m_info.get_name());
 }
 
 
 void ControllerDialog::refocus() {
   m_ent_name->select_region(0, -1);
   m_ent_name->grab_focus();
+}
+
+
+void ControllerDialog::reset() {
+  set_info(ControllerInfo(make_pbend(), "Pitchbend"));
 }
 
 

@@ -181,13 +181,13 @@ namespace Dino {
     SequenceIterator seq_end() const;
     SequenceIterator seq_find(unsigned int beat) const;
     SequenceIterator seq_find_by_id(int id) const;
-    const std::vector<ControllerInfo>& get_controllers() const;
+    const std::vector<ControllerInfo*>& get_controllers() const;
     
     // non-const accessors
     PatternIterator pat_begin();
     PatternIterator pat_end();
     PatternIterator pat_find(int id);
-    std::vector<ControllerInfo>& get_controllers();
+    std::vector<ControllerInfo*>& get_controllers();
     //@}
     
     /// @name Mutators
@@ -240,7 +240,7 @@ namespace Dino {
     int m_id;
     string m_name;
     map<int, Pattern*> m_patterns;
-    vector<ControllerInfo> m_controllers;
+    vector<ControllerInfo*> m_controllers;
     int m_next_sid;
     volatile int m_channel;
     vector<SequenceEntry*>* volatile m_sequence;

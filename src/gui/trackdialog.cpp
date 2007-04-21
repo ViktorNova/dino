@@ -37,7 +37,7 @@ TrackDialog::TrackDialog() {
   m_sbn_channel = manage(new SpinButton(0, 0));
   m_sbn_channel->set_range(1, 16);
   m_sbn_channel->set_increments(1, 10);
-  Table* table = manage(new Table(7, 2));
+  Table* table = manage(new Table(6, 2));
   table->attach(*manage(new Label("Track name:")), 0, 1, 0, 1);
   table->attach(*manage(new Label("MIDI port:")), 0, 1, 1, 2);
   table->attach(*manage(new Label("MIDI channel:")), 0, 1, 2, 3);
@@ -55,7 +55,6 @@ TrackDialog::TrackDialog() {
   Button* modify_ctrl_btn = manage(new Button("Modify"));
   hbox->pack_start(*modify_ctrl_btn);
   table->attach(*hbox, 1, 2, 5, 6);
-  table->attach(*manage(new CheckButton("Update automagically")), 1, 2, 6, 7);
   table->set_border_width(5);
   table->set_row_spacings(5);
   table->set_col_spacings(5);
@@ -89,7 +88,7 @@ int TrackDialog::get_channel() const {
 }
 
 
-const vector<ControllerInfo>& TrackDialog::get_controllers() const {
+const vector<ControllerInfo*>& TrackDialog::get_controllers() const {
   return m_ctrls;
 }
 
@@ -116,8 +115,15 @@ void TrackDialog::update_ports(const Dino::Sequencer* seq) {
 }
 
 
-void TrackDialog::set_controllers(const vector<ControllerInfo>& ctrls) {
-  m_ctrls = ctrls;
+void TrackDialog::set_controllers(const vector<ControllerInfo*>& ctrls) {
+  for (unsigned i = 0; i < m_ctrls.size(); ++i)
+    delete m_ctrls[i];
+  m_ctrls.clear();
+  m_cmb_ctrls.clear();
+  for (unsigned i = 0; i < ctrls.size(); ++i) {
+    m_ctrls.push_back(new ControllerInfo(*ctrls[i]));
+    m_cmb_ctrls.append_text(m_ctrls[i]->get_name(), m_ctrls[i]->get_number());
+  }
 }
 
 
@@ -130,10 +136,10 @@ void TrackDialog::refocus() {
 bool TrackDialog::add_controller(const ControllerInfo& info) {
   cerr<<"Adding "<<info.get_number()<<" ("<<info.get_name()<<")"<<endl;
   for (unsigned i = 0; i < m_ctrls.size(); ++i) {
-    if (info.get_number() == m_ctrls[i].get_number())
+    if (info.get_number() == m_ctrls[i]->get_number())
       return false;
   }
-  m_ctrls.push_back(info);
+  m_ctrls.push_back(new ControllerInfo(info));
   m_cmb_ctrls.append_text(info.get_name(), info.get_number());
   return true;
 }
@@ -141,8 +147,9 @@ bool TrackDialog::add_controller(const ControllerInfo& info) {
 
 bool TrackDialog::remove_controller(long number) {
   for (unsigned i = 0; i < m_ctrls.size(); ++i) {
-    if (number == m_ctrls[i].get_number()) {
-      m_ctrls.erase(m_ctrls.begin() + i);
+    if (number == m_ctrls[i]->get_number()) {
+      delete m_ctrls[i];
+      m_ctrls[i] = 0;
       m_cmb_ctrls.remove_id(number);
       return true;
     }
@@ -180,7 +187,7 @@ void TrackDialog::remove_controller_clicked() {
   
   unsigned i;
   for (i = 0; i < m_ctrls.size(); ++i) {
-    if (m_ctrls[i].get_number() == m_cmb_ctrls.get_active_id())
+    if (m_ctrls[i]->get_number() == m_cmb_ctrls.get_active_id())
       break;
   }
   if (i == m_ctrls.size()) {
@@ -201,7 +208,7 @@ void TrackDialog::modify_controller_clicked() {
   
   unsigned i;
   for (i = 0; i < m_ctrls.size(); ++i) {
-    if (m_ctrls[i].get_number() == m_cmb_ctrls.get_active_id())
+    if (m_ctrls[i]->get_number() == m_cmb_ctrls.get_active_id())
       break;
   }
   if (i == m_ctrls.size()) {
@@ -209,7 +216,7 @@ void TrackDialog::modify_controller_clicked() {
     return;
   }
   
-  m_cdlg.set_info(m_ctrls[i]);
+  m_cdlg.set_info(*m_ctrls[i]);
   m_cdlg.refocus();
   m_cdlg.show_all();
   while (m_cdlg.run() == RESPONSE_OK) {
@@ -222,7 +229,7 @@ void TrackDialog::modify_controller_clicked() {
       for (j = 0; j < m_ctrls.size(); ++j) {
 	if (j == i)
 	  continue;
-	if (m_ctrls[j].get_number() == info.get_number())
+	if (m_ctrls[j]->get_number() == info.get_number())
 	  break;
       }
       if (j < m_ctrls.size())
@@ -232,10 +239,10 @@ void TrackDialog::modify_controller_clicked() {
     }
   }
   
-  m_cmb_ctrls.remove_id(m_ctrls[i].get_number());
-  m_ctrls[i] = m_cdlg.get_info();
-  m_cmb_ctrls.append_text(m_ctrls[i].get_name(), m_ctrls[i].get_number());
-  m_cmb_ctrls.set_active_id(m_ctrls[i].get_number());
+  m_cmb_ctrls.remove_id(m_ctrls[i]->get_number());
+  m_ctrls[i] = new ControllerInfo(m_cdlg.get_info());
+  m_cmb_ctrls.append_text(m_ctrls[i]->get_name(), m_ctrls[i]->get_number());
+  m_cmb_ctrls.set_active_id(m_ctrls[i]->get_number());
 
   m_cdlg.hide();
 }

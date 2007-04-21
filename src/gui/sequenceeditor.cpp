@@ -259,6 +259,14 @@ void SequenceEditor::add_track() {
     Song::TrackIterator iter = m_song.add_track(m_dlg_track->get_name());
     iter->set_channel(m_dlg_track->get_channel() - 1);
     m_seq.set_instrument(iter->get_id(), m_dlg_track->get_port());
+    const vector<ControllerInfo*>& ctrls = m_dlg_track->get_controllers();
+    for (unsigned i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]) {
+	iter->add_controller(ctrls[i]->get_number(), ctrls[i]->get_name(),
+			     ctrls[i]->get_default(), ctrls[i]->get_min(),
+			     ctrls[i]->get_max(), ctrls[i]->get_global());
+      }
+    }
     set_active_track(iter->get_id());
   }
   m_dlg_track->hide();
@@ -277,6 +285,7 @@ void SequenceEditor::edit_track_properties() {
     Track& t = *(m_song.tracks_find(m_active_track));
     m_dlg_track->set_name(t.get_name());
     m_dlg_track->set_channel(t.get_channel() + 1);
+    m_dlg_track->set_controllers(t.get_controllers());
     m_dlg_track->refocus();
     m_dlg_track->show_all();
     if (m_dlg_track->run() == RESPONSE_OK) {

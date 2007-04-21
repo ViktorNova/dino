@@ -312,15 +312,26 @@ namespace Dino {
   }
 
 
-  const std::vector<ControllerInfo>& Track::get_controllers() const {
+  const std::vector<ControllerInfo*>& Track::get_controllers() const {
     return m_controllers;
   }
   
   
-  std::vector<ControllerInfo>& Track::get_controllers() {
+  std::vector<ControllerInfo*>& Track::get_controllers() {
     return m_controllers;
   }
   
+  
+  bool Track::add_controller(long number, const std::string& name, 
+			     int default_v, int min, int max, bool global) {
+    return false;
+  }
+  
+  
+  bool Track::remove_controller(long number) {
+    return false;
+  }
+
   
   /** Sets the name of this track. */
   void Track::set_name(const string& name) {

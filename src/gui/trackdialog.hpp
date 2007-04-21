@@ -43,12 +43,12 @@ public:
   std::string get_name() const;
   std::string get_port() const;
   int get_channel() const;
-  const std::vector<Dino::ControllerInfo>& get_controllers() const;
+  const std::vector<Dino::ControllerInfo*>& get_controllers() const;
   
   void set_name(const std::string& name);
   void set_channel(int channel);
   void update_ports(const Dino::Sequencer* seq = 0);
-  void set_controllers(const std::vector<Dino::ControllerInfo>& ctrls);
+  void set_controllers(const std::vector<Dino::ControllerInfo*>& ctrls);
   
   void refocus();
   
@@ -65,7 +65,7 @@ protected:
   SingleTextCombo m_cmb_port;
   Gtk::SpinButton* m_sbn_channel;
   SingleTextCombo m_cmb_ctrls;
-  std::vector<Dino::ControllerInfo> m_ctrls;
+  std::vector<Dino::ControllerInfo*> m_ctrls;
   ControllerDialog m_cdlg;
   
 };

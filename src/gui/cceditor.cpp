@@ -41,6 +41,7 @@ CCEditor::CCEditor()
     m_fg_colour("#008000"),
     m_step_width(8),
     m_pat(0),
+    m_controller(-1),
     m_drag_step(-1) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();
@@ -85,7 +86,7 @@ void CCEditor::set_step_width(int width) {
 
 
 bool CCEditor::on_button_press_event(GdkEventButton* event) {
-  if (!m_pat)
+  if (!m_pat || m_controller == -1)
     return false;
   
   // add a CC event
@@ -124,7 +125,7 @@ bool CCEditor::on_button_release_event(GdkEventButton* event) {
 
 
 bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
-  if (!m_pat)
+  if (!m_pat || m_controller == -1)
     return false;
   
   // add a CC event

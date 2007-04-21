@@ -18,8 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef CCEDITOR_HPP
-#define CCEDITOR_HPP
+#ifndef CURVEEDITOR_HPP
+#define CURVEEDITOR_HPP
 
 #include <utility>
 
@@ -31,10 +31,10 @@ namespace Dino {
 }
 
 
-class CCEditor : public Gtk::DrawingArea {
+class CurveEditor : public Gtk::DrawingArea {
 public:
   
-  CCEditor();
+  CurveEditor();
   
   void set_controller(Dino::Pattern* pat, long controller);
   void set_step_width(int width);

@@ -21,7 +21,7 @@
 #include <iostream>
 
 #include "curve.hpp"
-#include "cceditor.hpp"
+#include "curveeditor.hpp"
 #include "controller_numbers.hpp"
 #include "interpolatedevent.hpp"
 #include "pattern.hpp"
@@ -33,7 +33,7 @@ using namespace std;
 using namespace Dino;
 
   
-CCEditor::CCEditor() 
+CurveEditor::CurveEditor() 
   : m_bg_colour1("#FFFFFF"),
     m_bg_colour2("#EAEAFF"),
     m_grid_colour("#9C9C9C"),
@@ -56,13 +56,13 @@ CCEditor::CCEditor()
 }
 
 
-void CCEditor::set_controller(Dino::Pattern* pat, long controller) {
+void CurveEditor::set_controller(Dino::Pattern* pat, long controller) {
   m_pat = pat;
   m_controller = controller;
   if (m_pat) {
     set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width,
 		     68);
-    slot<void> draw = mem_fun(*this, &CCEditor::queue_draw);
+    slot<void> draw = mem_fun(*this, &CurveEditor::queue_draw);
     m_pat->signal_cc_added().connect(sigc::hide(sigc::hide(sigc::hide(draw))));
     m_pat->signal_cc_changed().
       connect(sigc::hide(sigc::hide(sigc::hide(draw))));
@@ -74,7 +74,7 @@ void CCEditor::set_controller(Dino::Pattern* pat, long controller) {
 }
 
 
-void CCEditor::set_step_width(int width) {
+void CurveEditor::set_step_width(int width) {
   assert(width > 0);
   m_step_width = width;
   if (m_pat) {
@@ -85,7 +85,7 @@ void CCEditor::set_step_width(int width) {
 }
 
 
-bool CCEditor::on_button_press_event(GdkEventButton* event) {
+bool CurveEditor::on_button_press_event(GdkEventButton* event) {
   if (!m_pat || m_controller == -1)
     return false;
   
@@ -119,12 +119,12 @@ bool CCEditor::on_button_press_event(GdkEventButton* event) {
 }
 
 
-bool CCEditor::on_button_release_event(GdkEventButton* event) {
+bool CurveEditor::on_button_release_event(GdkEventButton* event) {
   return false;
 }
 
 
-bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
+bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
   if (!m_pat || m_controller == -1)
     return false;
   
@@ -156,7 +156,7 @@ bool CCEditor::on_motion_notify_event(GdkEventMotion* event) {
 }
 
 
-void CCEditor::on_realize() {
+void CurveEditor::on_realize() {
   DrawingArea::on_realize();
   RefPtr<Gdk::Window> win = get_window();
   m_gc = GC::create(win);
@@ -164,7 +164,7 @@ void CCEditor::on_realize() {
 }
 
 
-bool CCEditor::on_expose_event(GdkEventExpose* event) {
+bool CurveEditor::on_expose_event(GdkEventExpose* event) {
   
   if (!m_pat || !controller_is_set(m_controller))
     return true;
@@ -219,7 +219,7 @@ bool CCEditor::on_expose_event(GdkEventExpose* event) {
 }
 
 
-int CCEditor::value2ypix(int value) {
+int CurveEditor::value2ypix(int value) {
   if (m_pat) {
     int max = m_pat->ctrls_find(m_controller)->get_max();
     int min = m_pat->ctrls_find(m_controller)->get_min();
@@ -229,7 +229,7 @@ int CCEditor::value2ypix(int value) {
 }
 
 
-int CCEditor::ypix2value(int y) { 
+int CurveEditor::ypix2value(int y) { 
   if (m_pat) {
     int max = m_pat->ctrls_find(m_controller)->get_max();
     int min = m_pat->ctrls_find(m_controller)->get_min();
@@ -239,11 +239,11 @@ int CCEditor::ypix2value(int y) {
 }
 
 
-int CCEditor::step2xpix(int value) {
+int CurveEditor::step2xpix(int value) {
   return value * m_step_width;
 }
 
 
-int CCEditor::xpix2step(int value) {
+int CurveEditor::xpix2step(int value) {
   return value / m_step_width;
 }

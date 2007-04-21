@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.94
+PACKAGE_VERSION = 0.3.95
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -118,7 +118,7 @@ tracklabel_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
 
 # The pattern editor
 patterneditor_so_SOURCES = \
-	cceditor.cpp cceditor.hpp \
+	curveeditor.cpp curveeditor.hpp \
 	noteeditor.cpp noteeditor.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterndialog.cpp patterndialog.hpp \

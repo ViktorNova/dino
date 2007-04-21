@@ -23,7 +23,7 @@
 
 #include <gtkmm.h>
 
-#include "cceditor.hpp"
+#include "curveeditor.hpp"
 #include "debug.hpp"
 #include "octavelabel.hpp"
 #include "noteeditor.hpp"
@@ -80,7 +80,7 @@ protected:
   OctaveLabel m_octave_label;
 
   NoteEditor m_ne;
-  CCEditor m_cce;
+  CurveEditor m_cce;
 
   PatternDialog* m_dlg_pattern;
 

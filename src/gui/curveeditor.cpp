@@ -41,7 +41,7 @@ CurveEditor::CurveEditor()
     m_fg_colour("#008000"),
     m_step_width(8),
     m_pat(0),
-    m_controller(-1),
+    m_controller(make_invalid()),
     m_drag_step(-1) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();
@@ -86,7 +86,7 @@ void CurveEditor::set_step_width(int width) {
 
 
 bool CurveEditor::on_button_press_event(GdkEventButton* event) {
-  if (!m_pat || m_controller == -1)
+  if (!m_pat || !controller_is_set(m_controller))
     return false;
   
   // add a CC event
@@ -125,7 +125,7 @@ bool CurveEditor::on_button_release_event(GdkEventButton* event) {
 
 
 bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
-  if (!m_pat || m_controller == -1)
+  if (!m_pat || !controller_is_set(m_controller))
     return false;
   
   // add a CC event

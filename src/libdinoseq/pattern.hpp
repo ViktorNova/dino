@@ -107,8 +107,8 @@ namespace Dino {
     };
     
     
-    /** A CurveIterator is a const_iterator type that can be used to
-        access data from curves in the pattern. */
+    /** A CurveIterator is a iterator type that can be used to
+        access and modify data from curves in the pattern. */
     class CurveIterator : 
       public std::iterator<std::forward_iterator_tag, Curve> {
     public:
@@ -116,6 +116,10 @@ namespace Dino {
       /** Create an invalid iterator. */
       CurveIterator() { }
       
+      /** Dereference the iterator to get a constant Controller reference. */
+      Curve& operator*() { return **m_iterator; }
+      /** Dereference the iterator to get a constant Controller pointer. */
+      Curve* operator->() { return *m_iterator; }
       /** Dereference the iterator to get a constant Controller reference. */
       const Curve& operator*() const { return **m_iterator; }
       /** Dereference the iterator to get a constant Controller pointer. */
@@ -142,6 +146,43 @@ namespace Dino {
       std::vector<Curve*>::iterator m_iterator;
     };
 
+
+    /** A CurveIterator is a const_iterator type that can be used to
+        access data from curves in the pattern. */
+    class ConstCurveIterator : 
+      public std::iterator<std::forward_iterator_tag, Curve> {
+    public:
+      
+      /** Create an invalid iterator. */
+      ConstCurveIterator() { }
+      
+      /** Dereference the iterator to get a constant Controller reference. */
+      const Curve& operator*() const { return **m_iterator; }
+      /** Dereference the iterator to get a constant Controller pointer. */
+      const Curve* operator->() const { return *m_iterator; }
+      /** Returns @c true if the two iterators refer to the same Curve. */
+      bool operator==(const ConstCurveIterator& iter) const {
+        return (m_iterator == iter.m_iterator);
+      }
+      /** Returns @c false if the two iterators refer to the same Controller. */
+      bool operator!=(const ConstCurveIterator& iter) const {
+        return (m_iterator != iter.m_iterator);
+      }
+      /** Advances the iterator to the next controller. */
+      ConstCurveIterator& operator++() { ++m_iterator; return *this; }
+      
+    private:
+      
+      friend class Pattern;
+
+      ConstCurveIterator(const std::vector<Curve*>::iterator& iter) 
+        : m_iterator(iter) { 
+      }
+      
+      std::vector<Curve*>::iterator m_iterator;
+    };
+
+
     /** Create a new pattern. */
     Pattern(int id, const string& name, int length, int steps);
     /** Create a new pattern as a copy of @c pat. */
@@ -164,13 +205,21 @@ namespace Dino {
         step @c step, or an invalid iterator if there is no such note. */
     NoteIterator find_note(unsigned int step, int value) const;
     /** Return an iterator that refers to the first controller in the pattern.*/
-    CurveIterator curves_begin() const;
+    ConstCurveIterator curves_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator
         has passed the last controller in the pattern. */
-    CurveIterator curves_end() const;
+    ConstCurveIterator curves_end() const;
     /** Return an iterator for the controller with parameter @c param, or an
         invalid iterator if no such controller exists. */
-    CurveIterator curves_find(long param) const;
+    ConstCurveIterator curves_find(long param) const;
+    /** Return an iterator that refers to the first controller in the pattern.*/
+    CurveIterator curves_begin();
+    /** Return an invalid iterator that can be used to check when an iterator
+        has passed the last controller in the pattern. */
+    CurveIterator curves_end();
+    /** Return an iterator for the controller with parameter @c param, or an
+        invalid iterator if no such controller exists. */
+    CurveIterator curves_find(long param);
     /** Return the number of steps per beat. */
     unsigned int get_steps() const;
     /** Return the length in beats. */
@@ -245,12 +294,6 @@ namespace Dino {
     sigc::signal<void, Note const&>& signal_note_changed();
     /** Emitted when a note has been removed. */
     sigc::signal<void, Note const&>& signal_note_removed();
-    /** Emitted when a CC control point has been added. */
-    sigc::signal<void, int, int, int>& signal_cc_added();
-    /** Emitted when the value for a CC control point has changed. */
-    sigc::signal<void, int, int, int>& signal_cc_changed();
-    /** Emitted when a CC control point has been removed. */
-    sigc::signal<void, int, int>& signal_cc_removed();
     /** Emitted when a whole controller has been added. */
     sigc::signal<void, int>& signal_curve_added();
     /** Emitted when a whole controller has been removed. */
@@ -309,9 +352,6 @@ namespace Dino {
     sigc::signal<void, Note const&> m_signal_note_added;
     sigc::signal<void, Note const&> m_signal_note_changed;
     sigc::signal<void, Note const&> m_signal_note_removed;
-    sigc::signal<void, int, int, int> m_signal_cc_added;
-    sigc::signal<void, int, int, int> m_signal_cc_changed;
-    sigc::signal<void, int, int> m_signal_cc_removed;
     sigc::signal<void, int> m_signal_curve_added;
     sigc::signal<void, int> m_signal_curve_removed;
 

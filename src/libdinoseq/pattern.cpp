@@ -627,14 +627,14 @@ namespace Dino {
 				int value) {
     assert(step <= m_sd->length * m_sd->steps);
     (*iter.m_iterator)->add_point(step, value);
-    m_signal_cc_added((*iter.m_iterator)->get_info().get_number(), step, value);
+    //m_signal_cc_added((*iter.m_iterator)->get_info().get_number(), step, value);
   }
 
 
   void Pattern::remove_curve_point(CurveIterator iter, unsigned int step) {
     assert(step < m_sd->length * m_sd->steps);
     (*iter.m_iterator)->remove_point(step);
-    m_signal_cc_removed((*iter.m_iterator)->get_info().get_number(), step);
+    //m_signal_cc_removed((*iter.m_iterator)->get_info().get_number(), step);
   }
 
   
@@ -700,7 +700,7 @@ namespace Dino {
       note_elt->set_attribute("velocity", tmp_txt);
     }
     
-    CurveIterator citer;
+    ConstCurveIterator citer;
     for (citer = curves_begin(); citer != curves_end(); ++citer) {
       Element* ctrl_elt = elt->add_child("controller");
       ctrl_elt->set_attribute("name", citer->get_info().get_name());
@@ -960,17 +960,36 @@ namespace Dino {
   }
 
   
-  Pattern::CurveIterator Pattern::curves_begin() const {
+  Pattern::ConstCurveIterator Pattern::curves_begin() const {
+    return ConstCurveIterator(m_sd->curves->begin());
+  }
+  
+  
+  Pattern::ConstCurveIterator Pattern::curves_end() const {
+    return ConstCurveIterator(m_sd->curves->end());
+  }
+  
+  
+  Pattern::ConstCurveIterator Pattern::curves_find(long param) const {
+    for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
+      if ((*m_sd->curves)[i]->get_info().get_number() == param)
+        return ConstCurveIterator(m_sd->curves->begin() + i);
+    }
+    return curves_end();
+  }
+
+  
+  Pattern::CurveIterator Pattern::curves_begin() {
     return CurveIterator(m_sd->curves->begin());
   }
   
   
-  Pattern::CurveIterator Pattern::curves_end() const {
+  Pattern::CurveIterator Pattern::curves_end() {
     return CurveIterator(m_sd->curves->end());
   }
   
   
-  Pattern::CurveIterator Pattern::curves_find(long param) const {
+  Pattern::CurveIterator Pattern::curves_find(long param) {
     for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
       if ((*m_sd->curves)[i]->get_info().get_number() == param)
         return CurveIterator(m_sd->curves->begin() + i);
@@ -1043,21 +1062,6 @@ namespace Dino {
 
   sigc::signal<void, Note const&>& Pattern::signal_note_removed() {
     return m_signal_note_removed;
-  }
-
-
-  sigc::signal<void, int, int, int>& Pattern::signal_cc_added() {
-    return m_signal_cc_added;
-  }
-
-
-  sigc::signal<void, int, int, int>& Pattern::signal_cc_changed() {
-    return m_signal_cc_changed;
-  }
-
-
-  sigc::signal<void, int, int>& Pattern::signal_cc_removed() {
-    return m_signal_cc_removed;
   }
 
 

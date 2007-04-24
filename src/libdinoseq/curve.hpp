@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+#include <sigc++/signal.h>
+
 
 namespace Dino {
 
@@ -57,12 +59,25 @@ namespace Dino {
     /** Remove a control point from this controller. */
     void remove_point(unsigned int step);
     //@}
-
+    
+    /// @name Signals
+    //@{
+    /** Emitted when a control point has been added. */
+    sigc::signal<void, int, int>& signal_point_added();
+    /** Emitted when the value for a control point has changed. */
+    sigc::signal<void, int, int>& signal_point_changed();
+    /** Emitted when a control point has been removed. */
+    sigc::signal<void, int>& signal_point_removed();
+    //@}
   private:
     
     const ControllerInfo& m_info;
     std::vector<InterpolatedEvent*> m_events;
     
+    sigc::signal<void, int, int> m_signal_point_added;
+    sigc::signal<void, int, int> m_signal_point_changed;
+    sigc::signal<void, int> m_signal_point_removed;
+
   };
 
   

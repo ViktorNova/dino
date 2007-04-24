@@ -27,7 +27,7 @@
 
 
 namespace Dino {
-  class Pattern;
+  class Curve;
 }
 
 
@@ -36,7 +36,7 @@ public:
   
   CurveEditor();
   
-  void set_controller(Dino::Pattern* pat, long controller);
+  void set_curve(Dino::Curve* curve);
   void set_step_width(int width);
   
 protected:
@@ -58,8 +58,7 @@ protected:
   
   unsigned m_step_width;
   
-  Dino::Pattern* m_pat;
-  long m_controller;
+  Dino::Curve* m_curve;
   
   int m_drag_step;
 };

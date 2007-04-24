@@ -18,6 +18,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <cassert>
 #include <iostream>
 
 #include "controllerinfo.hpp"
@@ -25,13 +26,14 @@
 #include "curveeditor.hpp"
 #include "controller_numbers.hpp"
 #include "interpolatedevent.hpp"
-#include "pattern.hpp"
+
 
 using namespace Glib;
 using namespace Gtk;
 using namespace Gdk;
 using namespace std;
 using namespace Dino;
+using namespace sigc;
 
   
 CurveEditor::CurveEditor() 
@@ -41,8 +43,7 @@ CurveEditor::CurveEditor()
     m_edge_colour("#000000"),
     m_fg_colour("#008000"),
     m_step_width(8),
-    m_pat(0),
-    m_controller(make_invalid()),
+    m_curve(0),
     m_drag_step(-1) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();
@@ -57,19 +58,19 @@ CurveEditor::CurveEditor()
 }
 
 
-void CurveEditor::set_controller(Dino::Pattern* pat, long controller) {
-  m_pat = pat;
-  m_controller = controller;
-  if (m_pat) {
-    set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width,
-		     68);
+void CurveEditor::set_curve(Dino::Curve* curve) {
+  m_curve = curve;
+  if (m_curve) {
+    set_size_request(m_curve->get_size() * m_step_width, 68);
     slot<void> draw = mem_fun(*this, &CurveEditor::queue_draw);
-    m_pat->signal_cc_added().connect(sigc::hide(sigc::hide(sigc::hide(draw))));
-    m_pat->signal_cc_changed().
-      connect(sigc::hide(sigc::hide(sigc::hide(draw))));
-    m_pat->signal_cc_removed().connect(sigc::hide(sigc::hide(draw)));
-    m_pat->signal_length_changed().connect(sigc::hide(draw));
-    m_pat->signal_steps_changed().connect(sigc::hide(draw));
+    m_curve->signal_point_added().
+      connect(sigc::hide(sigc::hide(draw)));
+    m_curve->signal_point_changed().
+      connect(sigc::hide(sigc::hide(draw)));
+    m_curve->signal_point_removed().connect(sigc::hide(draw));
+    // XXX need some signal from the curve when the size changes
+    //m_pat->signal_length_changed().connect(sigc::hide(draw));
+    //m_pat->signal_steps_changed().connect(sigc::hide(draw));
   }
   queue_draw();
 }
@@ -78,28 +79,27 @@ void CurveEditor::set_controller(Dino::Pattern* pat, long controller) {
 void CurveEditor::set_step_width(int width) {
   assert(width > 0);
   m_step_width = width;
-  if (m_pat) {
-    set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width, 
-		     68);
+  if (m_curve) {
+    set_size_request(m_curve->get_size() * m_step_width, 68);
     queue_draw();
   }
 }
 
 
 bool CurveEditor::on_button_press_event(GdkEventButton* event) {
-  if (!m_pat || !controller_is_set(m_controller))
+  if (!m_curve)
     return false;
   
   // add a CC event
   if (event->button == 1 || event->button == 2) {
     int step = xpix2step(int(event->x));
-    if (step <= int(m_pat->get_length() * m_pat->get_steps())) {
+    if (step <= int(m_curve->get_size())) {
       int value = ypix2value(int(event->y));
-      int min = m_pat->curves_find(m_controller)->get_info().get_min();
-      int max = m_pat->curves_find(m_controller)->get_info().get_max();
+      int min = m_curve->get_info().get_min();
+      int max = m_curve->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_pat->add_curve_point(m_pat->curves_find(m_controller), step, value);
+      m_curve->add_point(step, value);
       if (event->button == 2)
 	m_drag_step = step;
       else
@@ -110,9 +110,8 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
   // remove a CC event
   else if (event->button == 3) {
     int step;
-    if ((step = xpix2step(int(event->x))) < 
-	int(m_pat->get_length() * m_pat->get_steps())) {
-      m_pat->remove_curve_point(m_pat->curves_find(m_controller), step);
+    if ((step = xpix2step(int(event->x))) < int(m_curve->get_size())) {
+      m_curve->remove_point(step);
     }
   }
 
@@ -126,7 +125,7 @@ bool CurveEditor::on_button_release_event(GdkEventButton* event) {
 
 
 bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
-  if (!m_pat || !controller_is_set(m_controller))
+  if (!m_curve)
     return false;
   
   // add a CC event
@@ -134,13 +133,13 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
     int step = m_drag_step;
     if (step == -1)
       step = xpix2step(int(event->x));
-    if (step <= int(m_pat->get_length() * m_pat->get_steps())) {
+    if (step <= int(m_curve->get_size())) {
       int value = ypix2value(int(event->y));
-      int min = m_pat->curves_find(m_controller)->get_info().get_min();
-      int max = m_pat->curves_find(m_controller)->get_info().get_max();
+      int min = m_curve->get_info().get_min();
+      int max = m_curve->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_pat->add_curve_point(m_pat->curves_find(m_controller), step, value);
+      m_curve->add_point(step, value);
     }
   }
   
@@ -148,8 +147,8 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
   else if (event->state & GDK_BUTTON3_MASK) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
-	int(m_pat->get_length() * m_pat->get_steps())) {
-      m_pat->remove_curve_point(m_pat->curves_find(m_controller), step);
+	int(m_curve->get_size())) {
+      m_curve->remove_point(step);
     }
   }
 
@@ -167,13 +166,14 @@ void CurveEditor::on_realize() {
 
 bool CurveEditor::on_expose_event(GdkEventExpose* event) {
   
-  if (!m_pat || !controller_is_set(m_controller))
+  if (!m_curve)
     return true;
   
   RefPtr<Gdk::Window> win = get_window();
   
-  unsigned steps = m_pat->get_length() * m_pat->get_steps();
-  unsigned spb = m_pat->get_steps();
+  unsigned steps = m_curve->get_size();
+  // XXX need to expose a mutator for this
+  unsigned spb = 8;
   
   for (unsigned i = 0; i < steps; i += spb) {
     if ((i / spb) % 2 == 0)
@@ -192,7 +192,7 @@ bool CurveEditor::on_expose_event(GdkEventExpose* event) {
   
   for (unsigned i = 0; i < steps; ++i) {
     const InterpolatedEvent* event = 
-      m_pat->curves_find(m_controller)->get_event(i);
+      m_curve->get_event(i);
     if (event && event->get_step() == i) {
       m_gc->set_foreground(m_edge_colour);
       win->draw_line(m_gc, m_step_width * i, value2ypix(event->get_start()),
@@ -221,9 +221,9 @@ bool CurveEditor::on_expose_event(GdkEventExpose* event) {
 
 
 int CurveEditor::value2ypix(int value) {
-  if (m_pat) {
-    int max = m_pat->curves_find(m_controller)->get_info().get_max();
-    int min = m_pat->curves_find(m_controller)->get_info().get_min();
+  if (m_curve) {
+    int max = m_curve->get_info().get_max();
+    int min = m_curve->get_info().get_min();
     return get_height() - int(get_height() * (value - min) / double(max - min));
   }
   return 0;
@@ -231,9 +231,9 @@ int CurveEditor::value2ypix(int value) {
 
 
 int CurveEditor::ypix2value(int y) { 
-  if (m_pat) {
-    int max = m_pat->curves_find(m_controller)->get_info().get_max();
-    int min = m_pat->curves_find(m_controller)->get_info().get_min();
+  if (m_curve) {
+    int max = m_curve->get_info().get_max();
+    int min = m_curve->get_info().get_min();
     return min + int((get_height() - y) * (max - min) / double(get_height()));
   }
   return 0;

@@ -79,7 +79,7 @@ const ControllerInfo& ControllerDialog::get_info() const {
   else {
     m_info.set_default(64);
     m_info.set_max(127);
-    m_info.set_global(true);
+    m_info.set_global(false); // XXX should be true if global curves are working
   }
 }
 

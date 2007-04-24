@@ -61,9 +61,10 @@ namespace Dino {
     assert(value >= m_info.get_min());
     assert(value <= m_info.get_max());
     
-    // change the last point in the controller if there is an event
+    // change the last point in the curve if there is an event
     if (step == m_events.size() && m_events[step - 1]) {
       m_events[step - 1]->set_end(value);
+      m_signal_point_changed(step, value);
       return;
     }
       
@@ -72,6 +73,7 @@ namespace Dino {
     if (old_event != 0) {
       if (old_event->get_step() == step) {
         old_event->set_start(value);
+	m_signal_point_changed(step, value);
         if (step > 0 && m_events[step - 1]) {
           m_events[step - 1]->set_end(value);
           m_events[step - 1]->set_length(step - m_events[step - 1]->get_step());
@@ -86,6 +88,7 @@ namespace Dino {
         m_events[step] = new InterpolatedEvent(value, end, step, length);
         for (unsigned i = step + 1; i < step + length; ++i)
           m_events[i] = m_events[step];
+	m_signal_point_added(step, value);
       }
     }
     
@@ -103,6 +106,7 @@ namespace Dino {
       m_events[step] = new InterpolatedEvent(value, end, step, i - step);
       for (unsigned j = step + 1; j < i; ++j)
         m_events[j] = m_events[step];
+      m_signal_point_added(step, value);
     }
   }
 
@@ -128,6 +132,7 @@ namespace Dino {
     }
     
     Deleter::queue(event);
+    m_signal_point_removed(step);
   }
 
 
@@ -135,6 +140,22 @@ namespace Dino {
     assert(step < m_events.size());
     return m_events[step];
   }
+
+
+  sigc::signal<void, int, int>& Curve::signal_point_added() {
+    return m_signal_point_added;
+  }
+
+
+  sigc::signal<void, int, int>& Curve::signal_point_changed() {
+    return m_signal_point_changed;
+  }
+
+
+  sigc::signal<void, int>& Curve::signal_point_removed() {
+    return m_signal_point_removed;
+  }
+
 
 
 }

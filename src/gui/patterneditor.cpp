@@ -368,17 +368,23 @@ void PatternEditor::set_active_controller(long controller) {
   
   Song::TrackIterator t = m_song.tracks_find(m_active_track);
   if (t == m_song.tracks_end()) {
-    m_cce.set_controller(0, make_invalid());
+    m_cce.set_curve(0);
     return;
   }
   
   Track::PatternIterator p = t->pat_find(m_active_pattern);
   if (p == t->pat_end()) {
-    m_cce.set_controller(0, make_invalid());
+    m_cce.set_curve(0);
     return;
   }
   
-  m_cce.set_controller(&*p, m_active_controller);
+  Pattern::CurveIterator c = p->curves_find(m_active_controller);
+  if (c == p->curves_end()) {
+    m_cce.set_curve(0);
+    return;
+  }
+    
+  m_cce.set_curve(&*c);
   
   bool active = controller_is_set(m_active_controller);
 }

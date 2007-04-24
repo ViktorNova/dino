@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.102
+PACKAGE_VERSION = 0.3.103
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -109,7 +109,7 @@ sequenceeditor_so_SOURCES = \
 	tempowidget.cpp tempowidget.hpp \
 	trackdialog.cpp trackdialog.hpp \
 	tracklabel.cpp tracklabel.hpp \
-	trackwidget.cpp trackwidget.hpp
+	sequencewidget.cpp sequencewidget.hpp
 sequenceeditor_so_SOURCEDIR = src/gui
 sequenceeditor_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
 sequenceeditor_so_LIBRARIES = src/gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so

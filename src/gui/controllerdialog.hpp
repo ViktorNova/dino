@@ -44,8 +44,9 @@ protected:
   
   void update_entry();
   
-  Gtk::Entry* m_ent_name;
+  Gtk::Entry m_ent_name;
   SingleTextCombo m_cmb_controller;
+  Gtk::CheckButton m_chk_global;
   
   mutable Dino::ControllerInfo m_info;
   

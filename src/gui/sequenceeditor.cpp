@@ -27,7 +27,7 @@
 #include "track.hpp"
 #include "tempowidget.hpp"
 #include "tempolabel.hpp"
-#include "trackwidget.hpp"
+#include "sequencewidget.hpp"
 #include "tracklabel.hpp"
 #include "plugininterface.hpp"
 
@@ -219,9 +219,9 @@ void SequenceEditor::reset_gui() {
   if (rec_track != m_song.tracks_end())
     rec_track_id = rec_track->get_id();
   for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
-    TrackWidget* tw = manage(new TrackWidget(&m_song));
+    SequenceWidget* tw = manage(new SequenceWidget(&m_song));
     tw->set_track(&*iter);
-    update_menu = bind(mem_fun(*tw, &TrackWidget::update_menu), ref(m_plif));
+    update_menu = bind(mem_fun(*tw, &SequenceWidget::update_menu), ref(m_plif));
     m_plif.signal_action_added().connect(sigc::hide(update_menu));
     m_plif.signal_action_removed().connect(sigc::hide(update_menu));
     update_menu();
@@ -229,7 +229,7 @@ void SequenceEditor::reset_gui() {
       connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
 			      iter->get_id())));
     m_seq.signal_beat_changed().
-      connect(mem_fun(*tw, &TrackWidget::set_current_beat));
+      connect(mem_fun(*tw, &SequenceWidget::set_current_beat));
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
     TrackLabel* tl = manage(new TrackLabel(&m_song));
     tl->set_track(iter->get_id(), &(*iter));

@@ -32,11 +32,11 @@ using namespace std;
 
 
 ControllerDialog::ControllerDialog()
-  : m_info(make_pbend(), "Pitchbend") {
+  : m_chk_global("Global controller"),
+    m_info(make_pbend(), "Pitchbend") {
 
   set_title("Controller properties");
   
-  m_ent_name = manage(new Entry);
   m_cmb_controller.append_text("Pitchbend", Dino::make_pbend());
 
   ostringstream oss;
@@ -48,14 +48,15 @@ ControllerDialog::ControllerDialog()
   
   m_cmb_controller.signal_changed().
     connect(mem_fun(*this, &ControllerDialog::update_entry));
-  m_ent_name->select_region(0, -1);
+  m_ent_name.select_region(0, -1);
   m_cmb_controller.set_active_id(1);
 
-  Table* table = manage(new Table(2, 2));
+  Table* table = manage(new Table(4, 2));
   table->attach(*manage(new Label("Name:")), 0, 1, 0, 1);
   table->attach(*manage(new Label("MIDI controller:")), 0, 1, 1, 2);
-  table->attach(*m_ent_name, 1, 2, 0, 1);
+  table->attach(m_ent_name, 1, 2, 0, 1);
   table->attach(m_cmb_controller, 1, 2, 1, 2);
+  table->attach(m_chk_global, 1, 2, 2, 3);
   table->set_border_width(5);
   table->set_row_spacings(5);
   table->set_col_spacings(5);
@@ -68,32 +69,31 @@ ControllerDialog::ControllerDialog()
 
 
 const ControllerInfo& ControllerDialog::get_info() const {
-  m_info.set_name(m_ent_name->get_text());
+  m_info.set_name(m_ent_name.get_text());
   m_info.set_number(m_cmb_controller.get_active_id());
   m_info.set_min(0);
   if (is_pbend(m_info.get_number())) {
     m_info.set_default(8192);
     m_info.set_max(16383);
-    m_info.set_global(false);
   }
   else {
     m_info.set_default(64);
     m_info.set_max(127);
-    m_info.set_global(false); // XXX should be true if global curves are working
   }
+  m_info.set_global(m_chk_global.get_active());
 }
 
 
 void ControllerDialog::set_info(const ControllerInfo& info) {
   m_info = info;
   m_cmb_controller.set_active_id(m_info.get_number());
-  m_ent_name->set_text(m_info.get_name());
+  m_ent_name.set_text(m_info.get_name());
 }
 
 
 void ControllerDialog::refocus() {
-  m_ent_name->select_region(0, -1);
-  m_ent_name->grab_focus();
+  m_ent_name.select_region(0, -1);
+  m_ent_name.grab_focus();
 }
 
 
@@ -104,14 +104,14 @@ void ControllerDialog::reset() {
 
 void ControllerDialog::update_entry() {
   int a, b;
-  m_ent_name->get_selection_bounds(a, b);
-  if (a == 0 && b == (int)m_ent_name->get_text().size()) {
+  m_ent_name.get_selection_bounds(a, b);
+  if (a == 0 && b == (int)m_ent_name.get_text().size()) {
     if (Dino::is_cc(m_cmb_controller.get_active_id()))
-      m_ent_name->
+      m_ent_name.
 	set_text(m_cc_desc[Dino::cc_number(m_cmb_controller.get_active_id())]);
     else if (Dino::is_pbend(m_cmb_controller.get_active_id()))
-      m_ent_name->set_text("Pitchbend");
-    m_ent_name->select_region(0, -1);
+      m_ent_name.set_text("Pitchbend");
+    m_ent_name.select_region(0, -1);
   }
 }
 

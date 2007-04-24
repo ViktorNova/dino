@@ -18,8 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef TRACKWIDGET_HPP
-#define TRACKWIDGET_HPP
+#ifndef SEQUENCEWIDGET_HPP
+#define SEQUENCEWIDGET_HPP
 
 #include <gtkmm.h>
 
@@ -32,10 +32,10 @@ namespace Dino {
 class PluginInterface;
 
 
-class TrackWidget : public Gtk::DrawingArea {
+class SequenceWidget : public Gtk::DrawingArea {
 public:
   
-  TrackWidget(const Dino::Song* song = 0);
+  SequenceWidget(const Dino::Song* song = 0);
   
   void set_track(Dino::Track* track);
 

@@ -23,7 +23,7 @@
 #include <map>
 
 #include "debug.hpp"
-#include "trackwidget.hpp"
+#include "sequencewidget.hpp"
 #include "pattern.hpp"
 #include "plugininterface.hpp"
 #include "song.hpp"
@@ -38,7 +38,7 @@ using namespace Glib;
 using namespace Pango;
 
 
-TrackWidget::TrackWidget(const Song* song) 
+SequenceWidget::SequenceWidget(const Song* song) 
   : m_song(song), 
     m_col_width(20), 
     //m_drag_beat(-1), 
@@ -66,17 +66,17 @@ TrackWidget::TrackWidget(const Song* song)
   set_size_request(m_col_width * m_song->get_length(), m_col_width + 4);
   
   song->signal_length_changed().
-    connect(mem_fun(*this, &TrackWidget::slot_length_changed));
+    connect(mem_fun(*this, &SequenceWidget::slot_length_changed));
 }
   
 
-void TrackWidget::set_track(Track* track) {
+void SequenceWidget::set_track(Track* track) {
   assert(track);
   m_track = track;
 }
 
 
-void TrackWidget::on_realize() {
+void SequenceWidget::on_realize() {
   DrawingArea::on_realize();
   RefPtr<Gdk::Window> win = get_window();
   m_gc = GC::create(win);
@@ -86,7 +86,7 @@ void TrackWidget::on_realize() {
 }
 
 
-bool TrackWidget::on_expose_event(GdkEventExpose* event) {
+bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
 
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
@@ -151,7 +151,7 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
 }
 
 
-bool TrackWidget::on_button_press_event(GdkEventButton* event) {
+bool SequenceWidget::on_button_press_event(GdkEventButton* event) {
   signal_clicked(event->button);
   
   int beat = int(event->x) / m_col_width;
@@ -164,7 +164,7 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
     for ( ; iter != m_track->pat_end(); ++iter) {
       sprintf(tmp, "%03d", iter->get_id());
       Menu_Helpers::MenuElem
-	elem(tmp, bind(bind(mem_fun(*this, &TrackWidget::slot_insert_pattern), 
+	elem(tmp, bind(bind(mem_fun(*this, &SequenceWidget::slot_insert_pattern), 
 			    beat), iter->get_id()));
       m_pattern_menu.items().push_back(elem);
     }
@@ -202,14 +202,14 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
 }
 
 
-bool TrackWidget::on_button_release_event(GdkEventButton* event) {
+bool SequenceWidget::on_button_release_event(GdkEventButton* event) {
   if (event->button == 2)
     m_drag_seqid = -1;
   return true;
 }
 
 
-bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
+bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
   int beat = int(event->x) / m_col_width;
   
   if ((event->state & GDK_BUTTON2_MASK) && m_drag_seqid != -1) {
@@ -226,19 +226,19 @@ bool TrackWidget::on_motion_notify_event(GdkEventMotion* event) {
 }
 
 
-void TrackWidget::slot_insert_pattern(int pattern, int position) {
+void SequenceWidget::slot_insert_pattern(int pattern, int position) {
   int length = m_track->pat_find(pattern)->get_length();
   m_track->set_sequence_entry(position, pattern, length);
   update();
 }
 
 
-void TrackWidget::slot_length_changed(int length) {
+void SequenceWidget::slot_length_changed(int length) {
   set_size_request(m_col_width * length, m_col_width + 4);
 }
 
 
-void TrackWidget::update() {
+void SequenceWidget::update() {
   RefPtr<Gdk::Window> win = get_window();
   if (win) {
     win->invalidate_rect(Gdk::Rectangle(0,0, get_width(), get_height()), false);
@@ -247,7 +247,7 @@ void TrackWidget::update() {
 }
 
 
-void TrackWidget::set_current_beat(int beat) {
+void SequenceWidget::set_current_beat(int beat) {
   if (beat != m_current_beat) {
     m_current_beat = beat;
     update();
@@ -255,7 +255,7 @@ void TrackWidget::set_current_beat(int beat) {
 }
 
 
-void TrackWidget::update_menu(PluginInterface& plif) {
+void SequenceWidget::update_menu(PluginInterface& plif) {
   using namespace Menu_Helpers;
   m_action_menu.items().clear();
   PluginInterface::action_iterator iter;

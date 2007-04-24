@@ -409,6 +409,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
   
   // initialise the main window
   m_window.set_title("Dino");
+  m_window.set_icon_from_file(DATA_DIR "/head.png");
   VBox* vbox = manage(new VBox);
   m_window.add(*vbox);
   MenuBar* mbar = manage(new MenuBar);
@@ -420,6 +421,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
   m_nb.set_border_width(3);
   
   // initialise the "About" dialog
+  m_about_dialog.set_icon_from_file(DATA_DIR "/head.png");
   m_about_dialog.set_name("Dino");
   m_about_dialog.set_version(VERSION);
   m_about_dialog.set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
@@ -430,6 +432,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
     set_logo(Pixbuf::create_from_file(DATA_DIR "/midisaurus.png"));
   
   // initialise the "Plugins" dialog
+  m_plug_dialog.set_icon_from_file(DATA_DIR "/head.png");
   m_plug_dialog.set_library(m_plib);
   
   m_nb.signal_switch_page().

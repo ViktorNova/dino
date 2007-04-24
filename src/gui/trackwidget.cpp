@@ -18,11 +18,13 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include "curveeditor.hpp"
 #include "trackwidget.hpp"
 
 
 TrackWidget::TrackWidget() {
   pack_start(m_swdg);
+  pack_start(*manage(new CurveEditor));
   show_all();
 }
  

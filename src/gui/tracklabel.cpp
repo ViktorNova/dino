@@ -37,7 +37,7 @@ using namespace Pango;
 TrackLabel::TrackLabel(const Song* song) 
   : m_song(song), 
     m_width(122), 
-    m_height(20), 
+    m_height(20 + 68), 
     m_is_active(false),
     m_is_recording(false) {
   
@@ -88,12 +88,12 @@ bool TrackLabel::on_expose_event(GdkEventExpose* event) {
   }
   
   if (m_is_recording)
-    win->draw_pixbuf(m_gc, m_kb_icon, 0, 0, 2, 4 + m_height / 2 - 8, 18, 16, 
-                     RGB_DITHER_NONE, 0, 0);
+    win->draw_pixbuf(m_gc, m_kb_icon, 0, 0, 2, 4 + (m_height - 68) / 2 - 8,
+		     18, 16, RGB_DITHER_NONE, 0, 0);
   
   m_gc->set_foreground(m_fg_color);
   int lHeight = m_layout->get_pixel_logical_extents().get_height();
-  win->draw_layout(m_gc, 24, 4 + (m_height - lHeight)/2, m_layout);
+  win->draw_layout(m_gc, 24, 4 + (m_height - 68 - lHeight)/2, m_layout);
   return true;
 }
 

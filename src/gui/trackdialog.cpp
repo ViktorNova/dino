@@ -23,6 +23,7 @@
 #include "sequencer.hpp"
 #include "trackdialog.hpp"
 #include "controller_numbers.hpp"
+#include "track.hpp"
 
 
 using namespace Gtk;
@@ -88,11 +89,6 @@ int TrackDialog::get_channel() const {
 }
 
 
-const vector<ControllerInfo*>& TrackDialog::get_controllers() const {
-  return m_ctrls;
-}
-
-
 void TrackDialog::set_name(const string& name) {
   m_ent_name->set_text(name);
 }
@@ -116,14 +112,68 @@ void TrackDialog::update_ports(const Dino::Sequencer* seq) {
 
 
 void TrackDialog::set_controllers(const vector<ControllerInfo*>& ctrls) {
-  for (unsigned i = 0; i < m_ctrls.size(); ++i)
-    delete m_ctrls[i];
   m_ctrls.clear();
   m_cmb_ctrls.clear();
   for (unsigned i = 0; i < ctrls.size(); ++i) {
-    m_ctrls.push_back(new ControllerInfo(*ctrls[i]));
-    m_cmb_ctrls.append_text(m_ctrls[i]->get_name(), m_ctrls[i]->get_number());
+    m_ctrls.push_back(CIWrapper(ControllerInfo(*ctrls[i])));
+    m_cmb_ctrls.append_text(m_ctrls[i].ci.get_name(), 
+			    m_ctrls[i].ci.get_number());
   }
+}
+
+
+void TrackDialog::reset() {
+  set_name("Untitled");
+  set_channel(1);
+  m_cmb_port.set_active_id(-1);
+  m_cmb_ctrls.clear();
+  m_ctrls.clear();
+  refocus();
+}
+
+
+void TrackDialog::set_track(const Dino::Track& track, Dino::Sequencer& seq) {
+  set_name(track.get_name());
+  set_channel(track.get_channel() + 1);
+  set_controllers(track.get_controllers());
+  vector<InstrumentInfo> info = seq.get_instruments(track.get_id());
+  for (unsigned i = 0; i < info.size(); ++i) {
+    if (info[i].get_connected()) {
+      m_cmb_port.set_active_text(info[i].get_name());
+      break;
+    }
+  }
+  refocus();
+}
+
+
+void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq) {
+
+  t.set_name(get_name());
+  t.set_channel(get_channel() - 1);
+  seq.set_instrument(t.get_id(), get_port());
+  
+  unsigned ncontrollers = t.get_controllers().size();
+  vector<long> numbers;
+  for (unsigned i = 0; i < ncontrollers; ++i) {
+    if (m_ctrls[i].deleted)
+      numbers.push_back(t.get_controllers()[i]->get_number());
+    else {
+      t.get_controllers()[i]->set_name(m_ctrls[i].ci.get_name());
+      // XXX This should be made realtime safe - the sequencer will read the
+      // parameter number from the ControllerInfo struct
+      t.get_controllers()[i]->set_number(m_ctrls[i].ci.get_number());
+    }
+  }
+  for (unsigned i = 0; i < numbers.size(); ++i)
+    t.remove_controller(numbers[i]);
+  
+  for (unsigned i = ncontrollers; i < m_ctrls.size(); ++i) {
+    t.add_controller(m_ctrls[i].ci.get_number(), m_ctrls[i].ci.get_name(),
+		     m_ctrls[i].ci.get_default(), m_ctrls[i].ci.get_min(),
+		     m_ctrls[i].ci.get_max(), m_ctrls[i].ci.get_global());
+  }
+  
 }
 
 
@@ -136,10 +186,10 @@ void TrackDialog::refocus() {
 bool TrackDialog::add_controller(const ControllerInfo& info) {
   cerr<<"Adding "<<info.get_number()<<" ("<<info.get_name()<<")"<<endl;
   for (unsigned i = 0; i < m_ctrls.size(); ++i) {
-    if (info.get_number() == m_ctrls[i]->get_number())
+    if (info.get_number() == m_ctrls[i].ci.get_number())
       return false;
   }
-  m_ctrls.push_back(new ControllerInfo(info));
+  m_ctrls.push_back(CIWrapper(info));
   m_cmb_ctrls.append_text(info.get_name(), info.get_number());
   return true;
 }
@@ -147,9 +197,8 @@ bool TrackDialog::add_controller(const ControllerInfo& info) {
 
 bool TrackDialog::remove_controller(long number) {
   for (unsigned i = 0; i < m_ctrls.size(); ++i) {
-    if (number == m_ctrls[i]->get_number()) {
-      delete m_ctrls[i];
-      m_ctrls[i] = 0;
+    if (number == m_ctrls[i].ci.get_number()) {
+      m_ctrls[i].deleted = true;
       m_cmb_ctrls.remove_id(number);
       return true;
     }
@@ -187,7 +236,7 @@ void TrackDialog::remove_controller_clicked() {
   
   unsigned i;
   for (i = 0; i < m_ctrls.size(); ++i) {
-    if (m_ctrls[i]->get_number() == m_cmb_ctrls.get_active_id())
+    if (m_ctrls[i].ci.get_number() == m_cmb_ctrls.get_active_id())
       break;
   }
   if (i == m_ctrls.size()) {
@@ -208,7 +257,7 @@ void TrackDialog::modify_controller_clicked() {
   
   unsigned i;
   for (i = 0; i < m_ctrls.size(); ++i) {
-    if (m_ctrls[i]->get_number() == m_cmb_ctrls.get_active_id())
+    if (m_ctrls[i].ci.get_number() == m_cmb_ctrls.get_active_id())
       break;
   }
   if (i == m_ctrls.size()) {
@@ -216,7 +265,7 @@ void TrackDialog::modify_controller_clicked() {
     return;
   }
   
-  m_cdlg.set_info(*m_ctrls[i]);
+  m_cdlg.set_info(m_ctrls[i].ci);
   m_cdlg.refocus();
   m_cdlg.show_all();
   while (m_cdlg.run() == RESPONSE_OK) {
@@ -229,7 +278,7 @@ void TrackDialog::modify_controller_clicked() {
       for (j = 0; j < m_ctrls.size(); ++j) {
 	if (j == i)
 	  continue;
-	if (m_ctrls[j]->get_number() == info.get_number())
+	if (m_ctrls[j].ci.get_number() == info.get_number())
 	  break;
       }
       if (j < m_ctrls.size())
@@ -239,10 +288,10 @@ void TrackDialog::modify_controller_clicked() {
     }
   }
   
-  m_cmb_ctrls.remove_id(m_ctrls[i]->get_number());
-  m_ctrls[i] = new ControllerInfo(m_cdlg.get_info());
-  m_cmb_ctrls.append_text(m_ctrls[i]->get_name(), m_ctrls[i]->get_number());
-  m_cmb_ctrls.set_active_id(m_ctrls[i]->get_number());
+  m_cmb_ctrls.remove_id(m_ctrls[i].ci.get_number());
+  m_ctrls[i].ci = m_cdlg.get_info();
+  m_cmb_ctrls.append_text(m_ctrls[i].ci.get_name(), m_ctrls[i].ci.get_number());
+  m_cmb_ctrls.set_active_id(m_ctrls[i].ci.get_number());
 
   m_cdlg.hide();
 }

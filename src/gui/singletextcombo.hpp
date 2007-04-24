@@ -49,6 +49,9 @@ public:
   /** Set the active entry to the one with ID number @c id. If there is no
       such entry, return @c false. */
   bool set_active_id(long id);
+  /** Set the active entry to the one with the text @c text. If there is no
+      such entry, return @c false. */
+  bool set_active_text(const Glib::ustring& text);
   /** Returns the text for the active entry. */
   std::string get_active_text() const;
   

@@ -32,6 +32,7 @@
 
 namespace Dino {
   class Sequencer;
+  class Track;
 }
 
 
@@ -43,7 +44,6 @@ public:
   std::string get_name() const;
   std::string get_port() const;
   int get_channel() const;
-  const std::vector<Dino::ControllerInfo*>& get_controllers() const;
   
   void set_name(const std::string& name);
   void set_channel(int channel);
@@ -51,6 +51,10 @@ public:
   void set_controllers(const std::vector<Dino::ControllerInfo*>& ctrls);
   
   void refocus();
+  
+  void reset();
+  void set_track(const Dino::Track& track, Dino::Sequencer& seq);
+  void apply_to_track(Dino::Track& track, Dino::Sequencer& seq);
   
 protected:
   
@@ -61,11 +65,17 @@ protected:
   void remove_controller_clicked();
   void modify_controller_clicked();
   
+  struct CIWrapper {
+    CIWrapper(const Dino::ControllerInfo& _ci) : ci(_ci), deleted(false) { }
+    Dino::ControllerInfo ci;
+    bool deleted;
+  };
+  
   Gtk::Entry* m_ent_name;
   SingleTextCombo m_cmb_port;
   Gtk::SpinButton* m_sbn_channel;
   SingleTextCombo m_cmb_ctrls;
-  std::vector<Dino::ControllerInfo*> m_ctrls;
+  std::vector<CIWrapper> m_ctrls;
   ControllerDialog m_cdlg;
   
 };

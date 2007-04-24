@@ -251,22 +251,11 @@ void SequenceEditor::reset_gui() {
 
 
 void SequenceEditor::add_track() {
-  m_dlg_track->set_name("Untitled");
-  m_dlg_track->set_channel(1);
-  m_dlg_track->refocus();
+  m_dlg_track->reset();
   m_dlg_track->show_all();
   if (m_dlg_track->run() == RESPONSE_OK) {
     Song::TrackIterator iter = m_song.add_track(m_dlg_track->get_name());
-    iter->set_channel(m_dlg_track->get_channel() - 1);
-    m_seq.set_instrument(iter->get_id(), m_dlg_track->get_port());
-    const vector<ControllerInfo*>& ctrls = m_dlg_track->get_controllers();
-    for (unsigned i = 0; i < ctrls.size(); ++i) {
-      if (ctrls[i]) {
-	iter->add_controller(ctrls[i]->get_number(), ctrls[i]->get_name(),
-			     ctrls[i]->get_default(), ctrls[i]->get_min(),
-			     ctrls[i]->get_max(), ctrls[i]->get_global());
-      }
-    }
+    m_dlg_track->apply_to_track(*iter, m_seq);
     set_active_track(iter->get_id());
   }
   m_dlg_track->hide();
@@ -283,15 +272,10 @@ void SequenceEditor::delete_track() {
 void SequenceEditor::edit_track_properties() {
   if (m_active_track >= 0) {
     Track& t = *(m_song.tracks_find(m_active_track));
-    m_dlg_track->set_name(t.get_name());
-    m_dlg_track->set_channel(t.get_channel() + 1);
-    m_dlg_track->set_controllers(t.get_controllers());
-    m_dlg_track->refocus();
+    m_dlg_track->set_track(t, m_seq);
     m_dlg_track->show_all();
     if (m_dlg_track->run() == RESPONSE_OK) {
-      t.set_name(m_dlg_track->get_name());
-      t.set_channel(m_dlg_track->get_channel() - 1);
-      m_seq.set_instrument(m_active_track, m_dlg_track->get_port());
+      m_dlg_track->apply_to_track(t, m_seq);
     }
   }
   m_dlg_track->hide();

@@ -280,7 +280,7 @@ void PatternEditor::update_controller_combo() {
   if (t_iter != m_song.tracks_end()) {
     Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
     if (p_iter != t_iter->pat_end()) {
-      Pattern::ControllerIterator iter;
+      Pattern::CurveIterator iter;
       if (p_iter->ctrls_find(new_active) == p_iter->ctrls_end())
 	new_active = -1;
       char tmp[10];

@@ -122,7 +122,7 @@ namespace Dino {
     void handle_note_off(double beat, unsigned char key, Track& track);
     void handle_controller(double beat, long param, int value, Track& track);
     void record_cc_point(Pattern& pat, 
-                         Pattern::ControllerIterator& citer, 
+                         Pattern::CurveIterator& citer, 
                          unsigned long step, int value);
     
     // variables that can only be accessed by the editing thread

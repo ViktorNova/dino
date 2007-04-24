@@ -162,13 +162,14 @@ namespace Dino {
                iter->get_velocity(), iter->get_length());
     }
     
-    // copy all controllers with data
-    ControllerIterator citer;
+    // copy all curves with data
+    // XXX fix this!
+    /*CurveIterator citer;
     for (citer = pat.ctrls_begin(); citer != pat.ctrls_end(); ++citer) {
-      ControllerIterator nctrl = add_controller(citer->get_name(),
-                                                citer->get_param(),
-                                                citer->get_min(), 
-                                                citer->get_max());
+      CurveIterator nctrl = add_controller(citer->get_name(),
+					   citer->get_param(),
+					   citer->get_min(), 
+					   citer->get_max());
       for (unsigned i = 0; i < citer->get_size(); ++i) {
         const InterpolatedEvent* evt = citer->get_event(i);
         if (evt && evt->get_step() == i)
@@ -178,6 +179,7 @@ namespace Dino {
         add_cc(nctrl, nctrl->get_size(), 
                citer->get_event(nctrl->get_size() - 1)->get_end());
     }
+    */
   }
 
 
@@ -556,10 +558,11 @@ namespace Dino {
     m_signal_note_changed(*iterator);
   }
 
-
-  Pattern::ControllerIterator Pattern::add_controller(const std::string& name,
-                                                      long param, 
-                                                      int min, int max) {
+  
+  /*
+  Pattern::CurveIterator Pattern::add_controller(const std::string& name,
+						 long param, 
+						 int min, int max) {
 #if 0
     // find the place to insert the new controller
     unsigned i;
@@ -616,16 +619,18 @@ namespace Dino {
 
     m_signal_controller_removed(param);
   }
-
+  */
   
-  void Pattern::add_cc(ControllerIterator iter, unsigned int step, int value) {
+  
+  void Pattern::add_curve_point(CurveIterator iter, unsigned int step, 
+				int value) {
     assert(step <= m_sd->length * m_sd->steps);
     (*iter.m_iterator)->add_point(step, value);
     m_signal_cc_added((*iter.m_iterator)->get_param(), step, value);
   }
 
 
-  void Pattern::remove_cc(ControllerIterator iter, unsigned int step) {
+  void Pattern::remove_curve_point(CurveIterator iter, unsigned int step) {
     assert(step < m_sd->length * m_sd->steps);
     (*iter.m_iterator)->remove_point(step);
     m_signal_cc_removed((*iter.m_iterator)->get_param(), step);
@@ -694,7 +699,7 @@ namespace Dino {
       note_elt->set_attribute("velocity", tmp_txt);
     }
     
-    ControllerIterator citer;
+    CurveIterator citer;
     for (citer = ctrls_begin(); citer != ctrls_end(); ++citer) {
       Element* ctrl_elt = elt->add_child("controller");
       ctrl_elt->set_attribute("name", citer->get_name());
@@ -749,7 +754,9 @@ namespace Dino {
       }
       add_note(step, value, velocity, length);
     }
-
+    
+    // XXX Fix this!
+    /*
     nodes = elt->get_children("controller");
     for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
       const Element* ctrl_elt = dynamic_cast<const Element*>(*iter);
@@ -763,7 +770,7 @@ namespace Dino {
       sscanf(ctrl_elt->get_attribute("min")->get_value().c_str(), "%d", &min);
       sscanf(ctrl_elt->get_attribute("max")->get_value().c_str(), "%d", &max);
       name = ctrl_elt->get_attribute("name")->get_value();
-      ControllerIterator citer = add_controller(name, param, min, max);
+      CurveIterator citer = add_controller(name, param, min, max);
       Node::NodeList nodes2 = ctrl_elt->get_children("point");
       Node::NodeList::const_iterator iter2;
       for (iter2 = nodes2.begin(); iter2 != nodes2.end(); ++iter2) {
@@ -779,6 +786,7 @@ namespace Dino {
         add_cc(citer, step, value);
       }
     }
+    */
     
     return true;
   }
@@ -901,20 +909,20 @@ namespace Dino {
   }
 
 
-  Pattern::ControllerIterator Pattern::ctrls_begin() const {
-    return ControllerIterator(m_sd->ctrls->begin());
+  Pattern::CurveIterator Pattern::ctrls_begin() const {
+    return CurveIterator(m_sd->ctrls->begin());
   }
   
   
-  Pattern::ControllerIterator Pattern::ctrls_end() const {
-    return ControllerIterator(m_sd->ctrls->end());
+  Pattern::CurveIterator Pattern::ctrls_end() const {
+    return CurveIterator(m_sd->ctrls->end());
   }
   
   
-  Pattern::ControllerIterator Pattern::ctrls_find(long param) const {
+  Pattern::CurveIterator Pattern::ctrls_find(long param) const {
     for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
       if ((*m_sd->ctrls)[i]->get_param() == param)
-        return ControllerIterator(m_sd->ctrls->begin() + i);
+        return CurveIterator(m_sd->ctrls->begin() + i);
     }
     return ctrls_end();
   }

@@ -34,12 +34,6 @@
 #include "sequencable.hpp"
 
 
-using namespace Glib;
-using namespace sigc;
-using namespace std;
-using namespace xmlpp;
-
-
 namespace Dino {
 
   class InterpolatedEvent;
@@ -163,15 +157,15 @@ namespace Dino {
     };
     
     
-    Track(int id, int length = 0, const string& name = "Untitled");
+    Track(int id, int length = 0, const std::string& name = "Untitled");
   
     ~Track();
   
     /// @name Accessors
     //@{
     int get_id() const;
-    const string& get_name() const;
-    const string& get_label() const;
+    const std::string& get_name() const;
+    const std::string& get_label() const;
     int get_channel() const;
     unsigned int get_length() const;
     ConstPatternIterator pat_begin() const;
@@ -182,6 +176,7 @@ namespace Dino {
     SequenceIterator seq_find(unsigned int beat) const;
     SequenceIterator seq_find_by_id(int id) const;
     const std::vector<ControllerInfo*>& get_controllers() const;
+    Curve* get_curve(long number);
     
     // non-const accessors
     PatternIterator pat_begin();
@@ -192,8 +187,8 @@ namespace Dino {
     
     /// @name Mutators
     //@{
-    void set_name(const string& name);
-    PatternIterator add_pattern(const string& name, int length, int steps);
+    void set_name(const std::string& name);
+    PatternIterator add_pattern(const std::string& name, int length, int steps);
     PatternIterator duplicate_pattern(ConstPatternIterator iterator);
     void remove_pattern(int id);
     SequenceIterator set_sequence_entry(int beat, int pattern, 
@@ -212,8 +207,8 @@ namespace Dino {
     //@{
     bool is_dirty() const;
     void make_clean() const;
-    bool fill_xml_node(Element* elt) const;
-    bool parse_xml_node(const Element* elt);
+    bool fill_xml_node(xmlpp::Element* elt) const;
+    bool parse_xml_node(const xmlpp::Element* elt);
     //@}
     
     /// @name Sequencing
@@ -226,34 +221,40 @@ namespace Dino {
     
     /// @name Signals
     //@{
-    signal<void, const string&>& signal_name_changed();
-    signal<void, int>& signal_pattern_added();
-    signal<void, int>& signal_pattern_removed();
-    signal<void, int, int, int>& signal_sequence_entry_added();
-    signal<void, int, int, int>& signal_sequence_entry_changed();
-    signal<void, int>& signal_sequence_entry_removed();
-    signal<void, int>& signal_length_changed();
+    sigc::signal<void, const std::string&>& signal_name_changed();
+    sigc::signal<void, int>& signal_pattern_added();
+    sigc::signal<void, int>& signal_pattern_removed();
+    sigc::signal<void, int, int, int>& signal_sequence_entry_added();
+    sigc::signal<void, int, int, int>& signal_sequence_entry_changed();
+    sigc::signal<void, int>& signal_sequence_entry_removed();
+    sigc::signal<void, int>& signal_length_changed();
+    sigc::signal<void, long>& signal_controller_added();
+    sigc::signal<void, long>& signal_controller_removed();
+    sigc::signal<void, long>& signal_controller_changed();
     //@}
     
   private:
   
     int m_id;
-    string m_name;
-    map<int, Pattern*> m_patterns;
-    vector<ControllerInfo*> m_controllers;
+    std::string m_name;
+    std::map<int, Pattern*> m_patterns;
+    std::vector<ControllerInfo*> m_controllers;
     int m_next_sid;
     volatile int m_channel;
-    vector<SequenceEntry*>* volatile m_sequence;
+    std::vector<SequenceEntry*>* volatile m_sequence;
     
     mutable bool m_dirty;
   
-    signal<void, const string&> m_signal_name_changed;
-    signal<void, int> m_signal_pattern_added;
-    signal<void, int> m_signal_pattern_removed;
-    signal<void, int, int, int> m_signal_sequence_entry_added;
-    signal<void, int, int, int> m_signal_sequence_entry_changed;
-    signal<void, int> m_signal_sequence_entry_removed;
-    signal<void, int> m_signal_length_changed;
+    sigc::signal<void, const std::string&> m_signal_name_changed;
+    sigc::signal<void, int> m_signal_pattern_added;
+    sigc::signal<void, int> m_signal_pattern_removed;
+    sigc::signal<void, int, int, int> m_signal_sequence_entry_added;
+    sigc::signal<void, int, int, int> m_signal_sequence_entry_changed;
+    sigc::signal<void, int> m_signal_sequence_entry_removed;
+    sigc::signal<void, int> m_signal_length_changed;
+    sigc::signal<void, long> m_signal_controller_added;
+    sigc::signal<void, long> m_signal_controller_removed;
+    sigc::signal<void, long> m_signal_controller_changed;
 
   };
 

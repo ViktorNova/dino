@@ -106,35 +106,35 @@ namespace Dino {
     };
     
     
-    /** A ControllerIterator is a const_iterator type that can be used to
-        access data from controllers in the pattern. */
-    class ControllerIterator : 
+    /** A CurveIterator is a const_iterator type that can be used to
+        access data from curves in the pattern. */
+    class CurveIterator : 
       public std::iterator<std::forward_iterator_tag, Curve> {
     public:
       
       /** Create an invalid iterator. */
-      ControllerIterator() { }
+      CurveIterator() { }
       
       /** Dereference the iterator to get a constant Controller reference. */
       const Curve& operator*() const { return **m_iterator; }
       /** Dereference the iterator to get a constant Controller pointer. */
       const Curve* operator->() const { return *m_iterator; }
       /** Returns @c true if the two iterators refer to the same Curve. */
-      bool operator==(const ControllerIterator& iter) const {
+      bool operator==(const CurveIterator& iter) const {
         return (m_iterator == iter.m_iterator);
       }
       /** Returns @c false if the two iterators refer to the same Controller. */
-      bool operator!=(const ControllerIterator& iter) const {
+      bool operator!=(const CurveIterator& iter) const {
         return (m_iterator != iter.m_iterator);
       }
       /** Advances the iterator to the next controller. */
-      ControllerIterator& operator++() { ++m_iterator; return *this; }
+      CurveIterator& operator++() { ++m_iterator; return *this; }
       
     private:
       
       friend class Pattern;
 
-      ControllerIterator(const std::vector<Curve*>::iterator& iter) 
+      CurveIterator(const std::vector<Curve*>::iterator& iter) 
         : m_iterator(iter) { 
       }
       
@@ -163,13 +163,13 @@ namespace Dino {
         step @c step, or an invalid iterator if there is no such note. */
     NoteIterator find_note(unsigned int step, int value) const;
     /** Return an iterator that refers to the first controller in the pattern.*/
-    ControllerIterator ctrls_begin() const;
+    CurveIterator ctrls_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator
         has passed the last controller in the pattern. */
-    ControllerIterator ctrls_end() const;
+    CurveIterator ctrls_end() const;
     /** Return an iterator for the controller with parameter @c param, or an
         invalid iterator if no such controller exists. */
-    ControllerIterator ctrls_find(long param) const;
+    CurveIterator ctrls_find(long param) const;
     /** Return the number of steps per beat. */
     unsigned int get_steps() const;
     /** Return the length in beats. */
@@ -201,15 +201,10 @@ namespace Dino {
     int resize_note(NoteIterator note, int length);
     /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
-    /** Add a controller for this pattern. */
-    ControllerIterator add_controller(const std::string& name, long param, 
-                                      int min, int max);
-    /** Remove a controller. */
-    void remove_controller(ControllerIterator iter);
     /** Add a CC event to the given controller. */
-    void add_cc(ControllerIterator iter, unsigned int step, int value);
+    void add_curve_point(CurveIterator iter, unsigned int step, int value);
     /** Remove a CC event. */
-    void remove_cc(ControllerIterator iter, unsigned int step);
+    void remove_curve_point(CurveIterator iter, unsigned int step);
     /** Reset the "dirty rect".
         @see get_dirty_rect(). */
     void reset_dirty_rect();

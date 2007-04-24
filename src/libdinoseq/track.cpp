@@ -322,13 +322,53 @@ namespace Dino {
   }
   
   
+  Curve* Track::get_curve(long number) {
+    return 0;
+  }
+
+
   bool Track::add_controller(long number, const std::string& name, 
 			     int default_v, int min, int max, bool global) {
-    return false;
+    
+    // check if we already have this controller, if so return false
+    for (int i = 0; i < m_controllers.size(); ++i) {
+      if (m_controllers[i]->get_number() == number)
+	return false;
+    }
+    
+    // add the ControllerInfo object
+    dbg1<<"Adding controller \""<<name<<"\" in track \""<<m_name<<"\""<<endl;
+    ControllerInfo* ci = new ControllerInfo(number, name);
+    ci->set_default(default_v);
+    ci->set_min(min);
+    ci->set_max(max);
+    ci->set_global(global);
+    m_controllers.push_back(ci);
+    
+    // XXX Add curves!
+    
+    m_signal_controller_added(number);
+    
+    return true;
   }
   
   
   bool Track::remove_controller(long number) {
+    // check if it exists
+    for (int i = 0; i < m_controllers.size(); ++i) {
+      if (m_controllers[i]->get_number() == number) {
+	
+	// XXX Delete all curves using this info object!
+	
+	ControllerInfo* tmp = m_controllers[i];
+	dbg1<<"Deleting controller \""<<tmp->get_name()<<"\" in track \""
+	    <<m_name<<"\""<<endl;
+	m_controllers.erase(m_controllers.begin() + i);
+	Deleter::queue(tmp);
+	return true;
+      }
+    }
+    
     return false;
   }
 
@@ -718,5 +758,20 @@ namespace Dino {
     return m_signal_length_changed;
   }
 
+
+  signal<void, long>& Track::signal_controller_added() {
+
+  }
+
+  
+  signal<void, long>& Track::signal_controller_removed() {
+
+  }
+  
+  
+  signal<void, long>& Track::signal_controller_changed() {
+
+  }
+  
 
 }

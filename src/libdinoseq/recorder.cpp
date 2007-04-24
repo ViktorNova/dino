@@ -112,7 +112,7 @@ namespace Dino {
             map<long, int>::const_iterator miter;
             for (miter = m_ctrl_values.begin(); miter != m_ctrl_values.end();
                  ++miter) {
-              Pattern::ControllerIterator citer = pat.ctrls_find(miter->first);
+              Pattern::CurveIterator citer = pat.ctrls_find(miter->first);
               if (citer != pat.ctrls_end()) {
                 for (unsigned int step = first_step; step <= last_step; ++step)
                   record_cc_point(pat, citer, step, miter->second);
@@ -365,7 +365,7 @@ namespace Dino {
 
 
   void Recorder::record_cc_point(Pattern& pat, 
-                                 Pattern::ControllerIterator& citer, 
+                                 Pattern::CurveIterator& citer, 
                                  unsigned long step, int value) {
     cerr<<"adding "<<step<<", "<<value<<endl;
     
@@ -382,16 +382,16 @@ namespace Dino {
     if (step + 1 < citer->get_size() && (ev = citer->get_event(step + 1))) {
       float v = ev->get_start() + (ev->get_end() - ev->get_start()) * 
         (float(step + 1 - ev->get_step()) / ev->get_length());
-      pat.add_cc(citer, step + 1, int(v));
+      pat.add_curve_point(citer, step + 1, int(v));
     }
     if (step > 0 && (ev = citer->get_event(step - 1))) {
       float v = ev->get_start() + (ev->get_end() - ev->get_start()) * 
         (float(step - 1 - ev->get_step()) / ev->get_length());
-      pat.add_cc(citer, step - 1, int(v));
+      pat.add_curve_point(citer, step - 1, int(v));
     }
     
     // add the actual point
-    pat.add_cc(citer, step, value);
+    pat.add_curve_point(citer, step, value);
   }
   
 

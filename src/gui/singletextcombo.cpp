@@ -99,6 +99,24 @@ bool SingleTextCombo::set_active_id(long ID) {
 }
 
 
+bool SingleTextCombo::set_active_text(const Glib::ustring& text) {
+  if(m_store) {
+    for(TreeModel::iterator iter = m_store->children().begin(); 
+	iter != m_store->children().end(); ++iter) {
+      const Glib::ustring& thisText = (*iter)[m_text_columns.m_text];
+      if(thisText == text) {
+        set_active(iter);
+        return true;
+      }
+    }
+  }
+
+  //Not found, so mark it as blank:
+  unset_active();
+  return false;
+}
+
+
 string SingleTextCombo::get_active_text() const {
   TreeModel::iterator activeRow = get_active();
   ustring str;

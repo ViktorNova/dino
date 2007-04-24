@@ -98,7 +98,7 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
       int max = m_pat->ctrls_find(m_controller)->get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
+      m_pat->add_curve_point(m_pat->ctrls_find(m_controller), step, value);
       if (event->button == 2)
 	m_drag_step = step;
       else
@@ -111,7 +111,7 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
 	int(m_pat->get_length() * m_pat->get_steps())) {
-      m_pat->remove_cc(m_pat->ctrls_find(m_controller), step);
+      m_pat->remove_curve_point(m_pat->ctrls_find(m_controller), step);
     }
   }
 
@@ -139,7 +139,7 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
       int max = m_pat->ctrls_find(m_controller)->get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_pat->add_cc(m_pat->ctrls_find(m_controller), step, value);
+      m_pat->add_curve_point(m_pat->ctrls_find(m_controller), step, value);
     }
   }
   
@@ -148,7 +148,7 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
 	int(m_pat->get_length() * m_pat->get_steps())) {
-      m_pat->remove_cc(m_pat->ctrls_find(m_controller), step);
+      m_pat->remove_curve_point(m_pat->ctrls_find(m_controller), step);
     }
   }
 

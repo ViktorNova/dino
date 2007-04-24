@@ -281,12 +281,12 @@ void PatternEditor::update_controller_combo() {
     Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
     if (p_iter != t_iter->pat_end()) {
       Pattern::CurveIterator iter;
-      if (p_iter->ctrls_find(new_active) == p_iter->ctrls_end())
+      if (p_iter->curves_find(new_active) == p_iter->curves_end())
 	new_active = -1;
       char tmp[10];
-      for (iter = p_iter->ctrls_begin(); iter != p_iter->ctrls_end(); ++iter) {
-	long param = iter->get_param();
-	string name = iter->get_name();
+      for (iter = p_iter->curves_begin(); iter != p_iter->curves_end(); ++iter) {
+	long param = iter->get_info().get_number();
+	string name = iter->get_info().get_name();
 	if (is_cc(param))
 	  sprintf(tmp, "CC%03ld: ", cc_number(param));
 	else if (is_nrpn(param))

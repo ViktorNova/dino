@@ -20,6 +20,7 @@
 
 #include <iostream>
 
+#include "controllerinfo.hpp"
 #include "curve.hpp"
 #include "curveeditor.hpp"
 #include "controller_numbers.hpp"
@@ -94,11 +95,11 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
     int step = xpix2step(int(event->x));
     if (step <= int(m_pat->get_length() * m_pat->get_steps())) {
       int value = ypix2value(int(event->y));
-      int min = m_pat->ctrls_find(m_controller)->get_min();
-      int max = m_pat->ctrls_find(m_controller)->get_max();
+      int min = m_pat->curves_find(m_controller)->get_info().get_min();
+      int max = m_pat->curves_find(m_controller)->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_pat->add_curve_point(m_pat->ctrls_find(m_controller), step, value);
+      m_pat->add_curve_point(m_pat->curves_find(m_controller), step, value);
       if (event->button == 2)
 	m_drag_step = step;
       else
@@ -111,7 +112,7 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
 	int(m_pat->get_length() * m_pat->get_steps())) {
-      m_pat->remove_curve_point(m_pat->ctrls_find(m_controller), step);
+      m_pat->remove_curve_point(m_pat->curves_find(m_controller), step);
     }
   }
 
@@ -135,11 +136,11 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
       step = xpix2step(int(event->x));
     if (step <= int(m_pat->get_length() * m_pat->get_steps())) {
       int value = ypix2value(int(event->y));
-      int min = m_pat->ctrls_find(m_controller)->get_min();
-      int max = m_pat->ctrls_find(m_controller)->get_max();
+      int min = m_pat->curves_find(m_controller)->get_info().get_min();
+      int max = m_pat->curves_find(m_controller)->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_pat->add_curve_point(m_pat->ctrls_find(m_controller), step, value);
+      m_pat->add_curve_point(m_pat->curves_find(m_controller), step, value);
     }
   }
   
@@ -148,7 +149,7 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
 	int(m_pat->get_length() * m_pat->get_steps())) {
-      m_pat->remove_curve_point(m_pat->ctrls_find(m_controller), step);
+      m_pat->remove_curve_point(m_pat->curves_find(m_controller), step);
     }
   }
 
@@ -191,7 +192,7 @@ bool CurveEditor::on_expose_event(GdkEventExpose* event) {
   
   for (unsigned i = 0; i < steps; ++i) {
     const InterpolatedEvent* event = 
-      m_pat->ctrls_find(m_controller)->get_event(i);
+      m_pat->curves_find(m_controller)->get_event(i);
     if (event && event->get_step() == i) {
       m_gc->set_foreground(m_edge_colour);
       win->draw_line(m_gc, m_step_width * i, value2ypix(event->get_start()),
@@ -221,8 +222,8 @@ bool CurveEditor::on_expose_event(GdkEventExpose* event) {
 
 int CurveEditor::value2ypix(int value) {
   if (m_pat) {
-    int max = m_pat->ctrls_find(m_controller)->get_max();
-    int min = m_pat->ctrls_find(m_controller)->get_min();
+    int max = m_pat->curves_find(m_controller)->get_info().get_max();
+    int min = m_pat->curves_find(m_controller)->get_info().get_min();
     return get_height() - int(get_height() * (value - min) / double(max - min));
   }
   return 0;
@@ -231,8 +232,8 @@ int CurveEditor::value2ypix(int value) {
 
 int CurveEditor::ypix2value(int y) { 
   if (m_pat) {
-    int max = m_pat->ctrls_find(m_controller)->get_max();
-    int min = m_pat->ctrls_find(m_controller)->get_min();
+    int max = m_pat->curves_find(m_controller)->get_info().get_max();
+    int min = m_pat->curves_find(m_controller)->get_info().get_min();
     return min + int((get_height() - y) * (max - min) / double(get_height()));
   }
   return 0;

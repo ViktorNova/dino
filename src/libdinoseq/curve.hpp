@@ -37,34 +37,21 @@ namespace Dino {
   public:
 
     /** Create a new controller with the given parameters. */
-    Curve(ControllerInfo* info, unsigned int size);
+    Curve(const ControllerInfo& info, unsigned int size);
     ~Curve();
     
     /// @name Accessors
     //@{
-    /** Return the name of this Controller. */
-    const std::string& get_name() const;
     /** Return the active event at the given step. */
     const InterpolatedEvent* get_event(unsigned int step) const;
-    /** Return the minimum possible value for this controller. */
-    int get_min() const;
-    /** Return the maximum possible value for this controller. */
-    int get_max() const;
-    /** Return the parameter number for this controller (not the same as the
-        CC or NRPN number, use the inline functions in controller_numbers.hpp
-        to get those). */
-    long get_param() const;
     /** Return the number of time steps in this controller. */
     unsigned int get_size() const;
     /** Return the ControllerInfo struct for this curve. */
-    const ControllerInfo* get_info() const;
-    ControllerInfo* get_info();
+    const ControllerInfo& get_info() const;
     //@}
 
     /// @name Mutators
     //@{
-    /** Set the name of this controller. */
-    void set_name(const std::string& name);
     /** Add a control point to this controller. */
     void add_point(unsigned int step, int value);
     /** Remove a control point from this controller. */
@@ -73,7 +60,7 @@ namespace Dino {
 
   private:
     
-    ControllerInfo* m_info;
+    const ControllerInfo& m_info;
     std::string m_name;
     std::vector<InterpolatedEvent*> m_events;
     long m_param;

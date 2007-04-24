@@ -29,11 +29,10 @@
 namespace Dino {
 
 
-  Curve::Curve(ControllerInfo* info, unsigned int size)
+  Curve::Curve(const ControllerInfo& info, unsigned int size)
     : m_info(info),
       m_events(size, 0) {
-    assert(m_info);
-    assert(controller_is_set(m_param));
+
   }
   
   
@@ -47,46 +46,16 @@ namespace Dino {
   }
 
   
-  const std::string& Curve::get_name() const {
-    return m_name;
-  }
-  
-
-  int Curve::get_min() const {
-    return m_min;
-  }
-  
-  
-  int Curve::get_max() const {
-    return m_max;
-  }
-
-
-  long Curve::get_param() const {
-    return m_param;
-  }
-  
-  
   unsigned int Curve::get_size() const {
     return m_events.size();
   }
 
 
-  const ControllerInfo* Curve::get_info() const {
+  const ControllerInfo& Curve::get_info() const {
     return m_info;
   }
 
 
-  ControllerInfo* Curve::get_info() {
-    return m_info;
-  }
-
-
-  void Curve::set_name(const std::string& name) {
-    m_name = name;
-  }
-  
-  
   void Curve::add_point(unsigned int step, int value) {
     assert(step <= m_events.size());
     assert(value >= m_min);

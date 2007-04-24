@@ -26,8 +26,9 @@
 #include <iostream>
 #include <set>
 
-#include "curve.hpp"
 #include "controller_numbers.hpp"
+#include "controllerinfo.hpp"
+#include "curve.hpp"
 #include "debug.hpp"
 #include "deleter.hpp"
 #include "interpolatedevent.hpp"
@@ -165,7 +166,7 @@ namespace Dino {
     // copy all curves with data
     // XXX fix this!
     /*CurveIterator citer;
-    for (citer = pat.ctrls_begin(); citer != pat.ctrls_end(); ++citer) {
+    for (citer = pat.curves_begin(); citer != pat.curves_end(); ++citer) {
       CurveIterator nctrl = add_controller(citer->get_name(),
 					   citer->get_param(),
 					   citer->get_min(), 
@@ -282,8 +283,8 @@ namespace Dino {
     new_note_offs->resize(length * m_sd->steps);
     
     // iterate over all controllers
-    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-      Curve* c = (*m_sd->ctrls)[i];
+    for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
+      Curve* c = (*m_sd->curves)[i];
       
       // create a new controller with the same settings but different size
       Curve* new_c = new Curve(c->get_info(), length * m_sd->steps);
@@ -337,8 +338,8 @@ namespace Dino {
     
     
     // iterate over all controllers in the old controller list
-    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-      Curve* c = (*m_sd->ctrls)[i];
+    for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
+      Curve* c = (*m_sd->curves)[i];
       
       // create a new controller with the same settings but different size
       Curve* new_c = new Curve(c->get_info(), m_sd->length * steps);
@@ -566,23 +567,23 @@ namespace Dino {
 #if 0
     // find the place to insert the new controller
     unsigned i;
-    for (i = 0; i < m_sd->ctrls->size(); ++i) {
-      long this_param = (*m_sd->ctrls)[i]->get_param();
+    for (i = 0; i < m_sd->curves->size(); ++i) {
+      long this_param = (*m_sd->curves)[i]->get_param();
       if (this_param == param)
-        return ControllerIterator(m_sd->ctrls->begin() + i);
+        return ControllerIterator(m_sd->curves->begin() + i);
       else if (this_param > param)
         break;
     }
     
     // make a copy of the controller vector and insert the new one
-    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->ctrls);
+    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
     new_vector->insert(new_vector->begin() + i, 
                        new Curve(name, m_sd->steps * m_sd->length, 
 				 param, min, max));
     
     // delete the old vector
-    vector<Curve*>* tmp = m_sd->ctrls;
-    m_sd->ctrls = new_vector;
+    vector<Curve*>* tmp = m_sd->curves;
+    m_sd->curves = new_vector;
     Deleter::queue(tmp);
     
     dbg1<<"Added controller \""<<name<<"\" with parameter "<<param<<endl;
@@ -591,28 +592,28 @@ namespace Dino {
     return ControllerIterator(new_vector->begin() + i);
 #endif
     
-    return ctrls_end();
+    return curves_end();
   }
   
   
   void Pattern::remove_controller(ControllerIterator iter) {
     // find the element to erase
     unsigned i;
-    for (i = 0; i < m_sd->ctrls->size(); ++i) {
-      if ((*m_sd->ctrls)[i] == &*iter)
+    for (i = 0; i < m_sd->curves->size(); ++i) {
+      if ((*m_sd->curves)[i] == &*iter)
         break;
     }
-    if (i >= m_sd->ctrls->size())
+    if (i >= m_sd->curves->size())
       return;
     
     // make a copy of the old vector
-    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->ctrls);
-    long param = (*m_sd->ctrls)[i]->get_param();
+    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
+    long param = (*m_sd->curves)[i]->get_param();
     new_vector->erase(new_vector->begin() + i);
     
     // delete the old vector
-    vector<Curve*>* tmp = m_sd->ctrls;
-    m_sd->ctrls = new_vector;
+    vector<Curve*>* tmp = m_sd->curves;
+    m_sd->curves = new_vector;
     Deleter::queue(tmp);
     
     dbg1<<"Removed controller"<<endl;
@@ -626,14 +627,14 @@ namespace Dino {
 				int value) {
     assert(step <= m_sd->length * m_sd->steps);
     (*iter.m_iterator)->add_point(step, value);
-    m_signal_cc_added((*iter.m_iterator)->get_param(), step, value);
+    m_signal_cc_added((*iter.m_iterator)->get_info().get_number(), step, value);
   }
 
 
   void Pattern::remove_curve_point(CurveIterator iter, unsigned int step) {
     assert(step < m_sd->length * m_sd->steps);
     (*iter.m_iterator)->remove_point(step);
-    m_signal_cc_removed((*iter.m_iterator)->get_param(), step);
+    m_signal_cc_removed((*iter.m_iterator)->get_info().get_number(), step);
   }
 
   
@@ -700,14 +701,14 @@ namespace Dino {
     }
     
     CurveIterator citer;
-    for (citer = ctrls_begin(); citer != ctrls_end(); ++citer) {
+    for (citer = curves_begin(); citer != curves_end(); ++citer) {
       Element* ctrl_elt = elt->add_child("controller");
-      ctrl_elt->set_attribute("name", citer->get_name());
-      sprintf(tmp_txt, "%lu", citer->get_param());
+      ctrl_elt->set_attribute("name", citer->get_info().get_name());
+      sprintf(tmp_txt, "%lu", citer->get_info().get_number());
       ctrl_elt->set_attribute("param", tmp_txt);
-      sprintf(tmp_txt, "%d", citer->get_min());
+      sprintf(tmp_txt, "%d", citer->get_info().get_min());
       ctrl_elt->set_attribute("min", tmp_txt);
-      sprintf(tmp_txt, "%d", citer->get_max());
+      sprintf(tmp_txt, "%d", citer->get_info().get_max());
       ctrl_elt->set_attribute("max", tmp_txt);
       for (unsigned i = 0; i < citer->get_size(); ++i) {
         const InterpolatedEvent* e = citer->get_event(i);
@@ -825,20 +826,21 @@ namespace Dino {
       for ( ; cc_pos < (step + 1) / double(sd->steps) && cc_pos < to; 
             cc_pos += buffer.get_cc_resolution()) {
         ++cc_steps;
-        for (unsigned c = 0; c < sd->ctrls->size(); ++c) {
-          const InterpolatedEvent* event = (*sd->ctrls)[c]->get_event(step);
+        for (unsigned c = 0; c < sd->curves->size(); ++c) {
+          const InterpolatedEvent* event = (*sd->curves)[c]->get_event(step);
           if (event) {
             unsigned char* data = buffer.
               reserve(cc_pos, 3);
-            if (data && is_cc((*sd->ctrls)[c]->get_param())) {
+            if (data && is_cc((*sd->curves)[c]->get_info().get_number())) {
               data[0] = 0xB0 | (unsigned char)channel;
-              data[1] = cc_number((*sd->ctrls)[c]->get_param());
+              data[1] = cc_number((*sd->curves)[c]->get_info().get_number());
               data[2] = (unsigned char)
                 (event->get_start() + (cc_pos * sd->steps - event->get_step()) *
                  ((event->get_end() - event->get_start()) /
                   double(event->get_length())));
             }
-            else if (data && is_pbend((*sd->ctrls)[c]->get_param())) {
+            else if (data && is_pbend((*sd->curves)[c]->
+				      get_info().get_number())) {
               data[0] = 0xE0 | (unsigned char)channel;
               int value = int(event->get_start() + 
                               (cc_pos * sd->steps - event->get_step()) *
@@ -909,22 +911,32 @@ namespace Dino {
   }
 
 
-  Pattern::CurveIterator Pattern::ctrls_begin() const {
-    return CurveIterator(m_sd->ctrls->begin());
+  Pattern::CurveIterator Pattern::add_curve(const ControllerInfo& info) {
+    return CurveIterator(m_sd->curves->end());
+  }
+  
+
+  bool Pattern::remove_curve(Pattern::CurveIterator iter) {
+    return false;
+  }
+
+  
+  Pattern::CurveIterator Pattern::curves_begin() const {
+    return CurveIterator(m_sd->curves->begin());
   }
   
   
-  Pattern::CurveIterator Pattern::ctrls_end() const {
-    return CurveIterator(m_sd->ctrls->end());
+  Pattern::CurveIterator Pattern::curves_end() const {
+    return CurveIterator(m_sd->curves->end());
   }
   
   
-  Pattern::CurveIterator Pattern::ctrls_find(long param) const {
-    for (unsigned i = 0; i < m_sd->ctrls->size(); ++i) {
-      if ((*m_sd->ctrls)[i]->get_param() == param)
-        return CurveIterator(m_sd->ctrls->begin() + i);
+  Pattern::CurveIterator Pattern::curves_find(long param) const {
+    for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
+      if ((*m_sd->curves)[i]->get_info().get_number() == param)
+        return CurveIterator(m_sd->curves->begin() + i);
     }
-    return ctrls_end();
+    return curves_end();
   }
 
   
@@ -946,11 +958,11 @@ namespace Dino {
   Pattern::SeqData::SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
                             std::vector<Curve*>* controllers,
                             unsigned int l, unsigned int s)
-    : ons(note_ons), offs(note_offs), ctrls(controllers),
+    : ons(note_ons), offs(note_offs), curves(controllers),
       length(l), steps(s) {
     assert(ons != 0);
     assert(offs != 0);
-    assert(ctrls != 0);
+    assert(curves != 0);
     assert(length > 0);
     assert(steps > 0);
   }
@@ -959,9 +971,9 @@ namespace Dino {
   Pattern::SeqData::~SeqData() {
     delete ons;
     delete offs;
-    for (unsigned i = 0; i < ctrls->size(); ++i)
-      delete (*ctrls)[i];
-    delete ctrls;
+    for (unsigned i = 0; i < curves->size(); ++i)
+      delete (*curves)[i];
+    delete curves;
   }
 
 

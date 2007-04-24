@@ -112,8 +112,8 @@ namespace Dino {
             map<long, int>::const_iterator miter;
             for (miter = m_ctrl_values.begin(); miter != m_ctrl_values.end();
                  ++miter) {
-              Pattern::CurveIterator citer = pat.ctrls_find(miter->first);
-              if (citer != pat.ctrls_end()) {
+              Pattern::CurveIterator citer = pat.curves_find(miter->first);
+              if (citer != pat.curves_end()) {
                 for (unsigned int step = first_step; step <= last_step; ++step)
                   record_cc_point(pat, citer, step, miter->second);
                   //pat.remove_cc(citer, step);

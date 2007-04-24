@@ -44,6 +44,7 @@ using namespace xmlpp;
 namespace Dino {
   
   
+  class ControllerInfo;
   class Curve;
   class InterpolatedEvent;
   class MIDIBuffer;
@@ -163,13 +164,13 @@ namespace Dino {
         step @c step, or an invalid iterator if there is no such note. */
     NoteIterator find_note(unsigned int step, int value) const;
     /** Return an iterator that refers to the first controller in the pattern.*/
-    CurveIterator ctrls_begin() const;
+    CurveIterator curves_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator
         has passed the last controller in the pattern. */
-    CurveIterator ctrls_end() const;
+    CurveIterator curves_end() const;
     /** Return an iterator for the controller with parameter @c param, or an
         invalid iterator if no such controller exists. */
-    CurveIterator ctrls_find(long param) const;
+    CurveIterator curves_find(long param) const;
     /** Return the number of steps per beat. */
     unsigned int get_steps() const;
     /** Return the length in beats. */
@@ -201,6 +202,10 @@ namespace Dino {
     int resize_note(NoteIterator note, int length);
     /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
+    /** Add a new parameter curve. */
+    CurveIterator add_curve(const ControllerInfo& info);
+    /** Remove a parameter curve. */
+    bool remove_curve(CurveIterator iter);
     /** Add a CC event to the given controller. */
     void add_curve_point(CurveIterator iter, unsigned int step, int value);
     /** Remove a CC event. */
@@ -267,7 +272,7 @@ namespace Dino {
       
       NoteEventList* ons;
       NoteEventList* offs;
-      std::vector<Curve*>* ctrls;
+      std::vector<Curve*>* curves;
       unsigned int length;
       unsigned int steps;
     };

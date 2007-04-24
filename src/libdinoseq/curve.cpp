@@ -58,8 +58,8 @@ namespace Dino {
 
   void Curve::add_point(unsigned int step, int value) {
     assert(step <= m_events.size());
-    assert(value >= m_min);
-    assert(value <= m_max);
+    assert(value >= m_info.get_min());
+    assert(value <= m_info.get_max());
     
     // change the last point in the controller if there is an event
     if (step == m_events.size() && m_events[step - 1]) {

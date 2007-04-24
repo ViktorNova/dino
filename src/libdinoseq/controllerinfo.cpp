@@ -32,7 +32,7 @@ namespace Dino {
       m_min(0),
       m_max(127),
       m_name(name),
-      m_global(!is_pbend(m_number)) {
+      m_global(false) {
     
     if (is_pbend(m_number)) {
       m_default = 8192;

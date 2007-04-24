@@ -410,6 +410,13 @@ namespace Dino {
       id = 1;
     m_patterns[id] = new Pattern(id, name, length, steps);
     m_signal_pattern_added(id);
+    
+    // add curves for all non-global controllers
+    for (unsigned i = 0; i < m_controllers.size(); ++i) {
+      if (!m_controllers[i]->get_global())
+	m_patterns[id]->add_curve(*m_controllers[i]);
+    }
+    
     return PatternIterator(m_patterns.find(id));
   }
 

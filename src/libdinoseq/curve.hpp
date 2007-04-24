@@ -61,11 +61,7 @@ namespace Dino {
   private:
     
     const ControllerInfo& m_info;
-    std::string m_name;
     std::vector<InterpolatedEvent*> m_events;
-    long m_param;
-    int m_min;
-    int m_max;
     
   };
 

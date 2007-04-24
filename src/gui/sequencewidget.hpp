@@ -35,7 +35,7 @@ class PluginInterface;
 class SequenceWidget : public Gtk::DrawingArea {
 public:
   
-  SequenceWidget(const Dino::Song* song = 0);
+  SequenceWidget();
   
   void set_track(Dino::Track* track);
 
@@ -44,9 +44,6 @@ public:
   virtual bool on_button_press_event(GdkEventButton* event);
   virtual bool on_button_release_event(GdkEventButton* event);
   virtual bool on_motion_notify_event(GdkEventMotion* event);
-  
-  void slot_insert_pattern(int pattern, int position);
-  void slot_length_changed(int length);
   
   void update();
   
@@ -57,7 +54,9 @@ public:
   
 private:
   
-  const Dino::Song* m_song;
+  void slot_insert_pattern(int pattern, int position);
+  void slot_length_changed(int length);
+  
   Dino::Track* m_track;
   int m_col_width;
 

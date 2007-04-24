@@ -38,15 +38,12 @@ using namespace Glib;
 using namespace Pango;
 
 
-SequenceWidget::SequenceWidget(const Song* song) 
-  : m_song(song), 
-    m_col_width(20), 
+SequenceWidget::SequenceWidget() 
+  : m_col_width(20), 
     //m_drag_beat(-1), 
     //m_drag_pattern(-1),
     m_drag_seqid(-1),
     m_current_beat(0) {
-  
-  assert(song);
   
   m_colormap  = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
@@ -63,16 +60,18 @@ SequenceWidget::SequenceWidget(const Song* song)
   m_colormap->alloc_color(m_hl_color);
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
-  set_size_request(m_col_width * m_song->get_length(), m_col_width + 4);
+  set_size_request(0, m_col_width + 4);
   
-  song->signal_length_changed().
-    connect(mem_fun(*this, &SequenceWidget::slot_length_changed));
 }
   
 
 void SequenceWidget::set_track(Track* track) {
   assert(track);
   m_track = track;
+  // XXX Need to disconnect the old track here
+  m_track->signal_length_changed().
+    connect(mem_fun(*this, &SequenceWidget::slot_length_changed));
+  set_size_request(m_col_width * m_track->get_length(), m_col_width + 4);
 }
 
 
@@ -87,15 +86,18 @@ void SequenceWidget::on_realize() {
 
 
 bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
-
+  
+  if (!m_track)
+    return true;
+  
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
 
-  int width = m_col_width * m_song->get_length();
+  int width = m_col_width * m_track->get_length();
   int height = m_col_width;
   
   // draw current beat
-  if (m_current_beat < m_song->get_length()) {
+  if (m_current_beat < m_track->get_length()) {
     Gdk::Rectangle bounds(0, 0, width + 1, 4);
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_grid_color);
@@ -108,7 +110,7 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   
   // draw background
   int bpb = 4;
-  for (int b = 0; b < m_song->get_length(); ++b) {
+  for (int b = 0; b < m_track->get_length(); ++b) {
     if (b % (2*bpb) < bpb)
       m_gc->set_foreground(m_bg_color);
     else
@@ -118,7 +120,7 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   m_gc->set_foreground(m_grid_color);
   win->draw_line(m_gc, 0, 4, width, 4);
   win->draw_line(m_gc, 0, height-1 + 4, width, height-1 + 4);
-  for (int c = 0; c < m_song->get_length() + 1; ++c) {
+  for (int c = 0; c < m_track->get_length() + 1; ++c) {
     win->draw_line(m_gc, c * m_col_width, 4, c * m_col_width, height + 4);
   }
   

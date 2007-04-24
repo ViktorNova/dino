@@ -286,7 +286,7 @@ namespace Dino {
       m_length = length;
       map<int, Track*>::iterator iter;
       for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter)
-  iter->second->set_length(length);
+	iter->second->set_length(length);
       m_signal_length_changed(length);
     }
   }
@@ -412,9 +412,9 @@ namespace Dino {
     if (m_dirty)
       return true;
     for (map<int, Track*>::const_iterator iter = m_tracks->begin(); 
-   iter != m_tracks->end(); ++iter) {
+	 iter != m_tracks->end(); ++iter) {
       if (iter->second->is_dirty())
-  return true;
+	return true;
     }
     return false;
   }
@@ -489,14 +489,14 @@ namespace Dino {
     set_title(dino_elt->get_attribute("title")->get_value());
     set_author(dino_elt->get_attribute("author")->get_value());
     sscanf(dino_elt->get_attribute("length")->get_value().c_str(), 
-     "%d", &m_length);
+	   "%d", &m_length);
   
     // get info
     Node::NodeList nodes = dino_elt->get_children("info");
     if (nodes.begin() != nodes.end()) {
       const Element* elt = dynamic_cast<Element*>(*nodes.begin());
       if (elt && (text_node = elt->get_child_text()) != 0)
-  set_info(text_node->get_content());
+	set_info(text_node->get_content());
     }
   
     // parse tempomap
@@ -571,7 +571,7 @@ namespace Dino {
 
   unsigned long Song::bt2frame(double beat) {
     return m_tempo_map.get_frame(int32_t(beat), 
-         int32_t(beat - int32_t(beat)) * 10000, 10000);
+				 int32_t(beat - int32_t(beat)) * 10000, 10000);
   }
 
 
@@ -582,7 +582,7 @@ namespace Dino {
 
 
   void Song::get_timebase_info(unsigned long frame, unsigned long framerate,
-             double& bpm, double &beat) const {
+			       double& bpm, double &beat) const {
     m_tempo_map.get_beat(frame, bpm, beat);
   }
 

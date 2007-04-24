@@ -38,7 +38,7 @@ namespace Dino {
 
 class PluginInterface;
 class TrackLabel;
-class SequenceWidget;
+class TrackWidget;
 
 
 class SequenceEditor : public GUIPage {
@@ -89,10 +89,10 @@ protected:
   PluginInterface& m_plif;
   
   struct SingleTrackGUI {
-    SingleTrackGUI(TrackLabel* l = 0, SequenceWidget* w = 0) 
+    SingleTrackGUI(TrackLabel* l = 0, TrackWidget* w = 0) 
       : label(l), widget(w) { }
     TrackLabel* label;
-    SequenceWidget* widget;
+    TrackWidget* widget;
   };
   
   std::map<int, SingleTrackGUI> m_track_map;

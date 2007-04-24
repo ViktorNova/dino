@@ -346,8 +346,8 @@ void PatternEditor::set_active_pattern(int pattern) {
   Pattern* pptr = 0;
   if (m_active_pattern != -1) {
     slot<void> uslot = mem_fun(*this, &PatternEditor::update_controller_combo);
-    m_conn_cont_added = p->signal_controller_added().connect(sigc::hide(uslot));
-    m_conn_cont_removed = p->signal_controller_removed().
+    m_conn_cont_added = p->signal_curve_added().connect(sigc::hide(uslot));
+    m_conn_cont_removed = p->signal_curve_removed().
       connect(sigc::hide(uslot));
     pptr = &*p;
   }

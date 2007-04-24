@@ -252,9 +252,9 @@ namespace Dino {
     /** Emitted when a CC control point has been removed. */
     sigc::signal<void, int, int>& signal_cc_removed();
     /** Emitted when a whole controller has been added. */
-    sigc::signal<void, int>& signal_controller_added();
+    sigc::signal<void, int>& signal_curve_added();
     /** Emitted when a whole controller has been removed. */
-    sigc::signal<void, int>& signal_controller_removed();
+    sigc::signal<void, int>& signal_curve_removed();
     //@}
     
   private:
@@ -312,8 +312,8 @@ namespace Dino {
     sigc::signal<void, int, int, int> m_signal_cc_added;
     sigc::signal<void, int, int, int> m_signal_cc_changed;
     sigc::signal<void, int, int> m_signal_cc_removed;
-    sigc::signal<void, int> m_signal_controller_added;
-    sigc::signal<void, int> m_signal_controller_removed;
+    sigc::signal<void, int> m_signal_curve_added;
+    sigc::signal<void, int> m_signal_curve_removed;
 
   };
 

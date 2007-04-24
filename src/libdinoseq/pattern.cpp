@@ -912,12 +912,51 @@ namespace Dino {
 
 
   Pattern::CurveIterator Pattern::add_curve(const ControllerInfo& info) {
-    return CurveIterator(m_sd->curves->end());
+
+    // make a copy of the curve vector and add the new curve
+    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
+    new_vector->push_back(new Curve(info, m_sd->steps * m_sd->length));
+    
+    // delete the old vector
+    vector<Curve*>* tmp = m_sd->curves;
+    m_sd->curves = new_vector;
+    Deleter::queue(tmp);
+    
+    dbg1<<"Added curve \""<<info.get_name()<<"\" with parameter "
+	<<info.get_number()<<endl;
+    
+    m_signal_curve_added(info.get_number());
+    return CurveIterator(new_vector->begin() + (new_vector->size() - 1));
   }
   
 
   bool Pattern::remove_curve(Pattern::CurveIterator iter) {
-    return false;
+
+    // find the element to erase
+    unsigned i;
+    for (i = 0; i < m_sd->curves->size(); ++i) {
+      if ((*m_sd->curves)[i] == &*iter)
+        break;
+    }
+    if (i >= m_sd->curves->size())
+      return false;
+    
+    // make a copy of the old vector
+    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
+    const ControllerInfo& ci = (*m_sd->curves)[i]->get_info();
+    new_vector->erase(new_vector->begin() + i);
+    
+    // delete the old vector
+    vector<Curve*>* tmp = m_sd->curves;
+    m_sd->curves = new_vector;
+    Deleter::queue(tmp);
+    
+    dbg1<<"Removed curve\""<<ci.get_name()<<"\" with parameter \""
+	<<ci.get_number()<<"\""<<endl;
+
+    m_signal_curve_removed(ci.get_number());    
+    
+    return true;
   }
 
   
@@ -1022,13 +1061,13 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_controller_added() {
-    return m_signal_controller_added;
+  sigc::signal<void, int>& Pattern::signal_curve_added() {
+    return m_signal_curve_added;
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_controller_removed() {
-    return m_signal_controller_removed;
+  sigc::signal<void, int>& Pattern::signal_curve_removed() {
+    return m_signal_curve_removed;
   }
 
 

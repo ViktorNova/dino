@@ -345,7 +345,14 @@ namespace Dino {
     ci->set_global(global);
     m_controllers.push_back(ci);
     
-    // XXX Add curves!
+    // if this is not a global controller, add curves to all patterns
+    if (!global) {
+      PatternIterator pi;
+      for (pi = pat_begin(); pi != pat_end(); ++pi)
+	pi->add_curve(*ci);
+    }
+    
+    // XXX Add a track curve for global controllers
     
     m_signal_controller_added(number);
     
@@ -358,7 +365,14 @@ namespace Dino {
     for (int i = 0; i < m_controllers.size(); ++i) {
       if (m_controllers[i]->get_number() == number) {
 	
-	// XXX Delete all curves using this info object!
+	// if this is not a global controller, delete all curves in patterns
+	if (!m_controllers[i]->get_global()) {
+	  PatternIterator pi;
+	  for (pi = pat_begin(); pi != pat_end(); ++pi)
+	    pi->remove_curve(pi->curves_find(m_controllers[i]->get_number()));
+	}
+	
+	// XXX Delete track curve for global controllers
 	
 	ControllerInfo* tmp = m_controllers[i];
 	dbg1<<"Deleting controller \""<<tmp->get_name()<<"\" in track \""

@@ -37,9 +37,11 @@ using namespace Pango;
 TrackLabel::TrackLabel(const Song* song) 
   : m_song(song), 
     m_width(122), 
-    m_height(20 + 68), 
+    m_height(20),
+    m_cce_height(68),
     m_is_active(false),
-    m_is_recording(false) {
+    m_is_recording(false),
+    m_has_curves(false) {
   
   assert(song);
   m_colormap  = Colormap::get_system();
@@ -57,13 +59,28 @@ TrackLabel::TrackLabel(const Song* song)
   
 
 void TrackLabel::set_track(int id, Track* track) {
+
+  m_name_connection.disconnect();
+  m_ctrl_added_connection.disconnect();
+  m_ctrl_removed_connection.disconnect();
+  
   assert(track);
+  
   m_track = track;
   m_id = id;
-  m_name_connection.disconnect();
+  
   m_name_connection = m_track->signal_name_changed().
     connect(mem_fun(*this, &TrackLabel::slot_name_changed));
+  m_ctrl_added_connection = track->signal_controller_added().
+    connect(mem_fun(*this, &TrackLabel::controller_added));
+  m_ctrl_removed_connection = track->signal_controller_removed().
+    connect(mem_fun(*this, &TrackLabel::controller_removed));
+  
   slot_name_changed(track->get_name());
+  
+  m_has_curves = (track->curves_begin() != track->curves_end());
+  
+  set_size_request(m_width, m_height + 4 + (m_has_curves ? m_cce_height : 0));
 }
 
 
@@ -84,7 +101,8 @@ bool TrackLabel::on_expose_event(GdkEventExpose* event) {
   win->clear();
   if (m_is_active) {
     m_gc->set_foreground(m_bg_color);
-    win->draw_rectangle(m_gc, true, 0, 4, m_width, m_height + 4);
+    win->draw_rectangle(m_gc, true, 0, 4, m_width, m_height + 4 + 
+			(m_has_curves ? m_cce_height : 0));
   }
   
   if (m_is_recording)
@@ -93,7 +111,7 @@ bool TrackLabel::on_expose_event(GdkEventExpose* event) {
   
   m_gc->set_foreground(m_fg_color);
   int lHeight = m_layout->get_pixel_logical_extents().get_height();
-  win->draw_layout(m_gc, 24, 4 + (m_height - 68 - lHeight)/2, m_layout);
+  win->draw_layout(m_gc, 24, 4 + (m_height - lHeight)/2, m_layout);
   return true;
 }
 
@@ -140,7 +158,19 @@ void TrackLabel::set_recording(bool recording) {
 void TrackLabel::slot_name_changed(const string& name) {
   char tmp[10];
   sprintf(tmp, "%03d ", m_id);
-  //m_layout->set_text(string(tmp));
   m_layout->set_text(string(tmp) + name);
   update();
 }
+
+
+void TrackLabel::controller_added(long number) {
+  m_has_curves = (m_track->curves_begin() != m_track->curves_end());
+  set_size_request(m_width, m_height + 4 + (m_has_curves ? m_cce_height : 0));
+}
+
+
+void TrackLabel::controller_removed(long number) {
+  m_has_curves = (m_track->curves_begin() != m_track->curves_end());
+  set_size_request(m_width, m_height + 4 + (m_has_curves ? m_cce_height : 0));  
+}
+

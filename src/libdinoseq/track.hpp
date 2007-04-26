@@ -155,6 +155,84 @@ namespace Dino {
 
       std::map<int, Pattern*>::const_iterator m_iter;
     };
+
+
+    /** A CurveIterator is a iterator type that can be used to
+        access and modify data from curves in the pattern. */
+    class CurveIterator : 
+      public std::iterator<std::forward_iterator_tag, Curve> {
+    public:
+      
+      /** Create an invalid iterator. */
+      CurveIterator() { }
+      
+      /** Dereference the iterator to get a Curve reference. */
+      Curve& operator*() { return **m_iterator; }
+      /** Dereference the iterator to get a Curve pointer. */
+      Curve* operator->() { return *m_iterator; }
+      /** Dereference the iterator to get a constant Curve reference. */
+      const Curve& operator*() const { return **m_iterator; }
+      /** Dereference the iterator to get a constant Curve pointer. */
+      const Curve* operator->() const { return *m_iterator; }
+      /** Returns @c true if the two iterators refer to the same Curve. */
+      bool operator==(const CurveIterator& iter) const {
+        return (m_iterator == iter.m_iterator);
+      }
+      /** Returns @c false if the two iterators refer to the same Curve. */
+      bool operator!=(const CurveIterator& iter) const {
+        return (m_iterator != iter.m_iterator);
+      }
+      /** Advances the iterator to the next curve. */
+      CurveIterator& operator++() { ++m_iterator; return *this; }
+      
+    private:
+      
+      friend class Track;
+
+      CurveIterator(const std::vector<Curve*>::iterator& iter) 
+        : m_iterator(iter) { 
+      }
+      
+      std::vector<Curve*>::iterator m_iterator;
+    };
+
+
+    /** A CurveIterator is a const_iterator type that can be used to
+        access data from curves in the pattern. */
+    class ConstCurveIterator : 
+      public std::iterator<std::forward_iterator_tag, Curve> {
+    public:
+      
+      /** Create an invalid iterator. */
+      ConstCurveIterator() { }
+      
+      /** Dereference the iterator to get a constant Curve reference. */
+      const Curve& operator*() const { return **m_iterator; }
+      /** Dereference the iterator to get a constant Curve pointer. */
+      const Curve* operator->() const { return *m_iterator; }
+      /** Returns @c true if the two iterators refer to the same Curve. */
+      bool operator==(const ConstCurveIterator& iter) const {
+        return (m_iterator == iter.m_iterator);
+      }
+      /** Returns @c false if the two iterators refer to the same Curve. */
+      bool operator!=(const ConstCurveIterator& iter) const {
+        return (m_iterator != iter.m_iterator);
+      }
+      /** Advances the iterator to the next curve. */
+      ConstCurveIterator& operator++() { ++m_iterator; return *this; }
+      
+    private:
+      
+      friend class Track;
+
+      ConstCurveIterator(const std::vector<Curve*>::iterator& iter) 
+        : m_iterator(iter) { 
+      }
+      
+      std::vector<Curve*>::iterator m_iterator;
+    };
+
+
     
     
     Track(int id, int length = 0, const std::string& name = "Untitled");
@@ -175,6 +253,14 @@ namespace Dino {
     SequenceIterator seq_end() const;
     SequenceIterator seq_find(unsigned int beat) const;
     SequenceIterator seq_find_by_id(int id) const;
+    /** Return an iterator that refers to the first controller in the track.*/
+    ConstCurveIterator curves_begin() const;
+    /** Return an invalid iterator that can be used to check when an iterator
+        has passed the last curve in the track. */
+    ConstCurveIterator curves_end() const;
+    /** Return an iterator for the controller with parameter @c param, or an
+        invalid iterator if no such controller exists. */
+    ConstCurveIterator curves_find(long param) const;
     const std::vector<ControllerInfo*>& get_controllers() const;
     Curve* get_curve(long number);
     
@@ -182,6 +268,14 @@ namespace Dino {
     PatternIterator pat_begin();
     PatternIterator pat_end();
     PatternIterator pat_find(int id);
+    /** Return an iterator that refers to the first controller in the track.*/
+    CurveIterator curves_begin();
+    /** Return an invalid iterator that can be used to check when an iterator
+        has passed the last controller in the track. */
+    CurveIterator curves_end();
+    /** Return an iterator for the controller with parameter @c param, or an
+        invalid iterator if no such controller exists. */
+    CurveIterator curves_find(long param);
     std::vector<ControllerInfo*>& get_controllers();
     //@}
     
@@ -242,6 +336,7 @@ namespace Dino {
     int m_next_sid;
     volatile int m_channel;
     std::vector<SequenceEntry*>* volatile m_sequence;
+    std::vector<Curve*>* volatile m_curves;
     
     mutable bool m_dirty;
   

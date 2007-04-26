@@ -23,6 +23,7 @@
 
 #include <gtkmm.h>
 
+#include "curveeditor.hpp"
 #include "sequencewidget.hpp"
 
 
@@ -50,7 +51,15 @@ public:
   
 private:
   
+  void controller_added(long number, const Dino::Track* track);
+  void controller_removed(long number, const Dino::Track* track);
+  
+  
   SequenceWidget m_swdg;
+  CurveEditor m_cce;
+
+  sigc::connection m_ctrl_added_connection;
+  sigc::connection m_ctrl_removed_connection;
   
 };
 

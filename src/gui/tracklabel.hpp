@@ -54,20 +54,28 @@ public:
 private:
   
   void slot_name_changed(const std::string& name);
-  
+  void controller_added(long number);
+  void controller_removed(long number);
+    
   const Dino::Song* m_song;
   Dino::Track* m_track;
   sigc::connection m_name_connection;
   int m_id;
   int m_width, m_height;
+  int m_cce_height;
   bool m_is_active;
   bool m_is_recording;
+  bool m_has_curves;
 
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;
   Gdk::Color m_bg_color, m_fg_color;
   Glib::RefPtr<Pango::Layout> m_layout;
   Glib::RefPtr<Gdk::Pixbuf> m_kb_icon;
+
+  sigc::connection m_ctrl_added_connection;
+  sigc::connection m_ctrl_removed_connection;
+
 };
 
 

@@ -19,18 +19,41 @@
 ****************************************************************************/
 
 #include "curveeditor.hpp"
+#include "track.hpp"
 #include "trackwidget.hpp"
 
 
 TrackWidget::TrackWidget() {
   pack_start(m_swdg);
-  pack_start(*manage(new CurveEditor));
   show_all();
 }
  
 
 void TrackWidget::set_track(Dino::Track* track) {
+  m_ctrl_added_connection.disconnect();
+  m_ctrl_removed_connection.disconnect();
   m_swdg.set_track(track);
+  
+  if (!track)
+    remove(m_cce);
+  
+  else {
+    m_ctrl_added_connection = track->signal_controller_added().
+      connect(bind(mem_fun(*this, &TrackWidget::controller_added), track));
+    m_ctrl_removed_connection = track->signal_controller_removed().
+      connect(bind(mem_fun(*this, &TrackWidget::controller_removed), track));
+    
+    bool has_curves = (track->curves_begin() != track->curves_end());
+    bool cce_visible = (children().find(m_cce) != children().end());
+    
+    if (has_curves && !cce_visible) {
+      pack_start(m_cce);
+      show_all();
+    }
+    
+    else if (!has_curves && cce_visible)
+      remove(m_cce);
+  }
 }
 
 
@@ -46,5 +69,25 @@ void TrackWidget::set_current_beat(int beat) {
 
 void TrackWidget::update_menu(PluginInterface& plif) {
   m_swdg.update_menu(plif);
+}
+
+
+void TrackWidget::controller_added(long number, const Dino::Track* track) {
+  bool has_curves = (track->curves_begin() != track->curves_end());
+  bool cce_visible = (children().find(m_cce) != children().end());
+  
+  if (has_curves && !cce_visible) {
+    pack_start(m_cce);
+    show_all();
+  }
+}
+
+
+void TrackWidget::controller_removed(long number, const Dino::Track* track) {
+  bool has_curves = (track->curves_begin() != track->curves_end());
+  bool cce_visible = (children().find(m_cce) != children().end());
+  
+  if (!has_curves && cce_visible)
+    remove(m_cce);
 }
 

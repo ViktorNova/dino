@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.107
+PACKAGE_VERSION = 0.3.108
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -91,6 +91,7 @@ PCFILES = dino.pc
 
 # A GUI support library for core plugins
 libdinoseq_gui_so_SOURCES = \
+	curveeditor.cpp curveeditor.hpp \
 	ruler.cpp ruler.hpp \
 	singletextcombo.cpp singletextcombo.hpp
 libdinoseq_gui_so_SOURCEDIR = src/gui
@@ -120,7 +121,6 @@ tracklabel_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
 
 # The pattern editor
 patterneditor_so_SOURCES = \
-	curveeditor.cpp curveeditor.hpp \
 	noteeditor.cpp noteeditor.hpp \
 	octavelabel.cpp octavelabel.hpp \
 	patterndialog.cpp patterndialog.hpp \

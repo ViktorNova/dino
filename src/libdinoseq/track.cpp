@@ -199,6 +199,7 @@ namespace Dino {
       m_name(name),
       m_next_sid(0),
       m_sequence(new vector<SequenceEntry*>(length, (SequenceEntry*)0)),
+      m_curves(new vector<Curve*>),
       m_dirty(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
@@ -301,6 +302,44 @@ namespace Dino {
   }
 
 
+  Track::ConstCurveIterator Track::curves_begin() const {
+    return ConstCurveIterator(m_curves->begin());
+  }
+  
+  
+  Track::ConstCurveIterator Track::curves_end() const {
+    return ConstCurveIterator(m_curves->end());
+  }
+  
+  
+  Track::ConstCurveIterator Track::curves_find(long param) const {
+    for (unsigned i = 0; i < m_curves->size(); ++i) {
+      if ((*m_curves)[i]->get_info().get_number() == param)
+        return ConstCurveIterator(m_curves->begin() + i);
+    }
+    return curves_end();
+  }
+
+  
+  Track::CurveIterator Track::curves_begin() {
+    return CurveIterator(m_curves->begin());
+  }
+  
+  
+  Track::CurveIterator Track::curves_end() {
+    return CurveIterator(m_curves->end());
+  }
+  
+  
+  Track::CurveIterator Track::curves_find(long param) {
+    for (unsigned i = 0; i < m_curves->size(); ++i) {
+      if ((*m_curves)[i]->get_info().get_number() == param)
+        return CurveIterator(m_curves->begin() + i);
+    }
+    return curves_end();
+  }
+
+  
   /** Returns the MIDI channel for this track. */
   int Track::get_channel() const {
     return m_channel;
@@ -352,7 +391,9 @@ namespace Dino {
 	pi->add_curve(*ci);
     }
     
-    // XXX Add a track curve for global controllers
+    // else (if it is a global controller), add a curve to the track
+    else
+      m_curves->push_back(new Curve(*ci, get_length()));
     
     m_signal_controller_added(number);
     
@@ -372,13 +413,28 @@ namespace Dino {
 	    pi->remove_curve(pi->curves_find(m_controllers[i]->get_number()));
 	}
 	
-	// XXX Delete track curve for global controllers
-	
+	// else (if it is a global controller), remove the curve from the track
+	else {
+	  unsigned j;
+	  for (j = 0; i < m_curves->size(); ++i) {
+	    if ((*m_curves)[j]->get_info().get_number() == number)
+	      break;
+	  }
+	  assert(j < m_curves->size());
+	  if (j < m_curves->size()) {
+	    Curve* tmp_curve = (*m_curves)[j];
+	    m_curves->erase(m_curves->begin() + j);
+	    Deleter::queue(tmp_curve);
+	  }
+	}
+
 	ControllerInfo* tmp = m_controllers[i];
 	dbg1<<"Deleting controller \""<<tmp->get_name()<<"\" in track \""
 	    <<m_name<<"\""<<endl;
 	m_controllers.erase(m_controllers.begin() + i);
 	Deleter::queue(tmp);
+	
+	m_signal_controller_removed(number);
 	return true;
       }
     }
@@ -781,17 +837,17 @@ namespace Dino {
 
 
   signal<void, long>& Track::signal_controller_added() {
-
+    return m_signal_controller_added;
   }
 
   
   signal<void, long>& Track::signal_controller_removed() {
-
+    return m_signal_controller_removed;
   }
   
   
   signal<void, long>& Track::signal_controller_changed() {
-
+    return m_signal_controller_changed;
   }
   
 

@@ -106,7 +106,7 @@ bool TrackLabel::on_expose_event(GdkEventExpose* event) {
   }
   
   if (m_is_recording)
-    win->draw_pixbuf(m_gc, m_kb_icon, 0, 0, 2, 4 + (m_height - 68) / 2 - 8,
+    win->draw_pixbuf(m_gc, m_kb_icon, 0, 0, 2, 4 + (m_height) / 2 - 8,
 		     18, 16, RGB_DITHER_NONE, 0, 0);
   
   m_gc->set_foreground(m_fg_color);

@@ -45,7 +45,6 @@ public:
   virtual bool on_button_release_event(GdkEventButton* event);
   virtual bool on_motion_notify_event(GdkEventMotion* event);
   
-  void update();
   void set_active_track(int id);
   void set_recording(bool recording);
   

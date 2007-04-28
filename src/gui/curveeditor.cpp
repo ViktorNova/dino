@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <sstream>
 
 #include "controllerinfo.hpp"
 #include "curve.hpp"
@@ -86,6 +87,13 @@ void CurveEditor::set_step_width(int width) {
 }
 
 
+void CurveEditor::set_alternation(int k) {
+  assert(k > 0);
+  m_alternation = k;
+  queue_draw();
+}
+
+
 bool CurveEditor::on_button_press_event(GdkEventButton* event) {
   if (!m_curve)
     return false;
@@ -100,6 +108,9 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
       value = (value < min ? min : value);
       value = (value > max ? max : value);
       m_curve->add_point(step, value);
+      stringstream oss;
+      oss<<"New value: "<<value;
+      m_signal_status(ref(oss.str()));
       if (event->button == 2)
 	m_drag_step = step;
       else
@@ -140,6 +151,9 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
       value = (value < min ? min : value);
       value = (value > max ? max : value);
       m_curve->add_point(step, value);
+      stringstream oss;
+      oss<<"New value: "<<value;
+      m_signal_status(ref(oss.str()));
     }
   }
   
@@ -172,8 +186,7 @@ bool CurveEditor::on_expose_event(GdkEventExpose* event) {
   RefPtr<Gdk::Window> win = get_window();
   
   unsigned steps = m_curve->get_size();
-  // XXX need to expose a mutator for this
-  unsigned spb = 8;
+  unsigned spb = m_alternation;
   
   for (unsigned i = 0; i < steps; i += spb) {
     if ((i / spb) % 2 == 0)
@@ -248,3 +261,9 @@ int CurveEditor::step2xpix(int value) {
 int CurveEditor::xpix2step(int value) {
   return value / m_step_width;
 }
+
+
+sigc::signal<void, const std::string&>& CurveEditor::signal_status() {
+  return m_signal_status;
+}
+

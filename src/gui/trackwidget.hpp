@@ -39,6 +39,7 @@ class TrackWidget : public Gtk::VBox {
 public:
   
   TrackWidget();
+  ~TrackWidget();
   
   void set_track(Dino::Track* track);
 
@@ -48,11 +49,12 @@ public:
   void update_menu(PluginInterface& plif);
 
   sigc::signal<void, int> signal_clicked;
+  sigc::signal<void, const std::string&> signal_status;
   
 private:
   
-  void controller_added(long number, const Dino::Track* track);
-  void controller_removed(long number, const Dino::Track* track);
+  void controller_added(long number, Dino::Track* track);
+  void controller_removed(long number, Dino::Track* track);
   
   
   SequenceWidget m_swdg;

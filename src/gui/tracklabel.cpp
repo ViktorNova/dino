@@ -101,8 +101,9 @@ bool TrackLabel::on_expose_event(GdkEventExpose* event) {
   win->clear();
   if (m_is_active) {
     m_gc->set_foreground(m_bg_color);
-    win->draw_rectangle(m_gc, true, 0, 4, m_width, m_height + 4 + 
-			(m_has_curves ? m_cce_height : 0));
+    int x, y, w, h, d;
+    win->get_geometry(x, y, w, h, d);
+    win->draw_rectangle(m_gc, true, 0, 4, w, h - 4);
   }
   
   if (m_is_recording)
@@ -132,19 +133,10 @@ bool TrackLabel::on_motion_notify_event(GdkEventMotion* event) {
 }
 
 
-void TrackLabel::update() {
-  RefPtr<Gdk::Window> win = get_window();
-  if (win) {
-    win->invalidate_rect(Gdk::Rectangle(0, 0, m_width, m_height + 4), false);
-    win->process_updates(false);
-  }
-}
-
-
 void TrackLabel::set_active_track(int id) {
   if (m_is_active != (id == m_id)) {
     m_is_active = (id == m_id);
-    update();
+    queue_draw();
   }
 }
 
@@ -159,7 +151,7 @@ void TrackLabel::slot_name_changed(const string& name) {
   char tmp[10];
   sprintf(tmp, "%03d ", m_id);
   m_layout->set_text(string(tmp) + name);
-  update();
+  queue_draw();
 }
 
 

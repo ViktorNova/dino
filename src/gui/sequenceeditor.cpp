@@ -154,11 +154,12 @@ SequenceEditor::SequenceEditor(PluginInterface& plif)
   // connect to the song
   slot<void, int> update_track_view = 
     sigc::hide(mem_fun(*this, &SequenceEditor::reset_gui));
-  m_song.signal_track_added().connect(update_track_view);
+  m_song.signal_track_added().connect(mem_fun(*this, 
+					      &SequenceEditor::track_added));
   m_song.signal_track_removed().connect(update_track_view);
   m_song.signal_length_changed().connect(update_track_view);
   m_song.signal_length_changed().connect(mem_fun(*m_spb_song_length,
-  						&SpinButton::set_value));
+						 &SpinButton::set_value));
   m_spb_song_length->signal_value_changed().
     connect(compose(mem_fun(m_song, &Song::set_length),
   		    mem_fun(*m_spb_song_length, &SpinButton::get_value_as_int)));
@@ -183,6 +184,8 @@ SequenceEditor::SequenceEditor(PluginInterface& plif)
 
 
 void SequenceEditor::reset_gui() {
+  
+  dbg1<<"reset_gui()"<<endl;
   
   // reset the song length spinbutton to the actual song length
   m_spb_song_length->set_value(m_song.get_length());
@@ -301,7 +304,11 @@ void SequenceEditor::set_active_track(int track) {
   if (track == m_active_track)
     return;
   m_active_track = track;
-  reset_gui();
+  std::map<int, SingleTrackGUI>::iterator iter;
+  for (iter = m_track_map.begin(); iter != m_track_map.end(); ++iter)
+    iter->second.label->set_active_track(track);
+  m_tbn_delete_track->set_sensitive(m_active_track != -1);
+  m_tbn_edit_track_properties->set_sensitive(m_active_track!=-1);
 }
 
 
@@ -333,3 +340,57 @@ void SequenceEditor::set_recording_track(Song::TrackIterator iter) {
   for (i = m_track_map.begin(); i != m_track_map.end(); ++i)
     i->second.label->set_recording(i->first == id);
 }
+
+
+void SequenceEditor::track_added(int track) {
+  
+  Song::TrackIterator iter = m_song.tracks_find(track);
+  
+  assert(m_song.tracks_find(track) != m_song.tracks_end());
+  
+  set_active_track(track);
+  
+  bool recording = false;
+  Song::TrackIterator rec_track = m_seq.get_recording_track();
+  if (rec_track == iter)
+    recording = true;
+  
+  // add track widget
+  TrackWidget* tw = manage(new TrackWidget());
+  tw->signal_status.
+    connect(hide_return(bind(mem_fun(m_plif, &PluginInterface::set_status),
+			     3000)));
+  tw->set_track(&*iter);
+  slot<void> update_menu = bind(mem_fun(*tw, &TrackWidget::update_menu), 
+				ref(m_plif));
+  m_plif.signal_action_added().connect(sigc::hide(update_menu));
+  m_plif.signal_action_removed().connect(sigc::hide(update_menu));
+  update_menu();
+  tw->signal_clicked.
+    connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
+			    iter->get_id())));
+  m_seq.signal_beat_changed().
+    connect(mem_fun(*tw, &TrackWidget::set_current_beat));
+  m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
+  m_vbx_track_editor->show_all();
+  
+  // add track label
+  TrackLabel* tl = manage(new TrackLabel(&m_song));
+  tl->set_track(iter->get_id(), &(*iter));
+  tl->signal_clicked.
+    connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
+			    iter->get_id())));
+  m_vbx_track_labels->pack_start(*tl, PACK_SHRINK);
+  m_vbx_track_labels->show_all();
+  tl->set_active_track(m_active_track);
+  tl->set_recording(recording);
+  
+  m_track_map[iter->get_id()] = SingleTrackGUI(tl, tw);
+  
+}
+
+
+void SequenceEditor::track_removed(int track) {
+  
+}
+

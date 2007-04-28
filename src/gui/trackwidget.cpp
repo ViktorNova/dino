@@ -21,15 +21,31 @@
 #include "curveeditor.hpp"
 #include "track.hpp"
 #include "trackwidget.hpp"
+#include "debug.hpp"
 
 
 TrackWidget::TrackWidget() {
+  m_cce.set_step_width(20);
+  m_cce.set_alternation(4);
   pack_start(m_swdg);
   show_all();
+  
+  dbg1<<"Created TrackWidget 0x"<<hex<<(int)this<<dec<<endl;
+  
+  m_cce.signal_status().connect(signal_status);
 }
- 
+
+
+TrackWidget::~TrackWidget() {
+  dbg1<<"Destroyed TrackWidget 0x"<<hex<<(int)this<<dec<<endl;
+}
+
 
 void TrackWidget::set_track(Dino::Track* track) {
+  
+  dbg1<<"set_track(0x"<<hex<<(int)track<<dec<<") for TrackWidget 0x"
+      <<hex<<(int)this<<dec<<endl;
+  
   m_ctrl_added_connection.disconnect();
   m_ctrl_removed_connection.disconnect();
   m_swdg.set_track(track);
@@ -72,20 +88,26 @@ void TrackWidget::update_menu(PluginInterface& plif) {
 }
 
 
-void TrackWidget::controller_added(long number, const Dino::Track* track) {
+void TrackWidget::controller_added(long number, Dino::Track* track) {
   bool has_curves = (track->curves_begin() != track->curves_end());
   bool cce_visible = (children().find(m_cce) != children().end());
   
   if (has_curves && !cce_visible) {
+    m_cce.set_curve(&*track->curves_begin());
     pack_start(m_cce);
     show_all();
   }
 }
 
 
-void TrackWidget::controller_removed(long number, const Dino::Track* track) {
+void TrackWidget::controller_removed(long number, Dino::Track* track) {
   bool has_curves = (track->curves_begin() != track->curves_end());
   bool cce_visible = (children().find(m_cce) != children().end());
+  
+  if (!has_curves)
+    m_cce.set_curve(0);
+  else
+    m_cce.set_curve(&*track->curves_begin());
   
   if (!has_curves && cce_visible)
     remove(m_cce);

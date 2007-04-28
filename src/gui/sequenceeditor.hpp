@@ -57,6 +57,8 @@ protected:
   void stop();
   void go_to_start();
   void ruler_clicked(double beat, int button);
+  void track_added(int track);
+  void track_removed(int track);
   
   void set_active_track(int track);
   

@@ -38,6 +38,9 @@ public:
   
   void set_curve(Dino::Curve* curve);
   void set_step_width(int width);
+  void set_alternation(int k);
+  
+  sigc::signal<void, const std::string&>& signal_status();
   
 protected:
   
@@ -57,10 +60,13 @@ protected:
     m_edge_colour, m_fg_colour;
   
   unsigned m_step_width;
+  unsigned m_alternation;
   
   Dino::Curve* m_curve;
   
   int m_drag_step;
+  
+  sigc::signal<void, const std::string&> m_signal_status;
 };
 
 

@@ -28,11 +28,12 @@
 #include "plugininterface.hpp"
 
 
-using namespace std;
 using namespace Dino;
 using namespace Gdk;
-using namespace Gtk;
 using namespace Glib;
+using namespace Gtk;
+using namespace sigc;
+using namespace std;
 
 
 TempoWidget::TempoWidget(Song* song) 

@@ -26,6 +26,7 @@
 
 using namespace Glib;
 using namespace Gtk;
+using namespace std;
 using namespace sigc;
 using namespace Dino;
 

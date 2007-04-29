@@ -67,12 +67,14 @@ namespace Dino {
       m_write_pos(0),
       m_size(size),
       m_data(new T[m_size]) {
-    dbg1<<"Creating ringbuffer for "<<demangle(typeid(T).name())<<endl;
+    Dino::dbg1<<"Creating ringbuffer for "
+	      <<Dino::demangle(typeid(T).name())<<std::endl;
   }
 
 
   template <class T> Ringbuffer<T>::~Ringbuffer<T>() {
-    dbg1<<"Destroying ringbuffer for "<<demangle(typeid(T).name())<<endl;
+    Dino::dbg1<<"Destroying ringbuffer for "
+	      <<Dino::demangle(typeid(T).name())<<std::endl;
     delete [] m_data;
   }
 

@@ -31,8 +31,6 @@ namespace Dino {
   class PatternSelection;
 }
 
-using namespace Dino;
-
 
 struct Action {
   virtual std::string get_name() const = 0;
@@ -40,17 +38,17 @@ struct Action {
 
 
 struct SongAction : public Action {
-  virtual void run(Song& song) = 0;
+  virtual void run(Dino::Song& song) = 0;
 };
 
 
 struct TrackAction : public Action {
-  virtual void run(Track& track) = 0;
+  virtual void run(Dino::Track& track) = 0;
 };
 
 
 struct PatternSelectionAction : public Action {
-  virtual void run(PatternSelection& selection) = 0;
+  virtual void run(Dino::PatternSelection& selection) = 0;
 };
 
 

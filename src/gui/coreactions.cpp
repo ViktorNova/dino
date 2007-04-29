@@ -31,6 +31,7 @@
 
 
 using namespace Dino;
+using namespace std;
 
 
 namespace {

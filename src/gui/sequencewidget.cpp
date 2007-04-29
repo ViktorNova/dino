@@ -30,12 +30,13 @@
 #include "track.hpp"
 
 
-using namespace std;
 using namespace Dino;
 using namespace Gdk;
-using namespace Gtk;
 using namespace Glib;
+using namespace Gtk;
 using namespace Pango;
+using namespace sigc;
+using namespace std;
 
 
 SequenceWidget::SequenceWidget() 

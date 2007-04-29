@@ -24,9 +24,14 @@
 namespace Dino {
 
 
-#ifdef NDEBUG 
+#ifndef NDEBUG 
+
+  std::ostream& dbg0_real(std::cerr);
+  std::ostream& dbg1_real(std::cerr);
   
-  ostream& dbg0(cerr);
+#else
+
+  std::ostream& dbg0(std::cerr);
   
   NoOpStream dbg1;
   

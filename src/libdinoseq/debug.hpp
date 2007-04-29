@@ -28,22 +28,21 @@
 #include <cxxabi.h>
 
 
-using namespace std;
-
-
 namespace Dino {
 
 
 #ifndef NDEBUG
 
-
+  extern std::ostream& dbg0_real;
+  extern std::ostream& dbg1_real;
+  
+  
   /* Macros are ugly, but in this case they are the only way to get the 
      __FILE__ and __LINE__ from the caller. */
-#define dbg0 (cerr<<"\033[31;1m"<<'['<<setw(16)<<setfill(' ')<<__FILE__<<':' \
-        <<setw(3)<<setfill('0')<<__LINE__<<"] "<<"\033[0m")
-#define dbg1 (cerr<<"\033[32;1m"<<'['<<setw(16)<<setfill(' ')<<__FILE__<<':' \
-        <<setw(3)<<setfill('0')<<__LINE__<<"] "<<"\033[0m")
-
+#define dbg0 dbg0_real<<"\033[31;1m"<<'['<<std::setw(16)<<std::setfill(' ') \
+    <<__FILE__<<':'<<std::setw(3)<<std::setfill('0')<<__LINE__<<"] "<<"\033[0m"
+#define dbg1 dbg1_real<<"\033[32;1m"<<'['<<std::setw(16)<<std::setfill(' ') \
+    <<__FILE__<<':'<<std::setw(3)<<std::setfill('0')<<__LINE__<<"] "<<"\033[0m"
 
 #else
 
@@ -76,7 +75,7 @@ namespace Dino {
 
   /** This function is probably GCC specific - I'll try to fix it if I ever
       need to build it on another compiler. */
-  inline string demangle(const string& str) {
+  inline std::string demangle(const std::string& str) {
     static int status;
     return abi::__cxa_demangle(str.c_str(), 0, 0, &status);
   }

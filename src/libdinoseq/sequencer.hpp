@@ -35,9 +35,6 @@
 #include "song.hpp"
 
 
-using namespace std;
-
-
 namespace Dino {
 
 
@@ -54,7 +51,7 @@ namespace Dino {
   
     /** This will create a new Sequencer object with the JACK client name 
 	@c client_name and the Song object @c song. */
-    Sequencer(const string& client_name, Song& song);
+    Sequencer(const std::string& client_name, Song& song);
     ~Sequencer();
     
     /// @name Transport
@@ -76,13 +73,13 @@ namespace Dino {
     //@{
     /** This returns a vector of all instruments that are available for
         the sequencer to play. */
-    vector<InstrumentInfo> get_instruments(int track = -1) const;
+    std::vector<InstrumentInfo> get_instruments(int track = -1) const;
     /** This assigns the given instrument to the given track, i.e. connects
         the track's output port to the instruments input port. This is not
         saved in the .dino file since all connections are supposed to be
         restored by LASH. */
-    void set_instrument(int track, const string& instrument);
-    bool set_instrument(Sequencable& sqb, const string& instrument);
+    void set_instrument(int track, const std::string& instrument);
+    bool set_instrument(Sequencable& sqb, const std::string& instrument);
 
     /** This creates new MIDI output ports for all tracks. */
     void reset_ports();
@@ -131,7 +128,7 @@ namespace Dino {
     bool ports_checker();
     
     /** This initialises the internal JACK client object. */
-    bool init_jack(const string& client_name);
+    bool init_jack(const std::string& client_name);
     
     /// @name JACK callbacks
     //@{
@@ -170,8 +167,7 @@ namespace Dino {
       static_cast<Sequencer*>(arg)->jack_port_registration_callback(port, m);
     }
     static void jack_error_function(const char* msg) {
-      using namespace Dino;
-      dbg0<<"JACK: "<<msg<<std::endl;
+      Dino::dbg0<<"JACK: "<<msg<<std::endl;
     }
     //@}
     
@@ -190,7 +186,7 @@ namespace Dino {
     void rec_track_changed(int id);
     
     
-    string m_client_name;
+    std::string m_client_name;
     /* XXX The below is false, I think. Everything should be readable by
        the audio thread at all times without locking any mutii. */
     /** No one is allowed to read or write anything in this variable without
@@ -202,7 +198,7 @@ namespace Dino {
     bool m_valid;
   
     jack_client_t* m_jack_client;
-    map<int, jack_port_t*> m_output_ports;
+    std::map<int, jack_port_t*> m_output_ports;
     jack_port_t* m_input_port;
     
     double m_cc_resolution;

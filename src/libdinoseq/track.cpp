@@ -29,6 +29,10 @@
 #include "track.hpp"
 
 
+using namespace sigc;
+using namespace xmlpp;
+
+
 namespace Dino {
 
 

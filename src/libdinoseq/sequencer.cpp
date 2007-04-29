@@ -34,6 +34,10 @@
 #include "pattern.hpp"
 
 
+using namespace std;
+using namespace sigc;
+
+
 namespace Dino {
 
   Sequencer::Sequencer(const string& client_name, Song& song) 

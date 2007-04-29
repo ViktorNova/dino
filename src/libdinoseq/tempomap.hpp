@@ -30,9 +30,6 @@
 #include "cdtree.hpp"
 
 
-using namespace sigc;
-
-
 namespace Dino {
 
 

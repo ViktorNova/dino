@@ -35,12 +35,6 @@
 #include "xmlserialisable.hpp"
 
 
-using namespace Glib;
-using namespace sigc;
-using namespace std;
-using namespace xmlpp;
-
-
 namespace Dino {
   
   
@@ -184,7 +178,7 @@ namespace Dino {
 
 
     /** Create a new pattern. */
-    Pattern(int id, const string& name, int length, int steps);
+    Pattern(int id, const std::string& name, int length, int steps);
     /** Create a new pattern as a copy of @c pat. */
     Pattern(int id, const Pattern& pat);
     
@@ -194,8 +188,8 @@ namespace Dino {
     //@{
     int get_id() const;
     /** Return the name of this pattern. */
-    const string& get_name() const;
-    const string& get_label() const;
+    const std::string& get_name() const;
+    const std::string& get_label() const;
     /** Return an iterator that refers to the first note in the pattern. */
     NoteIterator notes_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator
@@ -233,7 +227,7 @@ namespace Dino {
     /// @name Mutators
     //@{
     /** Set the name of this pattern. */
-    void set_name(const string& name);
+    void set_name(const std::string& name);
     /** Change the length in beats. */
     void set_length(unsigned int length);
     /** Change the number of steps per beat. */
@@ -268,8 +262,8 @@ namespace Dino {
     //@{
     bool is_dirty() const;
     void make_clean() const;
-    bool fill_xml_node(Element* elt) const;
-    bool parse_xml_node(const Element* elt);
+    bool fill_xml_node(xmlpp::Element* elt) const;
+    bool parse_xml_node(const xmlpp::Element* elt);
     //@}
     
     /// @name Sequencing
@@ -283,7 +277,7 @@ namespace Dino {
     /// @name Signals
     //@{
     /** Emitted when the pattern name has changed. */
-    sigc::signal<void, string>& signal_name_changed();
+    sigc::signal<void, std::string>& signal_name_changed();
     /** Emitted when the length in beats has changed. */
     sigc::signal<void, int>& signal_length_changed();
     /** Emitted when the number of steps per beat has changed. */
@@ -302,7 +296,7 @@ namespace Dino {
     
   private:
     
-    typedef vector<NoteEvent*> NoteEventList;
+    typedef std::vector<NoteEvent*> NoteEventList;
     
     /** This struct is used internally so we can swap all data used by the
         sequencer with a single pointer assignment (for lock-free 
@@ -335,7 +329,7 @@ namespace Dino {
     /** The pattern id. */
     int m_id;
     /** The name of the pattern */
-    string m_name;
+    std::string m_name;
     /** The data used by the sequencing functions need to be stored in a
         single structure so we can modify it in a lock-free way by swapping 
         a single pointer. */
@@ -346,7 +340,7 @@ namespace Dino {
     // dirty rect
     int m_min_step, m_min_note, m_max_step, m_max_note;
 
-    sigc::signal<void, string> m_signal_name_changed;
+    sigc::signal<void, std::string> m_signal_name_changed;
     sigc::signal<void, int> m_signal_length_changed;
     sigc::signal<void, int> m_signal_steps_changed;
     sigc::signal<void, Note const&> m_signal_note_added;

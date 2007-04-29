@@ -39,6 +39,7 @@ using namespace Gdk;
 using namespace Glib;
 using namespace Gtk;
 using namespace sigc;
+using namespace std;
 
 
 // needed for the about dialog
@@ -740,7 +741,7 @@ void DinoGUI::load_plugins(int argc, char** argv) {
   iter = m_plib.find("Core actions");
   if (iter != m_plib.end())
     m_plib.load_plugin(iter);
-  iter = m_plib.find("Sequence editor");
+  iter = m_plib.find("Arrangement editor");
   if (iter != m_plib.end())
     m_plib.load_plugin(iter);
   iter = m_plib.find("Pattern editor");

@@ -18,8 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef SEQUENCEEDITOR_HPP
-#define SEQUENCEEDITOR_HPP
+#ifndef ARRANGEMENTEDITOR_HPP
+#define ARRANGEMENTEDITOR_HPP
 
 #include <map>
 
@@ -41,15 +41,22 @@ class TrackLabel;
 class TrackWidget;
 
 
-class SequenceEditor : public GUIPage {
+class ArrangementEditor : public GUIPage {
 public:
   
-  SequenceEditor(PluginInterface& plif);
-  
-  void reset_gui();
+  ArrangementEditor(PluginInterface& plif);
   
 protected:
   
+
+  struct SingleTrackGUI {
+    SingleTrackGUI(TrackLabel* l = 0, TrackWidget* w = 0) 
+      : label(l), widget(w) { }
+    TrackLabel* label;
+    TrackWidget* widget;
+  };
+  
+
   void add_track();
   void delete_track();
   void edit_track_properties();
@@ -64,40 +71,35 @@ protected:
   
   void add_toolbutton(Gtk::Toolbar* tbar, Gtk::ToolButton*& tbutton, 
                       Gtk::BuiltinStockID stock, const std::string& tip,
-                      void (SequenceEditor::*button_slot)());
+                      void (ArrangementEditor::*button_slot)());
   
-  void set_recording_track(Song::TrackIterator iter);
+  void set_recording_track(Dino::Song::TrackIterator iter);
   
   sigc::signal<void, int> signal_active_track_changed_internal;
 
-
+  // GUI components
   Ruler m_sequence_ruler;
-  Gtk::VBox* m_vbx_track_editor;
-  Gtk::VBox* m_vbx_track_labels;
+  Gtk::VBox m_vbx_track_editor;
+  Gtk::VBox m_vbx_track_labels;
   Gtk::ToolButton* m_tbn_add_track;
   Gtk::ToolButton* m_tbn_delete_track;
   Gtk::ToolButton* m_tbn_edit_track_properties;
   Gtk::ToolButton* m_tbn_play;
   Gtk::ToolButton* m_tbn_stop;
   Gtk::ToolButton* m_tbn_go_to_start;
-  Gtk::SpinButton* m_spb_song_length;
-  TrackDialog* m_dlg_track;
+  Gtk::SpinButton m_spb_song_length;
   Gtk::Tooltips m_tooltips;
+  TrackDialog m_dlg_track;
   
-  int m_active_track;
-  
+  // external references
   Dino::Song& m_song;
   Dino::Sequencer& m_seq;
   PluginInterface& m_plif;
   
-  struct SingleTrackGUI {
-    SingleTrackGUI(TrackLabel* l = 0, TrackWidget* w = 0) 
-      : label(l), widget(w) { }
-    TrackLabel* label;
-    TrackWidget* widget;
-  };
-  
+  // state
   std::map<int, SingleTrackGUI> m_track_map;
+  int m_active_track;
+
 };
 
 

@@ -26,6 +26,9 @@
 #include "ringbuffer.hpp"
 
 
+using namespace std;
+
+
 namespace Dino {
 
   
@@ -58,10 +61,10 @@ namespace Dino {
     /** This constructor initialises the two ringbuffers and sets up a cleanup
 	function to delete objects every 100 milliseconds. */
     Deleter() : m_objects_not_used(1000), m_objects_to_delete(1000) {
-      using namespace sigc;
       dbg1<<"Initialising threadsafe deallocator"<<endl;
       m_connection = Glib::signal_timeout().
-	connect(bind_return(mem_fun(*this, &Deleter::do_delete), true), 100);
+	connect(sigc::bind_return(sigc::mem_fun(*this, &Deleter::do_delete), 
+				  true), 100);
     }
     
     ~Deleter() {

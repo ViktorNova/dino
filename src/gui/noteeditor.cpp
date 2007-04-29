@@ -27,10 +27,13 @@
 #include "plugininterface.hpp"
 
 
-using namespace Gdk;
-using namespace Pango;
-using namespace Gtk;
 using namespace Dino;
+using namespace Gdk;
+using namespace Glib;
+using namespace Gtk;
+using namespace Pango;
+using namespace sigc;
+using namespace std;
 
 
 NoteEditor::NoteEditor() 

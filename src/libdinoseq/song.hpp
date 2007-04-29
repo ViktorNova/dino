@@ -30,9 +30,6 @@
 #include "tempomap.hpp"
 
 
-using namespace std;
-
-
 /** This namespace contains front-end independent code for modifying
     and sequencing songs, as well as some utility classes and functions. */
 namespace Dino {
@@ -129,9 +126,9 @@ namespace Dino {
   
     /// @name Accessors
     //@{
-    const string& get_title() const;
-    const string& get_author() const;
-    const string& get_info() const;
+    const std::string& get_title() const;
+    const std::string& get_author() const;
+    const std::string& get_info() const;
     ConstTrackIterator tracks_begin() const;
     ConstTrackIterator tracks_end() const;
     ConstTrackIterator tracks_find(int id) const;
@@ -151,11 +148,11 @@ namespace Dino {
 
     /// @name Mutators
     //@{
-    void set_title(const string& title);
-    void set_author(const string& author);
-    void set_info(const string& info);
+    void set_title(const std::string& title);
+    void set_author(const std::string& author);
+    void set_info(const std::string& info);
     void set_length(int length);
-    TrackIterator add_track(const string& name = "");
+    TrackIterator add_track(const std::string& name = "");
     bool remove_track(const TrackIterator& iterator);
     TempoIterator add_tempo_change(int beat, double bpm);
     void remove_tempo_change(TempoIterator& iter);
@@ -170,14 +167,14 @@ namespace Dino {
          double& bpm, double& beat) const;
     double get_current_tempo(double beat);
     unsigned long bt2frame(double);
-    pair<int, int> frame2bt(unsigned long frame);
+    std::pair<int, int> frame2bt(unsigned long frame);
     //@}
     
     /// @name XML I/O
     //@{
     bool is_dirty() const;
-    bool write_file(const string& filename) const;
-    bool load_file(const string& filename);
+    bool write_file(const std::string& filename) const;
+    bool load_file(const std::string& filename);
     void clear();
     //@}
     
@@ -185,9 +182,9 @@ namespace Dino {
     
     /// @name Signals
     //@{
-    sigc::signal<void, const string&>& signal_title_changed() const;
-    sigc::signal<void, const string&>& signal_author_changed() const;
-    sigc::signal<void, const string&>& signal_info_changed() const;
+    sigc::signal<void, const std::string&>& signal_title_changed() const;
+    sigc::signal<void, const std::string&>& signal_author_changed() const;
+    sigc::signal<void, const std::string&>& signal_info_changed() const;
     sigc::signal<void, int>& signal_length_changed() const;
     sigc::signal<void, int>& signal_track_added() const;
     sigc::signal<void, int>& signal_track_removed() const;
@@ -202,10 +199,10 @@ namespace Dino {
     Song& operator=(const Song&) { return *this; }
     Song(const Song&) { }
   
-    string m_title;
-    string m_author;
-    string m_info;
-    map<int, Track*>* volatile m_tracks;
+    std::string m_title;
+    std::string m_author;
+    std::string m_info;
+    std::map<int, Track*>* volatile m_tracks;
     volatile int m_length;
     
     TempoMap m_tempo_map;
@@ -215,9 +212,9 @@ namespace Dino {
     
     mutable bool m_dirty;
 
-    mutable sigc::signal<void, const string&> m_signal_title_changed;
-    mutable sigc::signal<void, const string&> m_signal_author_changed;
-    mutable sigc::signal<void, const string&> m_signal_info_changed;
+    mutable sigc::signal<void, const std::string&> m_signal_title_changed;
+    mutable sigc::signal<void, const std::string&> m_signal_author_changed;
+    mutable sigc::signal<void, const std::string&> m_signal_info_changed;
     mutable sigc::signal<void, int> m_signal_length_changed;
     mutable sigc::signal<void, int> m_signal_track_added;
     mutable sigc::signal<void, int> m_signal_track_removed;

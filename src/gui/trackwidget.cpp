@@ -24,6 +24,10 @@
 #include "debug.hpp"
 
 
+using namespace Dino;
+using namespace std;
+
+
 TrackWidget::TrackWidget() {
   m_cce.set_step_width(20);
   m_cce.set_alternation(4);

@@ -44,6 +44,7 @@ CurveEditor::CurveEditor()
     m_edge_colour("#000000"),
     m_fg_colour("#008000"),
     m_step_width(8),
+    m_alternation(4),
     m_curve(0),
     m_drag_step(-1) {
 

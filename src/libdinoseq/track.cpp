@@ -396,8 +396,10 @@ namespace Dino {
     }
     
     // else (if it is a global controller), add a curve to the track
-    else
+    else {
       m_curves->push_back(new Curve(*ci, get_length()));
+      m_signal_curve_added(number);
+    }
     
     m_signal_controller_added(number);
     
@@ -429,6 +431,7 @@ namespace Dino {
 	    Curve* tmp_curve = (*m_curves)[j];
 	    m_curves->erase(m_curves->begin() + j);
 	    Deleter::queue(tmp_curve);
+	    m_signal_curve_removed(number);
 	  }
 	}
 
@@ -447,6 +450,165 @@ namespace Dino {
   }
 
   
+  void Track::set_controller_name(long number, const std::string& name) {
+    
+    // XXX need a controller_find() function
+    unsigned i;
+    for (i = 0; i < m_controllers.size(); ++i)
+      if (m_controllers[i]->get_number() == number)
+	break;
+    if (i == m_controllers.size())
+      return;
+    
+    if (m_controllers[i]->get_name() == name)
+      return;
+    
+    m_controllers[i]->set_name(name);
+    
+    m_signal_controller_changed(number);
+    
+  }
+
+
+  void Track::set_controller_min(long number, int min) {
+    
+    // XXX need a controller_find() function
+    unsigned i;
+    for (i = 0; i < m_controllers.size(); ++i)
+      if (m_controllers[i]->get_number() == number)
+	break;
+    if (i == m_controllers.size())
+      return;
+    
+    if (m_controllers[i]->get_min() == min)
+      return;
+    
+    m_controllers[i]->set_min(min);
+    
+    m_signal_controller_changed(number);
+        
+  }
+
+
+  void Track::set_controller_max(long number, int max) {
+
+    // XXX need a controller_find() function
+    unsigned i;
+    for (i = 0; i < m_controllers.size(); ++i)
+      if (m_controllers[i]->get_number() == number)
+	break;
+    if (i == m_controllers.size())
+      return;
+    
+    if (m_controllers[i]->get_max() == max)
+      return;
+    
+    m_controllers[i]->set_max(max);
+    
+    m_signal_controller_changed(number);
+    
+  }
+
+
+  void Track::set_controller_default(long number, int _default) {
+
+    // XXX need a controller_find() function
+    unsigned i;
+    for (i = 0; i < m_controllers.size(); ++i)
+      if (m_controllers[i]->get_number() == number)
+	break;
+    if (i == m_controllers.size())
+      return;
+    
+    if (m_controllers[i]->get_default() == _default)
+      return;
+    
+    m_controllers[i]->set_default(_default);
+    
+    m_signal_controller_changed(number);
+    
+  }
+
+
+  void Track::set_controller_number(long number, long new_number) {
+
+    // XXX need a controller_find() function
+    unsigned i;
+    for (i = 0; i < m_controllers.size(); ++i)
+      if (m_controllers[i]->get_number() == number)
+	break;
+    if (i == m_controllers.size())
+      return;
+    
+    if (m_controllers[i]->get_number() == new_number)
+      return;
+    
+    m_controllers[i]->set_number(new_number);
+    
+    m_signal_controller_changed(number);
+    
+  }
+
+
+  void Track::set_controller_global(long number, bool global) {
+    
+    unsigned i;
+    for (i = 0; i < m_controllers.size(); ++i)
+      if (m_controllers[i]->get_number() == number)
+	break;
+    if (i == m_controllers.size())
+      return;
+    
+    bool old_global = m_controllers[i]->get_global();
+    
+    if (old_global == global)
+      return;
+    
+    m_controllers[i]->set_global(global);
+    
+    // it was global, will now be non-global
+    if (!global) {
+      
+      // remove the global curve
+      // XXX should add a private remove_curve() function
+      unsigned j;
+      for (j = 0; i < m_curves->size(); ++i) {
+	if ((*m_curves)[j]->get_info().get_number() == number)
+	  break;
+      }
+      assert(j < m_curves->size());
+      if (j < m_curves->size()) {
+	Curve* tmp_curve = (*m_curves)[j];
+	m_curves->erase(m_curves->begin() + j);
+	Deleter::queue(tmp_curve);
+	m_signal_curve_removed(number);
+      }	
+      
+      // add pattern curves
+      PatternIterator pi;
+      for (pi = pat_begin(); pi != pat_end(); ++pi)
+	pi->add_curve(*m_controllers[i]);
+    }
+    
+    // it was non-global, will now be global
+    else {
+      
+      // remove all pattern curves
+      PatternIterator pi;
+      for (pi = pat_begin(); pi != pat_end(); ++pi)
+	pi->remove_curve(pi->curves_find(number));
+      
+      // add global curve
+      // XXX should add a private add_curve() function
+      m_curves->push_back(new Curve(*m_controllers[i], get_length()));
+      m_signal_curve_added(number);
+      
+    }
+    
+    m_signal_controller_changed(number);
+  }
+  
+    
   /** Sets the name of this track. */
   void Track::set_name(const string& name) {
     if (name != m_name) {
@@ -854,5 +1016,15 @@ namespace Dino {
     return m_signal_controller_changed;
   }
   
+  
+  signal<void, long>& Track::signal_curve_added() {
+    return m_signal_curve_added;
+  }
+  
+  
+  signal<void, long>& Track::signal_curve_removed() {
+    return m_signal_curve_removed;
+  }
+
 
 }

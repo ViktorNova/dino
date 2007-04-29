@@ -285,6 +285,9 @@ namespace Dino {
     
     // iterate over all controllers
     for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
+      
+      // XXX this crashes since the CurveEditor holds a pointer to its Curve
+      
       Curve* c = (*m_sd->curves)[i];
       
       // create a new controller with the same settings but different size

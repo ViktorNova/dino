@@ -352,6 +352,7 @@ void PatternEditor::set_active_pattern(int pattern) {
     pptr = &*p;
   }
 
+  m_cce.set_alternation(p->get_steps());
   update_controller_combo();
   m_ne.set_pattern(pptr);
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);

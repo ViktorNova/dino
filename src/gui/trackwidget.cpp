@@ -58,10 +58,10 @@ void TrackWidget::set_track(Dino::Track* track) {
     remove(m_cce);
   
   else {
-    m_ctrl_added_connection = track->signal_controller_added().
-      connect(bind(mem_fun(*this, &TrackWidget::controller_added), track));
-    m_ctrl_removed_connection = track->signal_controller_removed().
-      connect(bind(mem_fun(*this, &TrackWidget::controller_removed), track));
+    m_ctrl_added_connection = track->signal_curve_added().
+      connect(bind(mem_fun(*this, &TrackWidget::curve_added), track));
+    m_ctrl_removed_connection = track->signal_curve_removed().
+      connect(bind(mem_fun(*this, &TrackWidget::curve_removed), track));
     
     bool has_curves = (track->curves_begin() != track->curves_end());
     bool cce_visible = (children().find(m_cce) != children().end());
@@ -92,7 +92,7 @@ void TrackWidget::update_menu(PluginInterface& plif) {
 }
 
 
-void TrackWidget::controller_added(long number, Dino::Track* track) {
+void TrackWidget::curve_added(long number, Dino::Track* track) {
   bool has_curves = (track->curves_begin() != track->curves_end());
   bool cce_visible = (children().find(m_cce) != children().end());
   
@@ -104,7 +104,7 @@ void TrackWidget::controller_added(long number, Dino::Track* track) {
 }
 
 
-void TrackWidget::controller_removed(long number, Dino::Track* track) {
+void TrackWidget::curve_removed(long number, Dino::Track* track) {
   bool has_curves = (track->curves_begin() != track->curves_end());
   bool cce_visible = (children().find(m_cce) != children().end());
   

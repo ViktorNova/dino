@@ -159,7 +159,9 @@ void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq) {
     if (m_ctrls[i].deleted)
       numbers.push_back(t.get_controllers()[i]->get_number());
     else {
-      t.get_controllers()[i]->set_name(m_ctrls[i].ci.get_name());
+      const ControllerInfo& ci = m_ctrls[i].ci;
+      t.set_controller_name(ci.get_number(), ci.get_name());
+      t.set_controller_global(ci.get_number(), ci.get_global());
       // XXX This should be made realtime safe - the sequencer will read the
       // parameter number from the ControllerInfo struct
       t.get_controllers()[i]->set_number(m_ctrls[i].ci.get_number());

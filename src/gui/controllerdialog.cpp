@@ -88,6 +88,7 @@ void ControllerDialog::set_info(const ControllerInfo& info) {
   m_info = info;
   m_cmb_controller.set_active_id(m_info.get_number());
   m_ent_name.set_text(m_info.get_name());
+  m_chk_global.set_active(m_info.get_global());
 }
 
 

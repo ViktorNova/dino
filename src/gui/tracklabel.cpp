@@ -71,10 +71,10 @@ void TrackLabel::set_track(int id, Track* track) {
   
   m_name_connection = m_track->signal_name_changed().
     connect(mem_fun(*this, &TrackLabel::slot_name_changed));
-  m_ctrl_added_connection = track->signal_controller_added().
-    connect(mem_fun(*this, &TrackLabel::controller_added));
-  m_ctrl_removed_connection = track->signal_controller_removed().
-    connect(mem_fun(*this, &TrackLabel::controller_removed));
+  m_ctrl_added_connection = track->signal_curve_added().
+    connect(mem_fun(*this, &TrackLabel::curve_added));
+  m_ctrl_removed_connection = track->signal_curve_removed().
+    connect(mem_fun(*this, &TrackLabel::curve_removed));
   
   slot_name_changed(track->get_name());
   
@@ -155,13 +155,13 @@ void TrackLabel::slot_name_changed(const string& name) {
 }
 
 
-void TrackLabel::controller_added(long number) {
+void TrackLabel::curve_added(long number) {
   m_has_curves = (m_track->curves_begin() != m_track->curves_end());
   set_size_request(m_width, m_height + 4 + (m_has_curves ? m_cce_height : 0));
 }
 
 
-void TrackLabel::controller_removed(long number) {
+void TrackLabel::curve_removed(long number) {
   m_has_curves = (m_track->curves_begin() != m_track->curves_end());
   set_size_request(m_width, m_height + 4 + (m_has_curves ? m_cce_height : 0));  
 }

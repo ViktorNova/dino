@@ -294,7 +294,12 @@ namespace Dino {
     bool add_controller(long number, const std::string& name, int default_v,
 			int min, int max, bool global);
     bool remove_controller(long number);
-    
+    void set_controller_name(long number, const std::string& name);    
+    void set_controller_min(long number, int min);    
+    void set_controller_max(long number, int max);    
+    void set_controller_default(long number, int _default);    
+    void set_controller_number(long number, long new_number);    
+    void set_controller_global(long number, bool global);    
     //@}
     
     /// @name XML I/O
@@ -325,6 +330,8 @@ namespace Dino {
     sigc::signal<void, long>& signal_controller_added();
     sigc::signal<void, long>& signal_controller_removed();
     sigc::signal<void, long>& signal_controller_changed();
+    sigc::signal<void, long>& signal_curve_added();
+    sigc::signal<void, long>& signal_curve_removed();
     //@}
     
   private:
@@ -350,6 +357,8 @@ namespace Dino {
     sigc::signal<void, long> m_signal_controller_added;
     sigc::signal<void, long> m_signal_controller_removed;
     sigc::signal<void, long> m_signal_controller_changed;
+    sigc::signal<void, long> m_signal_curve_added;
+    sigc::signal<void, long> m_signal_curve_removed;
 
   };
 

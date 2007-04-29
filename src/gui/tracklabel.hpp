@@ -53,8 +53,8 @@ public:
 private:
   
   void slot_name_changed(const std::string& name);
-  void controller_added(long number);
-  void controller_removed(long number);
+  void curve_added(long number);
+  void curve_removed(long number);
     
   const Dino::Song* m_song;
   Dino::Track* m_track;

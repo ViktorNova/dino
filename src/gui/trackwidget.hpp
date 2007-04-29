@@ -53,8 +53,8 @@ public:
   
 private:
   
-  void controller_added(long number, Dino::Track* track);
-  void controller_removed(long number, Dino::Track* track);
+  void curve_added(long number, Dino::Track* track);
+  void curve_removed(long number, Dino::Track* track);
   
   
   SequenceWidget m_swdg;

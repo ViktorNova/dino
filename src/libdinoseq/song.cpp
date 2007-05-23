@@ -542,10 +542,14 @@ namespace Dino {
       sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
       (*new_tracks)[id] = new Track(id, m_length);
       (*new_tracks)[id]->parse_xml_node(track_elt);
-      m_signal_track_added(id);
     }
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
+    
+    map<int, Track*>::const_iterator titer;
+    for (titer = m_tracks->begin(); titer != m_tracks->end(); ++titer)
+      m_signal_track_added(titer->first);
+    
     Deleter::queue(old_tracks);
   
     return true;

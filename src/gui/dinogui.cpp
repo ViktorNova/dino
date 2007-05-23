@@ -410,7 +410,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
   
   // initialise the main window
   m_window.set_title("Dino");
-  m_window.set_icon_from_file(DATA_DIR "/head.png");
+  Gtk::Window::set_default_icon_from_file(DATA_DIR "/head.png");
   VBox* vbox = manage(new VBox);
   m_window.add(*vbox);
   MenuBar* mbar = manage(new MenuBar);

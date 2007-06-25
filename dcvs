@@ -4,7 +4,7 @@
 my $project = "dino";
 my $module = "dino";
 my $user = "larsl";
-
+my $module_dir = "/cvsroot/$project/$module";
 
 # make sure that this is a commit
 $is_commit = 0;
@@ -41,13 +41,12 @@ close MAKEFILE;
 
 
 # find out which files have changed
-@files = {};
+@files = ();
 $nfiles = 0;
 @lines = `(cvs diff -u | grep "RCS file") 2> /dev/null`;
 foreach $line (@lines) {
-  if ($line =~ /^RCS file: \/sources\/dino\/dino\/(.*),v$/) {
+  if ($line =~ /^RCS file: $module_dir\/(.*),v$/) {
     $files[$nfiles++] = $1;
-    print "Added $1\n";
   }
 }
 
@@ -57,6 +56,9 @@ if (system('cvs', @ARGV) != 0) {
   system 'cp Makefile.bak Makefile';
   exit;
 }
+
+
+# The code below is adapted from Petr Baudis's ciabot_cvs.pl
 
 
 # Get log message
@@ -70,9 +72,6 @@ foreach $arg (@ARGV) {
     $next = 1;
   }
 }
-
-
-# The code below is adapted from Petr Baudis's ciabot_cvs.pl
 
 
 # Compose the RPC message
@@ -113,11 +112,6 @@ $logmsg
 EM
 ;
 
-
-print $message;
-
-
-exit;
 
 ### Send out the XML-RPC message
 

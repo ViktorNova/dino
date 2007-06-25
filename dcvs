@@ -47,6 +47,7 @@ $nfiles = 0;
 foreach $line (@lines) {
   if ($line =~ /^RCS file: \/sources\/$project\/$module\/(.*),v$/) {
     $files[$nfiles++] = $1;
+    print "Added $1\n";
   }
 }
 

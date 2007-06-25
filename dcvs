@@ -41,11 +41,11 @@ close MAKEFILE;
 
 
 # find out which files have changed
-@files = {};
+#@files = {};
 $nfiles = 0;
 @lines = `(cvs diff -u | grep "RCS file") 2> /dev/null`;
 foreach $line (@lines) {
-  if ($line =~ /^RCS file: \/sources\/${project}\/${module}\/(.*),v$/) {
+  if ($line =~ /^RCS file: \/sources\/$project\/$module\/(.*),v$/) {
     $files[$nfiles++] = $1;
     print "Added $1\n";
   }

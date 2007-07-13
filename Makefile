@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.127
+PACKAGE_VERSION = 0.3.128
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -16,7 +16,6 @@ DOCS = AUTHORS COPYING README TODO ChangeLog
 PROGRAMS = dino
 dino_SOURCES = \
 	action.hpp \
-	evilscrolledwindow.hpp \
 	main.cpp \
 	dinogui.cpp dinogui.hpp \
 	plugindialog.cpp plugindialog.hpp \
@@ -92,9 +91,10 @@ PCFILES = dino.pc
 # A GUI support library for core plugins
 libdinoseq_gui_so_SOURCES = \
 	curveeditor.cpp curveeditor.hpp \
+	evilscrolledwindow.hpp \
 	ruler.cpp ruler.hpp \
 	singletextcombo.cpp singletextcombo.hpp
-libdinoseq_gui_so_SOURCEDIR = src/gui
+libdinoseq_gui_so_SOURCEDIR = src/gui/libdinoseq_gui
 libdinoseq_gui_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
 libdinoseq_gui_so_LIBRARIES = src/libdinoseq/libdinoseq.so
 libdinoseq_gui_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6` -Isrc/libdinoseq
@@ -113,10 +113,10 @@ arrangementeditor_so_SOURCES = \
 	tracklabel.cpp tracklabel.hpp \
 	trackwidget.cpp trackwidget.hpp \
 	sequencewidget.cpp sequencewidget.hpp
-arrangementeditor_so_SOURCEDIR = src/gui
+arrangementeditor_so_SOURCEDIR = src/gui/arrangementeditor
 arrangementeditor_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
-arrangementeditor_so_LIBRARIES = src/gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
-arrangementeditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
+arrangementeditor_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
+arrangementeditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui -Isrc/gui/libdinoseq_gui
 tracklabel_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
 
 # The pattern editor
@@ -125,24 +125,24 @@ patterneditor_so_SOURCES = \
 	octavelabel.cpp octavelabel.hpp \
 	patterndialog.cpp patterndialog.hpp \
 	patterneditor.cpp patterneditor.hpp
-patterneditor_so_SOURCEDIR = src/gui
+patterneditor_so_SOURCEDIR = src/gui/patterneditor
 patterneditor_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
-patterneditor_so_LIBRARIES = src/gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
-patterneditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
+patterneditor_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
+patterneditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui -Isrc/gui/libdinoseq_gui
 
 # The info editor
 infoeditor_so_SOURCES = infoeditor.cpp infoeditor.hpp
-infoeditor_so_SOURCEDIR = src/gui
+infoeditor_so_SOURCEDIR = src/gui/infoeditor
 infoeditor_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
-infoeditor_so_LIBRARIES = src/gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
-infoeditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
+infoeditor_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
+infoeditor_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui -Isrc/gui/libdinoseq_gui
 
 # Core actions
 coreactions_so_SOURCES = coreactions.cpp
-coreactions_so_SOURCEDIR = src/gui
+coreactions_so_SOURCEDIR = src/gui/coreactions
 coreactions_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
-coreactions_so_LIBRARIES = src/gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
-coreactions_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq
+coreactions_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
+coreactions_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui
 
 
 

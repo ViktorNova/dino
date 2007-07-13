@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<node name="/org/nongnu/dino/Dino">
+
+  <interface name="org.nongnu.dino.Dino">
+    <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="DBUSInterface"/>
+    <method name="Hello">
+      <!-- This is optional, and in this case is redunundant -->
+      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="dbusinterface_hello"/>
+    </method>
+  </interface>
+</node>

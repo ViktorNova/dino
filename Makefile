@@ -1,10 +1,11 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.129
+PACKAGE_VERSION = 0.3.130
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
 	jack>=0.102.6 \
-	lash-1.0>=0.5.0
+	lash-1.0>=0.5.0 \
+	dbus-glib-1>=0.73
 
 
 # Data files
@@ -101,7 +102,7 @@ libdinoseq_gui_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6` -Isrc/li
 
 
 # The GUI plugins
-MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so dbusinterface.so
+MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so
 
 # The sequence editor
 arrangementeditor_so_SOURCES = \
@@ -147,9 +148,9 @@ coreactions_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.
 # DBUS interface
 dbusinterface_so_SOURCES = dbusinterface.cpp
 dbusinterface_so_SOURCEDIR = src/gui/dbusinterface
-dbusinterface_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
+dbusinterface_so_LDFLAGS = `pkg-config --libs gtkmm-2.4 dbus-glib-1`
 dbusinterface_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
-dbusinterface_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui
+dbusinterface_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0 dbus-glib-1` -Isrc/libdinoseq -Isrc/gui
 
 
 # Do the magic

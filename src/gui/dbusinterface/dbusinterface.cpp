@@ -49,7 +49,7 @@ extern "C" {
     obj->add_method("org.nongnu.dino.Sequencer", "Play", "");
     obj->add_method("org.nongnu.dino.Sequencer", "Stop", "");
     obj->add_method("org.nongnu.dino.Sequencer", "GoToBeat", "");
-    dbus->register_object("/foo/bar", obj);
+    dbus->register_object("/", obj);
     idle = Glib::signal_idle().
       connect(sigc::bind(sigc::mem_fun(*dbus, &DBus::Connection::run), 0));
   }

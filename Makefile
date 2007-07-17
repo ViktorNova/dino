@@ -1,11 +1,11 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.133
+PACKAGE_VERSION = 0.3.134
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
 	jack>=0.102.6 \
 	lash-1.0>=0.5.0 \
-	dbus-glib-1>=0.73
+	dbus-1>=1.1.1
 
 
 # Data files

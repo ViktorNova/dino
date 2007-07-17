@@ -26,10 +26,12 @@
 
 PluginInterfaceImplementation::
 PluginInterfaceImplementation(DinoGUI& gui, Dino::Song& song, 
-			      Dino::Sequencer& sequencer)
+			      Dino::Sequencer& sequencer,
+			      Dino::CommandProxy& proxy)
   : m_gui(gui),
     m_song(song),
-    m_seq(sequencer) {
+    m_seq(sequencer),
+    m_proxy(proxy) {
 
 }
 
@@ -66,6 +68,10 @@ Dino::Sequencer& PluginInterfaceImplementation::get_sequencer() {
   return m_seq;
 }
 
+
+Dino::CommandProxy& PluginInterfaceImplementation::get_command_proxy() {
+  return m_proxy;
+}
 
 PluginInterface::action_iterator 
 PluginInterfaceImplementation::actions_begin() {

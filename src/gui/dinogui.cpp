@@ -43,6 +43,7 @@ using namespace std;
 
 
 // needed for the about dialog
+// XXX change this to GPLv3
 #define GPL_TEXT \
 "		    GNU GENERAL PUBLIC LICENSE\n" \
 "		       Version 2, June 1991\n" \
@@ -388,7 +389,8 @@ using namespace std;
 
 DinoGUI::DinoGUI(int argc, char** argv) 
   : m_seq("Dino", m_song),
-    m_plif(*this, m_song, m_seq),
+    m_proxy(m_song, m_seq),
+    m_plif(*this, m_song, m_seq, m_proxy),
     m_plib(m_plif),
     m_valid(false) {
   
@@ -502,6 +504,12 @@ void DinoGUI::slot_file_quit() {
 }
 
 
+void DinoGUI::slot_edit_undo() {
+  assert(m_proxy.can_undo());
+  m_proxy.undo();
+}
+
+
 void DinoGUI::slot_edit_cut() {
   GUIPage* page = 
     dynamic_cast<GUIPage*>(m_nb.get_nth_page(m_nb.get_current_page()));
@@ -590,6 +598,13 @@ void DinoGUI::init_menus(MenuBar& mbar) {
   Menu* edit_menu = manage(new Menu);
   edit_item->set_submenu(*edit_menu);
   mbar.append(*edit_item);
+  create_menu_item(*edit_menu, Stock::UNDO, "edit_undo",
+		   &DinoGUI::slot_edit_undo);
+  m_proxy.signal_stack_changed().
+    connect(compose(mem_fun(*this, &DinoGUI::update_undo),
+		    mem_fun(m_proxy, &CommandProxy::get_next_undo_name)));
+  update_undo(m_proxy.get_next_undo_name());
+  edit_menu->append(*manage(new SeparatorMenuItem));
   create_menu_item(*edit_menu, Stock::CUT, "edit_cut", 
                    &DinoGUI::slot_edit_cut);
   create_menu_item(*edit_menu, Stock::COPY, "edit_copy", 
@@ -611,7 +626,7 @@ void DinoGUI::init_menus(MenuBar& mbar) {
   create_menu_item(*transport_menu, "_Stop", "transport_stop", 
                    Stock::MEDIA_PAUSE, &DinoGUI::slot_transport_stop);
   create_menu_item(*transport_menu, "_Go to start", "transport_go_to_start", 
-                   Stock::MEDIA_PREVIOUS,&DinoGUI::slot_transport_go_to_start);
+                   Stock::MEDIA_PREVIOUS, &DinoGUI::slot_transport_go_to_start);
   
   MenuItem* plugins_item = manage(new MenuItem("_Plugins", true));
   Menu* plugins_menu = manage(new Menu);
@@ -767,5 +782,11 @@ unsigned DinoGUI::set_status(const std::string& str, int timeout) {
                                0), message_id), false), timeout);
   }
   return message_id;
+}
+
+
+void DinoGUI::update_undo(const std::string& next_undo_name) {
+  cerr<<"next_undo_name = "<<next_undo_name<<endl;
+  m_menuitems["edit_undo"]->set_sensitive(next_undo_name.size() > 0);
 }
 

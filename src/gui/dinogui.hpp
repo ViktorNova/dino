@@ -24,6 +24,7 @@
 #include <gtkmm.h>
 #include <lash/lash.h>
 
+#include "commandproxy.hpp"
 #include "debug.hpp"
 #include "plugindialog.hpp"
 #include "plugininterfaceimplementation.hpp"
@@ -63,6 +64,7 @@ private:
   void slot_file_clear_all();
   void slot_file_quit();
   
+  void slot_edit_undo();
   void slot_edit_cut();
   void slot_edit_copy();
   void slot_edit_paste();
@@ -94,6 +96,8 @@ private:
                                   void (DinoGUI::*mslot)(void));
   bool init_lash(int argc, char** argv, const std::string& jack_name);
   
+  void update_undo(const std::string& next_undo_name);
+  
   // internal callbacks
   bool slot_check_ladcca_events();
   void page_switched(guint index);
@@ -110,6 +114,8 @@ private:
   PluginDialog m_plug_dialog;
   
   Dino::Sequencer m_seq;
+  
+  Dino::CommandProxy m_proxy;
   
   lash_client_t* m_lash_client;
   

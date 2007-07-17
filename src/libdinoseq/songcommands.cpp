@@ -1,7 +1,7 @@
 /****************************************************************************
    Dino - A simple pattern based MIDI sequencer
    
-   Copyright (C) 2006  Lars Luthman <lars.luthman@gmail.com>
+   Copyright (C) 2006-2007  Lars Luthman <lars.luthman@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,38 +18,30 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef INFOEDITOR_HPP
-#define INFOEDITOR_HPP
-
-#include <gtkmm.h>
-
-#include "debug.hpp"
-#include "plugininterface.hpp"
+#include "song.hpp"
+#include "songcommands.hpp"
 
 
 namespace Dino {
-  class Song;
+
+  
+  SetSongTitle::SetSongTitle(Song& song, const std::string& title)
+    : Command("Change song title"),
+      m_song(song),
+      m_new(title) {
+
+  }
+
+  
+  bool SetSongTitle::do_command() {
+    m_old = m_song.get_title();
+    m_song.set_title(m_new);
+  }
+    
+  
+  bool SetSongTitle::undo_command() {
+    m_song.set_title(m_old);
+  }
+
+
 }
-
-
-class InfoEditor : public GUIPage {
-public:
-  
-  InfoEditor(Dino::Song& song, Dino::CommandProxy& proxy);
-  
-  void reset_gui();
-  
-protected:
-  
-  void update_info(const std::string& info);
-  
-  Gtk::Entry* m_ent_title;
-  Gtk::Entry* m_ent_author;
-  Gtk::TextView* m_text_info;
-  
-  Dino::Song& m_song;
-  Dino::CommandProxy& m_proxy;
-};
-
-
-#endif

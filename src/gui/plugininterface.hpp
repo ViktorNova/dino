@@ -33,6 +33,7 @@
 namespace Dino {
   class Song;
   class Sequencer;
+  class CommandProxy;
 }
 
 
@@ -84,6 +85,9 @@ public:
   
   /** Remove an action. */
   virtual void remove_action(::Action& action) = 0;
+  
+  /** Returns the Dino::CommandProxy object. */
+  virtual Dino::CommandProxy& get_command_proxy() = 0;
   
   /** Returns the used Dino::Song object. */
   virtual Dino::Song& get_song() = 0;

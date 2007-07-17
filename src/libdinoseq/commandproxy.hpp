@@ -1,4 +1,27 @@
+/****************************************************************************
+   Dino - A simple pattern based MIDI sequencer
+   
+   Copyright (C) 2006-2007  Lars Luthman <lars.luthman@gmail.com>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation, 
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+****************************************************************************/
+
 #include <string>
+#include <stack>
+
+#include <sigc++/signal.h>
 
 
 namespace Dino {
@@ -6,23 +29,82 @@ namespace Dino {
   
   class Sequencer;
   class Song;
-
-
+  class Command;
+  
+  
+  /** A proxy class that provides a single interface for modifying the
+      song and controlling the sequencer, as well as an Undo layer.
+      None of the command functions or undo functions defined in this class
+      should be called recursively or mutually recursively, i.e. only one
+      of them may be executing at any given time. If any of the functions
+      are called while another one is executing (for example because it has
+      been connected to a signal that is fired by the first function), the 
+      second one will fail. */
   class CommandProxy {
   public:
     
+    /** Creates a new command proxy for the given Song and Sequencer object.
+	The Song and Sequencer must not be destroyed before this CommandProxy
+	is. */
     CommandProxy(Song& song, Sequencer& seq);
     
-    bool undo();
-    
+    /** Return @c true if the latest command can be undone. */
     bool can_undo() const;
+    
+    /** Return the name of the undoable command (or an empty string if there
+	is none). */
     std::string get_next_undo_name() const;
+    
+    /** Undo the last command, if possible. */
+    bool undo();
+
+    
+    /// @name Sequencer commands
+    //@{
+    
+    /** Start the transport. */
+    void play();
+    /** Stop the transport. */
+    void stop();
+    /** Go to the given beat. */
+    void go_to_beat(double beat);
+
+    //@}
+    
+    
+    /// @name Song commands
+    //@{
+    
+    /** Set the title of the song. */
+    bool set_song_title(const std::string& title);
+    /** Set the song author's name. */
+    void set_song_author(const std::string& author);
+    /** Set the information for the song. */
+    void set_song_info(const std::string& info);
+
+    //@}
+    
+    sigc::signal<void>& signal_stack_changed();
     
   protected:
     
+    /** Used internally to push a command onto the undo stack, execute it,
+	and fire off the signal_stack_changed() signal. */
+    bool push_and_do(Command* cmd);
+
+    /** A reference to the sequencer object this CommandProxy is controlling. */
     Sequencer& m_seq;
+    /** A reference to the song object this CommandProxy is controlling. */
     Song& m_song;
     
+    /** The stack of undoable commands. */
+    std::stack<Command*> m_stack;
+    
+    /** A signal that is activated whenever the stack changes. */
+    sigc::signal<void> m_signal_stack_changed;
+    
+    /** A flag that is used internally to prevent recursive commands. */
+    bool m_active;
   };
   
   

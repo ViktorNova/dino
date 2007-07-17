@@ -21,6 +21,7 @@
 #include <gtkmm/textbuffer.h>
 
 #include "infoeditor.hpp"
+#include "commandproxy.hpp"
 #include "song.hpp"
 
 
@@ -43,7 +44,7 @@ extern "C" {
   }
   
   void dino_load_plugin(PluginInterface& plif) {
-    m_ie = manage(new InfoEditor(plif.get_song()));
+    m_ie = manage(new InfoEditor(plif.get_song(), plif.get_command_proxy()));
     plif.add_page("Information", *m_ie);
     m_plif = &plif;
   }
@@ -54,8 +55,9 @@ extern "C" {
 }
 
 
-InfoEditor::InfoEditor(Dino::Song& song)
-  : m_song(song) {
+InfoEditor::InfoEditor(Dino::Song& song, Dino::CommandProxy& proxy)
+  : m_song(song),
+    m_proxy(proxy) {
   
   Table* t = manage(new Table(3, 2, false));
   m_ent_title = manage(new Entry);
@@ -90,14 +92,15 @@ InfoEditor::InfoEditor(Dino::Song& song)
   m_song.signal_info_changed().
     connect(mem_fun(*this, &InfoEditor::update_info));
   
-  slot<void> set_title = compose(mem_fun(m_song, &Song::set_title),
+  slot<bool> set_title = compose(mem_fun(m_proxy, 
+					 &CommandProxy::set_song_title),
 				 mem_fun(m_ent_title, &Entry::get_text));
   slot<void> set_author = compose(mem_fun(m_song, &Song::set_author),
 				  mem_fun(m_ent_author, &Entry::get_text));
   slot<void> set_info = compose(mem_fun(m_song, &Song::set_info),
 				bind(mem_fun(buf, get_text), true));
 
-  m_ent_title->signal_changed().connect(set_title);
+  m_ent_title->signal_changed().connect(sigc::hide_return(set_title));
   m_ent_author->signal_changed().connect(set_author);
   m_text_info->get_buffer()->signal_changed().connect(set_info);
   

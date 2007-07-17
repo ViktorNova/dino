@@ -1,7 +1,7 @@
 /****************************************************************************
    Dino - A simple pattern based MIDI sequencer
    
-   Copyright (C) 2006  Lars Luthman <lars.luthman@gmail.com>
+   Copyright (C) 2006-2007  Lars Luthman <lars.luthman@gmail.com>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,38 +18,41 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef INFOEDITOR_HPP
-#define INFOEDITOR_HPP
+#ifndef COMMAND_HPP
+#define COMMAND_HPP
 
-#include <gtkmm.h>
-
-#include "debug.hpp"
-#include "plugininterface.hpp"
+#include <string>
 
 
 namespace Dino {
-  class Song;
+  
+  
+  /** A Command is an operation that can be done and undone. It is used
+      internally by the CommandProxy class. This is an abstract base class,
+      all actual commands will be subclasses of this class. */
+  class Command {
+  public:
+    
+    Command(const std::string& name);
+    virtual ~Command();
+    
+    /** Get the name of this operation. */
+    const std::string& get_name() const;
+    
+    /** Do the operation. */
+    virtual bool do_command() = 0;
+    
+    /** Undo the operation. */
+    virtual bool undo_command() = 0;
+
+  protected:
+    
+    std::string m_name;
+
+  };
+
+
 }
-
-
-class InfoEditor : public GUIPage {
-public:
-  
-  InfoEditor(Dino::Song& song, Dino::CommandProxy& proxy);
-  
-  void reset_gui();
-  
-protected:
-  
-  void update_info(const std::string& info);
-  
-  Gtk::Entry* m_ent_title;
-  Gtk::Entry* m_ent_author;
-  Gtk::TextView* m_text_info;
-  
-  Dino::Song& m_song;
-  Dino::CommandProxy& m_proxy;
-};
 
 
 #endif

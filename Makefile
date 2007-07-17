@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.136
+PACKAGE_VERSION = 0.3.137
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -40,6 +40,7 @@ libdinoseq_so_SOURCES = \
 	cdtree.hpp \
 	command.cpp command.hpp \
 	commandproxy.cpp commandproxy.hpp \
+	compoundcommand.cpp compoundcommand.hpp \
 	controllerinfo.cpp controllerinfo.hpp \
 	controller_numbers.hpp \
 	curve.cpp curve.hpp \
@@ -66,6 +67,7 @@ libdinoseq_so_HEADERS = \
 	cdtree.hpp \
 	command.hpp \
 	commandproxy.hpp \
+	compoundcommand.hpp \
 	controllerinfo.hpp \
 	controller_numbers.hpp \
 	curve.hpp \

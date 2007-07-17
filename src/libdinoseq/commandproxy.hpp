@@ -78,9 +78,9 @@ namespace Dino {
     /** Set the title of the song. */
     bool set_song_title(const std::string& title);
     /** Set the song author's name. */
-    void set_song_author(const std::string& author);
+    bool set_song_author(const std::string& author);
     /** Set the information for the song. */
-    void set_song_info(const std::string& info);
+    bool set_song_info(const std::string& info);
 
     //@}
     

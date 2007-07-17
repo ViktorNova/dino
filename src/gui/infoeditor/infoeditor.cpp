@@ -95,14 +95,16 @@ InfoEditor::InfoEditor(Dino::Song& song, Dino::CommandProxy& proxy)
   slot<bool> set_title = compose(mem_fun(m_proxy, 
 					 &CommandProxy::set_song_title),
 				 mem_fun(m_ent_title, &Entry::get_text));
-  slot<void> set_author = compose(mem_fun(m_song, &Song::set_author),
+  slot<bool> set_author = compose(mem_fun(m_proxy, 
+					  &CommandProxy::set_song_author),
 				  mem_fun(m_ent_author, &Entry::get_text));
-  slot<void> set_info = compose(mem_fun(m_song, &Song::set_info),
+  slot<bool> set_info = compose(mem_fun(m_proxy, &CommandProxy::set_song_info),
 				bind(mem_fun(buf, get_text), true));
 
   m_ent_title->signal_changed().connect(sigc::hide_return(set_title));
-  m_ent_author->signal_changed().connect(set_author);
-  m_text_info->get_buffer()->signal_changed().connect(set_info);
+  m_ent_author->signal_changed().connect(sigc::hide_return(set_author));
+  m_text_info->get_buffer()->signal_changed().
+    connect(sigc::hide_return(set_info));
   
   reset_gui();
 }

@@ -22,7 +22,7 @@
 
 #include "commandproxy.hpp"
 #include "song.hpp"
-#include "songcommands.hpp"
+#include "genericcommands.hpp"
 #include "sequencer.hpp"
 
 
@@ -50,9 +50,8 @@ namespace Dino {
   
 
   bool CommandProxy::undo() {
-    if (m_active) {
+    if (m_active)
       return false;
-    }
     m_active = true;
     std::cerr<<__PRETTY_FUNCTION__<<std::endl;
     if (m_stack.empty())
@@ -87,18 +86,26 @@ namespace Dino {
   
   
   bool CommandProxy::set_song_title(const std::string& title) {
-    std::cerr<<__PRETTY_FUNCTION__<<std::endl;
-    return push_and_do(new SetSongTitle(m_song, title));
+    return push_and_do(new SetString<Song>("Change song title", 
+					   m_song, title,
+					   &Song::get_title, 
+					   &Song::set_title));
   }
   
   
-  void CommandProxy::set_song_author(const std::string& author) {
-
+  bool CommandProxy::set_song_author(const std::string& author) {
+    return push_and_do(new SetString<Song>("Change song author", 
+					   m_song, author,
+					   &Song::get_author, 
+					   &Song::set_author));
   }
   
   
-  void CommandProxy::set_song_info(const std::string& info) {
-
+  bool CommandProxy::set_song_info(const std::string& info) {
+    return push_and_do(new SetString<Song>("Change song info", 
+					   m_song, info,
+					   &Song::get_info, 
+					   &Song::set_info));
   }
   
   

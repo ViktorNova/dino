@@ -239,9 +239,10 @@ void PatternEditor::update_track_combo() {
     m_cmb_track.append_text("No tracks");
     newActive = -1;
   }
-  m_track_combo_connection.unblock();
   m_cmb_track.set_active_id(newActive);
   m_cmb_track.set_sensitive(newActive != -1);
+  m_track_combo_connection.unblock();
+  set_active_track(newActive);
 }
 
 
@@ -268,8 +269,9 @@ void PatternEditor::update_pattern_combo() {
   if (newActive == -1)
     m_cmb_pattern.append_text("No patterns");
   m_cmb_pattern.set_sensitive(newActive != -1);
-  m_pattern_combo_connection.unblock();
   m_cmb_pattern.set_active_id(newActive);
+  m_pattern_combo_connection.unblock();
+  set_active_pattern(newActive);
 }
 
 
@@ -331,28 +333,31 @@ void PatternEditor::set_active_track(int track) {
 
 
 void PatternEditor::set_active_pattern(int pattern) {
+  
   if (pattern == m_active_pattern)
     return;
   
   m_active_pattern = pattern;
-  Song::TrackIterator t = m_song.tracks_find(m_active_track);
-  if (t == m_song.tracks_end())
-    return;
-  Track::PatternIterator p = t->pat_find(m_active_pattern);
-  
-  // update connections
-  m_conn_cont_added.disconnect();
-  m_conn_cont_removed.disconnect();
   Pattern* pptr = 0;
-  if (m_active_pattern != -1) {
-    slot<void> uslot = mem_fun(*this, &PatternEditor::update_controller_combo);
-    m_conn_cont_added = p->signal_curve_added().connect(sigc::hide(uslot));
-    m_conn_cont_removed = p->signal_curve_removed().
-      connect(sigc::hide(uslot));
-    pptr = &*p;
+  
+  Song::TrackIterator t = m_song.tracks_find(m_active_track);
+  if (t != m_song.tracks_end()) {
+    Track::PatternIterator p = t->pat_find(m_active_pattern);
+    
+    // update connections
+    m_conn_cont_added.disconnect();
+    m_conn_cont_removed.disconnect();
+    if (p != t->pat_end()) {
+      slot<void> uslot = mem_fun(*this, 
+				 &PatternEditor::update_controller_combo);
+      m_conn_cont_added = p->signal_curve_added().connect(sigc::hide(uslot));
+      m_conn_cont_removed = p->signal_curve_removed().
+	connect(sigc::hide(uslot));
+      pptr = &*p;
+      m_cce.set_alternation(p->get_steps());
+    }
   }
-
-  m_cce.set_alternation(p->get_steps());
+  
   update_controller_combo();
   m_ne.set_pattern(pptr);
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);

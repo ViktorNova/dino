@@ -59,8 +59,8 @@ extern "C" {
     //obj->add_method("org.nongnu.dino.Sequencer", "GoToBeat", "", 
     //		    sigc::ptr_fun(foo));
     dbus->register_object("/", obj);
-    idle = Glib::signal_idle().
-      connect(bind(mem_fun(*dbus, &DBus::Connection::run), 0));
+    idle = Glib::signal_timeout().
+      connect(bind(mem_fun(*dbus, &DBus::Connection::run), 0), 10);
   }
   
   void dino_unload_plugin() {

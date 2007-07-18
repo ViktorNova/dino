@@ -91,6 +91,8 @@ namespace Dino {
     bool set_loop_end(int beat);
     /** Add a new track and optionally store its iterator in @c iter. */
     bool add_track(const std::string& name, Song::TrackIterator* iter);
+    /** Remove a track. */
+    bool remove_track(int id);
     
     /** Remove a tempo change. */
     bool remove_tempo_change(unsigned long beat);

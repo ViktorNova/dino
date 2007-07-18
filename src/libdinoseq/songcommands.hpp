@@ -78,6 +78,19 @@ namespace Dino {
   };
   
   
+  class RemoveTrack : public Command {
+  public:
+    RemoveTrack(Song& song, int id);
+    ~RemoveTrack();
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_id;
+    Track* m_trk;
+  };
+  
+  
   class RemoveTempoChange : public Command {
   public:
     RemoveTempoChange(Song& song, unsigned long beat);

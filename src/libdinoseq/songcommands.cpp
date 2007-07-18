@@ -18,6 +18,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include "deleter.hpp"
 #include "song.hpp"
 #include "track.hpp"
 #include "songcommands.hpp"
@@ -200,6 +201,39 @@ namespace Dino {
   }
   
 
+  RemoveTrack::RemoveTrack(Song& song, int id)
+    : Command("Remove track"),
+      m_song(song),
+      m_id(id),
+      m_trk(0) {
+
+  }
+  
+  
+  RemoveTrack::~RemoveTrack() {
+    if (m_trk)
+      Deleter::queue(m_trk);
+  }
+  
+  
+  bool RemoveTrack::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_id);
+    if (titer == m_song.tracks_end())
+      return false;
+    m_trk = m_song.disown_track(titer);
+    if (!m_trk)
+      return false;
+    return true;
+  }
+
+
+  bool RemoveTrack::undo_command() {
+    Song::TrackIterator titer = m_song.add_track(m_trk);
+    m_trk = 0;
+    return (titer != m_song.tracks_end());
+  }
+  
+  
   RemoveTempoChange::RemoveTempoChange(Song& song, unsigned long beat)
     : Command("Remove tempo change"),
       m_song(song),

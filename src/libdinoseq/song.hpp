@@ -153,12 +153,13 @@ namespace Dino {
     void set_info(const std::string& info);
     void set_length(int length);
     TrackIterator add_track(const std::string& name = "");
+    TrackIterator add_track(Track* track);
     bool remove_track(const TrackIterator& iterator);
+    Track* disown_track(const TrackIterator& iterator);
     TempoIterator add_tempo_change(int beat, double bpm);
     void remove_tempo_change(TempoIterator& iter);
     void set_loop_start(int start);
     void set_loop_end(int end);
-    
     //@}
     
     /// @name Sequencing

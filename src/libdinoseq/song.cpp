@@ -293,29 +293,61 @@ namespace Dino {
 
 
   Song::TrackIterator Song::add_track(const string& name) {
-    map<int, Track*>* new_tracks = new map<int, Track*>(*m_tracks);
-    map<int, Track*>::reverse_iterator iter = new_tracks->rbegin();
+    map<int, Track*>::reverse_iterator iter = m_tracks->rbegin();
     int id;
-    if (iter == new_tracks->rend())
+    if (iter == m_tracks->rend())
       id = 1;
     else
       id = iter->first + 1;
-    (*new_tracks)[id] = new Track(id, m_length, name);
+    Track* track = new Track(id, m_length, name);
+
+    return add_track(track);
+  }
+
+
+  Song::TrackIterator Song::add_track(Track* track) {
+    
+    // don't try to add a null track
+    if (!track)
+      return tracks_end();
+    
+    // check if the wanted ID is free
+    if (m_tracks->find(track->get_id()) != m_tracks->end())
+      return tracks_end();
+    
+    // create a new track map to swap with the old one (can't write to
+    // it directly, it's read by the realtime thread)
+    map<int, Track*>* new_tracks = new map<int, Track*>(*m_tracks);
+    
+    // insert the track into the new track map
+    (*new_tracks)[track->get_id()] = track;
     m_dirty = true;
     
+    // swap the maps
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
     Deleter::queue(old_tracks);
     
-    m_signal_track_added(id);
-    return TrackIterator(m_tracks->find(id));
+    m_signal_track_added(track->get_id());
+    return TrackIterator(m_tracks->find(track->get_id()));
   }
 
 
   bool Song::remove_track(const Song::TrackIterator& iterator) {
+    Track* trk = disown_track(iterator);
+    if (trk) {
+      Deleter::queue(trk);
+      return true;
+    }
+    return false;
+  }
+
+
+  Track* Song::disown_track(const TrackIterator& iterator) {
+    
     map<int, Track*>::iterator iter = iterator.m_iterator;
     if (iter == m_tracks->end())
-      return false;
+      return 0;
     
     // prepare a modified copy of the track map
     map<int, Track*>* new_tracks = new map<int, Track*>(*m_tracks);
@@ -323,15 +355,15 @@ namespace Dino {
     Track* trk = iter->second;
     new_tracks->erase(new_tracks->find(id));
     
-    // swap the track map and delete the old map and the removed track
+    // swap the track map and delete the old one
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new_tracks;
     Deleter::queue(old_tracks);
-    Deleter::queue(trk);
 
     m_dirty = true;
     m_signal_track_removed(id);
-    return true;
+    
+    return trk;
   }
 
 

@@ -217,9 +217,8 @@ void ArrangementEditor::add_track() {
 
 
 void ArrangementEditor::delete_track() {
-  if (m_active_track >= 0) {
-    m_song.remove_track(m_song.tracks_find(m_active_track));
-  }
+  if (m_active_track >= 0)
+    m_proxy.remove_track(m_active_track);
 }
 
 

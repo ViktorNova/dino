@@ -130,6 +130,11 @@ namespace Dino {
     return push_and_do(new AddTrack(m_song, name, iter));
   }
 
+
+  bool CommandProxy::remove_track(int id) {
+    return push_and_do(new RemoveTrack(m_song, id));
+  }
+
   
   bool CommandProxy::remove_tempo_change(unsigned long beat) {
     return push_and_do(new RemoveTempoChange(m_song, beat));

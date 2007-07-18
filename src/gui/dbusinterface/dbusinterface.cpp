@@ -52,12 +52,6 @@ extern "C" {
     plif = &p; 
     dbus = new DBus::Connection("org.nongnu.dino");
     DBus::Object* obj = new DinoObject(plif->get_command_proxy());
-    //obj->add_method("org.nongnu.dino.Sequencer", "Play", "", 
-    //		    sigc::ptr_fun(foo));
-    //obj->add_method("org.nongnu.dino.Sequencer", "Stop", "", 
-    //		    sigc::ptr_fun(foo));
-    //obj->add_method("org.nongnu.dino.Sequencer", "GoToBeat", "", 
-    //		    sigc::ptr_fun(foo));
     dbus->register_object("/", obj);
     idle = Glib::signal_timeout().
       connect(bind(mem_fun(*dbus, &DBus::Connection::run), 0), 10);

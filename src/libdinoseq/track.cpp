@@ -687,6 +687,7 @@ namespace Dino {
   Track::SequenceIterator Track::set_sequence_entry(int beat, 
                                                     int pattern, 
                                                     unsigned int length) {
+    // XXX shouldn't exit here, just return an invalid iterator
     assert(beat >= 0);
     assert(beat < int(m_sequence->size()));
     assert(m_patterns.find(pattern) != m_patterns.end());

@@ -39,6 +39,7 @@ namespace Dino {
     bool undo_command();
     
     bool append(Command* cmd);
+    void clear();
     
   protected:
     

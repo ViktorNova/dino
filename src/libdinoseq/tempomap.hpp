@@ -70,6 +70,7 @@ namespace Dino {
     
     /** Add a new tempo change. */
     TempoChange* add_tempo_change(unsigned long beat, unsigned int bpm);
+    // XXX should return bool so the CommandProxy can tell if it worked or not
     /** Remove any tempo change that occurs at the given beat. */
     void remove_tempo_change(unsigned long beat);
     

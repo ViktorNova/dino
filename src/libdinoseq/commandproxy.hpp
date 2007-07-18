@@ -81,7 +81,23 @@ namespace Dino {
     bool set_song_author(const std::string& author);
     /** Set the information for the song. */
     bool set_song_info(const std::string& info);
-
+    
+    /** Set the song length. */
+    bool set_song_length(int length);
+    /** Set the loop start. */
+    bool set_loop_start(int beat);
+    /** Set the loop end. */
+    bool set_loop_end(int beat);
+    
+    /** Remove a tempo change. */
+    bool remove_tempo_change(unsigned long beat);
+    
+    /** Remove a sequence entry. */
+    bool remove_sequence_entry(int track, unsigned long beat);
+    /** Change the length of a sequence entry. */
+    bool set_sequence_entry_length(int track, unsigned long beat, 
+				   unsigned int length);
+    
     //@}
     
     sigc::signal<void>& signal_stack_changed();

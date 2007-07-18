@@ -22,6 +22,7 @@
 
 #include "evilscrolledwindow.hpp"
 #include "arrangementeditor.hpp"
+#include "commandproxy.hpp"
 #include "sequencer.hpp"
 #include "song.hpp"
 #include "track.hpp"
@@ -76,6 +77,7 @@ ArrangementEditor::ArrangementEditor(PluginInterface& plif)
     m_active_track(-1),
     m_song(plif.get_song()),
     m_seq(plif.get_sequencer()),
+    m_proxy(plif.get_command_proxy()),
     m_plif(plif) {
   
   VBox* v = manage(new VBox);
@@ -149,7 +151,7 @@ ArrangementEditor::ArrangementEditor(PluginInterface& plif)
   pack_start(*v);
   
   // add a new tempo widget and a tempo label
-  TempoWidget* tmpw = manage(new TempoWidget(&m_song));
+  TempoWidget* tmpw = manage(new TempoWidget(m_proxy, &m_song));
   m_vbx_track_editor.pack_start(*tmpw, PACK_SHRINK);
   slot<void> update_menu = bind(mem_fun(*tmpw, &TempoWidget::update_menu), 
                                 ref(m_plif));
@@ -185,7 +187,8 @@ ArrangementEditor::ArrangementEditor(PluginInterface& plif)
   m_song.signal_loop_end_changed().
     connect(mem_fun(m_sequence_ruler, &::Ruler::set_loop_end));
   m_spb_song_length.signal_value_changed().
-    connect(compose(mem_fun(m_song, &Song::set_length),
+    connect(compose(hide_return(mem_fun(m_proxy, 
+					&CommandProxy::set_song_length)),
   		    mem_fun(m_spb_song_length, &SpinButton::get_value_as_int)));
   
   // connect to sequencer
@@ -263,9 +266,9 @@ void ArrangementEditor::ruler_clicked(double beat, int button) {
   if (button == 2)
     m_seq.go_to_beat(beat);
   else if (button == 1)
-    m_song.set_loop_start(int(beat));
+    m_proxy.set_loop_start(int(beat));
   else if (button == 3)
-    m_song.set_loop_end(int(ceil(beat)));
+    m_proxy.set_loop_end(int(ceil(beat)));
 }
 
 
@@ -303,7 +306,7 @@ void ArrangementEditor::track_added(int track) {
     recording = true;
   
   // add track widget
-  TrackWidget* tw = manage(new TrackWidget());
+  TrackWidget* tw = manage(new TrackWidget(m_proxy));
   tw->signal_status.
     connect(hide_return(bind(mem_fun(m_plif, &PluginInterface::set_status),
 			     3000)));
@@ -314,7 +317,8 @@ void ArrangementEditor::track_added(int track) {
   m_plif.signal_action_removed().connect(sigc::hide(update_menu));
   update_menu();
   tw->signal_clicked.
-    connect(sigc::hide(bind(mem_fun(*this, &ArrangementEditor::set_active_track),
+    connect(sigc::hide(bind(mem_fun(*this, 
+				    &ArrangementEditor::set_active_track),
 			    iter->get_id())));
   m_seq.signal_beat_changed().
     connect(mem_fun(*tw, &TrackWidget::set_current_beat));

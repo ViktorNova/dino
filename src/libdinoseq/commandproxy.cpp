@@ -21,9 +21,10 @@
 #include <iostream>
 
 #include "commandproxy.hpp"
-#include "song.hpp"
 #include "genericcommands.hpp"
 #include "sequencer.hpp"
+#include "song.hpp"
+#include "songcommands.hpp"
 
 
 namespace Dino {
@@ -107,7 +108,38 @@ namespace Dino {
 					   &Song::get_info, 
 					   &Song::set_info));
   }
+
+
+  bool CommandProxy::set_song_length(int length) {
+    return push_and_do(new SetSongLength(m_song, length));
+  }
+
+
+  bool CommandProxy::set_loop_start(int beat) {
+    return push_and_do(new SetLoopStart(m_song, beat));
+  }
+
+
+  bool CommandProxy::set_loop_end(int beat) {
+    return push_and_do(new SetLoopEnd(m_song, beat));
+  }
   
+  
+  bool CommandProxy::remove_tempo_change(unsigned long beat) {
+    return push_and_do(new RemoveTempoChange(m_song, beat));
+  }
+
+ 
+  bool CommandProxy::remove_sequence_entry(int track, unsigned long beat) {
+    return push_and_do(new RemoveSequenceEntry(m_song, track, beat));
+  }
+ 
+
+  bool CommandProxy::set_sequence_entry_length(int track, unsigned long beat, 
+					       unsigned int length) {
+    return push_and_do(new SetSequenceEntryLength(m_song, track, beat, length));
+  }
+
   
   sigc::signal<void>& CommandProxy::signal_stack_changed() {
     return m_signal_stack_changed;
@@ -120,11 +152,14 @@ namespace Dino {
       return false;
     }
     m_active = true;
-    m_stack.push(cmd);
-    cmd->do_command();
-    m_signal_stack_changed();
+    if (cmd->do_command()) {
+      m_stack.push(cmd);
+      m_signal_stack_changed();
+      m_active = false;
+      return true;
+    }
     m_active = false;
-    return true;
+    return false;
   }
   
   

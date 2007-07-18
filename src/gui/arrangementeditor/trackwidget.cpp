@@ -18,6 +18,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include "commandproxy.hpp"
 #include "curveeditor.hpp"
 #include "track.hpp"
 #include "trackwidget.hpp"
@@ -28,7 +29,9 @@ using namespace Dino;
 using namespace std;
 
 
-TrackWidget::TrackWidget() {
+TrackWidget::TrackWidget(CommandProxy& proxy)
+  : m_swdg(proxy) {
+  
   m_cce.set_step_width(20);
   m_cce.set_alternation(4);
   pack_start(m_swdg);

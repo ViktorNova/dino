@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 
+#include "commandproxy.hpp"
 #include "song.hpp"
 #include "tempowidget.hpp"
 #include "plugininterface.hpp"
@@ -36,8 +37,13 @@ using namespace sigc;
 using namespace std;
 
 
-TempoWidget::TempoWidget(Song* song) 
-  : m_song(song), m_col_width(20), m_drag_beat(-1), m_active_tempo(0) {
+TempoWidget::TempoWidget(CommandProxy& proxy, Song* song) 
+  : m_proxy(proxy),
+    m_song(song), 
+    m_col_width(20), 
+    m_drag_beat(-1), 
+    m_active_tempo(0) {
+
   assert(song);
   
   // initialise colours
@@ -203,7 +209,8 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     if (event->state & GDK_CONTROL_MASK) {
       Song::TempoIterator iter = m_song->tempo_find(beat);
       if (iter != m_song->tempo_end() && iter->get_beat() == beat)
-        m_song->remove_tempo_change(iter);
+	m_proxy.remove_tempo_change(beat);
+        //m_song->remove_tempo_change(iter);
     }
     else {
       m_menu.popup(event->button, event->time);

@@ -24,6 +24,7 @@
 #include <string>
 
 #include "command.hpp"
+#include "compoundcommand.hpp"
 
 
 namespace Dino {
@@ -32,15 +33,78 @@ namespace Dino {
   class Song;
   
   
-  class SetSongTitle : public Command {
+  class SetSongLength : public CompoundCommand {
   public:
-    SetSongTitle(Song& song, const std::string& title);
+    SetSongLength(Song& song, int length);
+    bool do_command();
+  protected:
+    Song& m_song;
+    int m_length;
+  };
+  
+  
+  class SetLoopStart : public Command {
+  public:
+    SetLoopStart(Song& song, int beat);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
-    std::string m_old;
-    std::string m_new;
+    int m_beat;
+    int m_oldbeat;
+  };
+  
+  
+  class SetLoopEnd : public Command {
+  public:
+    SetLoopEnd(Song& song, int beat);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_beat;
+    int m_oldbeat;
+  };
+  
+  
+  class RemoveTempoChange : public Command {
+  public:
+    RemoveTempoChange(Song& song, unsigned long beat);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    unsigned long m_beat;
+    double m_bpm;
+  };
+  
+
+  class RemoveSequenceEntry : public Command {
+  public:
+    RemoveSequenceEntry(Song& song, int track, unsigned long beat);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    unsigned long m_beat;
+    int m_pattern;
+    int m_length;
+  };
+
+
+  class SetSequenceEntryLength : public Command {
+  public:
+    SetSequenceEntryLength(Song& song, int track, unsigned long beat, 
+			   unsigned int length);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    unsigned long m_beat;
+    int m_length;
+    int m_old_length;
   };
   
 

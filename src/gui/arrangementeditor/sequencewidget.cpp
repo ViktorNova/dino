@@ -22,6 +22,7 @@
 #include <iostream>
 #include <map>
 
+#include "commandproxy.hpp"
 #include "debug.hpp"
 #include "sequencewidget.hpp"
 #include "pattern.hpp"
@@ -39,8 +40,10 @@ using namespace sigc;
 using namespace std;
 
 
-SequenceWidget::SequenceWidget() 
-  : m_col_width(20), 
+SequenceWidget::SequenceWidget(CommandProxy& proxy) 
+  : m_proxy(proxy),
+    m_track(0),
+    m_col_width(20), 
     //m_drag_beat(-1), 
     //m_drag_pattern(-1),
     m_drag_seqid(-1),
@@ -72,6 +75,11 @@ void SequenceWidget::set_track(Track* track) {
   // XXX Need to disconnect the old track here
   m_track->signal_length_changed().
     connect(mem_fun(*this, &SequenceWidget::slot_length_changed));
+  slot<void> draw = mem_fun(*this, &SequenceWidget::queue_draw);
+  m_track->signal_sequence_entry_added().
+    connect(sigc::hide(sigc::hide(sigc::hide(draw))));
+  m_track->signal_sequence_entry_changed().
+    connect(sigc::hide(sigc::hide(sigc::hide(draw))));
   set_size_request(m_col_width * m_track->get_length(), m_col_width + 4);
 }
 
@@ -185,17 +193,15 @@ bool SequenceWidget::on_button_press_event(GdkEventButton* event) {
       //m_drag_beat = se->get_start();
       //m_drag_pattern = se->get_pattern_id();
       m_drag_seqid = se->get_id();
-      m_track->set_seq_entry_length(se, beat - se->get_start() + 1);
-      update();
+      m_proxy.set_sequence_entry_length(m_track->get_id(), beat,
+					beat - se->get_start() + 1);
     }
     return true;
   }
     
   case 3:
-    if (event->state & GDK_CONTROL_MASK) {
-      m_track->remove_sequence_entry(m_track->seq_find(beat));
-      update();
-    }
+    if (event->state & GDK_CONTROL_MASK)
+      m_proxy.remove_sequence_entry(m_track->get_id(), beat);
     else
       m_action_menu.popup(event->button, event->time);
     return true;
@@ -219,8 +225,8 @@ bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
     Track::SequenceIterator siter = m_track->seq_find_by_id(m_drag_seqid);
     if (siter != m_track->seq_end() && beat >= siter->get_start() &&
         beat - siter->get_start() + 1 <= siter->get_pattern().get_length()) {
-      m_track->set_seq_entry_length(siter, beat - siter->get_start() + 1);
-      update();
+      m_proxy.set_sequence_entry_length(m_track->get_id(), siter->get_start(),
+					beat - siter->get_start() + 1);
       return true;
     }
   }

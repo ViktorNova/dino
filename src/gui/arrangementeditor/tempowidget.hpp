@@ -25,6 +25,7 @@
 
 
 namespace Dino {
+  class CommandProxy;
   class Song;
 }
 
@@ -35,7 +36,8 @@ class PluginInterface;
 class TempoWidget : public Gtk::DrawingArea {
 public:
   
-  TempoWidget(Dino::Song* song = 0);
+  // XXX what was the purpose of allowing songless tempo widgets again?
+  TempoWidget(Dino::CommandProxy& proxy, Dino::Song* song = 0);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -50,6 +52,7 @@ private:
   
   void length_changed(int length);
   
+  Dino::CommandProxy& m_proxy;
   Dino::Song* m_song;
   int m_col_width;
 

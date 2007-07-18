@@ -28,6 +28,7 @@
 
 
 namespace Dino {
+  class CommandProxy;
   class Track;
 }
 
@@ -38,7 +39,7 @@ class PluginInterface;
 class TrackWidget : public Gtk::VBox {
 public:
   
-  TrackWidget();
+  TrackWidget(Dino::CommandProxy& proxy);
   ~TrackWidget();
   
   void set_track(Dino::Track* track);

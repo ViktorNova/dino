@@ -94,6 +94,7 @@ protected:
   // external references
   Dino::Song& m_song;
   Dino::Sequencer& m_seq;
+  Dino::CommandProxy& m_proxy;
   PluginInterface& m_plif;
   
   // state

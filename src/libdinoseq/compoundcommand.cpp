@@ -18,6 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <iostream>
+
 #include "compoundcommand.hpp"
 
 
@@ -39,7 +41,7 @@ namespace Dino {
   
   bool CompoundCommand::do_command() {
     m_used = true;
-    for (unsigned i = 0; i < m_commands.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(m_commands.size()); ++i) {
       if (!m_commands[i]->do_command()) {
 	for (--i; i >= 0; --i)
 	  m_commands[i]->undo_command();
@@ -52,7 +54,7 @@ namespace Dino {
 
   bool CompoundCommand::undo_command() {
     m_used = true;
-    for (unsigned i = m_commands.size() - 1; i >= 0; ++i) {
+    for (int i = static_cast<int>(m_commands.size() - 1); i >= 0; --i) {
       if (!m_commands[i]->undo_command()) {
 	for (++i; i < m_commands.size(); ++i)
 	  m_commands[i]->do_command();
@@ -73,5 +75,13 @@ namespace Dino {
     m_commands.push_back(cmd);
   }
   
+
+  void CompoundCommand::clear() {
+    for (unsigned i = 0; i < m_commands.size(); ++i)
+      delete m_commands[i];
+    m_commands.clear();
+    m_used = false;
+  }
+
 
 }

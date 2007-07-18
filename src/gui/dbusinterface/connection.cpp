@@ -128,7 +128,7 @@ namespace DBus {
 	      node->xml = node->xml +
 		"      <arg type=\"" + typesig[i] + "\" direction=\"in\"/>\n";
 	    }
-	    node->xml += "    </method>\n";
+	    node->xml = node->xml + "    </method>\n";
 	  }
 	}
 	node->xml += "  </interface>\n";

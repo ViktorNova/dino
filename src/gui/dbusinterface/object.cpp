@@ -119,7 +119,7 @@ namespace DBus {
       return DBUS_HANDLER_RESULT_HANDLED;
     }
     
-    // through all the checks - get the arguments and call the method!
+    // through all the checks - get the arguments
     int argc = strlen(typesig);
     Argument* argv = new Argument[argc];
     DBusMessageIter aiter;
@@ -135,7 +135,17 @@ namespace DBus {
       else if (type == DBUS_TYPE_STRING)
 	argv[i] = Argument(*reinterpret_cast<const char**>(&value));
     }
-    tsiter->second(argc, argv);
+    
+    // call the method!
+    if (tsiter->second(argc, argv)) {
+      DBusMessage* reply = dbus_message_new_method_return(msg);
+      dbus_connection_send(conn, reply, 0);
+    }
+    else {
+      DBusMessage* reply = dbus_message_new_error(msg, DBUS_ERROR_FAILED,
+						  "Method handler failed");
+      dbus_connection_send(conn, reply, 0);
+    }
     delete [] argv;
     
     return DBUS_HANDLER_RESULT_HANDLED;

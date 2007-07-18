@@ -178,7 +178,8 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
     if (event->state & GDK_CONTROL_MASK) {
       if (beat >= 0 && beat < unsigned(m_song->get_length())) {
         double bpm = m_song->get_current_tempo(beat);
-        Song::TempoIterator iter = m_song->add_tempo_change(beat, bpm);
+        Song::TempoIterator iter;
+	m_proxy.add_tempo_change(beat, bpm, &iter);
         if (iter != m_song->tempo_end()) {
           m_active_tempo = &*iter;
           m_drag_start_y = int(event->y);
@@ -210,7 +211,6 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
       Song::TempoIterator iter = m_song->tempo_find(beat);
       if (iter != m_song->tempo_end() && iter->get_beat() == beat)
 	m_proxy.remove_tempo_change(beat);
-        //m_song->remove_tempo_change(iter);
     }
     else {
       m_menu.popup(event->button, event->time);
@@ -224,7 +224,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
 
 bool TempoWidget::on_button_release_event(GdkEventButton* event) {
   if ((event->button == 2 || event->button == 1)&& m_active_tempo) {
-    m_song->add_tempo_change(m_active_tempo->get_beat(), m_editing_bpm);
+    m_proxy.add_tempo_change(m_active_tempo->get_beat(), m_editing_bpm);
     m_active_tempo = 0;
     update();
   }

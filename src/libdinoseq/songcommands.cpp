@@ -182,13 +182,13 @@ namespace Dino {
   
   bool AddTrack::do_command() {
     Song::TrackIterator titer = m_song.add_track(m_name);
-    if (titer == m_song.tracks_end())
-      return false;
-    m_id = titer->get_id();
     if (m_iter_store) {
       *m_iter_store = titer;
       m_iter_store = 0;
     }
+    if (titer == m_song.tracks_end())
+      return false;
+    m_id = titer->get_id();
     return true;
   }
   
@@ -234,6 +234,60 @@ namespace Dino {
   }
   
   
+  AddTempoChange::AddTempoChange(Song& song, int beat, double bpm,
+				 Song::TempoIterator* iter)
+    : Command("Set tempo change"),
+      m_song(song),
+      m_beat(beat),
+      m_bpm(bpm),
+      m_oldbpm(-1),
+      m_iter_store(iter) {
+
+  }
+  
+  
+  bool AddTempoChange::do_command() {
+    if (m_beat < 0 || m_beat >= m_song.get_length()) {
+      if (m_iter_store) {
+	*m_iter_store = m_song.tempo_end();
+	m_iter_store = 0;
+      }
+      return false;
+    }
+    m_oldbpm = -1;
+    Song::TempoIterator iter = m_song.tempo_find(m_beat);
+    if (iter->get_beat() == m_beat) {
+      if (iter->get_bpm() == m_bpm) {
+	if (m_iter_store) {
+	  *m_iter_store = m_song.tempo_end();
+	  m_iter_store = 0;
+	}
+	return false;
+      }
+      m_oldbpm = iter->get_bpm();
+    }
+    iter = m_song.add_tempo_change(m_beat, m_bpm);
+    if (m_iter_store) {
+      *m_iter_store = iter;
+      m_iter_store = 0;
+    }
+    return (iter != m_song.tempo_end());
+  }
+  
+  
+  bool AddTempoChange::undo_command() {
+    if (m_oldbpm == -1) {
+      Song::TempoIterator iter = m_song.tempo_find(m_beat);
+      if (iter == m_song.tempo_end())
+	return false;
+      m_song.remove_tempo_change(iter);
+    }
+    else
+      m_song.add_tempo_change(m_beat, m_oldbpm);
+    return true;
+  }
+  
+
   RemoveTempoChange::RemoveTempoChange(Song& song, unsigned long beat)
     : Command("Remove tempo change"),
       m_song(song),

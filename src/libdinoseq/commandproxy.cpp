@@ -136,6 +136,12 @@ namespace Dino {
   }
 
   
+  bool CommandProxy::add_tempo_change(int beat, double bpm, 
+				      Song::TempoIterator* iter) {
+    return push_and_do(new AddTempoChange(m_song, beat, bpm, iter));
+  }
+
+  
   bool CommandProxy::remove_tempo_change(unsigned long beat) {
     return push_and_do(new RemoveTempoChange(m_song, beat));
   }

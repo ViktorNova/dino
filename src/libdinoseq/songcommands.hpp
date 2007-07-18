@@ -91,6 +91,20 @@ namespace Dino {
   };
   
   
+  class AddTempoChange : public Command {
+  public:
+    AddTempoChange(Song& song, int beat, double bpm, Song::TempoIterator* iter);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_beat;
+    double m_bpm;
+    int m_oldbpm;
+    Song::TempoIterator* m_iter_store;
+  };
+  
+
   class RemoveTempoChange : public Command {
   public:
     RemoveTempoChange(Song& song, unsigned long beat);

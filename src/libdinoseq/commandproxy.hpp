@@ -23,12 +23,13 @@
 
 #include <sigc++/signal.h>
 
+#include "song.hpp"
+
 
 namespace Dino {
   
   
   class Sequencer;
-  class Song;
   class Command;
   
   
@@ -88,6 +89,8 @@ namespace Dino {
     bool set_loop_start(int beat);
     /** Set the loop end. */
     bool set_loop_end(int beat);
+    /** Add a new track and optionally store its iterator in @c iter. */
+    bool add_track(const std::string& name, Song::TrackIterator* iter);
     
     /** Remove a tempo change. */
     bool remove_tempo_change(unsigned long beat);

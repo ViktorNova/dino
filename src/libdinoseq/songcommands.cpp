@@ -168,6 +168,38 @@ namespace Dino {
   }
 
   
+  AddTrack::AddTrack(Song& song, const std::string& name, 
+		     Song::TrackIterator* iter)
+    : Command("Add track"),
+      m_song(song),
+      m_name(name),
+      m_id(-1),
+      m_iter_store(iter) {
+
+  }
+  
+  
+  bool AddTrack::do_command() {
+    Song::TrackIterator titer = m_song.add_track(m_name);
+    if (titer == m_song.tracks_end())
+      return false;
+    m_id = titer->get_id();
+    if (m_iter_store) {
+      *m_iter_store = titer;
+      m_iter_store = 0;
+    }
+    return true;
+  }
+  
+  
+  bool AddTrack::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_id);
+    if (titer == m_song.tracks_end())
+      return false;
+    return m_song.remove_track(titer);
+  }
+  
+
   RemoveTempoChange::RemoveTempoChange(Song& song, unsigned long beat)
     : Command("Remove tempo change"),
       m_song(song),

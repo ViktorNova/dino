@@ -25,12 +25,10 @@
 
 #include "command.hpp"
 #include "compoundcommand.hpp"
+#include "song.hpp"
 
 
 namespace Dino {
-  
-  
-  class Song;
   
   
   class SetSongLength : public CompoundCommand {
@@ -64,6 +62,19 @@ namespace Dino {
     Song& m_song;
     int m_beat;
     int m_oldbeat;
+  };
+
+
+  class AddTrack : public Command {
+  public:
+    AddTrack(Song& song, const std::string& name, Song::TrackIterator* iter);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    std::string m_name;
+    int m_id;
+    Song::TrackIterator* m_iter_store;
   };
   
   

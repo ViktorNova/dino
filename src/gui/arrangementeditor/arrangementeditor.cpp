@@ -207,7 +207,8 @@ void ArrangementEditor::add_track() {
   m_dlg_track.reset();
   m_dlg_track.show_all();
   if (m_dlg_track.run() == RESPONSE_OK) {
-    Song::TrackIterator iter = m_song.add_track(m_dlg_track.get_name());
+    Song::TrackIterator iter;
+    m_proxy.add_track(m_dlg_track.get_name(), &iter);
     m_dlg_track.apply_to_track(*iter, m_seq);
     set_active_track(iter->get_id());
   }

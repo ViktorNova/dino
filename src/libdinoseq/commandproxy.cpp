@@ -124,6 +124,12 @@ namespace Dino {
     return push_and_do(new SetLoopEnd(m_song, beat));
   }
   
+
+  bool CommandProxy::add_track(const std::string& name, 
+			       Song::TrackIterator* iter) {
+    return push_and_do(new AddTrack(m_song, name, iter));
+  }
+
   
   bool CommandProxy::remove_tempo_change(unsigned long beat) {
     return push_and_do(new RemoveTempoChange(m_song, beat));

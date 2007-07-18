@@ -22,18 +22,24 @@
 #include <iostream>
 
 #include "connection.hpp"
-#include "object.hpp"
+#include "dinoobject.hpp"
 #include "plugininterface.hpp"
 
 
 using namespace Dino;
 using namespace std;
+using namespace sigc;
+
+
+namespace DBus {
+  class Argument;
+}
 
 
 namespace {
   PluginInterface* plif = 0;
   DBus::Connection* dbus = 0;
-  sigc::connection idle;
+  connection idle;
 }
 
 
@@ -45,13 +51,16 @@ extern "C" {
   void dino_load_plugin(PluginInterface& p) {
     plif = &p; 
     dbus = new DBus::Connection("org.nongnu.dino");
-    DBus::Object* obj = new DBus::Object;
-    obj->add_method("org.nongnu.dino.Sequencer", "Play", "");
-    obj->add_method("org.nongnu.dino.Sequencer", "Stop", "");
-    obj->add_method("org.nongnu.dino.Sequencer", "GoToBeat", "");
+    DBus::Object* obj = new DinoObject(plif->get_command_proxy());
+    //obj->add_method("org.nongnu.dino.Sequencer", "Play", "", 
+    //		    sigc::ptr_fun(foo));
+    //obj->add_method("org.nongnu.dino.Sequencer", "Stop", "", 
+    //		    sigc::ptr_fun(foo));
+    //obj->add_method("org.nongnu.dino.Sequencer", "GoToBeat", "", 
+    //		    sigc::ptr_fun(foo));
     dbus->register_object("/", obj);
     idle = Glib::signal_idle().
-      connect(sigc::bind(sigc::mem_fun(*dbus, &DBus::Connection::run), 0));
+      connect(bind(mem_fun(*dbus, &DBus::Connection::run), 0));
   }
   
   void dino_unload_plugin() {

@@ -4,9 +4,13 @@
 #include <map>
 
 #include <dbus/dbus.h>
+#include <sigc++/sigc++.h>
 
 
 namespace DBus {
+  
+  
+  class Argument;
   
   
   /** A class that represents a D-Bus object. It must be registered using
@@ -15,7 +19,11 @@ namespace DBus {
   public:
     
     /** A convenient typedef. */
-    typedef std::map<std::string, std::map<std::string, std::string> > 
+    typedef sigc::slot<bool, int, Argument*> Method;
+    
+    /** Another convenient typedef. */
+    typedef std::map<std::string, std::map<std::string, std::map<std::string,
+								 Method> > > 
     InterfaceMap;
     
     Object();
@@ -23,7 +31,7 @@ namespace DBus {
     
     /** Add a new method to the object. */
     void add_method(const std::string& interface, const std::string& method,
-		    const std::string& typesig);
+		    const std::string& typesig, Method handler);
     /** Add a new signal to the object. */
     void add_signal(const std::string& interface, const std::string& signal,
 		    const std::string& typesig);

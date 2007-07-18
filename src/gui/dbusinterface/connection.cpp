@@ -104,17 +104,32 @@ namespace DBus {
       "<!DOCTYPE node PUBLIC "
       "\"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n"
       "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n"
-      "<node>\n";
+      "<node>\n"
+      "  <interface name=\"org.freedesktop.DBus.Introspectable\">\n"
+      "    <method name=\"Introspect\">\n"
+      "      <arg name=\"data\" direction=\"out\" type=\"s\"/>\n"
+      "    </method>\n"
+      "  </interface>\n";
     if (node->object) {
       const Object::InterfaceMap& ifs = node->object->get_interfaces();
       Object::InterfaceMap::const_iterator iter;
       for (iter = ifs.begin(); iter != ifs.end(); ++iter) {
 	node->xml = node->xml + "  <interface name=\"" + iter->first + "\">\n";
-	const map<string, string>& methods = iter->second;
-	map<string, string>::const_iterator iter2;
+	const map<string, map<string, Object::Method> >& methods = iter->second;
+	map<string, map<string, Object::Method> >::const_iterator iter2;
 	for (iter2 = methods.begin(); iter2 != methods.end(); ++iter2) {
-	  node->xml = node->xml + 
-	    "<method name=\"" + iter2->first + "\"/>\n";
+	  map<string, Object::Method>::const_iterator iter3;
+	  for (iter3 = iter2->second.begin(); 
+	       iter3 != iter2->second.end(); ++iter3) {
+	    node->xml = node->xml + 
+	      "    <method name=\"" + iter2->first + "\">\n";
+	    const std::string& typesig = iter3->first;
+	    for (unsigned i = 0; i < typesig.size(); ++i) {
+	      node->xml = node->xml +
+		"      <arg type=\"" + typesig[i] + "\" direction=\"in\"/>\n";
+	    }
+	    node->xml += "    </method>\n";
+	  }
 	}
 	node->xml += "  </interface>\n";
       }
@@ -160,9 +175,8 @@ namespace DBus {
       const char* xml = node->xml.c_str();
       dbus_message_append_args(ret, DBUS_TYPE_STRING, &xml, DBUS_TYPE_INVALID);
     }
-    else {
+    else
       ret = dbus_message_new_error(msg, DBUS_ERROR_FAILED, "No such object");
-    }
     dbus_connection_send(conn, ret, 0);
     return DBUS_HANDLER_RESULT_HANDLED;
   }

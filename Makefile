@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.143
+PACKAGE_VERSION = 0.3.144
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -156,6 +156,8 @@ coreactions_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.
 # DBUS interface
 dbusinterface_so_SOURCES = \
 	dbusinterface.cpp \
+	dinoobject.hpp dinoobject.cpp \
+	argument.hpp argument.cpp \
 	connection.hpp connection.cpp \
 	object.hpp object.cpp
 dbusinterface_so_SOURCEDIR = src/gui/dbusinterface

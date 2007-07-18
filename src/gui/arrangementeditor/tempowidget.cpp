@@ -223,7 +223,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
 
 
 bool TempoWidget::on_button_release_event(GdkEventButton* event) {
-  if ((event->button == 2 || event->button == 1)&& m_active_tempo) {
+  if ((event->button == 2 || event->button == 1) && m_active_tempo) {
     m_proxy.add_tempo_change(m_active_tempo->get_beat(), m_editing_bpm);
     m_active_tempo = 0;
     update();

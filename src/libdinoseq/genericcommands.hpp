@@ -58,11 +58,13 @@ namespace Dino {
     bool do_command() {
       m_old = (m_object.*m_getter)();
       (m_object.*m_setter)(m_new);
+      return true;
     }
     
     /** Restore the property to the old value. */
     bool undo_command() {
       (m_object.*m_setter)(m_old);
+      return true;
     }
     
   protected:

@@ -76,60 +76,50 @@ bool DinoObject::go_to_beat(int argc, DBus::Argument* argv) {
 
 
 bool DinoObject::set_song_title(int argc, DBus::Argument* argv) {
-  m_proxy.set_song_title(argv[0].s);
-  return true;
+  return m_proxy.set_song_title(argv[0].s);
 }
 
 
 bool DinoObject::set_song_author(int argc, DBus::Argument* argv) {
-  m_proxy.set_song_author(argv[0].s);
-  return true;
+  return m_proxy.set_song_author(argv[0].s);
 }
 
 
 bool DinoObject::set_song_info(int argc, DBus::Argument* argv) {
-  m_proxy.set_song_info(argv[0].s);
-  return true;
+  return m_proxy.set_song_info(argv[0].s);
 }
 
 
 bool DinoObject::set_song_length(int argc, DBus::Argument* argv) {
-  m_proxy.set_song_length(argv[0].i);
-  return true;
+  return m_proxy.set_song_length(argv[0].i);
 }
 
 
 bool DinoObject::set_loop_start(int argc, DBus::Argument* argv) {
-  m_proxy.set_loop_start(argv[0].i);
-  return true;
+  return m_proxy.set_loop_start(argv[0].i);
 }
 
 
 bool DinoObject::set_loop_end(int argc, DBus::Argument* argv) {
-  m_proxy.set_loop_end(argv[0].i);
-  return true;
+  return m_proxy.set_loop_end(argv[0].i);
 }
 
 
 bool DinoObject::add_track(int argc, DBus::Argument* argv) {
-  m_proxy.add_track(argv[0].s);
-  return true;
+  return m_proxy.add_track(argv[0].s);
 }
 
 
 bool DinoObject::remove_track(int argc, DBus::Argument* argv) {
-  m_proxy.remove_track(argv[0].i);
-  return true;
+  return m_proxy.remove_track(argv[0].i);
 }
 
 
 bool DinoObject::add_tempo_change(int argc, DBus::Argument* argv) {
-  m_proxy.add_tempo_change(argv[0].i, argv[1].d);
-  return true;
+  return m_proxy.add_tempo_change(argv[0].i, argv[1].d);
 }
 
 
 bool DinoObject::remove_tempo_change(int argc, DBus::Argument* argv) {
-  m_proxy.remove_tempo_change(argv[0].i);
-  return true;
+  return m_proxy.remove_tempo_change(argv[0].i);
 }

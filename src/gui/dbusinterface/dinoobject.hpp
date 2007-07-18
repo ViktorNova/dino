@@ -14,6 +14,8 @@ namespace DBus {
 }
 
 
+/** A D-Bus object that wraps all sequencer and song operations in Dino,
+    so they can be accessed by external programs and scripts. */
 class DinoObject : public DBus::Object {
 public:
   

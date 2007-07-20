@@ -95,6 +95,9 @@ public:
   /** Returns the used Dino::Sequencer object. */
   virtual Dino::Sequencer& get_sequencer() = 0;
   
+  /** Returns the D-Bus connection name. */
+  virtual const std::string& get_dbus_name() const = 0;
+  
   /** Returns an iterator pointing to the beginning of the action list. */
   virtual action_iterator actions_begin() = 0;
 

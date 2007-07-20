@@ -392,7 +392,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
     m_proxy(m_song, m_seq),
     m_dbus("org.nongnu.dino"),
     m_dbus_obj(0),
-    m_plif(*this, m_song, m_seq, m_proxy),
+    m_plif(*this, m_song, m_seq, m_proxy, m_dbus.get_name()),
     m_plib(m_plif),
     m_valid(false) {
   

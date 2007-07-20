@@ -37,6 +37,7 @@ namespace DBus {
     if (!(m_conn = dbus_bus_get_private(DBUS_BUS_SESSION, m_error)))
       return;
     dbus_bus_request_name(m_conn, name.c_str(), 0, m_error);
+    m_name = dbus_bus_get_unique_name(m_conn);
     dbus_connection_add_filter(m_conn, &Connection::introspect_filter, this, 0);
     generate_xml(&m_root);
   }
@@ -196,5 +197,10 @@ namespace DBus {
   }
   
   
+  const std::string& Connection::get_name() const {
+    return m_name;
+  }
+
+
 }
 

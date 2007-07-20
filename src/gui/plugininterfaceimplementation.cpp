@@ -27,11 +27,13 @@
 PluginInterfaceImplementation::
 PluginInterfaceImplementation(DinoGUI& gui, Dino::Song& song, 
 			      Dino::Sequencer& sequencer,
-			      Dino::CommandProxy& proxy)
+			      Dino::CommandProxy& proxy,
+			      const std::string& dbus_name)
   : m_gui(gui),
     m_song(song),
     m_seq(sequencer),
-    m_proxy(proxy) {
+    m_proxy(proxy),
+    m_dbus_name(dbus_name) {
 
 }
 
@@ -72,6 +74,11 @@ Dino::Sequencer& PluginInterfaceImplementation::get_sequencer() {
 Dino::CommandProxy& PluginInterfaceImplementation::get_command_proxy() {
   return m_proxy;
 }
+
+const std::string& PluginInterfaceImplementation::get_dbus_name() const {
+  return m_dbus_name;
+}
+
 
 PluginInterface::action_iterator 
 PluginInterfaceImplementation::actions_begin() {

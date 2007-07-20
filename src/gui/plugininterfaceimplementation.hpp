@@ -21,6 +21,8 @@
 #ifndef PLUGININTERFACEIMPLEMENTATION_HPP
 #define PLUGININTERFACEIMPLEMENTATION_HPP
 
+#include <string>
+
 #include "plugininterface.hpp"
 
 
@@ -35,7 +37,8 @@ public:
   
   PluginInterfaceImplementation(DinoGUI& gui, Dino::Song& song, 
 				Dino::Sequencer& sequencer,
-				Dino::CommandProxy& proxy);
+				Dino::CommandProxy& proxy,
+				const std::string& dbus_name);
   
   /** Add a page to the main notebook. */
   void add_page(const std::string& label, GUIPage& widget);
@@ -58,6 +61,9 @@ public:
   /** Returns the Dino::CommandProxy object. */
   Dino::CommandProxy& get_command_proxy();
   
+  /** Returns the D-Bus unique connection name. */
+  const std::string& get_dbus_name() const;
+  
   /** Returns an iterator pointing to the beginning of the action list. */
   virtual action_iterator actions_begin();
 
@@ -76,6 +82,7 @@ protected:
   Dino::Song& m_song;
   Dino::Sequencer& m_seq;
   Dino::CommandProxy& m_proxy;
+  std::string m_dbus_name;
   
   std::set< ::Action*> m_actions;
   

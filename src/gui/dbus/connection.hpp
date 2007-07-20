@@ -63,6 +63,10 @@ namespace DBus {
 	send signals and replies. */
     bool run(int msec);
     
+    /** Return the D-Bus name for this connection. May not be the same as
+	the one requested in the constructor (if it was already in use). */
+    const std::string& get_name() const;
+    
   protected:
     
     /** This structure is used internally in the object tree. */
@@ -97,6 +101,8 @@ namespace DBus {
     DBusError* m_error;
     /** The root of the object tree, with path "/". */
     TreeNode m_root;
+    /** Our connection name. */
+    std::string m_name;
 
   };
 

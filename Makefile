@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.155
+PACKAGE_VERSION = 0.3.156
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -115,6 +115,13 @@ libdinoseq_gui_so_LIBRARIES = src/libdinoseq/libdinoseq.so
 libdinoseq_gui_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6` -Isrc/libdinoseq
 
 
+# Script interpreters and related files
+DATAPACKS = scriptinterpreters
+scriptinterpreters_FILES = Python.interpreter dino_dbus_wrapper.py
+scriptinterpreters_SOURCEDIR = scripts/interpreters
+scriptinterpreters_INSTALLDIR = $(pkgdatadir)/interpreters
+
+
 # The GUI plugins
 MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so scriptinterface.so
 
@@ -165,7 +172,7 @@ scriptinterface_so_SOURCES = \
 scriptinterface_so_SOURCEDIR = src/gui/scriptinterface
 scriptinterface_so_LDFLAGS = `pkg-config --libs gtkmm-2.4 vte`
 scriptinterface_so_LIBRARIES = src/libdinoseq/libdinoseq.so
-scriptinterface_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0 vte` -Isrc/libdinoseq -Isrc/gui
+scriptinterface_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0 vte` -Isrc/libdinoseq -Isrc/gui -DINTERPRETERDIR=\"$(pkgdatadir)/interpreters\"
 
 
 # Do the magic

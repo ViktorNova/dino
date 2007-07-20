@@ -1,0 +1,9 @@
+#!/bin/sh
+
+python -i -c "import dino_dbus_wrapper
+import sys
+import readline
+import rlcompleter
+readline.parse_and_bind('tab: complete')
+dino_dbus_wrapper.connect(sys.argv[1])
+from dino_dbus_wrapper import song, seq" $*

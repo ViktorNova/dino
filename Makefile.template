@@ -276,6 +276,24 @@ $(foreach mod,$(MODULES),$(eval $(call MODULE_template,$(mod),$(subst .,_,$(mod)
 # END OF RUNTIME LOADABLE MODULES
 
 
+# DATA PACKS
+define DATAPACK_template
+
+# variables
+$(2)_SRCPRF = $$(if $$($(2)_SOURCEDIR),$$($(2)_SOURCEDIR),.)
+$(2)_FULLFILES = $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_FILES))
+ALL_DATA += $$($(2)_FULLFILES)
+$(2)_INSTDIR = $$(if $$($(2)_INSTALLDIR),$$($(2)_INSTALLDIR),$(pkgdatadir))
+
+# targets
+install-$(2): $$($(2)_FULLFILES)
+	$(if $$($(2)_FULLFILES),mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp $$($(2)_FULLFILES) $(DESTDIR)/$$($(2)_INSTDIR))
+
+endef
+$(foreach pack,$(DATAPACKS),$(eval $(call DATAPACK_template,$(pack),$(subst .,_,$(pack)))))
+# END OF DATA PACKS
+
+
 # START HERE
 really-all: $(if $(PKG_DEPS),check-pkg-deps) $(ARCHIVES_REAL) $(LIBRARIES_REAL) $(PROGRAMS_REAL) $(MODULES_REAL) $(LV2_PLUGINS_REAL)
 
@@ -311,7 +329,7 @@ install-programs: $(patsubst %,install-%,$(subst .,_,$(PROGRAMS)))
 install-modules: $(patsubst %,install-%,$(subst .,_,$(MODULES)))
 
 install-libraries: $(patsubst %,install-%,$(subst .,_,$(LIBRARIES)))
-	$(if $(LIBRARIES),ldconfig $(libdir))
+	$(if $(LIBRARIES),ldconfig -n $(libdir))
 
 install-lv2-plugins: $(patsubst %,install-%,$(subst .,_,$(LV2_PLUGINS)))
 
@@ -334,7 +352,9 @@ install-pcfiles: $(PCFILES)
 	@$(foreach pcf,$(PCFILES),echo pkgincludedir = $(pkgincludedir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
 	@$(foreach pcf,$(PCFILES),cat $(pcf) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
 
-install: install-libraries install-modules install-programs install-lv2-plugins install-data install-docs install-pcfiles
+install-datapacks: $(patsubst %,install-%,$(subst .,_,$(DATAPACKS)))
+
+install: install-libraries install-modules install-programs install-lv2-plugins install-data install-docs install-pcfiles install-datapacks
 
 
 # DISTRIBUTION

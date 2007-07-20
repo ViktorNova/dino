@@ -25,7 +25,7 @@ Should be done before 0.4:
  [X] Play loops, set loop points
  [ ] Support libmpmd or equivalent
  [X] Wrap libdinoseq in Python
- [ ] Embed a Python interpreter
+ [/] Embed a Python interpreter
  [/] Add track controllers (same as pattern controllers, but not bound to a 
      pattern)
  

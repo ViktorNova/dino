@@ -98,6 +98,8 @@ namespace Dino {
     /** Remove a tempo change. */
     bool remove_tempo_change(unsigned long beat);
     
+    /** Set the name for a track. */
+    bool set_track_name(int id, const std::string& name);
     /** Remove a sequence entry. */
     bool remove_sequence_entry(int track, unsigned long beat);
     /** Change the length of a sequence entry. */

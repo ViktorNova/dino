@@ -1,11 +1,12 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.151
+PACKAGE_VERSION = 0.3.152
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
 	jack>=0.102.6 \
 	lash-1.0>=0.5.0 \
-	dbus-1>=1.1.1
+	dbus-1>=1.1.1 \
+	vte>=0.16.6
 
 
 # Data files
@@ -18,19 +19,24 @@ PROGRAMS = dino
 dino_SOURCES = \
 	action.hpp \
 	main.cpp \
+	dinodbusobject.cpp dinodbusobject.hpp \
 	dinogui.cpp dinogui.hpp \
 	plugindialog.cpp plugindialog.hpp \
 	plugininterfaceimplementation.cpp plugininterfaceimplementation.hpp \
 	plugininterface.hpp \
-	pluginlibrary.cpp pluginlibrary.hpp 
+	pluginlibrary.cpp pluginlibrary.hpp \
+	dbus/argument.cpp dbus/argument.hpp \
+	dbus/connection.cpp dbus/connection.hpp \
+	dbus/object.cpp dbus/object.hpp
 dino_HEADERS = plugininterface.hpp action.hpp
 dino_SOURCEDIR = src/gui
-dino_CFLAGS = `pkg-config --cflags gtkmm-2.4 jack libxml++-2.6 lash-1.0` -Isrc/libdinoseq -Isrc
-dino_LDFLAGS = `pkg-config --libs gtkmm-2.4 lash-1.0` -Wl,-E
+dino_CFLAGS = `pkg-config --cflags gtkmm-2.4 jack libxml++-2.6 lash-1.0 dbus-1` -Isrc/libdinoseq -Isrc
+dino_LDFLAGS = `pkg-config --libs gtkmm-2.4 lash-1.0 dbus-1` -Wl,-E
 dino_LIBRARIES = src/libdinoseq/libdinoseq.so
 main_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\" -DVERSION=\"$(PACKAGE_VERSION)\" -DCR_YEAR=\"2005-2007\"
 dinogui_cpp_CFLAGS = $(main_cpp_CFLAGS)
 pluginlibrary_cpp_CFLAGS = -DPLUGIN_DIR=\"$(pkglibdir)\"
+
 
 # Shared libraries
 LIBRARIES = libdinoseq.so libdinoseq_gui.so
@@ -110,7 +116,7 @@ libdinoseq_gui_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6` -Isrc/li
 
 
 # The GUI plugins
-MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so dbusinterface.so
+MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so scriptinterface.so
 
 # The sequence editor
 arrangementeditor_so_SOURCES = \
@@ -164,6 +170,15 @@ dbusinterface_so_SOURCEDIR = src/gui/dbusinterface
 dbusinterface_so_LDFLAGS = `pkg-config --libs gtkmm-2.4 dbus-glib-1`
 dbusinterface_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
 dbusinterface_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0 dbus-1` -Isrc/libdinoseq -Isrc/gui
+
+
+# Script interface
+scriptinterface_so_SOURCES = \
+	scriptwidget.hpp scriptwidget.cpp
+scriptinterface_so_SOURCEDIR = src/gui/scriptinterface
+scriptinterface_so_LDFLAGS = `pkg-config --libs gtkmm-2.4 vte`
+scriptinterface_so_LIBRARIES = src/libdinoseq/libdinoseq.so
+scriptinterface_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0 vte` -Isrc/libdinoseq -Isrc/gui
 
 
 # Do the magic

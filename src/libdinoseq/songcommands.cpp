@@ -313,6 +313,36 @@ namespace Dino {
   }
 
 
+  SetTrackName::SetTrackName(Song& song, int track, const std::string& name)
+    : Command("Set track name"),
+      m_song(song),
+      m_track(track),
+      m_name(name) {
+    
+  }
+  
+  
+  bool SetTrackName::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    m_oldname = titer->get_name();
+    if (m_oldname == m_name)
+      return false;
+    titer->set_name(m_name);
+    return true;
+  }
+
+  
+  bool SetTrackName::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    titer->set_name(m_oldname);
+    return true;
+  }
+  
+
   RemoveSequenceEntry::RemoveSequenceEntry(Song& song, int track, 
 					   unsigned long beat)
     : Command("Remove sequence entry"),

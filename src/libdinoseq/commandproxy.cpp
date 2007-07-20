@@ -145,6 +145,11 @@ namespace Dino {
   bool CommandProxy::remove_tempo_change(unsigned long beat) {
     return push_and_do(new RemoveTempoChange(m_song, beat));
   }
+  
+  
+  bool CommandProxy::set_track_name(int id, const std::string& name) {
+    return push_and_do(new SetTrackName(m_song, id, name));
+  }
 
  
   bool CommandProxy::remove_sequence_entry(int track, unsigned long beat) {

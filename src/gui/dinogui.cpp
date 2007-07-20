@@ -390,6 +390,8 @@ using namespace std;
 DinoGUI::DinoGUI(int argc, char** argv) 
   : m_seq("Dino", m_song),
     m_proxy(m_song, m_seq),
+    m_dbus("org.nongnu.dino"),
+    m_dbus_obj(0),
     m_plif(*this, m_song, m_seq, m_proxy),
     m_plib(m_plif),
     m_valid(false) {
@@ -409,6 +411,11 @@ DinoGUI::DinoGUI(int argc, char** argv)
   }
   
   m_valid = true;
+  
+  m_dbus_obj = new DinoDBusObject(m_proxy);
+  m_dbus.register_object("/", m_dbus_obj);
+  signal_timeout().connect(bind(mem_fun(m_dbus, &DBus::Connection::run), 0),
+			   50);
   
   // initialise the main window
   m_window.set_title("Dino");

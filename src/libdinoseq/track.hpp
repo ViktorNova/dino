@@ -232,8 +232,6 @@ namespace Dino {
       std::vector<Curve*>::iterator m_iterator;
     };
 
-
-    
     
     Track(int id, int length = 0, const std::string& name = "Untitled");
   

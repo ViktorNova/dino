@@ -117,6 +117,19 @@ namespace Dino {
   };
   
 
+  class SetTrackName : public Command {
+  public:
+    SetTrackName(Song& song, int track, const std::string& name);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    std::string m_name;
+    std::string m_oldname;
+  };
+  
+
   class RemoveSequenceEntry : public Command {
   public:
     RemoveSequenceEntry(Song& song, int track, unsigned long beat);

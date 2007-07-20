@@ -25,7 +25,9 @@
 #include <lash/lash.h>
 
 #include "commandproxy.hpp"
+#include "dbus/connection.hpp"
 #include "debug.hpp"
+#include "dinodbusobject.hpp"
 #include "plugindialog.hpp"
 #include "plugininterfaceimplementation.hpp"
 #include "pluginlibrary.hpp"
@@ -116,6 +118,10 @@ private:
   Dino::Sequencer m_seq;
   
   Dino::CommandProxy m_proxy;
+  
+  DBus::Connection m_dbus;
+  
+  DinoDBusObject* m_dbus_obj;
   
   lash_client_t* m_lash_client;
   

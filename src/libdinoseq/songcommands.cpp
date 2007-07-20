@@ -19,6 +19,7 @@
 ****************************************************************************/
 
 #include "deleter.hpp"
+#include "pattern.hpp"
 #include "song.hpp"
 #include "track.hpp"
 #include "songcommands.hpp"
@@ -59,6 +60,61 @@ namespace {
     int m_oldlength;
     
   };
+
+
+  class _RemovePattern : public Dino::Command {
+  public:
+
+    _RemovePattern(Dino::Song& song, int track, int pattern)
+      : Dino::Command("Remove pattern"),
+	m_song(song),
+	m_track(track),
+	m_pattern(pattern),
+	m_patptr(0) {
+      
+    }
+    
+    
+    ~_RemovePattern() {
+      if (m_patptr)
+	Dino::Deleter::queue(m_patptr);
+    }
+    
+    
+    bool do_command() {
+      Dino::Song::TrackIterator titer = m_song.tracks_find(m_track);
+      if (titer == m_song.tracks_end())
+	return false;
+      Dino::Track::PatternIterator piter = titer->pat_find(m_pattern);
+      if (piter == titer->pat_end())
+	return false;
+      m_patptr = titer->disown_pattern(piter->get_id());
+      return (m_patptr != 0);
+    }
+    
+    
+    bool undo_command() {
+      if (!m_patptr)
+	return false;
+      Dino::Song::TrackIterator titer = m_song.tracks_find(m_track);
+      if (titer == m_song.tracks_end())
+	return false;
+      Dino::Track::PatternIterator piter = titer->add_pattern(m_patptr);
+      if (piter == titer->pat_end())
+	return false;
+      m_patptr = 0;
+      return true;
+    }
+
+  protected:
+
+    Dino::Song& m_song;
+    int m_track;
+    int m_pattern;
+    Dino::Pattern* m_patptr;
+
+  };
+
 
 }
 
@@ -343,6 +399,146 @@ namespace Dino {
   }
   
 
+  AddPattern::AddPattern(Song& song, int track, const std::string& name, 
+			 int length, int steps, Track::PatternIterator* iter)
+    : Command("Add pattern"),
+      m_song(song),
+      m_track(track),
+      m_name(name),
+      m_length(length),
+      m_steps(steps),
+      m_iter_store(iter),
+      m_id(-1) {
+    
+  }
+  
+  
+  bool AddPattern::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end()) {
+      if (m_iter_store) {
+	*m_iter_store = Track::PatternIterator();
+	m_iter_store = 0;
+      }
+      return false;
+    }
+    Track::PatternIterator iter = titer->add_pattern(m_name, m_length, m_steps);
+    if (m_iter_store) {
+      *m_iter_store = iter;
+      m_iter_store = 0;
+    }
+    if (iter != titer->pat_end()) {
+      m_id = iter->get_id();
+      return true;
+    }
+    return false;
+  }
+  
+  
+  bool AddPattern::undo_command() {
+    if (m_id == -1)
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_id);
+    if (piter == titer->pat_end())
+      return false;
+    titer->remove_pattern(m_id);
+    return true;
+  }
+
+
+  DuplicatePattern::DuplicatePattern(Song& song, int track, int pattern,
+				     Track::PatternIterator* iter)
+    : Command("Duplicate pattern"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_iter_store(iter),
+      m_id(-1) {
+    
+  }
+  
+  
+  bool DuplicatePattern::do_command() {
+    // XXX this can be written with less code
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end()) {
+      if (m_iter_store) {
+	*m_iter_store = Track::PatternIterator();
+	m_iter_store = 0;
+      }
+      return false;
+    }
+    Track::PatternIterator src = titer->pat_find(m_pattern);
+    if (src == titer->pat_end()) {
+      if (m_iter_store) {
+	*m_iter_store = Track::PatternIterator();
+	m_iter_store = 0;
+      }
+      return false;
+    }
+    Track::PatternIterator iter = titer->duplicate_pattern(src);
+    if (m_iter_store) {
+      *m_iter_store = iter;
+      m_iter_store = 0;
+    }
+    if (iter != titer->pat_end()) {
+      m_id = iter->get_id();
+      return true;
+    }
+    return false;
+  }
+  
+  
+  bool DuplicatePattern::undo_command() {
+    if (m_id == -1)
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_id);
+    if (piter == titer->pat_end())
+      return false;
+    titer->remove_pattern(m_id);
+    return true;
+  }
+
+
+  RemovePattern::RemovePattern(Song& song, int track, int pattern)
+    : CompoundCommand("Remove pattern"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern) {
+
+  }
+  
+  
+  bool RemovePattern::do_command() {
+    
+    clear();
+    
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    
+    // first remove all sequence entries for this pattern (in an undoable way)
+    Track::SequenceIterator siter;
+    for (siter = titer->seq_begin(); siter != titer->seq_end(); ++siter) {
+      if (siter->get_pattern_id() == m_pattern)
+	append(new RemoveSequenceEntry(m_song, m_track, siter->get_start()));
+    }
+    
+    append(new _RemovePattern(m_song, m_track, m_pattern));
+    
+    return CompoundCommand::do_command();
+  }
+  
+  
   RemoveSequenceEntry::RemoveSequenceEntry(Song& song, int track, 
 					   unsigned long beat)
     : Command("Remove sequence entry"),

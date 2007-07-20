@@ -20,6 +20,7 @@
 
 #include <iostream>
 
+#include "commandproxy.hpp"
 #include "curve.hpp"
 #include "controller_numbers.hpp"
 #include "evilscrolledwindow.hpp"
@@ -49,7 +50,7 @@ extern "C" {
   
   void dino_load_plugin(PluginInterface& plif) {
     m_plif = &plif;
-    m_pe = manage(new PatternEditor(plif.get_song()));
+    m_pe = manage(new PatternEditor(plif.get_song(), plif.get_command_proxy()));
     plif.add_page("Patterns", *m_pe);
   }
   
@@ -60,13 +61,14 @@ extern "C" {
 }  
 
 
-PatternEditor::PatternEditor(Song& song)
+PatternEditor::PatternEditor(Song& song, CommandProxy& proxy)
   : GUIPage(PageSupportsClipboard),
     m_octave_label(20, 8),
     m_active_track(-1),
     m_active_pattern(-1),
     m_active_controller(-1),
-    m_song(song) {
+    m_song(song),
+    m_proxy(proxy) {
   
   VBox* v = manage(new VBox);
   
@@ -404,10 +406,12 @@ void PatternEditor::add_pattern() {
     m_dlg_pattern->refocus();
     m_dlg_pattern->show_all();
     if (m_dlg_pattern->run() == RESPONSE_OK) {
-      Track::PatternIterator iter = m_song.tracks_find(m_active_track)->
-	add_pattern(m_dlg_pattern->get_name(),
-		    m_dlg_pattern->get_length(),
-		    m_dlg_pattern->get_steps());
+      Track::PatternIterator iter;
+      m_proxy.add_pattern(m_active_track, 
+			  m_dlg_pattern->get_name(),
+			  m_dlg_pattern->get_length(),
+			  m_dlg_pattern->get_steps(),
+			  &iter);
       m_cmb_pattern.set_active_id(iter->get_id());
     }
     m_dlg_pattern->hide();
@@ -418,16 +422,14 @@ void PatternEditor::add_pattern() {
 void PatternEditor::delete_pattern() {
   if (m_active_track < 0 || m_active_pattern < 0)
     return;
-  Track& trk = *(m_song.tracks_find(m_active_track));
-  trk.remove_pattern(m_active_pattern);
+  m_proxy.remove_pattern(m_active_track, m_active_pattern);
 }
 
 
 void PatternEditor::duplicate_pattern() {
   if (m_active_track < 0 || m_active_pattern < 0)
     return;
-  Track& trk = *(m_song.tracks_find(m_active_track));
-  trk.duplicate_pattern(trk.pat_find(m_active_pattern));
+  m_proxy.duplicate_pattern(m_active_track, m_active_pattern);
 }
 
 

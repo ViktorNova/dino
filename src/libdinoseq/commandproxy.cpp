@@ -152,6 +152,25 @@ namespace Dino {
   }
 
  
+  bool CommandProxy::add_pattern(int track, const std::string& name, 
+				 int length, int steps, 
+				 Track::PatternIterator* iter) {
+    return push_and_do(new AddPattern(m_song, track, name, 
+				      length, steps, iter));
+  }
+  
+  
+  bool CommandProxy::duplicate_pattern(int track, int pattern, 
+				       Track::PatternIterator* iter) {
+    return push_and_do(new DuplicatePattern(m_song, track, pattern, iter));
+  }
+
+
+  bool CommandProxy::remove_pattern(int track, int pattern) {
+    return push_and_do(new RemovePattern(m_song, track, pattern));
+  }
+  
+
   bool CommandProxy::remove_sequence_entry(int track, unsigned long beat) {
     return push_and_do(new RemoveSequenceEntry(m_song, track, beat));
   }

@@ -34,13 +34,14 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy)
 	     sigc::mem_fun(*this, &DinoDBusObject::stop));
   add_method("org.nongnu.dino.Sequencer", "GoToBeat", "d", 
 	     sigc::mem_fun(*this, &DinoDBusObject::go_to_beat));
-  add_method("org.nongnu.dino.Song", "SetSongTitle", "s",
+
+  add_method("org.nongnu.dino.Song", "SetTitle", "s",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_song_title));
-  add_method("org.nongnu.dino.Song", "SetSongAuthor", "s",
+  add_method("org.nongnu.dino.Song", "SetAuthor", "s",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_song_author));
-  add_method("org.nongnu.dino.Song", "SetSongInfo", "s",
+  add_method("org.nongnu.dino.Song", "SetInfo", "s",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_song_info));
-  add_method("org.nongnu.dino.Song", "SetSongLength", "i",
+  add_method("org.nongnu.dino.Song", "SetLength", "i",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_song_length));
   add_method("org.nongnu.dino.Song", "SetLoopStart", "i",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_loop_start));
@@ -54,7 +55,19 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy)
 	     sigc::mem_fun(*this, &DinoDBusObject::add_tempo_change));
   add_method("org.nongnu.dino.Song", "RemoveTempoChange", "i",
 	     sigc::mem_fun(*this, &DinoDBusObject::remove_tempo_change));
-  
+
+  add_method("org.nongnu.dino.Song", "SetTrackName", "is",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_track_name));
+  add_method("org.nongnu.dino.Song", "AddPattern", "isii",
+	     sigc::mem_fun(*this, &DinoDBusObject::add_pattern));
+  add_method("org.nongnu.dino.Song", "DuplicatePattern", "ii",
+	     sigc::mem_fun(*this, &DinoDBusObject::duplicate_pattern));
+  add_method("org.nongnu.dino.Song", "RemovePattern", "ii",
+	     sigc::mem_fun(*this, &DinoDBusObject::remove_pattern));
+  add_method("org.nongnu.dino.Song", "RemoveSequenceEntry", "ii",
+	     sigc::mem_fun(*this, &DinoDBusObject::remove_sequence_entry));
+  add_method("org.nongnu.dino.Song", "SetSequenceEntryLength", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_sequence_entry_length));
 }
 
 bool DinoDBusObject::play(int argc, DBus::Argument* argv) {
@@ -123,3 +136,35 @@ bool DinoDBusObject::add_tempo_change(int argc, DBus::Argument* argv) {
 bool DinoDBusObject::remove_tempo_change(int argc, DBus::Argument* argv) {
   return m_proxy.remove_tempo_change(argv[0].i);
 }
+
+
+bool DinoDBusObject::set_track_name(int argc, DBus::Argument* argv) {
+  return m_proxy.set_track_name(argv[0].i, argv[1].s);
+}
+
+
+bool DinoDBusObject::add_pattern(int argc, DBus::Argument* argv) {
+  return m_proxy.add_pattern(argv[0].i, argv[1].s, argv[2].i, argv[3].i);
+}
+
+
+bool DinoDBusObject::duplicate_pattern(int argc, DBus::Argument* argv) {
+  return m_proxy.duplicate_pattern(argv[0].i, argv[1].i);
+}
+
+
+bool DinoDBusObject::remove_pattern(int argc, DBus::Argument* argv) {
+  return m_proxy.remove_pattern(argv[0].i, argv[1].i);
+}
+
+
+bool DinoDBusObject::remove_sequence_entry(int argc, DBus::Argument* argv) {
+  return m_proxy.remove_sequence_entry(argv[0].i, argv[1].i);
+}
+
+
+bool DinoDBusObject::set_sequence_entry_length(int argc, DBus::Argument* argv) {
+  return m_proxy.set_sequence_entry_length(argv[0].i, argv[1].i, argv[2].i);
+}
+
+

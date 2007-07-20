@@ -33,6 +33,7 @@
 
 
 namespace Dino {
+  class CommandProxy;
   class Song;
 }
 
@@ -42,7 +43,7 @@ class PatternDialog;
 class PatternEditor : public GUIPage {
 public:
   
-  PatternEditor(Dino::Song& song);
+  PatternEditor(Dino::Song& song, Dino::CommandProxy& proxy);
   
   void reset_gui();
   
@@ -103,6 +104,7 @@ protected:
   long m_active_controller;
 
   Dino::Song& m_song;
+  Dino::CommandProxy& m_proxy;
 };
 
 

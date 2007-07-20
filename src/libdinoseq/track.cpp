@@ -630,7 +630,16 @@ namespace Dino {
       id = m_patterns.rbegin()->first + 1;
     else
       id = 1;
-    m_patterns[id] = new Pattern(id, name, length, steps);
+    Pattern* pat = new Pattern(id, name, length, steps);
+    return add_pattern(pat);
+  }
+
+
+  Track::PatternIterator Track::add_pattern(Pattern* pattern) {
+    int id = pattern->get_id();
+    if (m_patterns.find(id) != m_patterns.end())
+      return pat_end();
+    m_patterns[id] = pattern;
     m_signal_pattern_added(id);
     
     // add curves for all non-global controllers
@@ -664,22 +673,32 @@ namespace Dino {
   
   /** Removes the pattern with the given ID. */
   void Track::remove_pattern(int id) {
+    Pattern* pat = disown_pattern(id);
+    Deleter::queue(pat);
+  }
+  
+
+  // XXX must figure out what to do with the ControllerInfo references here -
+  //     it's probably not a good idea to let the curves store them by reference
+  Pattern* Track::disown_pattern(int id) {
     /* Changing the map itself does not need to be threadsafe since the 
        sequencer never accesses patterns through the map, but actually
        deleting the pattern must be done in a threadsafe way. */
     map<int, Pattern*>::iterator iter = m_patterns.find(id);
-    if (iter != m_patterns.end()) {
-      
-      for (unsigned int i = 0; i < m_sequence->size(); ++i) {
-        if ((*m_sequence)[i] != 0 && (*m_sequence)[i]->pattern == iter->second)
-          remove_sequence_entry(seq_find(i));
-      }
-      
-      Deleter::queue(iter->second);
-      m_patterns.erase(iter);
-      m_signal_pattern_removed(id);
+    if (iter == m_patterns.end())
+      return 0;
+    for (unsigned int i = 0; i < m_sequence->size(); ++i) {
+      if ((*m_sequence)[i] != 0 && (*m_sequence)[i]->pattern == iter->second)
+	remove_sequence_entry(seq_find(i));
     }
+    
+    Pattern* result = iter->second;
+    m_patterns.erase(iter);
+    m_signal_pattern_removed(id);
+    
+    return result;
   }
+
 
 
   /** Set the sequency entry at the given beat to the given pattern 

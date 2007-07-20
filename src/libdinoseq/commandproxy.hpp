@@ -24,6 +24,7 @@
 #include <sigc++/signal.h>
 
 #include "song.hpp"
+#include "track.hpp"
 
 
 namespace Dino {
@@ -100,6 +101,14 @@ namespace Dino {
     
     /** Set the name for a track. */
     bool set_track_name(int id, const std::string& name);
+    /** Add a pattern to a track. */
+    bool add_pattern(int track, const std::string& name, int length, int steps,
+		     Track::PatternIterator* iter = 0);
+    /** Duplicate an existing pattern. */
+    bool duplicate_pattern(int track, int pattern, 
+			   Track::PatternIterator* iter = 0);
+    /** Remove an existing pattern. */
+    bool remove_pattern(int track, int pattern);
     /** Remove a sequence entry. */
     bool remove_sequence_entry(int track, unsigned long beat);
     /** Change the length of a sequence entry. */

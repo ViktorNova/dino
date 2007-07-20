@@ -26,6 +26,7 @@
 #include "command.hpp"
 #include "compoundcommand.hpp"
 #include "song.hpp"
+#include "track.hpp"
 
 
 namespace Dino {
@@ -127,6 +128,49 @@ namespace Dino {
     int m_track;
     std::string m_name;
     std::string m_oldname;
+  };
+  
+
+  class AddPattern : public Command {
+  public:
+    AddPattern(Song& song, int track, const std::string& name, 
+	       int length, int steps, Track::PatternIterator* iter);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    std::string m_name;
+    int m_length;
+    int m_steps;
+    Track::PatternIterator* m_iter_store;
+    int m_id;
+  };
+  
+
+  class DuplicatePattern : public Command {
+  public:
+    DuplicatePattern(Song& song, int track, int pattern, 
+		     Track::PatternIterator* iter);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    Track::PatternIterator* m_iter_store;
+    int m_id;
+  };
+  
+
+  class RemovePattern : public CompoundCommand {
+  public:
+    RemovePattern(Song& song, int track, int pattern);
+    bool do_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
   };
   
 

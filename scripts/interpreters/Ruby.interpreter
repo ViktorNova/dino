@@ -1,0 +1,3 @@
+#!/bin/sh
+
+cat dino_dbus_wrapper.rb - | irb --prompt-mode simple

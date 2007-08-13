@@ -180,6 +180,11 @@ namespace Dino {
 					       unsigned int length) {
     return push_and_do(new SetSequenceEntryLength(m_song, track, beat, length));
   }
+  
+  
+  bool CommandProxy::set_track_midi_channel(int track, int channel) {
+    return push_and_do(new SetTrackMidiChannel(m_song, track, channel));
+  }
 
   
   sigc::signal<void>& CommandProxy::signal_stack_changed() {

@@ -20,6 +20,7 @@
 
 #include <cassert>
 
+#include "commandproxy.hpp"
 #include "sequencer.hpp"
 #include "trackdialog.hpp"
 #include "controller_numbers.hpp"
@@ -147,10 +148,13 @@ void TrackDialog::set_track(const Dino::Track& track, Dino::Sequencer& seq) {
 }
 
 
-void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq) {
+void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq, 
+				 Dino::CommandProxy& proxy) {
 
-  t.set_name(get_name());
-  t.set_channel(get_channel() - 1);
+  if (t.get_name() != get_name())
+    proxy.set_track_name(t.get_id(), get_name());
+  if (t.get_channel() != get_channel() - 1)
+    proxy.set_track_midi_channel(t.get_id(), get_channel() - 1);
   seq.set_instrument(t.get_id(), get_port());
   
   unsigned ncontrollers = t.get_controllers().size();
@@ -164,6 +168,8 @@ void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq) {
       t.set_controller_global(ci.get_number(), ci.get_global());
       // XXX This should be made realtime safe - the sequencer will read the
       // parameter number from the ControllerInfo struct
+      // XXX It will not now, every curve have their own ControllerInfo copy -
+      // need to be synced though
       t.get_controllers()[i]->set_number(m_ctrls[i].ci.get_number());
     }
   }

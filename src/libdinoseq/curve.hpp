@@ -26,11 +26,12 @@
 
 #include <sigc++/signal.h>
 
+#include "controllerinfo.hpp"
+
 
 namespace Dino {
 
   
-  class ControllerInfo;
   class InterpolatedEvent;
   
   
@@ -38,7 +39,7 @@ namespace Dino {
   class Curve {
   public:
 
-    /** Create a new controller with the given parameters. */
+    /** Create a new curve with the given parameters. */
     Curve(const ControllerInfo& info, unsigned int size);
     ~Curve();
     
@@ -71,7 +72,7 @@ namespace Dino {
     //@}
   private:
     
-    const ControllerInfo& m_info;
+    const ControllerInfo m_info;
     std::vector<InterpolatedEvent*> m_events;
     
     sigc::signal<void, int, int> m_signal_point_added;

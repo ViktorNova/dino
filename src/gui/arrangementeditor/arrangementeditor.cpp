@@ -209,7 +209,7 @@ void ArrangementEditor::add_track() {
   if (m_dlg_track.run() == RESPONSE_OK) {
     Song::TrackIterator iter;
     m_proxy.add_track(m_dlg_track.get_name(), &iter);
-    m_dlg_track.apply_to_track(*iter, m_seq);
+    m_dlg_track.apply_to_track(*iter, m_seq, m_proxy);
     set_active_track(iter->get_id());
   }
   m_dlg_track.hide();
@@ -228,7 +228,7 @@ void ArrangementEditor::edit_track_properties() {
     m_dlg_track.set_track(t, m_seq);
     m_dlg_track.show_all();
     if (m_dlg_track.run() == RESPONSE_OK) {
-      m_dlg_track.apply_to_track(t, m_seq);
+      m_dlg_track.apply_to_track(t, m_seq, m_proxy);
     }
   }
   m_dlg_track.hide();

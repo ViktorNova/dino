@@ -614,6 +614,37 @@ namespace Dino {
     titer->set_seq_entry_length(siter, m_old_length);
     return true;
   }
+
+
+  SetTrackMidiChannel::SetTrackMidiChannel(Song& song, int track, int channel)
+    : Command("Change track MIDI channel"),
+      m_song(song),
+      m_track(track),
+      m_channel(channel),
+      m_old_channel(-1) {
+
+  }
+
+  
+  bool SetTrackMidiChannel::do_command() {
+    if (m_channel < 0 || m_channel >= 16)
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    m_old_channel = titer->get_channel();
+    titer->set_channel(m_channel);
+    return true;
+  }
+  
+  
+  bool SetTrackMidiChannel::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    titer->set_channel(m_old_channel);
+    return true;
+  }
   
 
 }

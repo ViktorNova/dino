@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.159
+PACKAGE_VERSION = 0.3.160
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -52,6 +52,7 @@ libdinoseq_so_SOURCES = \
 	curve.cpp curve.hpp \
 	debug.cpp debug.hpp \
 	deleter.hpp \
+	genericcommands.hpp \
 	instrumentinfo.cpp instrumentinfo.hpp \
 	interpolatedevent.cpp interpolatedevent.hpp \
 	midibuffer.cpp midibuffer.hpp \
@@ -79,6 +80,7 @@ libdinoseq_so_HEADERS = \
 	curve.hpp \
 	debug.hpp \
 	deleter.hpp \
+	genericcommands.hpp \
 	instrumentinfo.hpp \
 	interpolatedevent.hpp \
 	midibuffer.hpp \

@@ -114,6 +114,8 @@ namespace Dino {
     /** Change the length of a sequence entry. */
     bool set_sequence_entry_length(int track, unsigned long beat, 
 				   unsigned int length);
+    /** Set the MIDI channel of a track. */
+    bool set_track_midi_channel(int track, int channel);
     
     //@}
     

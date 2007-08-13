@@ -320,7 +320,7 @@ Makefile.deps: $(DEP_FILES)
 
 # GLOBAL CLEAN
 clean:
-	rm -rf $(ALL_OBJECTS) $(PROGRAMS_REAL) $(MODULES_REAL) $(LIBRARIES) $(ARCHIVES_REAL) $(LV2_PLUGINS_REAL) $(DEP_FILES)
+	rm -rf $(ALL_OBJECTS) $(PROGRAMS_REAL) $(MODULES_REAL) $(LIBRARIES_REAL) $(ARCHIVES_REAL) $(LV2_PLUGINS_REAL) $(DEP_FILES)
 
 
 # GLOBAL INSTALL
@@ -360,7 +360,7 @@ install: install-libraries install-modules install-programs install-lv2-plugins 
 # DISTRIBUTION
 THIS_FILE = $(patsubst ./%,%,$(firstword $(filter %/Makefile.template,$(patsubst %,./%,$(MAKEFILE_LIST)))))
 CONFIGURE_SCRIPT = $(if $(__path_to_configure),$(__path_to_configure),configure)
-ALL_DIST_FILES = $(ALL_SOURCES) $(DATA) $(DOCS) $(EXTRA_DIST) $(ALL_DATA)
+ALL_DIST_FILES = $(ALL_SOURCES) $(DATA) $(DOCS) $(EXTRA_DIST) $(ALL_DATA) $(PCFILES)
 dist: 
 	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2

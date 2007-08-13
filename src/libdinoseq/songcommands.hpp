@@ -202,6 +202,19 @@ namespace Dino {
     int m_old_length;
   };
   
+  
+  class SetTrackMidiChannel : public Command {
+  public:
+    SetTrackMidiChannel(Song& song, int track, int channel);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_channel;
+    int m_old_channel;
+  };
+  
 
 }
 

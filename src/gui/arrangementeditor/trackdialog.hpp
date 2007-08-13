@@ -31,6 +31,7 @@
 
 
 namespace Dino {
+  class CommandProxy;
   class Sequencer;
   class Track;
 }
@@ -54,7 +55,8 @@ public:
   
   void reset();
   void set_track(const Dino::Track& track, Dino::Sequencer& seq);
-  void apply_to_track(Dino::Track& track, Dino::Sequencer& seq);
+  void apply_to_track(Dino::Track& track, Dino::Sequencer& seq, 
+		      Dino::CommandProxy& proxy);
   
 protected:
   

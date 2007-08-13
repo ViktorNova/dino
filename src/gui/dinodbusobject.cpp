@@ -68,7 +68,14 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy)
 	     sigc::mem_fun(*this, &DinoDBusObject::remove_sequence_entry));
   add_method("org.nongnu.dino.Song", "SetSequenceEntryLength", "iii",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_sequence_entry_length));
+  add_method("org.nongnu.dino.Song", "SetTrackMidiChannel", "ii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_track_midi_channel));
+  add_method("org.nongnu.dino.Song", "AddController", "iisiiii",
+	     sigc::mem_fun(*this, &DinoDBusObject::add_controller));
+  add_method("org.nongnu.dino.Song", "RemoveController", "ii",
+	     sigc::mem_fun(*this, &DinoDBusObject::remove_controller));
 }
+
 
 bool DinoDBusObject::play(int argc, DBus::Argument* argv) {
   m_proxy.play();
@@ -165,6 +172,22 @@ bool DinoDBusObject::remove_sequence_entry(int argc, DBus::Argument* argv) {
 
 bool DinoDBusObject::set_sequence_entry_length(int argc, DBus::Argument* argv) {
   return m_proxy.set_sequence_entry_length(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::set_track_midi_channel(int argc, DBus::Argument* argv) {
+  return m_proxy.set_track_midi_channel(argv[0].i, argv[1].i);
+}
+
+
+bool DinoDBusObject::add_controller(int argc, DBus::Argument* argv) {
+  return m_proxy.add_controller(argv[0].i, argv[1].i, argv[2].s, argv[3].i,
+				argv[4].i, argv[5].i, argv[6].i);
+}
+
+
+bool DinoDBusObject::remove_controller(int argc, DBus::Argument* argv) {
+  return m_proxy.remove_controller(argv[0].i, argv[1].i);
 }
 
 

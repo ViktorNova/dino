@@ -64,7 +64,10 @@ protected:
   bool remove_pattern(int argc, DBus::Argument* argv);
   bool remove_sequence_entry(int argc, DBus::Argument* argv);
   bool set_sequence_entry_length(int argc, DBus::Argument* argv);
-
+  bool set_track_midi_channel(int argc, DBus::Argument* argv);
+  bool add_controller(int argc, DBus::Argument* argv);
+  bool remove_controller(int argc, DBus::Argument* argv);
+  
   Dino::CommandProxy& m_proxy;
 
 };

@@ -186,6 +186,20 @@ namespace Dino {
     return push_and_do(new SetTrackMidiChannel(m_song, track, channel));
   }
 
+
+  bool CommandProxy::add_controller(int track, long number, 
+				    const std::string& name,
+				    int default_v, int min, int max, 
+				    bool global) {
+    return push_and_do(new AddController(m_song, track, number, name, 
+					 default_v, min, max, global));
+  }
+
+
+  bool CommandProxy::remove_controller(int track, long number) {
+    return push_and_do(new RemoveController(m_song, track, number));
+  }
+
   
   sigc::signal<void>& CommandProxy::signal_stack_changed() {
     return m_signal_stack_changed;

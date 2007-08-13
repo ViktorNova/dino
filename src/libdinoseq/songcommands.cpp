@@ -18,6 +18,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include "controller_numbers.hpp"
 #include "deleter.hpp"
 #include "pattern.hpp"
 #include "song.hpp"
@@ -644,6 +645,80 @@ namespace Dino {
       return false;
     titer->set_channel(m_old_channel);
     return true;
+  }
+
+
+  AddController::AddController(Song& song, int track, long number, 
+			       const std::string& name, int default_v, 
+			       int min, int max, bool global)
+    : Command("Add controller"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_name(name),
+      m_default(default_v),
+      m_min(min),
+      m_max(max),
+      m_global(global) {
+
+  }
+  
+  
+  bool AddController::do_command() {
+    if (!is_cc(m_number) && !is_pbend(m_number))
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    return titer->add_controller(m_number, m_name, m_default, 
+				 m_min, m_max, m_global);
+  }
+  
+
+  bool AddController::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    return titer->remove_controller(m_number);
+  }
+
+
+  RemoveController::RemoveController(Song& song, int track, long number) 
+    : Command("Remove controller"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_info(0) {
+
+  }
+  
+  
+  RemoveController::~RemoveController() {
+    if (m_info)
+      Deleter::queue(m_info);
+    std::map<int, Curve*>::iterator iter;
+    for (iter = m_curves.begin(); iter != m_curves.end(); ++iter)
+      Deleter::queue(iter->second);
+  }
+  
+  
+  bool RemoveController::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    m_info = titer->disown_controller(m_number, m_curves);
+    if (!m_info)
+      return false;
+  }
+  
+
+  bool RemoveController::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    bool result = titer->add_controller(m_info, m_curves);
+    m_curves.clear();
+    return result;
   }
   
 

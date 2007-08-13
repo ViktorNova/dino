@@ -215,6 +215,39 @@ namespace Dino {
     int m_old_channel;
   };
   
+  
+  class AddController : public Command {
+  public:
+    AddController(Song& song, int track, long number, const std::string& name,
+		  int default_v, int min, int max, bool global);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    const std::string& m_name;
+    int m_default;
+    int m_min;
+    int m_max;
+    bool m_global;
+  };
+  
+
+  class RemoveController : public Command {
+  public:
+    RemoveController(Song& song, int track, long number);
+    ~RemoveController();
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    ControllerInfo* m_info;
+    std::map<int, Curve*> m_curves;
+  };
+
 
 }
 

@@ -116,6 +116,11 @@ namespace Dino {
 				   unsigned int length);
     /** Set the MIDI channel of a track. */
     bool set_track_midi_channel(int track, int channel);
+    /** Add a controller for a track. */
+    bool add_controller(int track, long number, const std::string& name,
+			int default_v, int min, int max, bool global);
+    /** Remove a controller for a track. */
+    bool remove_controller(int track, long number);
     
     //@}
     

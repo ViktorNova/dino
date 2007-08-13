@@ -932,10 +932,45 @@ namespace Dino {
     m_signal_curve_added(info.get_number());
     return CurveIterator(new_vector->begin() + (new_vector->size() - 1));
   }
+
+
+  Pattern::CurveIterator Pattern::add_curve(Curve* curve) {
+    
+    // XXX need to check that there isn't a curve with this parameter number
+    // already
+    
+    // check that the lengths match
+    if (curve->get_size() != get_length() * get_steps())
+      return curves_end();
+    
+    // make a copy of the curve vector and add the new curve
+    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
+    new_vector->push_back(curve);
+    
+    // delete the old vector
+    vector<Curve*>* tmp = m_sd->curves;
+    m_sd->curves = new_vector;
+    Deleter::queue(tmp);
+    
+    dbg1<<"Added curve \""<<curve->get_info().get_name()<<"\" with parameter "
+	<<curve->get_info().get_number()<<endl;
+    
+    m_signal_curve_added(curve->get_info().get_number());
+    return CurveIterator(new_vector->begin() + (new_vector->size() - 1));
+  }
   
 
   bool Pattern::remove_curve(Pattern::CurveIterator iter) {
+    Curve* curve = disown_curve(iter);
+    if (!curve)
+      return false;
+    Deleter::queue(curve);
+    return curve;
+  }
 
+
+  Curve* Pattern::disown_curve(Pattern::CurveIterator iter) {
+   
     // find the element to erase
     unsigned i;
     for (i = 0; i < m_sd->curves->size(); ++i) {
@@ -943,9 +978,10 @@ namespace Dino {
         break;
     }
     if (i >= m_sd->curves->size())
-      return false;
+      return 0;
     
     // make a copy of the old vector
+    Curve* curve = (*m_sd->curves)[i];
     vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
     const ControllerInfo& ci = (*m_sd->curves)[i]->get_info();
     new_vector->erase(new_vector->begin() + i);
@@ -955,12 +991,12 @@ namespace Dino {
     m_sd->curves = new_vector;
     Deleter::queue(tmp);
     
-    dbg1<<"Removed curve\""<<ci.get_name()<<"\" with parameter \""
+    dbg1<<"Removed curve \""<<ci.get_name()<<"\" with parameter \""
 	<<ci.get_number()<<"\""<<endl;
 
     m_signal_curve_removed(ci.get_number());    
     
-    return true;
+    return curve;
   }
 
   

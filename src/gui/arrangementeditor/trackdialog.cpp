@@ -174,12 +174,13 @@ void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq,
     }
   }
   for (unsigned i = 0; i < numbers.size(); ++i)
-    t.remove_controller(numbers[i]);
+    proxy.remove_controller(t.get_id(), numbers[i]);
   
   for (unsigned i = ncontrollers; i < m_ctrls.size(); ++i) {
-    t.add_controller(m_ctrls[i].ci.get_number(), m_ctrls[i].ci.get_name(),
-		     m_ctrls[i].ci.get_default(), m_ctrls[i].ci.get_min(),
-		     m_ctrls[i].ci.get_max(), m_ctrls[i].ci.get_global());
+    proxy.add_controller(t.get_id(), m_ctrls[i].ci.get_number(), 
+			 m_ctrls[i].ci.get_name(), m_ctrls[i].ci.get_default(),
+			 m_ctrls[i].ci.get_min(), m_ctrls[i].ci.get_max(), 
+			 m_ctrls[i].ci.get_global());
   }
   
 }

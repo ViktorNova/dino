@@ -405,18 +405,88 @@ namespace Dino {
     
     return true;
   }
+
+
+  bool Track::add_controller(ControllerInfo* info, map<int, Curve*>& curves) {
+
+    // check if we already have this controller, if so return false
+    for (int i = 0; i < m_controllers.size(); ++i) {
+      if (m_controllers[i]->get_number() == info->get_number())
+	return false;
+    }
+    
+    // add the ControllerInfo object
+    dbg1<<"Adding controller \""<<info->get_name()<<"\" in track \""
+	<<m_name<<"\""<<endl;
+    m_controllers.push_back(info);
+    
+    // if this is not a global controller, add curves to all patterns
+    if (!info->get_global()) {
+      PatternIterator pi;
+      for (pi = pat_begin(); pi != pat_end(); ++pi) {
+	map<int, Curve*>::iterator citer = curves.find(pi->get_id());
+	if (citer == curves.end())
+	  pi->add_curve(*info);
+	else {
+	  assert(citer->second->get_size() == 
+		 (pi->get_length() * pi->get_steps()));
+	  pi->add_curve(citer->second);
+	}
+      }
+    }
+    
+    // else (if it is a global controller), add a curve to the track
+    else {
+      map<int, Curve*>::iterator citer = curves.find(-1);
+      if (citer == curves.end())
+	m_curves->push_back(new Curve(*info, get_length()));
+      else {
+	assert(citer->second->get_size() == get_length());
+	m_curves->push_back(citer->second);
+      }
+      m_signal_curve_added(info->get_number());
+    }
+    
+    m_signal_controller_added(info->get_number());
+    
+    return true;
+  }
   
   
   bool Track::remove_controller(long number) {
+    
+    map<int, Curve*> curves;
+    ControllerInfo* info = disown_controller(number, curves);
+    
+    if (!info)
+      return false;
+    
+    Deleter::queue(info);
+    
+    map<int, Curve*>::iterator iter;
+    for (iter = curves.begin(); iter != curves.end(); ++iter)
+      Deleter::queue(iter->second);
+    
+    return true;
+  }
+
+
+  ControllerInfo* Track::disown_controller(long number, 
+					   map<int, Curve*>& curves) {
+
     // check if it exists
     for (int i = 0; i < m_controllers.size(); ++i) {
       if (m_controllers[i]->get_number() == number) {
 	
-	// if this is not a global controller, delete all curves in patterns
+	// if this is not a global controller, remove all curves from patterns
 	if (!m_controllers[i]->get_global()) {
 	  PatternIterator pi;
-	  for (pi = pat_begin(); pi != pat_end(); ++pi)
-	    pi->remove_curve(pi->curves_find(m_controllers[i]->get_number()));
+	  for (pi = pat_begin(); pi != pat_end(); ++pi) {
+	    Curve* c = pi->disown_curve(pi->curves_find(m_controllers[i]->
+							get_number()));
+	    if (c)
+	      curves[pi->get_id()] = c;
+	  }
 	}
 	
 	// else (if it is a global controller), remove the curve from the track
@@ -430,23 +500,22 @@ namespace Dino {
 	  if (j < m_curves->size()) {
 	    Curve* tmp_curve = (*m_curves)[j];
 	    m_curves->erase(m_curves->begin() + j);
-	    Deleter::queue(tmp_curve);
+	    curves[-1] = tmp_curve;
 	    m_signal_curve_removed(number);
 	  }
 	}
 
 	ControllerInfo* tmp = m_controllers[i];
-	dbg1<<"Deleting controller \""<<tmp->get_name()<<"\" in track \""
+	dbg1<<"Removing controller \""<<tmp->get_name()<<"\" from track \""
 	    <<m_name<<"\""<<endl;
 	m_controllers.erase(m_controllers.begin() + i);
-	Deleter::queue(tmp);
-	
 	m_signal_controller_removed(number);
-	return true;
+
+	return tmp;
       }
     }
     
-    return false;
+    return 0;
   }
 
   

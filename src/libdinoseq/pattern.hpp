@@ -247,8 +247,15 @@ namespace Dino {
     void set_velocity(NoteIterator note, unsigned char velocity);
     /** Add a new parameter curve. */
     CurveIterator add_curve(const ControllerInfo& info);
+    /** Add a parameter curve object. The length must match the number of
+	steps in the pattern. */
+    CurveIterator add_curve(Curve* curve);
     /** Remove a parameter curve. */
     bool remove_curve(CurveIterator iter);
+    /** Remove a parameter curve from the pattern, but return a pointer to
+	it instead of deleting it. The caller is responsible for deallocating
+	the Curve object. */
+    Curve* disown_curve(CurveIterator iter);
     /** Add a CC event to the given controller. */
     void add_curve_point(CurveIterator iter, unsigned int step, int value);
     /** Remove a CC event. */

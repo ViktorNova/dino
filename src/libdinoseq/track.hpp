@@ -22,6 +22,7 @@
 #define TRACK_HPP
 
 #include <iterator>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -239,17 +240,34 @@ namespace Dino {
   
     /// @name Accessors
     //@{
+    /** Return the ID number of this track. This is not valid if the track does
+	not belong to a Song. */
     int get_id() const;
+    /** Return the name of this track. */
     const std::string& get_name() const;
+    /** Alias for get_name(). */
     const std::string& get_label() const;
+    /** Return the MIDI channel this track will write to. */
     int get_channel() const;
+    /** Return the length of this track in beats. When it belongs to a Song 
+	it should always be the same as the length of the Song. */
     unsigned int get_length() const;
+    /** Return an iterator pointing to the first pattern. */
     ConstPatternIterator pat_begin() const;
+    /** Return an (invalid) iterator pointing to the end of the pattern list. */
     ConstPatternIterator pat_end() const;
+    /** Return an iterator for the pattern with the given ID, or pat_end() if
+	there is no such pattern. */
     ConstPatternIterator pat_find(int id) const;
+    /** Return an iterator pointing to the first sequence entry. */
     SequenceIterator seq_begin() const;
+    /** Return an (invalid) iterator pointing to the end of the sequence. */
     SequenceIterator seq_end() const;
+    /** Return an iterator pointing to the SequenceEntry at the given beat, 
+	or seq_end() if there is no such SequenceEntry. */
     SequenceIterator seq_find(unsigned int beat) const;
+    /** Return an iterator pointing to the SequenceEntry with the given ID,
+	or seq_end() if there is no such SequenceEntry. */
     SequenceIterator seq_find_by_id(int id) const;
     /** Return an iterator that refers to the first controller in the track.*/
     ConstCurveIterator curves_begin() const;
@@ -259,46 +277,85 @@ namespace Dino {
     /** Return an iterator for the controller with parameter @c param, or an
         invalid iterator if no such controller exists. */
     ConstCurveIterator curves_find(long param) const;
+    /** Return a vector of all controllers. */
     const std::vector<ControllerInfo*>& get_controllers() const;
+    /** Return the curve with the given controller number. */
     Curve* get_curve(long number);
     
     // non-const accessors
     PatternIterator pat_begin();
     PatternIterator pat_end();
     PatternIterator pat_find(int id);
-    /** Return an iterator that refers to the first controller in the track.*/
+    /** Return an iterator that refers to the first global parameter curve in 
+	the track.*/
     CurveIterator curves_begin();
     /** Return an invalid iterator that can be used to check when an iterator
-        has passed the last controller in the track. */
+        has passed the last parameter curve in the track. */
     CurveIterator curves_end();
-    /** Return an iterator for the controller with parameter @c param, or an
-        invalid iterator if no such controller exists. */
+    /** Return an iterator for the parameter curve with parameter @c param, or
+	an invalid iterator if no such controller exists. */
     CurveIterator curves_find(long param);
     std::vector<ControllerInfo*>& get_controllers();
     //@}
     
     /// @name Mutators
     //@{
+    /** Change the name of the track. */
     void set_name(const std::string& name);
+    /** Add a new pattern to the track with the given name, length in beats
+	and number of steps per beat. */
     PatternIterator add_pattern(const std::string& name, int length, int steps);
+    /** Add an existing Pattern object to the track. The object must be 
+	allocated using @c new, and the track will assume ownership of the 
+	object. */
     PatternIterator add_pattern(Pattern* pattern);
+    /** Duplicate the given pattern. */
     PatternIterator duplicate_pattern(ConstPatternIterator iterator);
+    /** Remove the pattern with the given ID from the track and delete it. */
     void remove_pattern(int id);
+    /** Remove the pattern with the given ID from the track and return a pointer
+	to it. The caller is responsible for deallocating the Pattern object
+	using @c delete (or Delete::queue() if the sequencer is running). */
     Pattern* disown_pattern(int id);
+    /** Add a sequence entry. */
     SequenceIterator set_sequence_entry(int beat, int pattern, 
                                         unsigned int length = 0);
+    /** Change the length of a sequence entry. */
     void set_seq_entry_length(SequenceIterator iterator, unsigned int length);
+    /** Remove a sequence entry. */
     bool remove_sequence_entry(SequenceIterator iterator);
+    /** Change the length of a track. This should not be used when the track
+	belongs to a Song. */
     void set_length(int length);
+    /** Set the MIDI channel that the track writes its events to. */
     void set_channel(int channel);
+    /** Add a new controller to the track with the given parameters. */
     bool add_controller(long number, const std::string& name, int default_v,
 			int min, int max, bool global);
+    /** Add a new controller to the track using the given ControllerInfo object
+	and Curve map. The lengths of the Curve objects must be equal to the
+	number of steps in the patterns they are associated with. */
+    bool add_controller(ControllerInfo* info, std::map<int, Curve*>& curves);
+    /** Remove the controller with the given number and delete its 
+	ControllerInfo and Curve objects. */
     bool remove_controller(long number);
+    /** Remove the controller with the given number, return its ControllerInfo
+	object, and add pointers to its Curve objects to @c curves. The caller
+	is responsible for deallocating these objects using @c delete (or
+	Delete::queue() if the sequencer thread is running). */
+    ControllerInfo* disown_controller(long number, 
+				      std::map<int, Curve*>& curves);
+    /** Change the name of a controller. */
     void set_controller_name(long number, const std::string& name);    
-    void set_controller_min(long number, int min);    
-    void set_controller_max(long number, int max);    
+    /** Change the minimum value of a controller. */
+    void set_controller_min(long number, int min);
+    /** Change the maximum value of a controller. */
+    void set_controller_max(long number, int max);  
+    /** Change the default value of a controller. */
     void set_controller_default(long number, int _default);    
+    /** Change the parameter number of a controller. */
     void set_controller_number(long number, long new_number);    
+    /** Change the 'global' toggle of a controller. */
     void set_controller_global(long number, bool global);    
     //@}
     

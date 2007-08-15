@@ -235,7 +235,14 @@ namespace Dino {
 					   bool global) {
     return push_and_do(new SetControllerGlobal(m_song, track, number, global));
   }
+  
+  
+  bool CommandProxy::set_pattern_name(int track, int pattern, 
+				      const std::string& name) {
+    return push_and_do(new SetPatternName(m_song, track, pattern, name));
+  }
 
+  
 
   sigc::signal<void>& CommandProxy::signal_stack_changed() {
     return m_signal_stack_changed;

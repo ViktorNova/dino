@@ -83,7 +83,6 @@ namespace Dino {
     bool set_song_author(const std::string& author);
     /** Set the information for the song. */
     bool set_song_info(const std::string& info);
-    
     /** Set the song length. */
     bool set_song_length(int length);
     /** Set the loop start. */
@@ -98,6 +97,7 @@ namespace Dino {
     bool add_tempo_change(int beat, double bpm, Song::TempoIterator* iter = 0);
     /** Remove a tempo change. */
     bool remove_tempo_change(unsigned long beat);
+
     
     /** Set the name for a track. */
     bool set_track_name(int id, const std::string& name);
@@ -134,6 +134,10 @@ namespace Dino {
     /** Change the 'global' toggle of a controller. */
     bool set_controller_global(int track, long number, bool global);
 
+
+    /** Change the name of a pattern. */
+    bool set_pattern_name(int track, int pattern, const std::string& name);
+    
     //@}
     
     sigc::signal<void>& signal_stack_changed();

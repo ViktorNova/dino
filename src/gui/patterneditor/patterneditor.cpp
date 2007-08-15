@@ -446,7 +446,10 @@ void PatternEditor::edit_pattern_properties() {
     m_dlg_pattern->refocus();
     m_dlg_pattern->show_all();
     if (m_dlg_pattern->run() == RESPONSE_OK) {
-      pat->set_name(m_dlg_pattern->get_name());
+      if (m_dlg_pattern->get_name() != pat->get_name()) {
+	m_proxy.set_pattern_name(m_active_track, m_active_pattern,
+				 m_dlg_pattern->get_name());
+      }
       pat->set_length(m_dlg_pattern->get_length());
       pat->set_steps(m_dlg_pattern->get_steps());
     }

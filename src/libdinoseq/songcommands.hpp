@@ -331,7 +331,21 @@ namespace Dino {
     bool m_global;
     bool m_oldglobal;
   };
-  
+
+
+  class SetPatternName : public Command {
+  public:
+    SetPatternName(Song& song, int track, int pattern, const std::string& name);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    std::string m_name;
+    std::string m_oldname;
+  };
+
   
 }
 

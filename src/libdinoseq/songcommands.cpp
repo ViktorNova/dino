@@ -991,6 +991,42 @@ namespace Dino {
     }
     return false;
   }
+
+
+  SetPatternName::SetPatternName(Song& song, int track, 
+				 int pattern, const std::string& name)
+    : Command("Set pattern name"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_name(name) {
+
+  }
+  
+  
+  bool SetPatternName::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    m_oldname = piter->get_name();
+    piter->set_name(m_name);
+    return true;
+  }
+  
+  
+  bool SetPatternName::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    piter->set_name(m_oldname);
+    return true;
+  }
   
 
 }

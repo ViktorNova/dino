@@ -164,8 +164,10 @@ void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq,
       numbers.push_back(t.get_controllers()[i]->get_number());
     else {
       const ControllerInfo& ci = m_ctrls[i].ci;
-      t.set_controller_name(ci.get_number(), ci.get_name());
-      t.set_controller_global(ci.get_number(), ci.get_global());
+      if (ci.get_name() != t.get_controllers()[i]->get_name())
+	proxy.set_controller_name(t.get_id(), ci.get_number(), ci.get_name());
+      if (ci.get_global() != t.get_controllers()[i]->get_global())
+	proxy.set_controller_global(t.get_id(),ci.get_number(),ci.get_global());
       // XXX This should be made realtime safe - the sequencer will read the
       // parameter number from the ControllerInfo struct
       // XXX It will not now, every curve have their own ControllerInfo copy -

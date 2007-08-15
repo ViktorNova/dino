@@ -200,7 +200,43 @@ namespace Dino {
     return push_and_do(new RemoveController(m_song, track, number));
   }
 
-  
+
+  bool CommandProxy::set_controller_name(int track, long number, 
+					 const std::string& name) {
+    return push_and_do(new SetControllerName(m_song, track, number, name));
+  }
+
+
+  bool CommandProxy::set_controller_min(int track, long number, int min) {
+    return push_and_do(new SetControllerMin(m_song, track, number, min));
+  }
+
+
+  bool CommandProxy::set_controller_max(int track, long number, int max) {
+    return push_and_do(new SetControllerMax(m_song, track, number, max));
+  }
+
+
+  bool CommandProxy::set_controller_default(int track, long number, 
+					    int _default) {
+    return push_and_do(new SetControllerDefault(m_song, track, number, 
+						_default));
+  }
+
+
+  bool CommandProxy::set_controller_number(int track, long old_number, 
+					   long new_number) {
+    return push_and_do(new SetControllerNumber(m_song, track, old_number, 
+					       new_number));
+  }
+
+
+  bool CommandProxy::set_controller_global(int track, long number, 
+					   bool global) {
+    return push_and_do(new SetControllerGlobal(m_song, track, number, global));
+  }
+
+
   sigc::signal<void>& CommandProxy::signal_stack_changed() {
     return m_signal_stack_changed;
   }

@@ -74,6 +74,18 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy)
 	     sigc::mem_fun(*this, &DinoDBusObject::add_controller));
   add_method("org.nongnu.dino.Song", "RemoveController", "ii",
 	     sigc::mem_fun(*this, &DinoDBusObject::remove_controller));
+  add_method("org.nongnu.dino.Song", "SetControllerName", "iis",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_name));
+  add_method("org.nongnu.dino.Song", "SetControllerMin", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_min));
+  add_method("org.nongnu.dino.Song", "SetControllerMax", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_max));
+  add_method("org.nongnu.dino.Song", "SetControllerDefault", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_default));
+  add_method("org.nongnu.dino.Song", "SetControllerNumber", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_number));
+  add_method("org.nongnu.dino.Song", "SetControllerGlobal", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_global));
 }
 
 
@@ -189,5 +201,37 @@ bool DinoDBusObject::add_controller(int argc, DBus::Argument* argv) {
 bool DinoDBusObject::remove_controller(int argc, DBus::Argument* argv) {
   return m_proxy.remove_controller(argv[0].i, argv[1].i);
 }
+
+
+bool DinoDBusObject::set_controller_name(int argc, DBus::Argument* argv) {
+  return m_proxy.set_controller_name(argv[0].i, argv[1].i, argv[2].s);
+}
+
+
+bool DinoDBusObject::set_controller_min(int argc, DBus::Argument* argv) {
+  return m_proxy.set_controller_min(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::set_controller_max(int argc, DBus::Argument* argv) {
+  return m_proxy.set_controller_max(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::set_controller_default(int argc, DBus::Argument* argv) {
+  return m_proxy.set_controller_default(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::set_controller_number(int argc, DBus::Argument* argv) {
+  return m_proxy.set_controller_number(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::set_controller_global(int argc, DBus::Argument* argv) {
+  return m_proxy.set_controller_global(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
 
 

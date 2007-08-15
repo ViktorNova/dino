@@ -67,6 +67,12 @@ protected:
   bool set_track_midi_channel(int argc, DBus::Argument* argv);
   bool add_controller(int argc, DBus::Argument* argv);
   bool remove_controller(int argc, DBus::Argument* argv);
+  bool set_controller_name(int argc, DBus::Argument* argv);
+  bool set_controller_min(int argc, DBus::Argument* argv);
+  bool set_controller_max(int argc, DBus::Argument* argv);
+  bool set_controller_default(int argc, DBus::Argument* argv);
+  bool set_controller_number(int argc, DBus::Argument* argv);
+  bool set_controller_global(int argc, DBus::Argument* argv);
   
   Dino::CommandProxy& m_proxy;
 

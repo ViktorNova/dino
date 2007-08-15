@@ -249,6 +249,90 @@ namespace Dino {
   };
 
 
+  class SetControllerName : public Command {
+  public:
+    SetControllerName(Song& song, int track, long number, 
+		      const std::string& name);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    std::string m_name;
+    std::string m_old_name;
+  };
+
+
+  class SetControllerMin : public Command {
+  public:
+    SetControllerMin(Song& song, int track, long number, int min);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    int m_min;
+    int m_oldmin;
+  };
+  
+  
+  class SetControllerMax : public Command {
+  public:
+    SetControllerMax(Song& song, int track, long number, int max);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    int m_max;
+    int m_oldmax;
+  };
+  
+  
+  class SetControllerDefault : public Command {
+  public:
+    SetControllerDefault(Song& song, int track, long number, int _default);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    int m_default;
+    int m_olddefault;
+  };
+  
+  
+  class SetControllerNumber : public Command {
+  public:
+    SetControllerNumber(Song& song, int track, long number, long number);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    int m_newnumber;
+  };
+  
+  
+  class SetControllerGlobal : public Command {
+  public:
+    SetControllerGlobal(Song& song, int track, long number, bool global);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    long m_number;
+    bool m_global;
+    bool m_oldglobal;
+  };
+  
+  
 }
 
 

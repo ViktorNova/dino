@@ -720,6 +720,277 @@ namespace Dino {
     m_curves.clear();
     return result;
   }
+
+
+  SetControllerName::SetControllerName(Song& song, int track, long number, 
+				       const std::string& name)
+    : Command("Set controller name"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_name(name) {
+
+  }
+
+  
+  bool SetControllerName::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	m_old_name = ctrls[i]->get_name();
+	titer->set_controller_name(m_number, m_name);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+  
+  bool SetControllerName::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	titer->set_controller_name(m_number, m_old_name);
+	return true;
+      }
+    }
+    return false;
+  }
+
+
+  SetControllerMin::SetControllerMin(Song& song, int track, 
+				     long number, int min) 
+    : Command("Set controller minimum"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_min(min) {
+
+  }
+  
+  
+  bool SetControllerMin::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	m_oldmin = ctrls[i]->get_min();
+	titer->set_controller_min(m_number, m_min);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+  
+  bool SetControllerMin::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	titer->set_controller_min(m_number, m_oldmin);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+
+  SetControllerMax::SetControllerMax(Song& song, int track, 
+				     long number, int max) 
+    : Command("Set controller maximum"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_max(max) {
+
+  }
+  
+  
+  bool SetControllerMax::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	m_oldmax = ctrls[i]->get_max();
+	titer->set_controller_max(m_number, m_max);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+  
+  bool SetControllerMax::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	titer->set_controller_max(m_number, m_oldmax);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+
+  SetControllerDefault::SetControllerDefault(Song& song, int track, 
+				     long number, int _default) 
+    : Command("Set controller default"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_default(_default) {
+
+  }
+  
+  
+  bool SetControllerDefault::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	m_olddefault = ctrls[i]->get_default();
+	titer->set_controller_default(m_number, m_default);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+  
+  bool SetControllerDefault::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	titer->set_controller_default(m_number, m_olddefault);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+
+  SetControllerNumber::SetControllerNumber(Song& song, int track, 
+					   long number, long newnumber) 
+    : Command("Set controller global"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_newnumber(newnumber) {
+
+  }
+  
+  
+  bool SetControllerNumber::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_newnumber)
+	return false;
+    }
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	titer->set_controller_number(m_number, m_newnumber);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+  
+  bool SetControllerNumber::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number)
+	return false;
+    }
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_newnumber) {
+	titer->set_controller_number(m_newnumber, m_number);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+
+  SetControllerGlobal::SetControllerGlobal(Song& song, int track, 
+					   long number, bool global) 
+    : Command("Set controller global"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_global(global) {
+
+  }
+  
+  
+  bool SetControllerGlobal::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	m_oldglobal = ctrls[i]->get_global();
+	titer->set_controller_global(m_number, m_global);
+	return true;
+      }
+    }
+    return false;
+  }
+  
+  
+  bool SetControllerGlobal::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
+    unsigned i;
+    for (i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_number() == m_number) {
+	titer->set_controller_global(m_number, m_oldglobal);
+	return true;
+      }
+    }
+    return false;
+  }
   
 
 }

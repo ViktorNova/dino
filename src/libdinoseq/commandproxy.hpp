@@ -121,7 +121,19 @@ namespace Dino {
 			int default_v, int min, int max, bool global);
     /** Remove a controller for a track. */
     bool remove_controller(int track, long number);
-    
+    /** Change the name of a controller. */
+    bool set_controller_name(int track, long number, const std::string& name);
+    /** Change the minimum value of a controller. */
+    bool set_controller_min(int track, long number, int min);
+    /** Change the maximum value of a controller. */
+    bool set_controller_max(int track, long number, int max);
+    /** Change the default value of a controller. */
+    bool set_controller_default(int track, long number, int _default);
+    /** Change the parameter number value of a controller. */
+    bool set_controller_number(int track, long old_number, long new_number);
+    /** Change the 'global' toggle of a controller. */
+    bool set_controller_global(int track, long number, bool global);
+
     //@}
     
     sigc::signal<void>& signal_stack_changed();

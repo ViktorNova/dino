@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "commandproxy.hpp"
 #include "debug.hpp"
 #include "note.hpp"
 #include "noteeditor.hpp"
@@ -36,7 +37,7 @@ using namespace sigc;
 using namespace std;
 
 
-NoteEditor::NoteEditor() 
+NoteEditor::NoteEditor(Dino::CommandProxy& proxy) 
   : m_drag_operation(DragNoOperation), 
     m_motion_operation(MotionNoOperation),
     m_row_height(8), 
@@ -46,7 +47,8 @@ NoteEditor::NoteEditor()
     m_drag_start_vel(-1), 
     m_last_note_length(1),
     m_pat(0),
-    m_vadj(0) {
+    m_vadj(0),
+    m_proxy(proxy) {
   
   // initialise colours
   m_colormap = Colormap::get_system();
@@ -95,7 +97,8 @@ NoteEditor::NoteEditor()
 }
 
 
-void NoteEditor::set_pattern(Pattern* pattern) {
+void NoteEditor::set_pattern(int track, Pattern* pattern) {
+  m_track = track;
   if (pattern != m_pat) {
     m_pat = pattern;
     if (m_pat) {
@@ -416,7 +419,9 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
     PatternSelection::Iterator iter;
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-      m_pat->set_velocity(iter, velocity);
+      m_proxy.set_note_velocity(m_track, m_pat->get_id(), iter->get_step(),
+				iter->get_key(), velocity);
+    //m_pat->set_velocity(iter, velocity);
     queue_draw();
     break;
   }

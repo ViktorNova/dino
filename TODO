@@ -57,3 +57,8 @@ Crazy ideas:
  * Control the sequencer with OSC commands
 
  * Edit the song with OSC commands
+
+ * Store a voice number in each note
+ 
+ * Remove forced quantisation
+ 

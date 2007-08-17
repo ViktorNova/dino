@@ -64,6 +64,7 @@ extern "C" {
 PatternEditor::PatternEditor(Song& song, CommandProxy& proxy)
   : GUIPage(PageSupportsClipboard),
     m_octave_label(20, 8),
+    m_ne(proxy),
     m_active_track(-1),
     m_active_pattern(-1),
     m_active_controller(-1),
@@ -361,7 +362,7 @@ void PatternEditor::set_active_pattern(int pattern) {
   }
   
   update_controller_combo();
-  m_ne.set_pattern(pptr);
+  m_ne.set_pattern(m_active_track, pptr);
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);
 
   bool active = (m_active_pattern != -1);

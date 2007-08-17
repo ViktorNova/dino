@@ -85,7 +85,7 @@ void PluginLibrary::refresh_list() {
   
 void PluginLibrary::load_plugin(iterator& iter) {
   if (!iter->second.loaded) {
-    dbg1<<"Loading plugin \""<<iter->second.name<<endl;
+    dbg1<<"Loading plugin \""<<iter->second.name<<'"'<<endl;
     if (!iter->second.module) {
       string filename = string(PLUGIN_DIR) + "/" + iter->second.filename;
       iter->second.module = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);

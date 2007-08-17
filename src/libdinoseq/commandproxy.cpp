@@ -242,6 +242,13 @@ namespace Dino {
     return push_and_do(new SetPatternName(m_song, track, pattern, name));
   }
 
+
+  bool CommandProxy::set_note_velocity(int track, int pattern, int step, 
+				       int key, int velocity) {
+    return push_and_do(new SetNoteVelocity(m_song, track, pattern, step,
+					   key, velocity));
+  }
+
   
 
   sigc::signal<void>& CommandProxy::signal_stack_changed() {

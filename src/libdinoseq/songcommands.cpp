@@ -20,6 +20,7 @@
 
 #include "controller_numbers.hpp"
 #include "deleter.hpp"
+#include "note.hpp"
 #include "pattern.hpp"
 #include "song.hpp"
 #include "track.hpp"
@@ -1027,6 +1028,50 @@ namespace Dino {
     piter->set_name(m_oldname);
     return true;
   }
+
+
+  SetNoteVelocity::SetNoteVelocity(Song& song, int track, int pattern, 
+				   int step, int key, int velocity)
+    : Command("Set note velocity"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_step(step),
+      m_key(key),
+      m_velocity(velocity) {
+
+  }
   
+  
+  bool SetNoteVelocity::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    if (niter == piter->notes_end())
+      return false;
+    m_oldvelocity = niter->get_velocity();
+    piter->set_velocity(niter, m_velocity);
+    return true;
+  }
+  
+  
+  bool SetNoteVelocity::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    if (niter == piter->notes_end())
+      return false;
+    piter->set_velocity(niter, m_oldvelocity);
+    return true;
+  }
+
 
 }

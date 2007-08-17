@@ -30,14 +30,19 @@
 #include "patternselection.hpp"
 
 
+namespace Dino {
+  class CommandProxy;
+}
+
+
 class PluginInterface;
 
 
 class NoteEditor : public Gtk::DrawingArea {
 public:
-  NoteEditor();
+  NoteEditor(Dino::CommandProxy& proxy);
   
-  void set_pattern(Dino::Pattern* pattern);
+  void set_pattern(int track, Dino::Pattern* pattern);
   void set_step_width(int width);
   void set_vadjustment(Gtk::Adjustment* adj);
 
@@ -120,6 +125,9 @@ private:
   Glib::RefPtr<Pango::Layout> m_layout;
   Gtk::Adjustment* m_vadj;
   Gtk::Menu m_menu;
+  
+  int m_track;
+  Dino::CommandProxy& m_proxy;
 };
 
 

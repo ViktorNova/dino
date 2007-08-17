@@ -112,9 +112,8 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
       int max = m_curve->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_proxy.add_pattern_curve_point(m_track, m_pattern, 
-				      m_curve->get_info().get_number(), 
-				      step, value);
+      m_proxy.add_curve_point(m_track, m_pattern, 
+			      m_curve->get_info().get_number(), step, value);
       //m_curve->add_point(step, value);
       stringstream oss;
       oss<<"New value: "<<value;
@@ -130,9 +129,8 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
   else if (event->button == 3) {
     int step;
     if ((step = xpix2step(int(event->x))) < int(m_curve->get_size())) {
-      m_proxy.remove_pattern_curve_point(m_track, m_pattern,
-					 m_curve->get_info().get_number(), 
-					 step);
+      m_proxy.remove_curve_point(m_track, m_pattern,
+				 m_curve->get_info().get_number(), step);
       //m_curve->remove_point(step);
     }
   }
@@ -161,9 +159,8 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
       int max = m_curve->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_proxy.add_pattern_curve_point(m_track, m_pattern, 
-				      m_curve->get_info().get_number(), 
-				      step, value);
+      m_proxy.add_curve_point(m_track, m_pattern, 
+			      m_curve->get_info().get_number(), step, value);
       //m_curve->add_point(step, value);
       stringstream oss;
       oss<<"New value: "<<value;
@@ -176,9 +173,8 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
 	int(m_curve->get_size())) {
-      m_proxy.remove_pattern_curve_point(m_track, m_pattern,
-					 m_curve->get_info().get_number(), 
-					 step);
+      m_proxy.remove_curve_point(m_track, m_pattern,
+				 m_curve->get_info().get_number(), step);
       //m_curve->remove_point(step);
     }
   }

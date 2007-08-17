@@ -152,11 +152,11 @@ namespace Dino {
     /** Delete a note. */
     bool delete_note(int track, int pattern, int step, int key);
     /** Add a point to a pattern curve. */
-    bool add_pattern_curve_point(int track, int pattern, long number, 
-				 unsigned step, int value);
+    bool add_curve_point(int track, int pattern, long number, 
+			 unsigned step, int value);
     /** Remove a point from a pattern curve. */
-    bool remove_pattern_curve_point(int track, int pattern, long number, 
-				    unsigned step);
+    bool remove_curve_point(int track, int pattern, long number, 
+			    unsigned step);
     
     //@}
     

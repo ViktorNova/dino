@@ -81,7 +81,10 @@ protected:
   bool set_note_velocity(int argc, DBus::Argument* argv);
   bool set_note_size(int argc, DBus::Argument* argv);
   bool delete_note(int argc, DBus::Argument* argv);
+  bool add_curve_point(int argc, DBus::Argument* argv);
+  bool remove_curve_point(int argc, DBus::Argument* argv);
 
+  
   Dino::CommandProxy& m_proxy;
 
 };

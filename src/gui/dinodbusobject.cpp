@@ -86,6 +86,22 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy)
 	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_number));
   add_method("org.nongnu.dino.Song", "SetControllerGlobal", "iii",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_global));
+  add_method("org.nongnu.dino.Song", "SetPatternName", "iis",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_pattern_name));
+  add_method("org.nongnu.dino.Song", "SetSatternLength", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_pattern_length));
+  add_method("org.nongnu.dino.Song", "SetPatternSteps", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_pattern_steps));
+  add_method("org.nongnu.dino.Song", "AddNote", "iiiiii",
+	     sigc::mem_fun(*this, &DinoDBusObject::add_note));
+  add_method("org.nongnu.dino.Song", "SetNoteVelocity", "iiiii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_note_velocity));
+  add_method("org.nongnu.dino.Song", "SetNoteSize", "iiiii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_note_size));
+  add_method("org.nongnu.dino.Song", "DeleteNote", "iiii",
+	     sigc::mem_fun(*this, &DinoDBusObject::delete_note));
+
+
 }
 
 
@@ -231,6 +247,45 @@ bool DinoDBusObject::set_controller_number(int argc, DBus::Argument* argv) {
 bool DinoDBusObject::set_controller_global(int argc, DBus::Argument* argv) {
   return m_proxy.set_controller_global(argv[0].i, argv[1].i, argv[2].i);
 }
+
+
+bool DinoDBusObject::set_pattern_name(int argc, DBus::Argument* argv) {
+  return m_proxy.set_pattern_name(argv[0].i, argv[1].i, argv[2].s);
+}
+
+
+bool DinoDBusObject::set_pattern_length(int argc, DBus::Argument* argv) {
+  return m_proxy.set_pattern_length(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::set_pattern_steps(int argc, DBus::Argument* argv) {
+  return m_proxy.set_pattern_steps(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::add_note(int argc, DBus::Argument* argv) {
+  return m_proxy.add_note(argv[0].i, argv[1].i, argv[2].i, 
+			  argv[3].i, argv[4].i, argv[5].i);
+}
+
+
+bool DinoDBusObject::set_note_velocity(int argc, DBus::Argument* argv) {
+  return m_proxy.set_note_velocity(argv[0].i, argv[1].i, argv[2].i, 
+				   argv[3].i, argv[4].i);
+}
+
+
+bool DinoDBusObject::set_note_size(int argc, DBus::Argument* argv) {
+  return m_proxy.set_note_velocity(argv[0].i, argv[1].i, argv[2].i, 
+				   argv[3].i, argv[4].i);
+}
+
+
+bool DinoDBusObject::delete_note(int argc, DBus::Argument* argv) {
+  return m_proxy.delete_note(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
+}
+
 
 
 

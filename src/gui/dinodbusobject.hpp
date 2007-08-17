@@ -73,7 +73,15 @@ protected:
   bool set_controller_default(int argc, DBus::Argument* argv);
   bool set_controller_number(int argc, DBus::Argument* argv);
   bool set_controller_global(int argc, DBus::Argument* argv);
-  
+
+  bool set_pattern_name(int argc, DBus::Argument* argv);
+  bool set_pattern_length(int argc, DBus::Argument* argv);
+  bool set_pattern_steps(int argc, DBus::Argument* argv);
+  bool add_note(int argc, DBus::Argument* argv);
+  bool set_note_velocity(int argc, DBus::Argument* argv);
+  bool set_note_size(int argc, DBus::Argument* argv);
+  bool delete_note(int argc, DBus::Argument* argv);
+
   Dino::CommandProxy& m_proxy;
 
 };

@@ -1143,6 +1143,62 @@ namespace Dino {
   }
 
 
+  AddNote::AddNote(Song& song, int track, int pattern, 
+		   unsigned int step, int key, int velocity, int length)
+    : CompoundCommand("Add note"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_step(step),
+      m_key(key),
+      m_velocity(velocity),
+      m_length(length) {
+
+  }
+  
+  
+  bool AddNote::do_command() {
+    if (m_key >= 128 || m_key < 0)
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    unsigned int n = piter->get_length() * piter->get_steps();
+    if (m_step >= n || m_step + m_length > n)
+      return false;
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    if (niter != piter->notes_end()) {
+      if (niter->get_step() == m_step)
+	append(new DeleteNote(m_song, m_track, m_pattern, m_step, m_key));
+      else
+	append(new SetNoteSize(m_song, m_track, m_pattern, niter->get_step(),
+			       m_key, m_step - niter->get_step()));
+    }
+    if (!CompoundCommand::do_command())
+      return false;
+    piter->add_note(m_step, m_key, m_velocity, m_length);
+    return true;
+  }
+  
+  
+  bool AddNote::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    if (niter == piter->notes_end())
+      return false;
+    piter->delete_note(niter);
+    return CompoundCommand::undo_command();
+  }
+  
+
   SetNoteVelocity::SetNoteVelocity(Song& song, int track, int pattern, 
 				   int step, int key, int velocity)
     : Command("Set note velocity"),

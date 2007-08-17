@@ -227,8 +227,11 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       
       // Ctrl-Button1 adds notes
       if (event->state & GDK_CONTROL_MASK) {
-	Pattern::NoteIterator iter = m_pat->add_note(step, note, 64, 
-						     m_last_note_length);
+	m_proxy.add_note(m_track, m_pat->get_id(), step, note, 64, 
+			 m_last_note_length);
+	Pattern::NoteIterator iter = m_pat->find_note(step, note);
+	//Pattern::NoteIterator iter = m_pat->add_note(step, note, 64, 
+	//					     m_last_note_length);
 	m_selection.clear();
 	if (iter != m_pat->notes_end())
 	  m_selection.add_note(iter);

@@ -141,6 +141,9 @@ namespace Dino {
     bool set_pattern_length(int track, int pattern, unsigned int beats);
     /** Change the number of steps per beat in a pattern. */
     bool set_pattern_steps(int track, int pattern, unsigned int steps);
+    /** Add a note to a pattern. */
+    bool add_note(int track, int pattern, unsigned int step, 
+		  int key, int velocity, int length);
     /** Change the velocity of a note. */
     bool set_note_velocity(int track, int pattern, int step, int key, 
 			   int velocity);

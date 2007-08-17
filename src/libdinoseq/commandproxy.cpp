@@ -255,6 +255,13 @@ namespace Dino {
   }
 
 
+  bool CommandProxy::add_note(int track, int pattern, unsigned int step, 
+			      int key, int velocity, int length) {
+    return push_and_do(new AddNote(m_song, track, pattern, 
+				   step, key, velocity, length));
+  }
+  
+
   bool CommandProxy::set_note_velocity(int track, int pattern, int step, 
 				       int key, int velocity) {
     return push_and_do(new SetNoteVelocity(m_song, track, pattern, step,

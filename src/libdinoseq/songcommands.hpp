@@ -377,6 +377,23 @@ namespace Dino {
     unsigned int m_step;
     int m_key;
   };
+
+
+  class AddNote : public CompoundCommand {
+  public:
+    AddNote(Song& song, int track, int pattern, 
+	    unsigned int step, int key, int velocity, int length);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    unsigned int m_step;
+    int m_key;
+    int m_velocity;
+    int m_length;
+  };
   
 
   class SetNoteVelocity : public Command {

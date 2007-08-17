@@ -27,6 +27,7 @@
 
 
 namespace Dino {
+  class CommandProxy;
   class Curve;
 }
 
@@ -34,9 +35,9 @@ namespace Dino {
 class CurveEditor : public Gtk::DrawingArea {
 public:
   
-  CurveEditor();
+  CurveEditor(Dino::CommandProxy& proxy);
   
-  void set_curve(Dino::Curve* curve);
+  void set_curve(int track, int pattern, Dino::Curve* curve);
   void set_step_width(int width);
   void set_alternation(int k);
   
@@ -62,7 +63,10 @@ protected:
   unsigned m_step_width;
   unsigned m_alternation;
   
+  int m_track;
+  int m_pattern;
   Dino::Curve* m_curve;
+  Dino::CommandProxy& m_proxy;
   
   int m_drag_step;
   

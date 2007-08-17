@@ -446,6 +446,40 @@ namespace Dino {
   };
 
 
+  class AddPatternCurvePoint : public Command {
+  public:
+    AddPatternCurvePoint(Song& song, int track, int pattern, long number,
+			 unsigned int step, int value);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    long m_number;
+    unsigned int m_step;
+    int m_value;
+    int m_oldvalue;
+    bool m_wasold;
+  };
+
+
+  class RemovePatternCurvePoint : public Command {
+  public:
+    RemovePatternCurvePoint(Song& song, int track, int pattern, long number,
+			    unsigned int step);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    long m_number;
+    unsigned int m_step;
+    int m_oldvalue;
+  };
+
+
 }
 
 

@@ -33,21 +33,21 @@ using namespace std;
 using namespace Dino;
 
 
-TrackDialog::TrackDialog() {
+TrackDialog::TrackDialog()
+  : m_sbn_channel(0, 0) {
+  
   set_title("Track properties");
-  m_ent_name = manage(new Entry);
-  m_sbn_channel = manage(new SpinButton(0, 0));
-  m_sbn_channel->set_range(1, 16);
-  m_sbn_channel->set_increments(1, 10);
+  m_sbn_channel.set_range(1, 16);
+  m_sbn_channel.set_increments(1, 10);
   Table* table = manage(new Table(6, 2));
   table->attach(*manage(new Label("Track name:")), 0, 1, 0, 1);
   table->attach(*manage(new Label("MIDI port:")), 0, 1, 1, 2);
   table->attach(*manage(new Label("MIDI channel:")), 0, 1, 2, 3);
   table->attach(*manage(new HSeparator), 0, 2, 3, 4);
   table->attach(*manage(new Label("Controllers:")), 0, 1, 4, 5);
-  table->attach(*m_ent_name, 1, 2, 0, 1);
+  table->attach(m_ent_name, 1, 2, 0, 1);
   table->attach(m_cmb_port, 1, 2, 1, 2);
-  table->attach(*m_sbn_channel, 1, 2, 2, 3);
+  table->attach(m_sbn_channel, 1, 2, 2, 3);
   table->attach(m_cmb_ctrls, 1, 2, 4, 5);
   HBox* hbox = manage(new HBox(false, 3));
   Button* add_ctrl_btn = manage(new Button("Add"));
@@ -76,7 +76,7 @@ TrackDialog::TrackDialog() {
 
 
 string TrackDialog::get_name() const {
-  return m_ent_name->get_text();
+  return m_ent_name.get_text();
 }
 
 
@@ -86,17 +86,17 @@ string TrackDialog::get_port() const {
 
 
 int TrackDialog::get_channel() const {
-  return m_sbn_channel->get_value_as_int();
+  return m_sbn_channel.get_value_as_int();
 }
 
 
 void TrackDialog::set_name(const string& name) {
-  m_ent_name->set_text(name);
+  m_ent_name.set_text(name);
 }
 
 
 void TrackDialog::set_channel(int channel) {
-  m_sbn_channel->set_value(channel);
+  m_sbn_channel.set_value(channel);
 }
 
 
@@ -189,8 +189,8 @@ void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq,
 
 
 void TrackDialog::refocus() {
-  m_ent_name->select_region(0, -1);
-  m_ent_name->grab_focus();
+  m_ent_name.select_region(0, -1);
+  m_ent_name.grab_focus();
 }
 
 

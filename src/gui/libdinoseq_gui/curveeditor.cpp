@@ -22,6 +22,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "commandproxy.hpp"
 #include "controllerinfo.hpp"
 #include "curve.hpp"
 #include "curveeditor.hpp"
@@ -37,7 +38,7 @@ using namespace Dino;
 using namespace sigc;
 
   
-CurveEditor::CurveEditor() 
+CurveEditor::CurveEditor(Dino::CommandProxy& proxy) 
   : m_bg_colour1("#FFFFFF"),
     m_bg_colour2("#EAEAFF"),
     m_grid_colour("#9C9C9C"),
@@ -46,6 +47,7 @@ CurveEditor::CurveEditor()
     m_step_width(8),
     m_alternation(4),
     m_curve(0),
+    m_proxy(proxy),
     m_drag_step(-1) {
 
   RefPtr<Colormap> cmap = Colormap::get_system();
@@ -60,7 +62,9 @@ CurveEditor::CurveEditor()
 }
 
 
-void CurveEditor::set_curve(Dino::Curve* curve) {
+void CurveEditor::set_curve(int track, int pattern, Dino::Curve* curve) {
+  m_track = track;
+  m_pattern = pattern;
   m_curve = curve;
   if (m_curve) {
     set_size_request(m_curve->get_size() * m_step_width, 68);
@@ -108,7 +112,10 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
       int max = m_curve->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_curve->add_point(step, value);
+      m_proxy.add_pattern_curve_point(m_track, m_pattern, 
+				      m_curve->get_info().get_number(), 
+				      step, value);
+      //m_curve->add_point(step, value);
       stringstream oss;
       oss<<"New value: "<<value;
       m_signal_status(ref(oss.str()));
@@ -123,7 +130,10 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
   else if (event->button == 3) {
     int step;
     if ((step = xpix2step(int(event->x))) < int(m_curve->get_size())) {
-      m_curve->remove_point(step);
+      m_proxy.remove_pattern_curve_point(m_track, m_pattern,
+					 m_curve->get_info().get_number(), 
+					 step);
+      //m_curve->remove_point(step);
     }
   }
 
@@ -151,7 +161,10 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
       int max = m_curve->get_info().get_max();
       value = (value < min ? min : value);
       value = (value > max ? max : value);
-      m_curve->add_point(step, value);
+      m_proxy.add_pattern_curve_point(m_track, m_pattern, 
+				      m_curve->get_info().get_number(), 
+				      step, value);
+      //m_curve->add_point(step, value);
       stringstream oss;
       oss<<"New value: "<<value;
       m_signal_status(ref(oss.str()));
@@ -163,7 +176,10 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
     int step;
     if ((step = xpix2step(int(event->x))) < 
 	int(m_curve->get_size())) {
-      m_curve->remove_point(step);
+      m_proxy.remove_pattern_curve_point(m_track, m_pattern,
+					 m_curve->get_info().get_number(), 
+					 step);
+      //m_curve->remove_point(step);
     }
   }
 

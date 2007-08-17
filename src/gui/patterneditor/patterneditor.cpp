@@ -65,6 +65,7 @@ PatternEditor::PatternEditor(Song& song, CommandProxy& proxy)
   : GUIPage(PageSupportsClipboard),
     m_octave_label(20, 8),
     m_ne(proxy),
+    m_cce(proxy),
     m_active_track(-1),
     m_active_pattern(-1),
     m_active_controller(-1),
@@ -377,23 +378,23 @@ void PatternEditor::set_active_controller(long controller) {
   
   Song::TrackIterator t = m_song.tracks_find(m_active_track);
   if (t == m_song.tracks_end()) {
-    m_cce.set_curve(0);
+    m_cce.set_curve(-1, -1, 0);
     return;
   }
   
   Track::PatternIterator p = t->pat_find(m_active_pattern);
   if (p == t->pat_end()) {
-    m_cce.set_curve(0);
+    m_cce.set_curve(-1, -1, 0);
     return;
   }
   
   Pattern::CurveIterator c = p->curves_find(m_active_controller);
   if (c == p->curves_end()) {
-    m_cce.set_curve(0);
+    m_cce.set_curve(-1, -1, 0);
     return;
   }
     
-  m_cce.set_curve(&*c);
+  m_cce.set_curve(m_active_track, m_active_pattern, &*c);
   
   bool active = controller_is_set(m_active_controller);
 }

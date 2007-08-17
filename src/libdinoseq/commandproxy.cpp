@@ -44,8 +44,12 @@ namespace Dino {
   
   
   std::string CommandProxy::get_next_undo_name() const {
-    if (m_stack.empty())
+    if (m_stack.empty()) {
+      dbg1<<"The stack is now empty"<<std::endl;
       return "";
+    }
+    dbg1<<"The stack top is now "<<m_stack.top()<<std::endl;
+    dbg1<<"The stack size is now "<<m_stack.size()<<std::endl;
     return m_stack.top()->get_name();
   }
   
@@ -279,6 +283,21 @@ namespace Dino {
   bool CommandProxy::delete_note(int track, int pattern, int step, int key) {
     return push_and_do(new DeleteNote(m_song, track, pattern, step, key));
   }
+
+
+  bool CommandProxy::add_pattern_curve_point(int track, int pattern, 
+					     long number, unsigned step, 
+					     int value) {
+    return push_and_do(new AddPatternCurvePoint(m_song, track, pattern, 
+						number,	step, value));
+  }
+  
+  
+  bool CommandProxy::remove_pattern_curve_point(int track, int pattern, 
+						long number, unsigned step) {
+    push_and_do(new RemovePatternCurvePoint(m_song, track, pattern,
+					    number, step));
+  }
   
 
   sigc::signal<void>& CommandProxy::signal_stack_changed() {
@@ -287,13 +306,23 @@ namespace Dino {
   
 
   bool CommandProxy::push_and_do(Command* cmd) {
+    
+    std::cerr<<__PRETTY_FUNCTION__<<std::endl;
+    
     if (m_active) {
+      dbg0<<"A command is already running!"<<std::endl;
       delete cmd;
       return false;
     }
+    
     m_active = true;
     if (cmd->do_command()) {
+      dbg1<<"Command '"<<cmd->get_name()<<"' was successful"<<std::endl;
       m_stack.push(cmd);
+      dbg1<<"Pushed '"<<m_stack.top()->get_name()
+	  <<"' onto the stack"<<std::endl;
+      dbg1<<"The stack top is now "<<m_stack.top()<<std::endl;
+      dbg1<<"The stack size is now "<<m_stack.size()<<std::endl;
       m_signal_stack_changed();
       m_active = false;
       return true;

@@ -30,7 +30,8 @@ using namespace std;
 
 
 TrackWidget::TrackWidget(CommandProxy& proxy)
-  : m_swdg(proxy) {
+  : m_swdg(proxy),
+    m_cce(proxy) {
   
   m_cce.set_step_width(20);
   m_cce.set_alternation(4);
@@ -100,7 +101,7 @@ void TrackWidget::curve_added(long number, Dino::Track* track) {
   bool cce_visible = (children().find(m_cce) != children().end());
   
   if (has_curves && !cce_visible) {
-    m_cce.set_curve(&*track->curves_begin());
+    m_cce.set_curve(track->get_id(), -1, &*track->curves_begin());
     pack_start(m_cce);
     show_all();
   }
@@ -112,9 +113,9 @@ void TrackWidget::curve_removed(long number, Dino::Track* track) {
   bool cce_visible = (children().find(m_cce) != children().end());
   
   if (!has_curves)
-    m_cce.set_curve(0);
+    m_cce.set_curve(track->get_id(), -1, 0);
   else
-    m_cce.set_curve(&*track->curves_begin());
+    m_cce.set_curve(track->get_id(), -1, &*track->curves_begin());
   
   if (!has_curves && cce_visible)
     remove(m_cce);

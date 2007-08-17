@@ -22,6 +22,7 @@
 
 #include "controller_numbers.hpp"
 #include "deleter.hpp"
+#include "interpolatedevent.hpp"
 #include "note.hpp"
 #include "pattern.hpp"
 #include "patternselection.hpp"
@@ -1325,6 +1326,126 @@ namespace Dino {
       return false;
     piter->add_note(m_step, m_key, m_velocity, m_length);
     return true;
+  }
+
+  
+  AddPatternCurvePoint::AddPatternCurvePoint(Song& song, int track, 
+					     int pattern, long number,
+					     unsigned int step, int value)
+    : Command("Add curve point"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_number(number),
+      m_step(step),
+      m_value(value),
+      m_wasold(false) {
+
+  }
+  
+  
+  bool AddPatternCurvePoint::do_command() {
+    cerr<<__PRETTY_FUNCTION__<<endl;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    cerr<<__PRETTY_FUNCTION__<<" 1"<<endl;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    cerr<<__PRETTY_FUNCTION__<<" 2"<<endl;
+    Pattern::CurveIterator citer = piter->curves_find(m_number);
+    if (citer == piter->curves_end())
+      return false;
+    cerr<<__PRETTY_FUNCTION__<<" 3"<<endl;
+    if (m_step > citer->get_size())
+      return false;
+    cerr<<__PRETTY_FUNCTION__<<" 4"<<endl;
+    if (m_value < citer->get_info().get_min())
+      return false;
+    cerr<<__PRETTY_FUNCTION__<<" 5"<<endl;
+    if (m_value > citer->get_info().get_max())
+      return false;
+    cerr<<__PRETTY_FUNCTION__<<" 6"<<endl;
+    const InterpolatedEvent* e = citer->get_event(m_step);
+    if (e) {
+      if (m_step == citer->get_size()) {
+	m_oldvalue = e->get_end();
+	m_wasold = true;
+      }
+      else if (m_step == e->get_step()) {
+	m_oldvalue = e->get_start();
+	m_wasold = true;
+      }
+    }
+    piter->add_curve_point(citer, m_step, m_value);
+    return true;
+  }
+  
+  
+  bool AddPatternCurvePoint::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::CurveIterator citer = piter->curves_find(m_number);
+    if (citer == piter->curves_end())
+      return false;
+    if (m_wasold)
+      piter->add_curve_point(citer, m_step, m_oldvalue);
+    else
+      piter->remove_curve_point(citer, m_step);
+  }
+
+
+  RemovePatternCurvePoint::RemovePatternCurvePoint(Song& song, int track, 
+						   int pattern, long number,
+						   unsigned int step)
+    : Command("Remove curve point"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_number(number),
+      m_step(step) {
+
+  }
+  
+  
+  bool RemovePatternCurvePoint::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::CurveIterator citer = piter->curves_find(m_number);
+    if (citer == piter->curves_end())
+      return false;
+    if (m_step >= citer->get_size())
+      return false;
+    const InterpolatedEvent* e = citer->get_event(m_step);
+    if (!e || m_step != e->get_step())
+      return false;
+    
+    m_oldvalue = e->get_start();
+    piter->remove_curve_point(citer, m_step);
+    return true;
+  }
+  
+  
+  bool RemovePatternCurvePoint::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::CurveIterator citer = piter->curves_find(m_number);
+    if (citer == piter->curves_end())
+      return false;
+    piter->add_curve_point(citer, m_step, m_oldvalue);
   }
 
 

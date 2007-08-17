@@ -249,6 +249,14 @@ namespace Dino {
 					   key, velocity));
   }
 
+
+  bool CommandProxy::set_note_size(int track, int pattern, int step, int key, 
+				   int size) {
+    return push_and_do(new SetNoteSize(m_song, track, pattern, step, key, 
+				       size));
+  }
+
+
   
 
   sigc::signal<void>& CommandProxy::signal_stack_changed() {

@@ -1074,4 +1074,48 @@ namespace Dino {
   }
 
 
+  SetNoteSize::SetNoteSize(Song& song, int track, int pattern, 
+				   int step, int key, int size)
+    : Command("Resize note"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_step(step),
+      m_key(key),
+      m_size(size) {
+
+  }
+  
+  
+  bool SetNoteSize::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    if (niter == piter->notes_end())
+      return false;
+    m_oldsize = niter->get_length();
+    piter->resize_note(niter, m_size);
+    return true;
+  }
+  
+  
+  bool SetNoteSize::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    if (niter == piter->notes_end())
+      return false;
+    piter->resize_note(niter, m_oldsize);
+    return true;
+  }
+
+
 }

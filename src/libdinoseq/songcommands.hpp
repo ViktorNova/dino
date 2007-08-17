@@ -362,6 +362,22 @@ namespace Dino {
     int m_velocity;
     int m_oldvelocity;
   };
+
+  class SetNoteSize : public Command {
+  public:
+    SetNoteSize(Song& song, int track, int pattern, int step, int key,
+		int size);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    int m_step;
+    int m_key;
+    int m_size;
+    int m_oldsize;
+  };
   
 }
 

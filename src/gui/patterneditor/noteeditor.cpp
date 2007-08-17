@@ -302,7 +302,9 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	  PatternSelection::Iterator iter;
 	  unsigned new_size = step - iterator->get_step() + 1;
 	  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	    m_pat->resize_note(iter, new_size);
+	    m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
+				iter->get_key(), new_size);
+	    //m_pat->resize_note(iter, new_size);
 	  m_last_note_length = new_size;
 	  m_added_note = make_pair(iterator->get_step(), note);
 	  m_drag_operation = DragChangingNoteLength;
@@ -361,7 +363,9 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       unsigned new_size = step - m_added_note.first + 1;
       PatternSelection::Iterator iter;
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	m_pat->resize_note(iter, new_size);
+	m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
+			    iter->get_key(), new_size);
+	//m_pat->resize_note(iter, new_size);
       m_added_note = make_pair(-1, -1);
     }
   }
@@ -442,7 +446,9 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     unsigned new_size = step - m_added_note.first + 1;
     PatternSelection::Iterator iter;
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-      m_pat->resize_note(iter, new_size);
+      m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(), 
+			  iter->get_key(), new_size);
+      //m_pat->resize_note(iter, new_size);
     m_last_note_length = step - m_added_note.first + 1;
     
     m_drag_step = step;

@@ -161,7 +161,6 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
       value = (value > max ? max : value);
       m_proxy.add_curve_point(m_track, m_pattern, 
 			      m_curve->get_info().get_number(), step, value);
-      //m_curve->add_point(step, value);
       stringstream oss;
       oss<<"New value: "<<value;
       m_signal_status(ref(oss.str()));
@@ -175,7 +174,6 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
 	int(m_curve->get_size())) {
       m_proxy.remove_curve_point(m_track, m_pattern,
 				 m_curve->get_info().get_number(), step);
-      //m_curve->remove_point(step);
     }
   }
 

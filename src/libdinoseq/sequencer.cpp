@@ -138,29 +138,31 @@ namespace Dino {
   Sequencer::get_instruments(int track) const {
     vector<InstrumentInfo> instruments;
     if (m_jack_client) {
-    
+      
       // check if the given track is connected to a port
       string connected_instrument;
       if (track != -1) {
-  map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
-  assert(iter != m_output_ports.end());
-  const char** connected = jack_port_get_connections(iter->second);
-  if (connected && connected[0])
-    connected_instrument = connected[0];
-  free(connected);
+        map<int,jack_port_t*>::const_iterator iter = m_output_ports.find(track);
+        assert(iter != m_output_ports.end());
+        const char** connected = jack_port_get_connections(iter->second);
+        if (connected && connected[0])
+          connected_instrument = connected[0];
+        free(connected);
       }
-    
+      
       const char** ports = jack_get_ports(m_jack_client, 0, 
-            JACK_DEFAULT_MIDI_TYPE, 
-            JackPortIsInput);
+                                          JACK_DEFAULT_MIDI_TYPE, 
+                                          JackPortIsInput);
       if (ports) {
-  for (size_t i = 0; ports[i]; ++i) {
-    InstrumentInfo ii = ports[i];
-    if (connected_instrument == ports[i])
-      ii.set_connected(true);
-    instruments.push_back(ii);
-  }
-  free(ports);
+        for (size_t i = 0; ports[i]; ++i) {
+          if (ports[i] == get_jack_name() + ":MIDI input")
+            continue;
+          InstrumentInfo ii = ports[i];
+          if (connected_instrument == ports[i])
+            ii.set_connected(true);
+          instruments.push_back(ii);
+        }
+        free(ports);
       }
     }
     return instruments;
@@ -290,12 +292,12 @@ namespace Dino {
     SeqList* sl = m_sqbls;
     while (sl) {
       if (sl->m_sqb == &sqb)
-	return false;
+        return false;
       if (sl->m_next == 0) {
-	SeqList* nsl = new SeqList(sqb, m_jack_client);
-	nsl->m_prev = sl;
-	sl->m_next = nsl;
-	return true;
+        SeqList* nsl = new SeqList(sqb, m_jack_client);
+        nsl->m_prev = sl;
+        sl->m_next = nsl;
+        return true;
       }
       sl = sl->m_next;
     }
@@ -309,11 +311,11 @@ namespace Dino {
     SeqList* sl = m_sqbls;
     while (sl) {
       if (sl->m_sqb == &sqb) {
-	if (sl->m_next)
-	  sl->m_next->m_prev = sl->m_prev;
-	if (sl->m_prev)
-	  sl->m_prev->m_next = sl->m_next;
-	Deleter::queue(sl);
+        if (sl->m_next)
+          sl->m_next->m_prev = sl->m_prev;
+        if (sl->m_prev)
+          sl->m_prev->m_next = sl->m_next;
+        Deleter::queue(sl);
       }
       sl = sl->m_next;
     }
@@ -563,7 +565,7 @@ namespace Dino {
       m_prev(0),
       m_next(0) {
     m_port = jack_port_register(m_client, m_sqb->get_label().c_str(),
-				JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+                                JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
   }
   
   

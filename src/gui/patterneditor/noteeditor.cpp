@@ -172,7 +172,9 @@ void NoteEditor::delete_selection() {
     iter2 = iter1;
     while (iter2 != m_selection.end()) {
       ++iter1;
-      m_pat->delete_note(iter2);
+      m_proxy.delete_note(m_track, m_pat->get_id(), iter2->get_step(),
+			  iter2->get_key());
+      //m_pat->delete_note(iter2);
       iter2 = iter1;
     }
   }
@@ -465,7 +467,9 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
 	note >= 0 && note < m_max_note) {
       Pattern::NoteIterator iter = m_pat->find_note(step, note);
       if (iter != m_pat->notes_end())
-	m_pat->delete_note(iter);
+	m_proxy.delete_note(m_track, m_pat->get_id(), iter->get_step(),
+			    iter->get_key());
+	//m_pat->delete_note(iter);
       m_drag_step = step;
       m_drag_note = note;
     }

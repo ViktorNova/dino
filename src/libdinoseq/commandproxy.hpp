@@ -142,6 +142,8 @@ namespace Dino {
 			   int velocity);
     /** Resize a note. */
     bool set_note_size(int track, int pattern, int step, int key, int size);
+    /** Delete a note. */
+    bool delete_note(int track, int pattern, int step, int key);
     
     //@}
     

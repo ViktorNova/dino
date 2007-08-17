@@ -1118,4 +1118,45 @@ namespace Dino {
   }
 
 
+  DeleteNote::DeleteNote(Song& song, int track, int pattern, int step, int key)
+    : Command("Delete note"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_step(step),
+      m_key(key) {
+
+  }
+  
+  
+  bool DeleteNote::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    if (niter == piter->notes_end())
+      return false;
+    m_step = niter->get_step();
+    m_velocity = niter->get_velocity();
+    m_length = niter->get_length();
+    piter->delete_note(niter);
+    return true;
+  }
+  
+  
+  bool DeleteNote::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    piter->add_note(m_step, m_key, m_velocity, m_length);
+    return true;
+  }
+
+
 }

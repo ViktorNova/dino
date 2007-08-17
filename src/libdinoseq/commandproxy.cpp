@@ -256,7 +256,10 @@ namespace Dino {
 				       size));
   }
 
-
+  
+  bool CommandProxy::delete_note(int track, int pattern, int step, int key) {
+    return push_and_do(new DeleteNote(m_song, track, pattern, step, key));
+  }
   
 
   sigc::signal<void>& CommandProxy::signal_stack_changed() {

@@ -363,6 +363,7 @@ namespace Dino {
     int m_oldvelocity;
   };
 
+  
   class SetNoteSize : public Command {
   public:
     SetNoteSize(Song& song, int track, int pattern, int step, int key,
@@ -379,6 +380,23 @@ namespace Dino {
     int m_oldsize;
   };
   
+  
+  class DeleteNote : public Command {
+  public:
+    DeleteNote(Song& song, int track, int pattern, int step, int key);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    int m_step;
+    int m_key;
+    int m_velocity;
+    int m_length;
+  };
+
+
 }
 
 

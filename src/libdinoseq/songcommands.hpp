@@ -25,6 +25,7 @@
 
 #include "command.hpp"
 #include "compoundcommand.hpp"
+#include "notecollection.hpp"
 #include "song.hpp"
 #include "track.hpp"
 
@@ -358,6 +359,23 @@ namespace Dino {
     int m_pattern;
     unsigned int m_beats;
     unsigned int m_oldbeats;
+  };
+  
+  
+  class SetPatternSteps : public Command {
+  public:
+    SetPatternSteps(Song& song, int track, int pattern, unsigned int steps);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    unsigned int m_steps;
+    unsigned int m_oldsteps;
+    NoteCollection m_notes;
+    unsigned int m_step;
+    int m_key;
   };
   
 

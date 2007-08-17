@@ -18,10 +18,13 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <limits>
+
 #include "controller_numbers.hpp"
 #include "deleter.hpp"
 #include "note.hpp"
 #include "pattern.hpp"
+#include "patternselection.hpp"
 #include "song.hpp"
 #include "track.hpp"
 #include "songcommands.hpp"
@@ -1084,6 +1087,61 @@ namespace Dino {
     return CompoundCommand::undo_command();
   }
   
+
+  SetPatternSteps::SetPatternSteps(Song& song, int track, int pattern, 
+				   unsigned int steps)
+    : Command("Set pattern steps"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_steps(steps) {
+
+  }
+  
+  
+  bool SetPatternSteps::do_command() {
+    if (m_steps == 0)
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    m_oldsteps = piter->get_steps();
+    PatternSelection sel(&*piter);
+    m_step = numeric_limits<unsigned int>::max();
+    m_key = 0;
+    Pattern::NoteIterator niter;
+    for (niter = piter->notes_begin(); niter != piter->notes_end(); ++niter) {
+      if (niter->get_step() < m_step)
+	m_step = niter->get_step();
+      if (niter->get_key() > m_key)
+	m_key = niter->get_key();
+      sel.add_note(niter);
+    }
+    m_notes = NoteCollection(sel);
+    piter->set_steps(m_steps);
+    return true;
+  }
+  
+  
+  bool SetPatternSteps::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    // XXX could maybe use a Pattern::clear_notes() here
+    while (piter->notes_begin() != piter->notes_end())
+      piter->delete_note(piter->notes_begin());
+    piter->set_steps(m_oldsteps);
+    if (m_notes.begin() != m_notes.end())
+      piter->add_notes(m_notes, m_step, m_key);
+    return true;
+  }
+
 
   SetNoteVelocity::SetNoteVelocity(Song& song, int track, int pattern, 
 				   int step, int key, int velocity)

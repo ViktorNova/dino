@@ -455,7 +455,10 @@ void PatternEditor::edit_pattern_properties() {
 	m_proxy.set_pattern_length(m_active_track, m_active_pattern,
 				   m_dlg_pattern->get_length());
       }
-      pat->set_steps(m_dlg_pattern->get_steps());
+      if (m_dlg_pattern->get_steps() != pat->get_steps()) {
+	m_proxy.set_pattern_steps(m_active_track, m_active_pattern,
+				  m_dlg_pattern->get_steps());
+      }
     }
     m_dlg_pattern->hide();
   }

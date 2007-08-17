@@ -137,6 +137,8 @@ namespace Dino {
 
     /** Change the name of a pattern. */
     bool set_pattern_name(int track, int pattern, const std::string& name);
+    /** Change the length of a pattern (in beats). */
+    bool set_pattern_length(int track, int pattern, unsigned int beats);
     /** Change the velocity of a note. */
     bool set_note_velocity(int track, int pattern, int step, int key, 
 			   int velocity);

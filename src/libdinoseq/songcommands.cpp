@@ -1030,6 +1030,61 @@ namespace Dino {
   }
 
 
+  SetPatternLength::SetPatternLength(Song& song, int track, int pattern, 
+				     unsigned int beats)
+    : CompoundCommand("Set pattern length"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_beats(beats) {
+
+  }
+  
+  
+  bool SetPatternLength::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    m_oldbeats = piter->get_length();
+    
+    if (m_beats < m_oldbeats) {
+      Pattern::NoteIterator niter;
+      unsigned n = m_beats * piter->get_steps();
+      for (niter = piter->notes_begin(); niter != piter->notes_end(); ++niter) {
+	if (niter->get_step() >= n) {
+	  append(new DeleteNote(m_song, m_track, m_pattern, 
+				niter->get_step(), niter->get_key()));
+	}
+	else if (niter->get_step() + niter->get_length() > n) {
+	  append(new SetNoteSize(m_song, m_track, m_pattern, niter->get_step(),
+				 niter->get_key(), n - niter->get_step()));
+	}
+      }
+    }
+    
+    if (!CompoundCommand::do_command())
+      return false;
+    
+    piter->set_length(m_beats);
+    return true;
+  }
+
+  
+  bool SetPatternLength::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    piter->set_length(m_oldbeats);
+    return CompoundCommand::undo_command();
+  }
+  
+
   SetNoteVelocity::SetNoteVelocity(Song& song, int track, int pattern, 
 				   int step, int key, int velocity)
     : Command("Set note velocity"),

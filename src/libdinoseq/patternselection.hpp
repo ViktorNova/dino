@@ -113,7 +113,7 @@ namespace Dino {
   protected:
     
     /** Used to remove notes from the selection automatically when they are
-  removed from the pattern. */
+	removed from the pattern. */
     void remove_note_internal(const Note& note);
     
     /** The actual set of selected notes. */

@@ -347,6 +347,20 @@ namespace Dino {
   };
 
 
+  class SetPatternLength : public CompoundCommand {
+  public:
+    SetPatternLength(Song& song, int track, int pattern, unsigned int beats);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    unsigned int m_beats;
+    unsigned int m_oldbeats;
+  };
+  
+
   class SetNoteVelocity : public Command {
   public:
     SetNoteVelocity(Song& song, int track, int pattern, int step, int key,

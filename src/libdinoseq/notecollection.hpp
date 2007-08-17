@@ -26,6 +26,7 @@
 
 namespace Dino {
   
+  
   class PatternSelection;
   
   
@@ -39,7 +40,7 @@ namespace Dino {
     /** A description of a single note. */
     struct NoteDescription {
       NoteDescription(unsigned int start, unsigned int length,
-          unsigned char key, unsigned char velocity);
+		      unsigned char key, unsigned char velocity);
       unsigned int start;
       unsigned int length;
       unsigned char key;

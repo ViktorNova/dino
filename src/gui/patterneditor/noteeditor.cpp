@@ -212,7 +212,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
     if (m_motion_operation == MotionPaste) {
       m_motion_operation = MotionNoOperation;
       if (event->button == 1) {
-	m_pat->add_notes(m_clipboard, step, note);
+	m_proxy.add_notes(m_track, m_pat->get_id(), m_clipboard, step, note);
+	//m_pat->add_notes(m_clipboard, step, note);
 	return true;
       }
       else
@@ -320,7 +321,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	step = (step < int(m_pat->get_length() * m_pat->get_steps()) ? step : 
 		m_pat->get_length() * m_pat->get_steps() - 1);
 	NoteCollection nc(m_selection);
-	m_pat->add_notes(nc, step, note);
+	m_proxy.add_notes(m_track, m_pat->get_id(), nc, step, note);
+	//m_pat->add_notes(nc, step, note);
       }
       
       break;
@@ -389,7 +391,9 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     note = note > 127 ? 127 : note;
     if (unsigned(step) < m_pat->get_steps() * m_pat->get_length()) {
       delete_selection();
-      m_pat->add_notes(m_moved_notes, step, note, &m_selection);
+      m_proxy.add_notes(m_track, m_pat->get_id(), m_moved_notes, 
+			step, note, &m_selection);
+      //m_pat->add_notes(m_moved_notes, step, note, &m_selection);
     }
   }
   

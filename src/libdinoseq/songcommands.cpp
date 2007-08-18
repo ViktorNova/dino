@@ -1200,6 +1200,53 @@ namespace Dino {
   }
   
 
+  AddNotes::AddNotes(Song& song, int track, int pattern, 
+		     const NoteCollection& notes, unsigned step, 
+		     int key, PatternSelection* selection)
+    : Command("Add notes"),
+      m_song(song),
+      m_track(track),
+      m_pattern(pattern),
+      m_notes(notes),
+      m_step(step),
+      m_key(key),
+      m_selection(selection) {
+
+  }
+  
+  
+  bool AddNotes::do_command() {
+    if (m_key >= 128 || m_key < 0)
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    unsigned int n = piter->get_length() * piter->get_steps();
+    if (m_step >= n)
+      return false;
+    piter->add_notes(m_notes, m_step, m_key, m_selection);
+    return true;
+  }
+  
+  
+  bool AddNotes::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    NoteCollection::ConstIterator iter;
+    for (iter = m_notes.begin(); iter != m_notes.end(); ++iter)
+      piter->delete_note(piter->find_note(m_step + iter->start, 
+					  iter->key - 127 + m_key));
+    return true;
+  }
+
+
   SetNoteVelocity::SetNoteVelocity(Song& song, int track, int pattern, 
 				   int step, int key, int velocity)
     : Command("Set note velocity"),

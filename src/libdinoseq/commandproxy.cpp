@@ -266,6 +266,14 @@ namespace Dino {
   }
   
 
+  bool CommandProxy::add_notes(int track, int pattern, 
+			       const NoteCollection& notes, unsigned step, 
+			       int key, PatternSelection* selection) {
+    return push_and_do(new AddNotes(m_song, track, pattern, notes, 
+				    step, key, selection));
+  }
+
+
   bool CommandProxy::set_note_velocity(int track, int pattern, int step, 
 				       int key, int velocity) {
     return push_and_do(new SetNoteVelocity(m_song, track, pattern, step,

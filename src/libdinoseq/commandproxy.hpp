@@ -32,6 +32,8 @@ namespace Dino {
   
   class Sequencer;
   class Command;
+  class NoteCollection;
+  class PatternSelection;
   
   
   /** A proxy class that provides a single interface for modifying the
@@ -144,6 +146,9 @@ namespace Dino {
     /** Add a note to a pattern. */
     bool add_note(int track, int pattern, unsigned int step, 
 		  int key, int velocity, int length);
+    /** Add a collection of notes to a pattern. */
+    bool add_notes(int track, int pattern, const NoteCollection& notes, 
+		   unsigned step, int key, PatternSelection* selection = 0);
     /** Change the velocity of a note. */
     bool set_note_velocity(int track, int pattern, int step, int key, 
 			   int velocity);

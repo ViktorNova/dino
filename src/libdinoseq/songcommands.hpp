@@ -394,6 +394,23 @@ namespace Dino {
     int m_velocity;
     int m_length;
   };
+
+
+  class AddNotes : public Command {
+  public:
+    AddNotes(Song& song, int track, int pattern, const NoteCollection& notes, 
+	     unsigned step, int key, PatternSelection* selection);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_pattern;
+    NoteCollection m_notes;
+    unsigned m_step;
+    int m_key;
+    PatternSelection* m_selection;
+  };
   
 
   class SetNoteVelocity : public Command {

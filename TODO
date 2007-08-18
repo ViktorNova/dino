@@ -20,6 +20,7 @@ Should be done before 0.2:
 
 Should be done before 0.4:
 
+ [/] Add D-Bus interface
  [X] Record MIDI note events
  [/] Record MIDI CC and pitch bend events
  [X] Play loops, set loop points

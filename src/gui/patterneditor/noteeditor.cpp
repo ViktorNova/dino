@@ -315,12 +315,12 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	else {
 	  PatternSelection::Iterator iter;
 	  unsigned new_size = step - iterator->get_step() + 1;
-	  m_proxy.start_atomic("Resize notes");
-	  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	    m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
-				iter->get_key(), new_size);
-	  m_proxy.end_atomic();
-	    //m_pat->resize_note(iter, new_size);
+	  //m_proxy.start_atomic("Resize notes");
+	  //for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+	  //  m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
+	  //                        iter->get_key(), new_size);
+	  //m_proxy.end_atomic();
+	  //m_pat->resize_note(iter, new_size);
 	  m_last_note_length = new_size;
 	  m_added_note = make_pair(iterator->get_step(), note);
 	  m_drag_operation = DragChangingNoteLength;
@@ -372,24 +372,28 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 bool NoteEditor::on_button_release_event(GdkEventButton* event) {
   if (!m_pat)
     return false;
-
+  
+  dbg1<<__PRETTY_FUNCTION__<<endl;
+  
   if (m_drag_operation == DragChangingNoteLength) {
+    
+    dbg1<<"m_drag_operation == DragChangingNoteLength"<<endl;
+    
     int step = int(event->x) / m_col_width;
     if (step < m_added_note.first)
       step = m_added_note.first;
-    if (step != m_drag_step) {
-      if (step >= int(m_pat->get_length() * m_pat->get_steps()))
-	step = m_pat->get_length() * m_pat->get_steps() - 1;
-      unsigned new_size = step - m_added_note.first + 1;
-      PatternSelection::Iterator iter;
-      m_proxy.start_atomic("Resize notes");
-      for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
+    if (step >= int(m_pat->get_length() * m_pat->get_steps()))
+      step = m_pat->get_length() * m_pat->get_steps() - 1;
+    unsigned new_size = step - m_added_note.first + 1;
+    PatternSelection::Iterator iter;
+    dbg1<<"***** Will resize notes now!"<<endl;
+    m_proxy.start_atomic("Resize notes");
+    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+      m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
 			    iter->get_key(), new_size);
-      m_proxy.end_atomic();
-	//m_pat->resize_note(iter, new_size);
-      m_added_note = make_pair(-1, -1);
-    }
+    m_proxy.end_atomic();
+    //m_pat->resize_note(iter, new_size);
+    m_added_note = make_pair(-1, -1);
   }
   
   if (m_drag_operation == DragChangingNoteVelocity) {
@@ -473,16 +477,17 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
       m_pat->find_note(m_added_note.first, m_added_note.second);
     unsigned new_size = step - m_added_note.first + 1;
     PatternSelection::Iterator iter;
-    m_proxy.start_atomic("Resize notes");
-    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-      m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(), 
-			  iter->get_key(), new_size);
-    m_proxy.end_atomic();
-      //m_pat->resize_note(iter, new_size);
+    //m_proxy.start_atomic("Resize notes");
+    //for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+    //  m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(), 
+    //                        iter->get_key(), new_size);
+    //m_proxy.end_atomic();
+    //m_pat->resize_note(iter, new_size);
     m_last_note_length = step - m_added_note.first + 1;
     
     m_drag_step = step;
     m_drag_note = note;
+    queue_draw();
     break;
   }
     
@@ -637,7 +642,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
     draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
   }
   
-  // draw outline
+  // draw outline for notes to be pasted
   if (m_motion_operation == MotionPaste) {
     bool ok = false;
     if (m_drag_step > 0) {
@@ -656,6 +661,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
     draw_outline(m_clipboard, m_drag_step, m_drag_note, ok);
   }
   
+  // draw outline for notes to be moved
   else if (m_drag_operation == DragMovingNotes) {
     int step = m_drag_step + m_move_offset_step;
     step = step < 0 ? 0 : step;
@@ -677,6 +683,39 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
     }
     dbg1<<"ok = "<<ok<<endl;
     draw_outline(m_moved_notes, step, note, ok);
+  }
+  
+  // draw outline for notes to be resized
+  // XXX awful, awful, awful. should have a note collection member instead
+  // of a local one, or even better, a function to draw outlines of a selection
+  // instead of a collection
+  else if (m_drag_operation == DragChangingNoteLength) {
+    bool ok = false;
+    ok = true;
+    unsigned int step = numeric_limits<unsigned int>::max();
+    int key = 0;
+    PatternSelection::Iterator iter;
+    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
+      if (iter->get_step() < step)
+	step = iter->get_step();
+      if (iter->get_key() > key)
+	key = iter->get_key();
+      if (m_last_note_length <= iter->get_length())
+	continue;
+      if (!m_pat->check_free_space(iter->get_step() + iter->get_length(),
+				   iter->get_key(), 
+				   m_last_note_length - iter->get_length())) {
+	ok = false;
+	break;
+      }
+    }
+
+    dbg1<<"ok = "<<ok<<endl;
+    NoteCollection tmp(m_selection);
+    NoteCollection::Iterator iter2;
+    for (iter2 = tmp.begin(); iter2 != tmp.end(); ++iter2)
+      iter2->length = m_last_note_length;
+    draw_outline(tmp, step, key, ok);
   }
     
   

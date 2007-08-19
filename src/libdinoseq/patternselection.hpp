@@ -81,7 +81,7 @@ namespace Dino {
     
     
     /** Creates a new selection. If @c pat is 0 the selection is invalid
-  and should not be used for anything. */
+	and should not be used for anything. */
     PatternSelection(Pattern* pat = 0);
     /** Copy a selection. */
     PatternSelection(const PatternSelection& sel);

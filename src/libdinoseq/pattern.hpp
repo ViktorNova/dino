@@ -225,6 +225,10 @@ namespace Dino {
     /** Check if it would be possible to add a note with the given start time,
 	key and length. */
     bool check_free_space(unsigned int step, int key, unsigned int length);
+    /** Check if it would be possible to add a note with the given start time,
+	key and length, assuming that the notes in @c ignore were removed. */
+    bool check_free_space(unsigned int step, int key, unsigned int length,
+			  const PatternSelection& ignore);
     
     //@}
     

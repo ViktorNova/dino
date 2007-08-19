@@ -928,15 +928,26 @@ namespace Dino {
 
   bool Pattern::check_free_space(unsigned int step, 
 				 int key, unsigned int length) {
+    PatternSelection empty(this);
+    return check_free_space(step, key, length, empty);
+  }
+
+
+  bool Pattern::check_free_space(unsigned int step, int key, 
+				 unsigned int length, 
+				 const PatternSelection& ignore) {
     assert(key >= 0 && key < 128);
     unsigned n = get_length() * get_steps();
     if (step >= n || step + length > n) {
       dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;
       return false;
     }
+    
     // XXX this can probably be optimised
-    for (unsigned int i = step + length; i >= step; --i) {
-      if (find_note(i, key) != notes_end()) {
+    NoteIterator iter;
+    for (unsigned int i = step + length - 1; i >= step; --i) {
+      iter = find_note(i, key);
+      if (iter != notes_end() && ignore.find(iter) == ignore.end()) {
 	dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;
 	return false;
       }

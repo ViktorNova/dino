@@ -223,11 +223,9 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	m_proxy.start_atomic("Paste notes");
 	m_proxy.add_notes(m_track, m_pat->get_id(), m_clipboard, step, note);
 	m_proxy.end_atomic();
-	queue_draw();
 	return true;
       }
-      else
-	queue_draw();
+      queue_draw();
     }
     
     
@@ -657,13 +655,28 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
     dbg1<<"ok = "<<ok<<endl;
     draw_outline(m_clipboard, m_drag_step, m_drag_note, ok);
   }
+  
   else if (m_drag_operation == DragMovingNotes) {
     int step = m_drag_step + m_move_offset_step;
     step = step < 0 ? 0 : step;
     int note = m_drag_note + m_move_offset_note;
     note = note < 0 ? 0 : note;
     note = note > 127 ? 127 : note;
-    draw_outline(m_moved_notes, step, note, false);
+    bool ok = false;
+    if (m_drag_step > 0) {
+      ok = true;
+      NoteCollection::ConstIterator iter;
+      for (iter = m_moved_notes.begin(); iter != m_moved_notes.end(); ++iter) {
+	if (!m_pat->check_free_space(step + iter->start,
+				     iter->key - 127 + note, 
+				     iter->length, m_selection)) {
+	  ok = false;
+	  break;
+	}
+      }
+    }
+    dbg1<<"ok = "<<ok<<endl;
+    draw_outline(m_moved_notes, step, note, ok);
   }
     
   

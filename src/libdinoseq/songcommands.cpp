@@ -1227,8 +1227,7 @@ namespace Dino {
     unsigned int n = piter->get_length() * piter->get_steps();
     if (m_step >= n)
       return false;
-    piter->add_notes(m_notes, m_step, m_key, m_selection);
-    return true;
+    return piter->add_notes(m_notes, m_step, m_key, m_selection);
   }
   
   

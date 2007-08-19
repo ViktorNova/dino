@@ -150,7 +150,9 @@ void TrackDialog::set_track(const Dino::Track& track, Dino::Sequencer& seq) {
 
 void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq, 
 				 Dino::CommandProxy& proxy) {
-
+  
+  proxy.start_atomic("Edit track properties");
+  
   if (t.get_name() != get_name())
     proxy.set_track_name(t.get_id(), get_name());
   if (t.get_channel() != get_channel() - 1)
@@ -184,6 +186,8 @@ void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq,
 			 m_ctrls[i].ci.get_min(), m_ctrls[i].ci.get_max(), 
 			 m_ctrls[i].ci.get_global());
   }
+  
+  proxy.end_atomic();
   
 }
 

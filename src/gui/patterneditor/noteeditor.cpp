@@ -140,7 +140,9 @@ void NoteEditor::set_vadjustment(Gtk::Adjustment* adj) {
 
 void NoteEditor::cut_selection() {
   m_clipboard = NoteCollection(m_selection);
+  m_proxy.start_atomic("Cut seleced notes");
   delete_selection();
+  m_proxy.end_atomic();
 }
 
 
@@ -169,7 +171,10 @@ void NoteEditor::delete_selection() {
   if (m_pat) {
     PatternSelection::Iterator iter1, iter2;
     iter1 = m_selection.begin();
+    if (iter1 == m_selection.end())
+      return;
     iter2 = iter1;
+    m_proxy.start_atomic("Delete selected notes");
     while (iter2 != m_selection.end()) {
       ++iter1;
       m_proxy.delete_note(m_track, m_pat->get_id(), iter2->get_step(),
@@ -177,6 +182,7 @@ void NoteEditor::delete_selection() {
       //m_pat->delete_note(iter2);
       iter2 = iter1;
     }
+    m_proxy.end_atomic();
   }
 }
 
@@ -212,7 +218,9 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
     if (m_motion_operation == MotionPaste) {
       m_motion_operation = MotionNoOperation;
       if (event->button == 1) {
+	m_proxy.start_atomic("Paste notes");
 	m_proxy.add_notes(m_track, m_pat->get_id(), m_clipboard, step, note);
+	m_proxy.end_atomic();
 	//m_pat->add_notes(m_clipboard, step, note);
 	return true;
       }
@@ -307,9 +315,11 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	else {
 	  PatternSelection::Iterator iter;
 	  unsigned new_size = step - iterator->get_step() + 1;
+	  m_proxy.start_atomic("Resize notes");
 	  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
 	    m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
 				iter->get_key(), new_size);
+	  m_proxy.end_atomic();
 	    //m_pat->resize_note(iter, new_size);
 	  m_last_note_length = new_size;
 	  m_added_note = make_pair(iterator->get_step(), note);
@@ -337,8 +347,11 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	  m_selection.clear();
 	  m_selection.add_note(iterator);
 	}
-	if (event->state & GDK_CONTROL_MASK)
+	if (event->state & GDK_CONTROL_MASK) {
+	  m_proxy.start_atomic("Delete notes");
 	  delete_selection();
+	  m_proxy.end_atomic();
+	}
 	else {
 	  queue_draw();
 	  m_menu.popup(event->button, event->time);
@@ -369,9 +382,11 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
 	step = m_pat->get_length() * m_pat->get_steps() - 1;
       unsigned new_size = step - m_added_note.first + 1;
       PatternSelection::Iterator iter;
+      m_proxy.start_atomic("Resize notes");
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
 	m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
 			    iter->get_key(), new_size);
+      m_proxy.end_atomic();
 	//m_pat->resize_note(iter, new_size);
       m_added_note = make_pair(-1, -1);
     }
@@ -390,9 +405,11 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     note = note < 0 ? 0 : note;
     note = note > 127 ? 127 : note;
     if (unsigned(step) < m_pat->get_steps() * m_pat->get_length()) {
+      m_proxy.start_atomic("Move notes");
       delete_selection();
       m_proxy.add_notes(m_track, m_pat->get_id(), m_moved_notes, 
 			step, note, &m_selection);
+      m_proxy.end_atomic();
       //m_pat->add_notes(m_moved_notes, step, note, &m_selection);
     }
   }
@@ -431,9 +448,11 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     int velocity = int(m_drag_start_vel + dy);
     velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
     PatternSelection::Iterator iter;
+    m_proxy.start_atomic("Change note velocities");
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
       m_proxy.set_note_velocity(m_track, m_pat->get_id(), iter->get_step(),
 				iter->get_key(), velocity);
+    m_proxy.end_atomic();
     //m_pat->set_velocity(iter, velocity);
     queue_draw();
     break;
@@ -454,9 +473,11 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
       m_pat->find_note(m_added_note.first, m_added_note.second);
     unsigned new_size = step - m_added_note.first + 1;
     PatternSelection::Iterator iter;
+    m_proxy.start_atomic("Resize notes");
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
       m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(), 
 			  iter->get_key(), new_size);
+    m_proxy.end_atomic();
       //m_pat->resize_note(iter, new_size);
     m_last_note_length = step - m_added_note.first + 1;
     

@@ -31,6 +31,7 @@ namespace Dino {
   
   
   class Sequencer;
+  class CompoundCommand;
   class Command;
   class NoteCollection;
   class PatternSelection;
@@ -62,7 +63,18 @@ namespace Dino {
     /** Undo the last command, if possible. */
     bool undo();
 
+    /** Start a new atomic command - queue subsequent command calls and don't
+	execute them until end_atomic() is called. If undo() is called before
+	end_atomic() all queued commands will be discarded. start_atomic()
+	may be called multiple times before end_atomic() is called, in which
+	case end_atomic() must be called the same number of times to end the
+	atomic command. */
+    bool start_atomic(const std::string& name);
     
+    /** End an atomic command - execute all queued command calls. */
+    bool end_atomic();
+    
+
     /// @name Sequencer commands
     //@{
     
@@ -186,6 +198,14 @@ namespace Dino {
     
     /** A flag that is used internally to prevent recursive commands. */
     bool m_active;
+    
+    /** A pointer to the current atomic command (NULL if there is no current
+	atomic command). */
+    CompoundCommand* m_atomic;
+    
+    /** A counter to allow nested start_atomic()/end_atomic() calls. */
+    unsigned m_atomic_count;
+    
   };
   
   

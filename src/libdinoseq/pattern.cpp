@@ -890,8 +890,10 @@ namespace Dino {
   
 
   Pattern::NoteIterator Pattern::find_note(unsigned step, int value) const {
-    assert(step < m_sd->length * m_sd->steps);
     assert(value < 128);
+    
+    if (step >= get_length() * get_steps())
+      return NoteIterator(this, 0);
     
     // iterate backwards until we find a note on event
     for (int i = step; i >= 0; --i) {

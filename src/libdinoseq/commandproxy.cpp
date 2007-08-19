@@ -21,6 +21,7 @@
 #include <iostream>
 
 #include "commandproxy.hpp"
+#include "compoundcommand.hpp"
 #include "genericcommands.hpp"
 #include "sequencer.hpp"
 #include "song.hpp"
@@ -33,7 +34,9 @@ namespace Dino {
   CommandProxy::CommandProxy(Song& song, Sequencer& seq)
     : m_song(song),
       m_seq(seq),
-      m_active(false) {
+      m_active(false),
+      m_atomic(false),
+      m_atomic_count(0) {
 
   }
     
@@ -57,6 +60,15 @@ namespace Dino {
   bool CommandProxy::undo() {
     if (m_active)
       return false;
+    
+    if (m_atomic_count > 0) {
+      dbg1<<"undo() called while an atomic command was being queued!"
+	  <<std::endl;
+      delete m_atomic;
+      m_atomic = 0;
+      m_atomic_count = 0;
+    }
+    
     m_active = true;
     std::cerr<<__PRETTY_FUNCTION__<<std::endl;
     if (m_stack.empty())
@@ -71,6 +83,27 @@ namespace Dino {
       std::cerr<<"Stack is not empty!"<<std::endl;
     m_signal_stack_changed();
     m_active = false;
+    return true;
+  }
+
+
+  bool CommandProxy::start_atomic(const std::string& name) {
+    if (m_atomic_count == 0)
+      m_atomic = new CompoundCommand(name);
+    ++m_atomic_count;
+    return true;
+  }
+    
+  
+  bool CommandProxy::end_atomic() {
+    if (m_atomic_count == 0)
+      return false;
+    --m_atomic_count;
+    if (m_atomic_count == 0) {
+      Command* cmd = m_atomic;
+      m_atomic = 0;
+      return push_and_do(cmd);
+    }
     return true;
   }
     
@@ -321,6 +354,13 @@ namespace Dino {
       dbg0<<"A command is already running!"<<std::endl;
       delete cmd;
       return false;
+    }
+    
+    if (m_atomic) {
+      dbg1<<"Appending \""<<cmd->get_name()<<"\" to atomic command \""
+	  <<m_atomic->get_name()<<"\""<<std::endl;
+      m_atomic->append(cmd);
+      return true;
     }
     
     m_active = true;

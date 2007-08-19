@@ -1240,9 +1240,12 @@ namespace Dino {
     if (piter == titer->pat_end())
       return false;
     NoteCollection::ConstIterator iter;
-    for (iter = m_notes.begin(); iter != m_notes.end(); ++iter)
-      piter->delete_note(piter->find_note(m_step + iter->start, 
-					  iter->key - 127 + m_key));
+    for (iter = m_notes.begin(); iter != m_notes.end(); ++iter) {
+      Pattern::NoteIterator niter = piter->find_note(m_step + iter->start, 
+						     iter->key - 127 + m_key);
+      if (niter != piter->notes_end())
+	piter->delete_note(niter);
+    }
     return true;
   }
 

@@ -67,6 +67,7 @@ namespace Dino {
       delete m_atomic;
       m_atomic = 0;
       m_atomic_count = 0;
+      return true;
     }
     
     m_active = true;

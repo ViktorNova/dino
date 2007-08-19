@@ -57,7 +57,8 @@ NoteEditor::NoteEditor(Dino::CommandProxy& proxy)
   m_fg_color1.set_rgb(0, 0, 65535);
   m_grid_color.set_rgb(40000, 40000, 40000);
   m_edge_color.set_rgb(0, 0, 0);
-  m_hl_color.set_rgb(65535, 0, 0);
+  m_bad_hl_color.set_rgb(65535, 0, 0);
+  m_good_hl_color.set_rgb(0, 65535, 0);
   m_selbox_color.set_rgb(20000, 20000, 40000);
   
   // initialise note colours for different velocities
@@ -81,7 +82,8 @@ NoteEditor::NoteEditor(Dino::CommandProxy& proxy)
   m_colormap->alloc_color(m_fg_color1);
   m_colormap->alloc_color(m_grid_color);
   m_colormap->alloc_color(m_edge_color);
-  m_colormap->alloc_color(m_hl_color);
+  m_colormap->alloc_color(m_bad_hl_color);
+  m_colormap->alloc_color(m_good_hl_color);
   m_colormap->alloc_color(m_selbox_color);
   for (int i = 0; i < 16; ++i) {
     m_colormap->alloc_color(m_note_colors[i]);
@@ -221,7 +223,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	m_proxy.start_atomic("Paste notes");
 	m_proxy.add_notes(m_track, m_pat->get_id(), m_clipboard, step, note);
 	m_proxy.end_atomic();
-	//m_pat->add_notes(m_clipboard, step, note);
+	queue_draw();
 	return true;
       }
       else
@@ -638,15 +640,30 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
   }
   
   // draw outline
-  if (m_motion_operation == MotionPaste)
-    draw_outline(m_clipboard, m_drag_step, m_drag_note);
+  if (m_motion_operation == MotionPaste) {
+    bool ok = false;
+    if (m_drag_step > 0) {
+      ok = true;
+      NoteCollection::ConstIterator iter;
+      for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
+	if (!m_pat->check_free_space(m_drag_step + iter->start,
+				     iter->key - 127 + m_drag_note, 
+				     iter->length)) {
+	  ok = false;
+	  break;
+	}
+      }
+    }
+    dbg1<<"ok = "<<ok<<endl;
+    draw_outline(m_clipboard, m_drag_step, m_drag_note, ok);
+  }
   else if (m_drag_operation == DragMovingNotes) {
     int step = m_drag_step + m_move_offset_step;
     step = step < 0 ? 0 : step;
     int note = m_drag_note + m_move_offset_note;
     note = note < 0 ? 0 : note;
     note = note > 127 ? 127 : note;
-    draw_outline(m_moved_notes, step, note);
+    draw_outline(m_moved_notes, step, note, false);
   }
     
   
@@ -727,9 +744,12 @@ void NoteEditor::update() {
 
 
 void NoteEditor::draw_outline(const Dino::NoteCollection& notes, 
-			      unsigned int step, unsigned char key) {
+			      unsigned int step, unsigned char key, bool good) {
   RefPtr<Gdk::Window> win = get_window();
-  m_gc->set_foreground(m_hl_color);
+  if (good)
+    m_gc->set_foreground(m_good_hl_color);
+  else
+    m_gc->set_foreground(m_bad_hl_color);
   NoteCollection::ConstIterator iter;
   for (iter = notes.begin(); iter != notes.end(); ++iter) {
     if (step + iter->start >= m_pat->get_length() * m_pat->get_steps())

@@ -222,6 +222,10 @@ namespace Dino {
         that have been changed since the last call to reset_dirty_rect(). */
     void get_dirty_rect(int* min_step, int* min_note, 
                         int* max_step, int* max_note) const;
+    /** Check if it would be possible to add a note with the given start time,
+	key and length. */
+    bool check_free_space(unsigned int step, int key, unsigned int length);
+    
     //@}
     
     /// @name Mutators
@@ -237,7 +241,7 @@ namespace Dino {
     NoteIterator add_note(unsigned step, int key, int velocity, int length);
     /** Add a collection of notes with the given step and key offsets. 
         Can be used as a "paste" command. */
-    void add_notes(const NoteCollection& notes, unsigned step, int key,
+    bool add_notes(const NoteCollection& notes, unsigned step, int key,
                    PatternSelection* selection = 0);
     /** Delete a note. */
     void delete_note(NoteIterator note);

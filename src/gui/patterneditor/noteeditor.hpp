@@ -68,7 +68,7 @@ protected:
   void draw_velocity_box(Dino::Pattern::NoteIterator iterator, 
 			 bool selected = false);
   void draw_outline(const Dino::NoteCollection& notes, unsigned int step,
-		    unsigned char key);
+		    unsigned char key, bool good);
   void update();
   
 private:
@@ -95,7 +95,7 @@ private:
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;
   Gdk::Color m_bg_color, m_bg_color2, m_fg_color1, m_fg_color2, m_grid_color, 
-    m_edge_color, m_hl_color, m_selbox_color;
+    m_edge_color, m_bad_hl_color, m_good_hl_color, m_selbox_color;
   Gdk::Color m_note_colors[16];
   Gdk::Color m_selected_note_colors[16];
   int m_row_height;

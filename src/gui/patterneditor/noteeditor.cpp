@@ -379,18 +379,18 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     
     dbg1<<"m_drag_operation == DragChangingNoteLength"<<endl;
     
-    int step = int(event->x) / m_col_width;
-    if (step < m_added_note.first)
-      step = m_added_note.first;
-    if (step >= int(m_pat->get_length() * m_pat->get_steps()))
-      step = m_pat->get_length() * m_pat->get_steps() - 1;
-    unsigned new_size = step - m_added_note.first + 1;
+    //int step = int(event->x) / m_col_width;
+    //if (step < m_added_note.first)
+    //  step = m_added_note.first;
+    //if (step >= int(m_pat->get_length() * m_pat->get_steps()))
+    //  step = m_pat->get_length() * m_pat->get_steps() - 1;
+    //unsigned new_size = step - m_added_note.first + 1;
     PatternSelection::Iterator iter;
     dbg1<<"***** Will resize notes now!"<<endl;
     m_proxy.start_atomic("Resize notes");
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
       m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
-			    iter->get_key(), new_size);
+			    iter->get_key(), m_last_note_length);
     m_proxy.end_atomic();
     //m_pat->resize_note(iter, new_size);
     m_added_note = make_pair(-1, -1);

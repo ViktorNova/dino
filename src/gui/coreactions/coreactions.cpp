@@ -41,7 +41,7 @@ namespace {
   // Clear the loop points
   struct ClearLoopAction : public SongAction {
     std::string get_name() const { return "Clear loop"; }
-    void run(CommandProxy& proxy, const Song& song) {
+    void run(CommandProxy& proxy) {
       proxy.start_atomic("Clear loop");
       proxy.set_loop_end(-1);
       proxy.set_loop_start(-1);
@@ -58,8 +58,8 @@ namespace {
 
     }
     std::string get_name() const { return "Stop recording"; }
-    void run(CommandProxy& proxy, const Song& song) {
-      m_seq.record_to_track(m_song.tracks_end());
+    void run(CommandProxy& proxy) {
+      m_seq.record_to_track(proxy.get_song().tracks_end());
     }
     Sequencer& m_seq;
     const Song& m_song;
@@ -74,8 +74,7 @@ namespace {
     
     }
     std::string get_name() const { return "Record to track"; }
-    void run(CommandProxy& proxy, const Track& track) {
-      Song::ConstTrackIterator iter = m_song.tracks_find(track.get_id());
+    void run(CommandProxy& proxy, const Song::ConstTrackIterator& iter) {
       if (iter != m_song.tracks_end())
         m_seq.record_to_track(iter);
     }
@@ -86,7 +85,9 @@ namespace {
   // Interpolate the velocity for a pattern selection
   struct InterpolateVelocityAction : public NoteSelectionAction {
     std::string get_name() const { return "Interpolate velocity"; }
-    void run(CommandProxy& proxy, NoteSelection& selection) {
+    void run(CommandProxy& proxy, const Song::ConstTrackIterator& titer,
+	     const Track::ConstPatternIterator& piter, 
+	     NoteSelection& selection) {
       unsigned int start_step, end_step;
       unsigned char start_vel, end_vel;
       NoteSelection::Iterator iter = selection.begin();
@@ -113,7 +114,9 @@ namespace {
   // Randomise the velocities for the selected notes
   struct RandomiseVelocityAction : public NoteSelectionAction {
     std::string get_name() const { return "Randomise velocity"; }
-    void run(CommandProxy& proxy, NoteSelection& selection) {
+    void run(CommandProxy& proxy, const Song::ConstTrackIterator& titer,
+	     const Track::ConstPatternIterator& piter, 
+	     NoteSelection& selection) {
       unsigned char min_vel = 127;
       unsigned char max_vel = 1;
       NoteSelection::Iterator iter = selection.begin();

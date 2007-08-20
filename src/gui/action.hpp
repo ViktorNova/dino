@@ -23,32 +23,74 @@
 
 #include <string>
 
+#include "pattern.hpp"
+#include "song.hpp"
+#include "track.hpp"
+
 
 namespace Dino {
   class CommandProxy;
-  class Song;
-  class Track;
   class NoteSelection;
 }
 
 
-struct Action {
+class Action {
+public:
   virtual std::string get_name() const = 0;
 };
 
 
-struct SongAction : public Action {
-  virtual void run(Dino::CommandProxy& proxy, const Dino::Song& song) = 0;
+class SongAction : public Action {
+public:
+  virtual void run(Dino::CommandProxy& proxy) = 0;
 };
 
 
-struct TrackAction : public Action {
-  virtual void run(Dino::CommandProxy& proxy, const Dino::Track& track) = 0;
-};
-
-
-struct NoteSelectionAction : public Action {
+class TrackAction : public Action {
+public:
   virtual void run(Dino::CommandProxy& proxy, 
+		   const Dino::Song::ConstTrackIterator& iter) = 0;
+};
+
+
+class SequenceEntryAction : public Action {
+public:
+  virtual void run(Dino::CommandProxy& proxy,
+		   const Dino::Song::ConstTrackIterator& titer,
+		   const Dino::Track::SequenceIterator& siter) = 0;
+};
+
+
+class CurveAction : public Action {
+public:
+  virtual void run(Dino::CommandProxy& proxy,
+		   const Dino::Song::ConstTrackIterator& titer,
+		   const Dino::Track::ConstPatternIterator& piter,
+		   const Dino::Pattern::ConstCurveIterator& citer) = 0;
+};
+
+
+class PatternAction : public Action {
+public:
+  virtual void run(Dino::CommandProxy& proxy,
+		   const Dino::Song::ConstTrackIterator& titer,
+		   const Dino::Track::ConstPatternIterator& piter) = 0;
+};
+
+
+class ControllerAction : public Action {
+public:
+  virtual void run(Dino::CommandProxy& proxy,
+		   const Dino::Song::ConstTrackIterator& titer,
+		   long number) = 0;
+};
+
+
+class NoteSelectionAction : public Action {
+public:
+  virtual void run(Dino::CommandProxy& proxy, 
+		   const Dino::Song::ConstTrackIterator& titer,
+		   const Dino::Track::ConstPatternIterator& piter,
 		   Dino::NoteSelection& selection) = 0;
 };
 

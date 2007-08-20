@@ -273,7 +273,9 @@ void SequenceWidget::update_menu(PluginInterface& plif) {
   for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
     if ((ta = dynamic_cast<TrackAction*>(*iter))) {
       slot<void> aslot = bind(mem_fun(*ta, &TrackAction::run), 
-			      ref(m_proxy), ref(*m_track));
+			      ref(m_proxy), 
+			      ref(m_proxy.get_song().
+				  tracks_find(m_track->get_id())));
       m_action_menu.items().push_back(MenuElem((*iter)->get_name(), aslot));
     }
   }

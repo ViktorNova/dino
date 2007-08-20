@@ -46,6 +46,7 @@ NoteEditor::NoteEditor(Dino::CommandProxy& proxy)
     m_drag_y(-1), 
     m_drag_start_vel(-1), 
     m_last_note_length(1),
+    m_resize_ok(false),
     m_pat(0),
     m_vadj(0),
     m_proxy(proxy) {
@@ -376,24 +377,16 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
   dbg1<<__PRETTY_FUNCTION__<<endl;
   
   if (m_drag_operation == DragChangingNoteLength) {
-    
-    dbg1<<"m_drag_operation == DragChangingNoteLength"<<endl;
-    
-    //int step = int(event->x) / m_col_width;
-    //if (step < m_added_note.first)
-    //  step = m_added_note.first;
-    //if (step >= int(m_pat->get_length() * m_pat->get_steps()))
-    //  step = m_pat->get_length() * m_pat->get_steps() - 1;
-    //unsigned new_size = step - m_added_note.first + 1;
-    PatternSelection::Iterator iter;
-    dbg1<<"***** Will resize notes now!"<<endl;
-    m_proxy.start_atomic("Resize notes");
-    for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-      m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
-			    iter->get_key(), m_last_note_length);
-    m_proxy.end_atomic();
-    //m_pat->resize_note(iter, new_size);
-    m_added_note = make_pair(-1, -1);
+    if (m_resize_ok) {
+      PatternSelection::Iterator iter;
+      m_proxy.start_atomic("Resize notes");
+      for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
+	m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
+			      iter->get_key(), m_last_note_length);
+      m_proxy.end_atomic();
+      m_added_note = make_pair(-1, -1);
+    }
+    queue_draw();
   }
   
   if (m_drag_operation == DragChangingNoteVelocity) {
@@ -414,7 +407,6 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       m_proxy.add_notes(m_track, m_pat->get_id(), m_moved_notes, 
 			step, note, &m_selection);
       m_proxy.end_atomic();
-      //m_pat->add_notes(m_moved_notes, step, note, &m_selection);
     }
   }
   
@@ -690,8 +682,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
   // of a local one, or even better, a function to draw outlines of a selection
   // instead of a collection
   else if (m_drag_operation == DragChangingNoteLength) {
-    bool ok = false;
-    ok = true;
+    m_resize_ok = true;
     unsigned int step = numeric_limits<unsigned int>::max();
     int key = 0;
     PatternSelection::Iterator iter;
@@ -705,17 +696,16 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
       if (!m_pat->check_free_space(iter->get_step() + iter->get_length(),
 				   iter->get_key(), 
 				   m_last_note_length - iter->get_length())) {
-	ok = false;
-	break;
+	m_resize_ok = false;
       }
     }
 
-    dbg1<<"ok = "<<ok<<endl;
+    dbg1<<"m_resize_ok = "<<m_resize_ok<<endl;
     NoteCollection tmp(m_selection);
     NoteCollection::Iterator iter2;
     for (iter2 = tmp.begin(); iter2 != tmp.end(); ++iter2)
       iter2->length = m_last_note_length;
-    draw_outline(tmp, step, key, ok);
+    draw_outline(tmp, step, key, m_resize_ok);
   }
     
   

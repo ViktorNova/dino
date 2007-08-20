@@ -111,6 +111,7 @@ private:
   int m_move_offset_step;
   int m_move_offset_note;
   int m_sb_step, m_sb_note;
+  bool m_resize_ok;
   
   Dino::PatternSelection m_selection;
   Dino::NoteCollection m_clipboard;

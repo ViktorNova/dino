@@ -27,7 +27,7 @@
 namespace Dino {
   
   
-  class PatternSelection;
+  class NoteSelection;
   
   
   /** This class is used to describe collections of notes without containing
@@ -58,8 +58,8 @@ namespace Dino {
     /** Create a new empty NoteCollection. */
     NoteCollection();
     
-    /** Create a new NoteCollection from the notes in a PatternSelection. */
-    NoteCollection(const PatternSelection& selection);
+    /** Create a new NoteCollection from the notes in a NoteSelection. */
+    NoteCollection(const NoteSelection& selection);
     
     /** Return an iterator that points to the first NoteDescription object. */
     Iterator begin();

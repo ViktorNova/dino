@@ -108,7 +108,7 @@ void NoteEditor::set_pattern(int track, const Pattern* pattern) {
       
       m_last_note_length = m_pat->get_steps();
       
-      m_selection = PatternSelection(m_pat);
+      m_selection = NoteSelection(m_pat);
       
       namespace s = sigc;
       sigc::slot<void> draw = mem_fun(*this, &NoteEditor::queue_draw);
@@ -174,7 +174,7 @@ void NoteEditor::paste() {
 
 void NoteEditor::delete_selection() {
   if (m_pat) {
-    PatternSelection::Iterator iter1, iter2;
+    NoteSelection::Iterator iter1, iter2;
     iter1 = m_selection.begin();
     if (iter1 == m_selection.end())
       return;
@@ -275,7 +275,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	    }
 	    m_moved_notes = NoteCollection(m_selection);
 	    m_drag_operation = DragMovingNotes;
-	    PatternSelection::Iterator i;
+	    NoteSelection::Iterator i;
 	    unsigned int minstep = step;
 	    unsigned int maxkey = note;
 	    for (i = m_selection.begin(); i != m_selection.end(); ++i) {
@@ -319,7 +319,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	  queue_draw();
 	}
 	else {
-	  PatternSelection::Iterator iter;
+	  NoteSelection::Iterator iter;
 	  unsigned new_size = step - iterator->get_step() + 1;
 	  //m_proxy.start_atomic("Resize notes");
 	  //for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
@@ -383,7 +383,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
   
   if (m_drag_operation == DragChangingNoteLength) {
     if (m_resize_ok) {
-      PatternSelection::Iterator iter;
+      NoteSelection::Iterator iter;
       m_proxy.start_atomic("Resize notes");
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
 	m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
@@ -448,7 +448,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     double dy = m_drag_y - int(event->y);
     int velocity = int(m_drag_start_vel + dy);
     velocity = (velocity < 0 ? 0 : (velocity > 127 ? 127 : velocity));
-    PatternSelection::Iterator iter;
+    NoteSelection::Iterator iter;
     m_proxy.start_atomic("Change note velocities");
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
       m_proxy.set_note_velocity(m_track, m_pat->get_id(), iter->get_step(),
@@ -473,7 +473,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     Pattern::NoteIterator iterator = 
       m_pat->find_note(m_added_note.first, m_added_note.second);
     unsigned new_size = step - m_added_note.first + 1;
-    PatternSelection::Iterator iter;
+    NoteSelection::Iterator iter;
     //m_proxy.start_atomic("Resize notes");
     //for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
     //  m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(), 
@@ -690,7 +690,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
     m_resize_ok = true;
     unsigned int step = numeric_limits<unsigned int>::max();
     int key = 0;
-    PatternSelection::Iterator iter;
+    NoteSelection::Iterator iter;
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
       if (iter->get_step() < step)
 	step = iter->get_step();
@@ -818,12 +818,12 @@ void NoteEditor::update_menu(PluginInterface& plif) {
   // XXX implement this
   /*
   PluginInterface::action_iterator iter;
-  PatternSelectionAction* psa;
+  NoteSelectionAction* psa;
   const Song& song = plif.get_song();
   for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
-    if ((psa = dynamic_cast<PatternSelectionAction*>(*iter))) {
+    if ((psa = dynamic_cast<NoteSelectionAction*>(*iter))) {
       slot<void> aslot = 
-	compose(bind<1>(mem_fun(*psa, &PatternSelectionAction::run),
+	compose(bind<1>(mem_fun(*psa, &NoteSelectionAction::run),
 			ref(m_proxy)),
 			mem_fun(*this, &NoteEditor::get_selection));
       m_menu.items().push_back(MenuElem((*iter)->get_name(), aslot));

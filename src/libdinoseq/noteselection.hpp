@@ -35,7 +35,7 @@ namespace Dino {
   /** This class represents a subset of the set of all notes in a Pattern.
       It is used by the GUI to store selections.
   */
-  class PatternSelection : public sigc::trackable {
+  class NoteSelection : public sigc::trackable {
   public:
     
     /** This iterator provides a way to iterate over all notes in this
@@ -67,11 +67,11 @@ namespace Dino {
       
     protected:
       
-      /** PatternSelection is a friend since we only want that class to be
+      /** NoteSelection is a friend since we only want that class to be
 	  able to create new valid iterators. */
-      friend class PatternSelection;
+      friend class NoteSelection;
       
-      /** This constructor is used by PatternSelection to create valid 
+      /** This constructor is used by NoteSelection to create valid 
 	  iterators. */
       Iterator(const std::set<Pattern::NoteIterator>::iterator& iterator);
       
@@ -82,11 +82,11 @@ namespace Dino {
     
     /** Creates a new selection. If @c pat is 0 the selection is invalid
 	and should not be used for anything. */
-    PatternSelection(const Pattern* pat = 0);
+    NoteSelection(const Pattern* pat = 0);
     /** Copy a selection. */
-    PatternSelection(const PatternSelection& sel);
+    NoteSelection(const NoteSelection& sel);
     /** Copy a selection. */
-    PatternSelection& operator=(const PatternSelection& sel);
+    NoteSelection& operator=(const NoteSelection& sel);
     
     /** Returns an iterator to the first note in the selection. */
     Iterator begin() const;

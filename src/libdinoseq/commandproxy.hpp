@@ -34,7 +34,7 @@ namespace Dino {
   class CompoundCommand;
   class Command;
   class NoteCollection;
-  class PatternSelection;
+  class NoteSelection;
   
   
   /** A proxy class that provides a single interface for modifying the
@@ -162,7 +162,7 @@ namespace Dino {
 		  int key, int velocity, int length);
     /** Add a collection of notes to a pattern. */
     bool add_notes(int track, int pattern, const NoteCollection& notes, 
-		   unsigned step, int key, PatternSelection* selection = 0);
+		   unsigned step, int key, NoteSelection* selection = 0);
     /** Change the velocity of a note. */
     bool set_note_velocity(int track, int pattern, int step, int key, 
 			   int velocity);

@@ -24,7 +24,7 @@
 #include "commandproxy.hpp"
 #include "note.hpp"
 #include "pattern.hpp"
-#include "patternselection.hpp"
+#include "noteselection.hpp"
 #include "plugininterface.hpp"
 #include "sequencer.hpp"
 #include "song.hpp"
@@ -84,12 +84,12 @@ namespace {
   }* recordtotrack;
   
   // Interpolate the velocity for a pattern selection
-  struct InterpolateVelocityAction : public PatternSelectionAction {
+  struct InterpolateVelocityAction : public NoteSelectionAction {
     std::string get_name() const { return "Interpolate velocity"; }
-    void run(CommandProxy& proxy, PatternSelection& selection) {
+    void run(CommandProxy& proxy, NoteSelection& selection) {
       unsigned int start_step, end_step;
       unsigned char start_vel, end_vel;
-      PatternSelection::Iterator iter = selection.begin();
+      NoteSelection::Iterator iter = selection.begin();
       if (iter == selection.end())
         return;
       start_step = iter->get_step();
@@ -111,12 +111,12 @@ namespace {
   
   
   // Randomise the velocities for the selected notes
-  struct RandomiseVelocityAction : public PatternSelectionAction {
+  struct RandomiseVelocityAction : public NoteSelectionAction {
     std::string get_name() const { return "Randomise velocity"; }
-    void run(CommandProxy& proxy, PatternSelection& selection) {
+    void run(CommandProxy& proxy, NoteSelection& selection) {
       unsigned char min_vel = 127;
       unsigned char max_vel = 1;
-      PatternSelection::Iterator iter = selection.begin();
+      NoteSelection::Iterator iter = selection.begin();
       if (iter == selection.end())
         return;
       for ( ; iter != selection.end(); ++iter) {

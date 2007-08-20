@@ -22,7 +22,7 @@
 #include <typeinfo>
 
 #include "note.hpp"
-#include "patternselection.hpp"
+#include "noteselection.hpp"
 
 
 using namespace std;
@@ -31,115 +31,115 @@ using namespace std;
 namespace Dino {
 
 
-  Note& PatternSelection::Iterator::operator*() {
+  Note& NoteSelection::Iterator::operator*() {
     return const_cast<Note&>(**m_iter);
   }
   
   
-  Note* PatternSelection::Iterator::operator->() {
+  Note* NoteSelection::Iterator::operator->() {
     return const_cast<Note*>((*m_iter).operator->());
   }
 
   
-  bool PatternSelection::Iterator::operator==(const Iterator& iter) const {
+  bool NoteSelection::Iterator::operator==(const Iterator& iter) const {
     return (m_iter == iter.m_iter);
   }
   
   
-  bool PatternSelection::Iterator::operator!=(const Iterator& iter) const {
+  bool NoteSelection::Iterator::operator!=(const Iterator& iter) const {
     return (m_iter != iter.m_iter);
   }
   
   
-  PatternSelection::Iterator::operator Pattern::NoteIterator() const {
+  NoteSelection::Iterator::operator Pattern::NoteIterator() const {
     return *m_iter;
   }
     
   
-  PatternSelection::Iterator& PatternSelection::Iterator::operator++() {
+  NoteSelection::Iterator& NoteSelection::Iterator::operator++() {
     ++m_iter;
     return *this;
   }
   
 
-  PatternSelection::Iterator PatternSelection::Iterator::operator++(int) {
+  NoteSelection::Iterator NoteSelection::Iterator::operator++(int) {
     Iterator result = *this;
     ++(*this);
     return result;
   }
   
     
-  PatternSelection::Iterator::
+  NoteSelection::Iterator::
   Iterator(const std::set<Pattern::NoteIterator>::iterator& iterator) 
     : m_iter(iterator) {
 
   }
   
   
-  PatternSelection::PatternSelection(const Pattern* pat) 
+  NoteSelection::NoteSelection(const Pattern* pat) 
     : m_pat(pat) {
     if (m_pat) {
       m_pat->signal_note_removed().
-	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
+	connect(mem_fun(*this, &NoteSelection::remove_note_internal));
     }
   }
 
   
-  PatternSelection::PatternSelection(const PatternSelection& sel) 
+  NoteSelection::NoteSelection(const NoteSelection& sel) 
     : m_data(sel.m_data),
       m_pat(sel.m_pat) {
     if (m_pat)
       m_pat->signal_note_removed().
-  connect(mem_fun(*this, &PatternSelection::remove_note_internal));
+  connect(mem_fun(*this, &NoteSelection::remove_note_internal));
   }
 
 
-  PatternSelection& PatternSelection::operator=(const PatternSelection& sel) {
+  NoteSelection& NoteSelection::operator=(const NoteSelection& sel) {
     notify_callbacks();
     m_data = sel.m_data;
     m_pat = sel.m_pat;
     if (m_pat)
       m_pat->signal_note_removed().
-  connect(mem_fun(*this, &PatternSelection::remove_note_internal));
+  connect(mem_fun(*this, &NoteSelection::remove_note_internal));
     return *this;
   }
 
   
-  PatternSelection::Iterator PatternSelection::begin() const {
+  NoteSelection::Iterator NoteSelection::begin() const {
     return Iterator(m_data.begin());
   }
 
 
-  PatternSelection::Iterator PatternSelection::end() const {
+  NoteSelection::Iterator NoteSelection::end() const {
     return Iterator(m_data.end());
   }
   
   
-  PatternSelection::Iterator 
-  PatternSelection::find(const Pattern::NoteIterator& iter) const {
+  NoteSelection::Iterator 
+  NoteSelection::find(const Pattern::NoteIterator& iter) const {
     return Iterator(m_data.find(iter));
   }
   
   
-  PatternSelection::Iterator
-  PatternSelection::add_note(const Pattern::NoteIterator& iter) {
+  NoteSelection::Iterator
+  NoteSelection::add_note(const Pattern::NoteIterator& iter) {
     return m_data.insert(iter).first;
   }
   
   
-  void PatternSelection::remove_note(const Pattern::NoteIterator& iter) {
+  void NoteSelection::remove_note(const Pattern::NoteIterator& iter) {
     std::set<Pattern::NoteIterator>::iterator i = m_data.find(iter);
     if (i != m_data.end())
       m_data.erase(i);
   }
 
 
-  void PatternSelection::clear() {
+  void NoteSelection::clear() {
     m_data.clear();
   }
 
 
-  void PatternSelection::printall() {
+  void NoteSelection::printall() {
     Iterator iter;
     cout<<"The selection contains "<<m_data.size()<<" elements:"<<endl;
     for (iter = begin(); iter != end(); ++iter)
@@ -147,7 +147,7 @@ namespace Dino {
   }
 
   
-  void PatternSelection::remove_note_internal(const Note& note) {
+  void NoteSelection::remove_note_internal(const Note& note) {
     const Note* ptr = &note;
     std::set<Pattern::NoteIterator>::iterator iter;
     for (iter = m_data.begin(); iter != m_data.end(); ++iter) {
@@ -159,7 +159,7 @@ namespace Dino {
   }
 
   
-  const Pattern* PatternSelection::get_pattern() const {
+  const Pattern* NoteSelection::get_pattern() const {
     return m_pat;
   }
 

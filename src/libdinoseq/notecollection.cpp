@@ -22,7 +22,7 @@
 
 #include "note.hpp"
 #include "notecollection.hpp"
-#include "patternselection.hpp"
+#include "noteselection.hpp"
 
 
 using namespace std;
@@ -48,8 +48,8 @@ namespace Dino {
   }
 
 
-  NoteCollection::NoteCollection(const PatternSelection& selection) {
-    PatternSelection::Iterator iter;
+  NoteCollection::NoteCollection(const NoteSelection& selection) {
+    NoteSelection::Iterator iter;
     unsigned int minstep = 666666;
     unsigned int maxkey = 0;
     for (iter = selection.begin(); iter != selection.end(); ++iter) {

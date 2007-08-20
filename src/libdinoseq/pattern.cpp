@@ -37,7 +37,7 @@
 #include "notecollection.hpp"
 #include "noteevent.hpp"
 #include "pattern.hpp"
-#include "patternselection.hpp"
+#include "noteselection.hpp"
 
 
 using namespace std;
@@ -477,7 +477,7 @@ namespace Dino {
 
 
   bool Pattern::add_notes(const NoteCollection& notes, unsigned step, int key,
-                          PatternSelection* selection) {
+                          NoteSelection* selection) {
     assert(step < m_sd->length * m_sd->steps);
     assert(key >= 0 && key < 128);
     
@@ -990,14 +990,14 @@ namespace Dino {
 
   bool Pattern::check_free_space(unsigned int step, 
 				 int key, unsigned int length) const {
-    PatternSelection empty(this);
+    NoteSelection empty(this);
     return check_free_space(step, key, length, empty);
   }
 
 
   bool Pattern::check_free_space(unsigned int step, int key, 
 				 unsigned int length, 
-				 const PatternSelection& ignore) const {
+				 const NoteSelection& ignore) const {
     assert(key >= 0 && key < 128);
     unsigned n = get_length() * get_steps();
     if (step >= n || step + length > n) {

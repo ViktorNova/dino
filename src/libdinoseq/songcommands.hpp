@@ -413,7 +413,7 @@ namespace Dino {
   class AddNotes : public Command {
   public:
     AddNotes(Song& song, int track, int pattern, const NoteCollection& notes, 
-	     unsigned step, int key, PatternSelection* selection);
+	     unsigned step, int key, NoteSelection* selection);
     bool do_command();
     bool undo_command();
   protected:
@@ -423,7 +423,7 @@ namespace Dino {
     NoteCollection m_notes;
     unsigned m_step;
     int m_key;
-    PatternSelection* m_selection;
+    NoteSelection* m_selection;
   };
   
 

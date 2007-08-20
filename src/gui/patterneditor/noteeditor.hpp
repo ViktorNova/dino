@@ -27,7 +27,7 @@
 
 #include "notecollection.hpp"
 #include "pattern.hpp"
-#include "patternselection.hpp"
+#include "noteselection.hpp"
 
 
 namespace Dino {
@@ -113,11 +113,11 @@ private:
   int m_sb_step, m_sb_note;
   bool m_resize_ok;
   
-  Dino::PatternSelection m_selection;
+  Dino::NoteSelection m_selection;
   Dino::NoteCollection m_clipboard;
   Dino::NoteCollection m_moved_notes;
   
-  Dino::PatternSelection& get_selection() {
+  Dino::NoteSelection& get_selection() {
     return m_selection;
   }
   

@@ -45,7 +45,7 @@ namespace Dino {
   class Note;
   class NoteCollection;
   class NoteEvent;
-  class PatternSelection;
+  class NoteSelection;
   
 
   /** This class stores information about a pattern. A pattern is a sequence of
@@ -232,7 +232,7 @@ namespace Dino {
     /** Check if it would be possible to add a note with the given start time,
 	key and length, assuming that the notes in @c ignore were removed. */
     bool check_free_space(unsigned int step, int key, unsigned int length,
-			  const PatternSelection& ignore) const;
+			  const NoteSelection& ignore) const;
     
     //@}
     
@@ -250,7 +250,7 @@ namespace Dino {
     /** Add a collection of notes with the given step and key offsets. 
         Can be used as a "paste" command. */
     bool add_notes(const NoteCollection& notes, unsigned step, int key,
-                   PatternSelection* selection = 0);
+                   NoteSelection* selection = 0);
     /** Delete a note. */
     void delete_note(NoteIterator note);
     /** Change the length of a note. */

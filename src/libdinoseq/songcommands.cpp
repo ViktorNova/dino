@@ -25,7 +25,7 @@
 #include "interpolatedevent.hpp"
 #include "note.hpp"
 #include "pattern.hpp"
-#include "patternselection.hpp"
+#include "noteselection.hpp"
 #include "song.hpp"
 #include "track.hpp"
 #include "songcommands.hpp"
@@ -1159,7 +1159,7 @@ namespace Dino {
     if (piter == titer->pat_end())
       return false;
     m_oldsteps = piter->get_steps();
-    PatternSelection sel(&*piter);
+    NoteSelection sel(&*piter);
     m_step = numeric_limits<unsigned int>::max();
     m_key = 0;
     Pattern::NoteIterator niter;
@@ -1242,7 +1242,7 @@ namespace Dino {
 
   AddNotes::AddNotes(Song& song, int track, int pattern, 
 		     const NoteCollection& notes, unsigned step, 
-		     int key, PatternSelection* selection)
+		     int key, NoteSelection* selection)
     : Command("Add notes"),
       m_song(song),
       m_track(track),

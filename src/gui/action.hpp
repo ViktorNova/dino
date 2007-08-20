@@ -28,7 +28,7 @@ namespace Dino {
   class CommandProxy;
   class Song;
   class Track;
-  class PatternSelection;
+  class NoteSelection;
 }
 
 
@@ -47,9 +47,9 @@ struct TrackAction : public Action {
 };
 
 
-struct PatternSelectionAction : public Action {
+struct NoteSelectionAction : public Action {
   virtual void run(Dino::CommandProxy& proxy, 
-		   Dino::PatternSelection& selection) = 0;
+		   Dino::NoteSelection& selection) = 0;
 };
 
 

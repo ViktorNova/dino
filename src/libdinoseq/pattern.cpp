@@ -714,7 +714,7 @@ namespace Dino {
   }
   
   
-  void Pattern::reset_dirty_rect() {
+  void Pattern::reset_dirty_rect() const {
     m_min_step = m_sd->length * m_sd->steps;
     m_max_step = -1;
     m_min_note = 128;
@@ -967,7 +967,7 @@ namespace Dino {
 
   
   unsigned int Pattern::check_maximal_free_space(unsigned int step, int key,
-						 unsigned int limit) {
+						 unsigned int limit) const {
     assert(key >= 0 && key < 128);
     unsigned n = get_length() * get_steps();
     if (step >= n)
@@ -989,7 +989,7 @@ namespace Dino {
   
 
   bool Pattern::check_free_space(unsigned int step, 
-				 int key, unsigned int length) {
+				 int key, unsigned int length) const {
     PatternSelection empty(this);
     return check_free_space(step, key, length, empty);
   }
@@ -997,7 +997,7 @@ namespace Dino {
 
   bool Pattern::check_free_space(unsigned int step, int key, 
 				 unsigned int length, 
-				 const PatternSelection& ignore) {
+				 const PatternSelection& ignore) const {
     assert(key >= 0 && key < 128);
     unsigned n = get_length() * get_steps();
     if (step >= n || step + length > n) {
@@ -1179,42 +1179,42 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, string>& Pattern::signal_name_changed() {
+  sigc::signal<void, string>& Pattern::signal_name_changed() const {
     return m_signal_name_changed;
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_length_changed() {
+  sigc::signal<void, int>& Pattern::signal_length_changed() const {
     return m_signal_length_changed;
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_steps_changed() {
+  sigc::signal<void, int>& Pattern::signal_steps_changed() const {
     return m_signal_steps_changed;
   }
 
 
-  sigc::signal<void, Note const&>& Pattern::signal_note_added() {
+  sigc::signal<void, Note const&>& Pattern::signal_note_added() const {
     return m_signal_note_added;
   }
 
 
-  sigc::signal<void, Note const&>& Pattern::signal_note_changed() {
+  sigc::signal<void, Note const&>& Pattern::signal_note_changed() const {
     return m_signal_note_changed;
   }
 
 
-  sigc::signal<void, Note const&>& Pattern::signal_note_removed() {
+  sigc::signal<void, Note const&>& Pattern::signal_note_removed() const {
     return m_signal_note_removed;
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_curve_added() {
+  sigc::signal<void, int>& Pattern::signal_curve_added() const {
     return m_signal_curve_added;
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_curve_removed() {
+  sigc::signal<void, int>& Pattern::signal_curve_removed() const {
     return m_signal_curve_removed;
   }
 

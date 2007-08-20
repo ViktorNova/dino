@@ -62,7 +62,7 @@ CurveEditor::CurveEditor(Dino::CommandProxy& proxy)
 }
 
 
-void CurveEditor::set_curve(int track, int pattern, Dino::Curve* curve) {
+void CurveEditor::set_curve(int track, int pattern, const Dino::Curve* curve) {
   m_track = track;
   m_pattern = pattern;
   m_curve = curve;

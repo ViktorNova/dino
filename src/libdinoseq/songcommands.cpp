@@ -544,6 +544,55 @@ namespace Dino {
     return CompoundCommand::do_command();
   }
   
+
+  AddSequenceEntry::AddSequenceEntry(Song& song, int track, 
+				     int beat, int pattern, int length)
+    : Command("Add sequence entry"),
+      m_song(song),
+      m_track(track),
+      m_beat(beat),
+      m_pattern(pattern),
+      m_length(length) {
+
+  }
+  
+  
+  bool AddSequenceEntry::do_command() {
+    if (m_beat < 0 || m_beat >= m_song.get_length())
+      return false;
+    if (m_beat + m_length > m_song.get_length())
+      return false;
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::PatternIterator piter = titer->pat_find(m_pattern);
+    if (piter == titer->pat_end())
+      return false;
+    if (m_length > piter->get_length())
+      return false;
+    // XXX can probably be optimised
+    Track::SequenceIterator siter;
+    for (int b = m_beat; b < m_beat + m_length; ++b) {
+      siter = titer->seq_find(b);
+      if (siter != titer->seq_end())
+	return false;
+    }
+    return (titer->set_sequence_entry(m_beat, m_pattern, m_length) !=
+	    titer->seq_end());
+  }
+  
+  
+  bool AddSequenceEntry::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::SequenceIterator siter = titer->seq_find(m_beat);
+    if (siter == titer->seq_end())
+      return false;
+    titer->remove_sequence_entry(siter);
+    return true;
+  }
+
   
   RemoveSequenceEntry::RemoveSequenceEntry(Song& song, int track, 
 					   unsigned long beat)

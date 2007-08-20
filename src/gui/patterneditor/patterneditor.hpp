@@ -43,7 +43,7 @@ class PatternDialog;
 class PatternEditor : public GUIPage {
 public:
   
-  PatternEditor(Dino::Song& song, Dino::CommandProxy& proxy);
+  PatternEditor(const Dino::Song& song, Dino::CommandProxy& proxy);
   
   void reset_gui();
   
@@ -103,7 +103,7 @@ protected:
   int m_active_pattern;
   long m_active_controller;
 
-  Dino::Song& m_song;
+  const Dino::Song& m_song;
   Dino::CommandProxy& m_proxy;
 };
 

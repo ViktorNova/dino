@@ -174,6 +174,20 @@ namespace Dino {
     int m_pattern;
   };
   
+  
+  class AddSequenceEntry : public Command {
+  public:
+    AddSequenceEntry(Song& song, int track, int beat, int pattern, int length);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    int m_beat;
+    int m_pattern;
+    int m_length;
+  };
+  
 
   class RemoveSequenceEntry : public Command {
   public:

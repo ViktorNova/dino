@@ -69,7 +69,7 @@ SequenceWidget::SequenceWidget(CommandProxy& proxy)
 }
   
 
-void SequenceWidget::set_track(Track* track) {
+void SequenceWidget::set_track(const Track* track) {
   assert(track);
   m_track = track;
   // XXX Need to disconnect the old track here
@@ -237,7 +237,8 @@ bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
 
 void SequenceWidget::slot_insert_pattern(int pattern, int position) {
   int length = m_track->pat_find(pattern)->get_length();
-  m_track->set_sequence_entry(position, pattern, length);
+  m_proxy.add_sequence_entry(m_track->get_id(), position, pattern, length);
+  //m_track->set_sequence_entry(position, pattern, length);
   update();
 }
 
@@ -271,7 +272,8 @@ void SequenceWidget::update_menu(PluginInterface& plif) {
   TrackAction* ta;
   for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
     if ((ta = dynamic_cast<TrackAction*>(*iter))) {
-      slot<void> aslot = bind(mem_fun(*ta, &TrackAction::run), ref(*m_track));
+      slot<void> aslot = bind(mem_fun(*ta, &TrackAction::run), 
+			      ref(m_proxy), ref(*m_track));
       m_action_menu.items().push_back(MenuElem((*iter)->get_name(), aslot));
     }
   }

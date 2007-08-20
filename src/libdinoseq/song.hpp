@@ -166,7 +166,7 @@ namespace Dino {
     //@{
     void get_timebase_info(unsigned long frame, unsigned long frame_rate,
          double& bpm, double& beat) const;
-    double get_current_tempo(double beat);
+    double get_current_tempo(double beat) const;
     unsigned long bt2frame(double);
     std::pair<int, int> frame2bt(unsigned long frame);
     //@}

@@ -35,7 +35,7 @@ namespace Dino {
 class InfoEditor : public GUIPage {
 public:
   
-  InfoEditor(Dino::Song& song, Dino::CommandProxy& proxy);
+  InfoEditor(const Dino::Song& song, Dino::CommandProxy& proxy);
   
   void reset_gui();
   
@@ -47,7 +47,7 @@ protected:
   Gtk::Entry* m_ent_author;
   Gtk::TextView* m_text_info;
   
-  Dino::Song& m_song;
+  const Dino::Song& m_song;
   Dino::CommandProxy& m_proxy;
 };
 

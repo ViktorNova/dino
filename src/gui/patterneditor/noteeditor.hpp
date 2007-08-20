@@ -42,7 +42,7 @@ class NoteEditor : public Gtk::DrawingArea {
 public:
   NoteEditor(Dino::CommandProxy& proxy);
   
-  void set_pattern(int track, Dino::Pattern* pattern);
+  void set_pattern(int track, const Dino::Pattern* pattern);
   void set_step_width(int width);
   void set_vadjustment(Gtk::Adjustment* adj);
 
@@ -122,7 +122,7 @@ private:
   }
   
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
-  Dino::Pattern* m_pat;
+  const Dino::Pattern* m_pat;
   Glib::RefPtr<Pango::Layout> m_layout;
   Gtk::Adjustment* m_vadj;
   Gtk::Menu m_menu;

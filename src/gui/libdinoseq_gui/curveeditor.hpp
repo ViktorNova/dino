@@ -37,7 +37,7 @@ public:
   
   CurveEditor(Dino::CommandProxy& proxy);
   
-  void set_curve(int track, int pattern, Dino::Curve* curve);
+  void set_curve(int track, int pattern, const Dino::Curve* curve);
   void set_step_width(int width);
   void set_alternation(int k);
   
@@ -65,7 +65,7 @@ protected:
   
   int m_track;
   int m_pattern;
-  Dino::Curve* m_curve;
+  const Dino::Curve* m_curve;
   Dino::CommandProxy& m_proxy;
   
   int m_drag_step;

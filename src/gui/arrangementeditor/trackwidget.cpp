@@ -49,7 +49,7 @@ TrackWidget::~TrackWidget() {
 }
 
 
-void TrackWidget::set_track(Dino::Track* track) {
+void TrackWidget::set_track(const Dino::Track* track) {
   
   dbg1<<"set_track(0x"<<hex<<(int)track<<dec<<") for TrackWidget 0x"
       <<hex<<(int)this<<dec<<endl;
@@ -96,7 +96,7 @@ void TrackWidget::update_menu(PluginInterface& plif) {
 }
 
 
-void TrackWidget::curve_added(long number, Dino::Track* track) {
+void TrackWidget::curve_added(long number, const Dino::Track* track) {
   bool has_curves = (track->curves_begin() != track->curves_end());
   bool cce_visible = (children().find(m_cce) != children().end());
   
@@ -108,7 +108,7 @@ void TrackWidget::curve_added(long number, Dino::Track* track) {
 }
 
 
-void TrackWidget::curve_removed(long number, Dino::Track* track) {
+void TrackWidget::curve_removed(long number, const Dino::Track* track) {
   bool has_curves = (track->curves_begin() != track->curves_end());
   bool cce_visible = (children().find(m_cce) != children().end());
   

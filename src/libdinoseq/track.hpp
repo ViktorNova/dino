@@ -377,18 +377,18 @@ namespace Dino {
     
     /// @name Signals
     //@{
-    sigc::signal<void, const std::string&>& signal_name_changed();
-    sigc::signal<void, int>& signal_pattern_added();
-    sigc::signal<void, int>& signal_pattern_removed();
-    sigc::signal<void, int, int, int>& signal_sequence_entry_added();
-    sigc::signal<void, int, int, int>& signal_sequence_entry_changed();
-    sigc::signal<void, int>& signal_sequence_entry_removed();
-    sigc::signal<void, int>& signal_length_changed();
-    sigc::signal<void, long>& signal_controller_added();
-    sigc::signal<void, long>& signal_controller_removed();
-    sigc::signal<void, long>& signal_controller_changed();
-    sigc::signal<void, long>& signal_curve_added();
-    sigc::signal<void, long>& signal_curve_removed();
+    sigc::signal<void, const std::string&>& signal_name_changed() const;
+    sigc::signal<void, int>& signal_pattern_added() const;
+    sigc::signal<void, int>& signal_pattern_removed() const;
+    sigc::signal<void, int, int, int>& signal_sequence_entry_added() const;
+    sigc::signal<void, int, int, int>& signal_sequence_entry_changed() const;
+    sigc::signal<void, int>& signal_sequence_entry_removed() const;
+    sigc::signal<void, int>& signal_length_changed() const;
+    sigc::signal<void, long>& signal_controller_added() const;
+    sigc::signal<void, long>& signal_controller_removed() const;
+    sigc::signal<void, long>& signal_controller_changed() const;
+    sigc::signal<void, long>& signal_curve_added() const;
+    sigc::signal<void, long>& signal_curve_removed() const;
     //@}
     
   private:
@@ -404,19 +404,19 @@ namespace Dino {
     
     mutable bool m_dirty;
   
-    sigc::signal<void, const std::string&> m_signal_name_changed;
-    sigc::signal<void, int> m_signal_pattern_added;
-    sigc::signal<void, int> m_signal_pattern_removed;
-    sigc::signal<void, int, int, int> m_signal_sequence_entry_added;
-    sigc::signal<void, int, int, int> m_signal_sequence_entry_changed;
-    sigc::signal<void, int> m_signal_sequence_entry_removed;
-    sigc::signal<void, int> m_signal_length_changed;
-    sigc::signal<void, long> m_signal_controller_added;
-    sigc::signal<void, long> m_signal_controller_removed;
-    sigc::signal<void, long> m_signal_controller_changed;
-    sigc::signal<void, long> m_signal_curve_added;
-    sigc::signal<void, long> m_signal_curve_removed;
-
+    mutable sigc::signal<void, const std::string&> m_signal_name_changed;
+    mutable sigc::signal<void, int> m_signal_pattern_added;
+    mutable sigc::signal<void, int> m_signal_pattern_removed;
+    mutable sigc::signal<void, int, int, int> m_signal_sequence_entry_added;
+    mutable sigc::signal<void, int, int, int> m_signal_sequence_entry_changed;
+    mutable sigc::signal<void, int> m_signal_sequence_entry_removed;
+    mutable sigc::signal<void, int> m_signal_length_changed;
+    mutable sigc::signal<void, long> m_signal_controller_added;
+    mutable sigc::signal<void, long> m_signal_controller_removed;
+    mutable sigc::signal<void, long> m_signal_controller_changed;
+    mutable sigc::signal<void, long> m_signal_curve_added;
+    mutable sigc::signal<void, long> m_signal_curve_removed;
+    
   };
 
 

@@ -64,20 +64,20 @@ namespace Dino {
     /// @name Signals
     //@{
     /** Emitted when a control point has been added. */
-    sigc::signal<void, int, int>& signal_point_added();
+    sigc::signal<void, int, int>& signal_point_added() const;
     /** Emitted when the value for a control point has changed. */
-    sigc::signal<void, int, int>& signal_point_changed();
+    sigc::signal<void, int, int>& signal_point_changed() const;
     /** Emitted when a control point has been removed. */
-    sigc::signal<void, int>& signal_point_removed();
+    sigc::signal<void, int>& signal_point_removed() const;
     //@}
   private:
     
     const ControllerInfo m_info;
     std::vector<InterpolatedEvent*> m_events;
     
-    sigc::signal<void, int, int> m_signal_point_added;
-    sigc::signal<void, int, int> m_signal_point_changed;
-    sigc::signal<void, int> m_signal_point_removed;
+    mutable sigc::signal<void, int, int> m_signal_point_added;
+    mutable sigc::signal<void, int, int> m_signal_point_changed;
+    mutable sigc::signal<void, int> m_signal_point_removed;
 
   };
 

@@ -120,8 +120,7 @@ namespace Dino {
   }
   
  
-  void Sequencer::record_to_track(Song::TrackIterator iter) {
-    Track* trk;
+  void Sequencer::record_to_track(Song::ConstTrackIterator iter) {
     if (iter == m_song.tracks_end())
       m_rec.set_track(0);
     else

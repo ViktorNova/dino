@@ -224,14 +224,15 @@ namespace Dino {
                         int* max_step, int* max_note) const;
     /** Check how long a note added at the given key and step could be. */
     unsigned int check_maximal_free_space(unsigned int step, int key, 
-					  unsigned int limit);
+					  unsigned int limit) const;
     /** Check if it would be possible to add a note with the given start time,
 	key and length. */
-    bool check_free_space(unsigned int step, int key, unsigned int length);
+    bool check_free_space(unsigned int step, int key, 
+			  unsigned int length) const;
     /** Check if it would be possible to add a note with the given start time,
 	key and length, assuming that the notes in @c ignore were removed. */
     bool check_free_space(unsigned int step, int key, unsigned int length,
-			  const PatternSelection& ignore);
+			  const PatternSelection& ignore) const;
     
     //@}
     
@@ -273,7 +274,7 @@ namespace Dino {
     void remove_curve_point(CurveIterator iter, unsigned int step);
     /** Reset the "dirty rect".
         @see get_dirty_rect(). */
-    void reset_dirty_rect();
+    void reset_dirty_rect() const; // XXX the "dirty rect" functions need to go
     //@}
     
     /// @name XML I/O
@@ -295,21 +296,21 @@ namespace Dino {
     /// @name Signals
     //@{
     /** Emitted when the pattern name has changed. */
-    sigc::signal<void, std::string>& signal_name_changed();
+    sigc::signal<void, std::string>& signal_name_changed() const;
     /** Emitted when the length in beats has changed. */
-    sigc::signal<void, int>& signal_length_changed();
+    sigc::signal<void, int>& signal_length_changed() const;
     /** Emitted when the number of steps per beat has changed. */
-    sigc::signal<void, int>& signal_steps_changed();
+    sigc::signal<void, int>& signal_steps_changed() const;
     /** Emitted when a note has been added. */
-    sigc::signal<void, Note const&>& signal_note_added();
+    sigc::signal<void, Note const&>& signal_note_added() const;
     /** Emitted when an existing note has been changed. */
-    sigc::signal<void, Note const&>& signal_note_changed();
+    sigc::signal<void, Note const&>& signal_note_changed() const;
     /** Emitted when a note has been removed. */
-    sigc::signal<void, Note const&>& signal_note_removed();
+    sigc::signal<void, Note const&>& signal_note_removed() const;
     /** Emitted when a whole controller has been added. */
-    sigc::signal<void, int>& signal_curve_added();
+    sigc::signal<void, int>& signal_curve_added() const;
     /** Emitted when a whole controller has been removed. */
-    sigc::signal<void, int>& signal_curve_removed();
+    sigc::signal<void, int>& signal_curve_removed() const;
     //@}
     
   private:
@@ -356,17 +357,17 @@ namespace Dino {
     mutable bool m_dirty;
   
     // dirty rect
-    int m_min_step, m_min_note, m_max_step, m_max_note;
+    mutable int m_min_step, m_min_note, m_max_step, m_max_note;
 
-    sigc::signal<void, std::string> m_signal_name_changed;
-    sigc::signal<void, int> m_signal_length_changed;
-    sigc::signal<void, int> m_signal_steps_changed;
-    sigc::signal<void, Note const&> m_signal_note_added;
-    sigc::signal<void, Note const&> m_signal_note_changed;
-    sigc::signal<void, Note const&> m_signal_note_removed;
-    sigc::signal<void, int> m_signal_curve_added;
-    sigc::signal<void, int> m_signal_curve_removed;
-
+    mutable sigc::signal<void, std::string> m_signal_name_changed;
+    mutable sigc::signal<void, int> m_signal_length_changed;
+    mutable sigc::signal<void, int> m_signal_steps_changed;
+    mutable sigc::signal<void, Note const&> m_signal_note_added;
+    mutable sigc::signal<void, Note const&> m_signal_note_changed;
+    mutable sigc::signal<void, Note const&> m_signal_note_removed;
+    mutable sigc::signal<void, int> m_signal_curve_added;
+    mutable sigc::signal<void, int> m_signal_curve_removed;
+    
   };
 
 

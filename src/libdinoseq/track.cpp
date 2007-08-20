@@ -1056,62 +1056,62 @@ namespace Dino {
   }
 
 
-  signal<void, const string&>& Track::signal_name_changed() {
+  signal<void, const string&>& Track::signal_name_changed() const {
     return m_signal_name_changed;
   }
 
 
-  signal<void, int>& Track::signal_pattern_added() {
+  signal<void, int>& Track::signal_pattern_added() const {
     return m_signal_pattern_added;
   }
 
 
-  signal<void, int>& Track::signal_pattern_removed() {
+  signal<void, int>& Track::signal_pattern_removed() const {
     return m_signal_pattern_removed;
   }
 
 
-  signal<void, int, int, int>& Track::signal_sequence_entry_added() {
+  signal<void, int, int, int>& Track::signal_sequence_entry_added() const {
     return m_signal_sequence_entry_added;
   }
 
 
-  signal<void, int, int, int>& Track::signal_sequence_entry_changed() {
+  signal<void, int, int, int>& Track::signal_sequence_entry_changed() const {
     return m_signal_sequence_entry_changed;
   }
 
 
-  signal<void, int>& Track::signal_sequence_entry_removed() {
+  signal<void, int>& Track::signal_sequence_entry_removed() const {
     return m_signal_sequence_entry_removed;
   }
 
 
-  signal<void, int>& Track::signal_length_changed() {
+  signal<void, int>& Track::signal_length_changed() const {
     return m_signal_length_changed;
   }
 
 
-  signal<void, long>& Track::signal_controller_added() {
+  signal<void, long>& Track::signal_controller_added() const {
     return m_signal_controller_added;
   }
 
   
-  signal<void, long>& Track::signal_controller_removed() {
+  signal<void, long>& Track::signal_controller_removed() const {
     return m_signal_controller_removed;
   }
   
   
-  signal<void, long>& Track::signal_controller_changed() {
+  signal<void, long>& Track::signal_controller_changed() const {
     return m_signal_controller_changed;
   }
   
   
-  signal<void, long>& Track::signal_curve_added() {
+  signal<void, long>& Track::signal_curve_added() const {
     return m_signal_curve_added;
   }
   
   
-  signal<void, long>& Track::signal_curve_removed() {
+  signal<void, long>& Track::signal_curve_removed() const {
     return m_signal_curve_removed;
   }
 

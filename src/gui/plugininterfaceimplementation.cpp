@@ -61,7 +61,7 @@ void PluginInterfaceImplementation::remove_action(::Action& action) {
 }
 
  
-Dino::Song& PluginInterfaceImplementation::get_song() {
+const Dino::Song& PluginInterfaceImplementation::get_song() {
   return m_song;
 }
 

@@ -38,7 +38,7 @@ public:
   
   SequenceWidget(Dino::CommandProxy& proxy);
   
-  void set_track(Dino::Track* track);
+  void set_track(const Dino::Track* track);
 
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -59,7 +59,7 @@ private:
   void slot_length_changed(int length);
   
   Dino::CommandProxy& m_proxy;
-  Dino::Track* m_track;
+  const Dino::Track* m_track;
   int m_col_width;
 
   Glib::RefPtr<Gdk::GC> m_gc;

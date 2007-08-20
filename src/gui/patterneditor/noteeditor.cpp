@@ -100,7 +100,7 @@ NoteEditor::NoteEditor(Dino::CommandProxy& proxy)
 }
 
 
-void NoteEditor::set_pattern(int track, Pattern* pattern) {
+void NoteEditor::set_pattern(int track, const Pattern* pattern) {
   m_track = track;
   if (pattern != m_pat) {
     m_pat = pattern;
@@ -813,15 +813,19 @@ void NoteEditor::draw_outline(const Dino::NoteCollection& notes,
 void NoteEditor::update_menu(PluginInterface& plif) {
   using namespace Menu_Helpers;
   m_menu.items().clear();
+  // XXX implement this
+  /*
   PluginInterface::action_iterator iter;
   PatternSelectionAction* psa;
-  Song& song = plif.get_song();
+  const Song& song = plif.get_song();
   for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
     if ((psa = dynamic_cast<PatternSelectionAction*>(*iter))) {
-      slot<void> aslot = compose(mem_fun(*psa, &PatternSelectionAction::run),
-				 mem_fun(*this, &NoteEditor::get_selection));
+      slot<void> aslot = 
+	compose(bind<1>(mem_fun(*psa, &PatternSelectionAction::run),
+			ref(m_proxy)),
+			mem_fun(*this, &NoteEditor::get_selection));
       m_menu.items().push_back(MenuElem((*iter)->get_name(), aslot));
     }
-  }
+    }*/
 }
 

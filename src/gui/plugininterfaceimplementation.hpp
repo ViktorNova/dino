@@ -53,7 +53,7 @@ public:
   void remove_action(::Action& action);
   
   /** Returns the used Dino::Song object. */
-  Dino::Song& get_song();
+  const Dino::Song& get_song();
   
   /** Returns the used Dino::Sequencer object. */
   Dino::Sequencer& get_sequencer();

@@ -73,7 +73,7 @@ protected:
                       Gtk::BuiltinStockID stock, const std::string& tip,
                       void (ArrangementEditor::*button_slot)());
   
-  void set_recording_track(Dino::Song::TrackIterator iter);
+  void set_recording_track(Dino::Song::ConstTrackIterator iter);
   
   sigc::signal<void, int> signal_active_track_changed_internal;
 
@@ -92,7 +92,7 @@ protected:
   TrackDialog m_dlg_track;
   
   // external references
-  Dino::Song& m_song;
+  const Dino::Song& m_song;
   Dino::Sequencer& m_seq;
   Dino::CommandProxy& m_proxy;
   PluginInterface& m_plif;

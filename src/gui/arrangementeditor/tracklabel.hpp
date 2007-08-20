@@ -37,7 +37,7 @@ public:
   
   TrackLabel(const Dino::Song* song = 0);
   
-  void set_track(int id, Dino::Track* track);
+  void set_track(int id, const Dino::Track* track);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -57,7 +57,7 @@ private:
   void curve_removed(long number);
     
   const Dino::Song* m_song;
-  Dino::Track* m_track;
+  const Dino::Track* m_track;
   sigc::connection m_name_connection;
   int m_id;
   int m_width, m_height;

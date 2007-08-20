@@ -165,7 +165,7 @@ ArrangementEditor::ArrangementEditor(PluginInterface& plif)
   m_spb_song_length.set_value(m_song.get_length());
   
   // add track widgets
-  Song::TrackIterator tit;
+  Song::ConstTrackIterator tit;
   for (tit = m_song.tracks_begin(); tit != m_song.tracks_end(); ++tit)
     track_added(tit->get_id());
   if (m_song.tracks_begin() != m_song.tracks_end())
@@ -224,7 +224,7 @@ void ArrangementEditor::delete_track() {
 
 void ArrangementEditor::edit_track_properties() {
   if (m_active_track >= 0) {
-    Track& t = *(m_song.tracks_find(m_active_track));
+    const Track& t = *(m_song.tracks_find(m_active_track));
     m_dlg_track.set_track(t, m_seq);
     m_dlg_track.show_all();
     if (m_dlg_track.run() == RESPONSE_OK) {
@@ -284,7 +284,7 @@ void ArrangementEditor::add_toolbutton(Gtk::Toolbar* tbar,
 }
 
 
-void ArrangementEditor::set_recording_track(Song::TrackIterator iter) {
+void ArrangementEditor::set_recording_track(Song::ConstTrackIterator iter) {
   int id = (iter == m_song.tracks_end() ? -1 : iter->get_id());
   std::map<int, SingleTrackGUI>::iterator i;
   for (i = m_track_map.begin(); i != m_track_map.end(); ++i)
@@ -294,14 +294,14 @@ void ArrangementEditor::set_recording_track(Song::TrackIterator iter) {
 
 void ArrangementEditor::track_added(int track) {
   
-  Song::TrackIterator iter = m_song.tracks_find(track);
+  Song::ConstTrackIterator iter = m_song.tracks_find(track);
   
   assert(m_song.tracks_find(track) != m_song.tracks_end());
   
   set_active_track(track);
   
   bool recording = false;
-  Song::TrackIterator rec_track = m_seq.get_recording_track();
+  Song::ConstTrackIterator rec_track = m_seq.get_recording_track();
   if (rec_track == iter)
     recording = true;
   

@@ -61,7 +61,7 @@ extern "C" {
 }  
 
 
-PatternEditor::PatternEditor(Song& song, CommandProxy& proxy)
+PatternEditor::PatternEditor(const Song& song, CommandProxy& proxy)
   : GUIPage(PageSupportsClipboard),
     m_octave_label(20, 8),
     m_ne(proxy),
@@ -229,7 +229,7 @@ void PatternEditor::update_track_combo() {
   int newActive = m_active_track;
   if (m_song.get_number_of_tracks() > 0) {
     char tmp[10];
-    Song::TrackIterator iter;
+    Song::ConstTrackIterator iter;
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
       sprintf(tmp, "%03d ", iter->get_id());
       m_cmb_track.append_text(string(tmp) + iter->get_name(), 
@@ -282,11 +282,11 @@ void PatternEditor::update_pattern_combo() {
 void PatternEditor::update_controller_combo() {
   m_cmb_controller.clear();
   long new_active = m_active_controller;
-  Song::TrackIterator t_iter = m_song.tracks_find(m_active_track);
+  Song::ConstTrackIterator t_iter = m_song.tracks_find(m_active_track);
   if (t_iter != m_song.tracks_end()) {
-    Track::PatternIterator p_iter = t_iter->pat_find(m_active_pattern);
+    Track::ConstPatternIterator p_iter = t_iter->pat_find(m_active_pattern);
     if (p_iter != t_iter->pat_end()) {
-      Pattern::CurveIterator iter;
+      Pattern::ConstCurveIterator iter;
       if (p_iter->curves_find(new_active) == p_iter->curves_end())
 	new_active = -1;
       char tmp[10];
@@ -322,7 +322,7 @@ void PatternEditor::set_active_track(int track) {
   m_conn_pat_added.disconnect();
   m_conn_pat_removed.disconnect();
   if (m_active_track != -1) {
-    Song::TrackIterator t = m_song.tracks_find(m_active_track);
+    Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
     m_conn_pat_added = t->signal_pattern_added().
       connect(mem_fun(*this, &PatternEditor::pattern_added));
     m_conn_pat_removed = t->signal_pattern_removed().
@@ -342,11 +342,11 @@ void PatternEditor::set_active_pattern(int pattern) {
     return;
   
   m_active_pattern = pattern;
-  Pattern* pptr = 0;
+  const Pattern* pptr = 0;
   
-  Song::TrackIterator t = m_song.tracks_find(m_active_track);
+  Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
   if (t != m_song.tracks_end()) {
-    Track::PatternIterator p = t->pat_find(m_active_pattern);
+    Track::ConstPatternIterator p = t->pat_find(m_active_pattern);
     
     // update connections
     m_conn_cont_added.disconnect();
@@ -376,19 +376,19 @@ void PatternEditor::set_active_pattern(int pattern) {
 void PatternEditor::set_active_controller(long controller) {
   m_active_controller = controller;
   
-  Song::TrackIterator t = m_song.tracks_find(m_active_track);
+  Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
   if (t == m_song.tracks_end()) {
     m_cce.set_curve(-1, -1, 0);
     return;
   }
   
-  Track::PatternIterator p = t->pat_find(m_active_pattern);
+  Track::ConstPatternIterator p = t->pat_find(m_active_pattern);
   if (p == t->pat_end()) {
     m_cce.set_curve(-1, -1, 0);
     return;
   }
   
-  Pattern::CurveIterator c = p->curves_find(m_active_controller);
+  Pattern::ConstCurveIterator c = p->curves_find(m_active_controller);
   if (c == p->curves_end()) {
     m_cce.set_curve(-1, -1, 0);
     return;
@@ -437,9 +437,9 @@ void PatternEditor::duplicate_pattern() {
 
 void PatternEditor::edit_pattern_properties() {
   if (m_active_track >= 0 && m_active_pattern >= 0) {
-    Song::TrackIterator iter = m_song.tracks_find(m_active_track);
+    Song::ConstTrackIterator iter = m_song.tracks_find(m_active_track);
     assert(iter != m_song.tracks_end());
-    Track::PatternIterator pat = iter->pat_find(m_active_pattern);
+    Track::ConstPatternIterator pat = iter->pat_find(m_active_pattern);
     assert(pat != iter->pat_end());
 
     m_dlg_pattern->set_name(pat->get_name());
@@ -468,7 +468,7 @@ void PatternEditor::edit_pattern_properties() {
 
 void PatternEditor::pattern_added(int id) {
   update_pattern_combo();
-  Song::TrackIterator iter = m_song.tracks_find(m_active_track);
+  Song::ConstTrackIterator iter = m_song.tracks_find(m_active_track);
   if (iter != m_song.tracks_end()) {
     iter->pat_find(id)->signal_name_changed().
       connect(sigc::hide(mem_fun(*this, &PatternEditor::update_pattern_combo)));

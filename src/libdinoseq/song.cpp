@@ -435,7 +435,7 @@ namespace Dino {
   }
   
   
-  double Song::get_current_tempo(double beat) {
+  double Song::get_current_tempo(double beat) const {
     return double(m_tempo_map.get_changes(unsigned(beat))->get_bpm());
   }
 

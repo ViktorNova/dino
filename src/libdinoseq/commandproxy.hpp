@@ -123,6 +123,8 @@ namespace Dino {
 			   Track::PatternIterator* iter = 0);
     /** Remove an existing pattern. */
     bool remove_pattern(int track, int pattern);
+    /** Add a sequence entry. */
+    bool add_sequence_entry(int track, int beat, int pattern, int length = 0);
     /** Remove a sequence entry. */
     bool remove_sequence_entry(int track, unsigned long beat);
     /** Change the length of a sequence entry. */

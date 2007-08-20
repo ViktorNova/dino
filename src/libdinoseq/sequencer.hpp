@@ -63,7 +63,7 @@ namespace Dino {
     /** This seeks to the given beat in the song. */
     void go_to_beat(double beat);
     /** This starts recording the given track. */
-    void record_to_track(Song::TrackIterator iter);
+    void record_to_track(Song::ConstTrackIterator iter);
     //@}
     
     /** Returns @c true if this Sequencer object is valid. */

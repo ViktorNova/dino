@@ -58,7 +58,7 @@ TrackLabel::TrackLabel(const Song* song)
 }
   
 
-void TrackLabel::set_track(int id, Track* track) {
+void TrackLabel::set_track(int id, const Track* track) {
 
   m_name_connection.disconnect();
   m_ctrl_added_connection.disconnect();

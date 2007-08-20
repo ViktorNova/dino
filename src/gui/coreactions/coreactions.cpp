@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "commandproxy.hpp"
 #include "note.hpp"
 #include "pattern.hpp"
 #include "patternselection.hpp"
@@ -40,9 +41,11 @@ namespace {
   // Clear the loop points
   struct ClearLoopAction : public SongAction {
     std::string get_name() const { return "Clear loop"; }
-    void run(Song& song) {
-      song.set_loop_end(-1);
-      song.set_loop_start(-1);
+    void run(CommandProxy& proxy, const Song& song) {
+      proxy.start_atomic("Clear loop");
+      proxy.set_loop_end(-1);
+      proxy.set_loop_start(-1);
+      proxy.end_atomic();
     }
   }* clearloop;
   
@@ -55,10 +58,10 @@ namespace {
 
     }
     std::string get_name() const { return "Stop recording"; }
-    void run(Song& song) {
+    void run(CommandProxy& proxy, const Song& song) {
       m_seq.record_to_track(m_song.tracks_end());
     }
-    Song& m_song;
+    const Song& m_song;
     Sequencer& m_seq;
   }* stoprecording;
   
@@ -71,19 +74,19 @@ namespace {
     
     }
     std::string get_name() const { return "Record to track"; }
-    void run(Track& track) {
-      Song::TrackIterator iter = m_song.tracks_find(track.get_id());
+    void run(CommandProxy& proxy, const Track& track) {
+      Song::ConstTrackIterator iter = m_song.tracks_find(track.get_id());
       if (iter != m_song.tracks_end())
         m_seq.record_to_track(iter);
     }
-    Song& m_song;
+    const Song& m_song;
     Sequencer& m_seq;
   }* recordtotrack;
   
   // Interpolate the velocity for a pattern selection
   struct InterpolateVelocityAction : public PatternSelectionAction {
     std::string get_name() const { return "Interpolate velocity"; }
-    void run(PatternSelection& selection) {
+    void run(CommandProxy& proxy, PatternSelection& selection) {
       unsigned int start_step, end_step;
       unsigned char start_vel, end_vel;
       PatternSelection::Iterator iter = selection.begin();
@@ -100,6 +103,7 @@ namespace {
           (end_step - start_step);
         unsigned char vel = (unsigned char)(start_vel + (end_vel - start_vel) *
                                             phase);
+	// XXX how can this work? get_pattern() is supposed to return const
         selection.get_pattern()->set_velocity(iter, vel);
       }
     }
@@ -109,7 +113,7 @@ namespace {
   // Randomise the velocities for the selected notes
   struct RandomiseVelocityAction : public PatternSelectionAction {
     std::string get_name() const { return "Randomise velocity"; }
-    void run(PatternSelection& selection) {
+    void run(CommandProxy& proxy, PatternSelection& selection) {
       unsigned char min_vel = 127;
       unsigned char max_vel = 1;
       PatternSelection::Iterator iter = selection.begin();

@@ -142,17 +142,17 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, int, int>& Curve::signal_point_added() {
+  sigc::signal<void, int, int>& Curve::signal_point_added() const {
     return m_signal_point_added;
   }
 
 
-  sigc::signal<void, int, int>& Curve::signal_point_changed() {
+  sigc::signal<void, int, int>& Curve::signal_point_changed() const {
     return m_signal_point_changed;
   }
 
 
-  sigc::signal<void, int>& Curve::signal_point_removed() {
+  sigc::signal<void, int>& Curve::signal_point_removed() const {
     return m_signal_point_removed;
   }
 

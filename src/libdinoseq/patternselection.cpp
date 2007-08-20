@@ -76,11 +76,11 @@ namespace Dino {
   }
   
   
-  PatternSelection::PatternSelection(Pattern* pat) 
+  PatternSelection::PatternSelection(const Pattern* pat) 
     : m_pat(pat) {
     if (m_pat) {
       m_pat->signal_note_removed().
-  connect(mem_fun(*this, &PatternSelection::remove_note_internal));
+	connect(mem_fun(*this, &PatternSelection::remove_note_internal));
     }
   }
 
@@ -158,11 +158,6 @@ namespace Dino {
     }
   }
 
-  
-  Pattern* PatternSelection::get_pattern() {
-    return m_pat;
-  }
-  
   
   const Pattern* PatternSelection::get_pattern() const {
     return m_pat;

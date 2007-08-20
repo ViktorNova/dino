@@ -23,10 +23,10 @@
 
 #include <string>
 
-#include "song.hpp"
-
 
 namespace Dino {
+  class CommandProxy;
+  class Song;
   class Track;
   class PatternSelection;
 }
@@ -38,17 +38,18 @@ struct Action {
 
 
 struct SongAction : public Action {
-  virtual void run(Dino::Song& song) = 0;
+  virtual void run(Dino::CommandProxy& proxy, const Dino::Song& song) = 0;
 };
 
 
 struct TrackAction : public Action {
-  virtual void run(Dino::Track& track) = 0;
+  virtual void run(Dino::CommandProxy& proxy, const Dino::Track& track) = 0;
 };
 
 
 struct PatternSelectionAction : public Action {
-  virtual void run(Dino::PatternSelection& selection) = 0;
+  virtual void run(Dino::CommandProxy& proxy, 
+		   Dino::PatternSelection& selection) = 0;
 };
 
 

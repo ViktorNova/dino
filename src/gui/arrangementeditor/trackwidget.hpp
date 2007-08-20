@@ -42,7 +42,7 @@ public:
   TrackWidget(Dino::CommandProxy& proxy);
   ~TrackWidget();
   
-  void set_track(Dino::Track* track);
+  void set_track(const Dino::Track* track);
 
   void update();
   
@@ -54,8 +54,8 @@ public:
   
 private:
   
-  void curve_added(long number, Dino::Track* track);
-  void curve_removed(long number, Dino::Track* track);
+  void curve_added(long number, const Dino::Track* track);
+  void curve_removed(long number, const Dino::Track* track);
   
   
   SequenceWidget m_swdg;

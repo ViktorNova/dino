@@ -37,7 +37,7 @@ using namespace sigc;
 using namespace std;
 
 
-TempoWidget::TempoWidget(CommandProxy& proxy, Song* song) 
+TempoWidget::TempoWidget(CommandProxy& proxy, const Song* song) 
   : m_proxy(proxy),
     m_song(song), 
     m_col_width(20), 
@@ -263,10 +263,11 @@ void TempoWidget::update_menu(PluginInterface& plif) {
   m_menu.items().clear();
   PluginInterface::action_iterator iter;
   SongAction* sa;
-  Song& song = plif.get_song();
+  const Song& song = plif.get_song();
   for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
     if ((sa = dynamic_cast<SongAction*>(*iter))) {
-      slot<void> aslot = bind(mem_fun(*sa, &SongAction::run), ref(song));
+      slot<void> aslot = bind(mem_fun(*sa, &SongAction::run), 
+			      ref(m_proxy), ref(song));
       m_menu.items().push_back(MenuElem((*iter)->get_name(), aslot));
     }
   }

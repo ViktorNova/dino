@@ -55,7 +55,7 @@ extern "C" {
 }
 
 
-InfoEditor::InfoEditor(Dino::Song& song, Dino::CommandProxy& proxy)
+InfoEditor::InfoEditor(const Dino::Song& song, Dino::CommandProxy& proxy)
   : m_song(song),
     m_proxy(proxy) {
   

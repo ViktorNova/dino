@@ -148,7 +148,7 @@ void TrackDialog::set_track(const Dino::Track& track, Dino::Sequencer& seq) {
 }
 
 
-void TrackDialog::apply_to_track(Dino::Track& t, Dino::Sequencer& seq, 
+void TrackDialog::apply_to_track(const Dino::Track& t, Dino::Sequencer& seq, 
 				 Dino::CommandProxy& proxy) {
   
   proxy.start_atomic("Edit track properties");

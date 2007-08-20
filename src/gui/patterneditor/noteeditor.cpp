@@ -106,6 +106,8 @@ void NoteEditor::set_pattern(int track, const Pattern* pattern) {
     m_pat = pattern;
     if (m_pat) {
       
+      m_last_note_length = m_pat->get_steps();
+      
       m_selection = PatternSelection(m_pat);
       
       namespace s = sigc;

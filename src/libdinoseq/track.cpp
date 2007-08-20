@@ -19,11 +19,14 @@
 ****************************************************************************/
 
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <iostream>
 
+#include "controller_numbers.hpp"
 #include "debug.hpp"
 #include "deleter.hpp"
+#include "interpolatedevent.hpp"
 #include "midibuffer.hpp"
 #include "pattern.hpp"
 #include "track.hpp"
@@ -1031,26 +1034,70 @@ namespace Dino {
       return;
     if (to > sequence.size())
       to = sequence.size();
+
+    std::vector<Curve*>& curves = *m_curves;
+    bool sequence_globals = false;
+    if (curves.size() > 0 && curves[0]->get_size() == sequence.size())
+      sequence_globals = true;
+    
+    //dbg1<<"curves.size() == "<<curves.size()<<endl;
+    //dbg1<<"curves[0]->get_size() == "<<curves[0]->get_size()<<endl;
+    //dbg1<<"sequence_globals = "<<sequence_globals<<endl;
     
     // iterate over all beats in the interval [from, to)
-    unsigned beat = unsigned(from);
-    while (beat < to) {
-      if (sequence[beat]) {
-        SequenceEntry* const& se = sequence[beat];
-	buffer.set_offset(se->start);
-        se->pattern->sequence(buffer, from - se->start, 
-                              to - se->start, se->length, m_channel);
-        beat += sequence[beat]->start + sequence[beat]->length - beat;
+    for ( ; from < to; from = floor(from + 1)) {
+      
+      // write global controller events
+      if (sequence_globals) {
+	buffer.set_offset(0);
+	for (unsigned c = 0; c < curves.size(); ++c) {
+	  const InterpolatedEvent* event = curves[c]->get_event(unsigned(from));
+          if (event) {
+	    //dbg1<<"Sequencing event for curve "<<c<<endl;
+            unsigned char* data = buffer.reserve(from, 3);
+            if (data && is_cc(curves[c]->get_info().get_number())) {
+              data[0] = 0xB0 | (unsigned char)m_channel;
+              data[1] = cc_number(curves[c]->get_info().get_number());
+              data[2] = (unsigned char)
+                (event->get_start() + (from - event->get_step()) *
+                 ((event->get_end() - event->get_start()) /
+                  double(event->get_length())));
+            }
+            else if (data && is_pbend(curves[c]->get_info().get_number())) {
+	      //dbg1<<"Pitchbend event"<<endl;
+              data[0] = 0xE0 | (unsigned char)m_channel;
+              int value = int(event->get_start() + 
+                              (from - event->get_step()) *
+                              ((event->get_end() - event->get_start()) /
+                               double(event->get_length())));
+              data[1] = (value + 8192) & 0x7F;
+              data[2] = ((value + 8192) >> 7) & 0x7F;
+            }
+          }
+	}
       }
+      
+      // if we're in a pattern, sequence it
+      if (sequence[unsigned(from)]) {
+        SequenceEntry* const& se = sequence[unsigned(from)];
+	buffer.set_offset(se->start);
+	double local_to = to < from + 1 ? to : from + 1;
+	local_to -= se->start;
+        se->pattern->sequence(buffer, from - se->start, 
+                              local_to, se->length, m_channel);
+        //beat += sequence[beat]->start + sequence[beat]->length - beat;
+      }
+      
+      // else, send all notes off
       else {
         unsigned char all_notes_off[] = { 0xB0, 123, 0 };
-        unsigned char* data = buffer.reserve(beat, 3);
+        unsigned char* data = buffer.reserve(from, 3);
         if (data) {
           memcpy(data, all_notes_off, 3);
           data[0] |= (unsigned char)m_channel;
         }
-        ++beat;
       }
+      
     }
 
   }

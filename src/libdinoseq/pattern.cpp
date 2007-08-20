@@ -882,8 +882,7 @@ namespace Dino {
         for (unsigned c = 0; c < sd->curves->size(); ++c) {
           const InterpolatedEvent* event = (*sd->curves)[c]->get_event(step);
           if (event) {
-            unsigned char* data = buffer.
-              reserve(cc_pos, 3);
+            unsigned char* data = buffer.reserve(cc_pos, 3);
             if (data && is_cc((*sd->curves)[c]->get_info().get_number())) {
               data[0] = 0xB0 | (unsigned char)channel;
               data[1] = cc_number((*sd->curves)[c]->get_info().get_number());

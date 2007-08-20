@@ -63,6 +63,7 @@ protected:
   bool add_pattern(int argc, DBus::Argument* argv);
   bool duplicate_pattern(int argc, DBus::Argument* argv);
   bool remove_pattern(int argc, DBus::Argument* argv);
+  bool add_sequence_entry(int argc, DBus::Argument* argv);
   bool remove_sequence_entry(int argc, DBus::Argument* argv);
   bool set_sequence_entry_length(int argc, DBus::Argument* argv);
   bool set_track_midi_channel(int argc, DBus::Argument* argv);

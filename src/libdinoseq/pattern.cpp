@@ -1013,6 +1013,8 @@ namespace Dino {
 	dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;
 	return false;
       }
+      if (i == step)
+	break;
     }
     dbg1<<__PRETTY_FUNCTION__<<" returns true!"<<endl;
     return true;

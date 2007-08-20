@@ -68,6 +68,8 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy,
 	     sigc::mem_fun(*this, &DinoDBusObject::duplicate_pattern));
   add_method("org.nongnu.dino.Song", "RemovePattern", "ii",
 	     sigc::mem_fun(*this, &DinoDBusObject::remove_pattern));
+  add_method("org.nongnu.dino.Song", "AddSequenceEntry", "iiii",
+	     sigc::mem_fun(*this, &DinoDBusObject::add_sequence_entry));
   add_method("org.nongnu.dino.Song", "RemoveSequenceEntry", "ii",
 	     sigc::mem_fun(*this, &DinoDBusObject::remove_sequence_entry));
   add_method("org.nongnu.dino.Song", "SetSequenceEntryLength", "iii",
@@ -92,7 +94,7 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy,
 	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_global));
   add_method("org.nongnu.dino.Song", "SetPatternName", "iis",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_pattern_name));
-  add_method("org.nongnu.dino.Song", "SetSatternLength", "iii",
+  add_method("org.nongnu.dino.Song", "SetPatternLength", "iii",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_pattern_length));
   add_method("org.nongnu.dino.Song", "SetPatternSteps", "iii",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_pattern_steps));
@@ -198,6 +200,11 @@ bool DinoDBusObject::duplicate_pattern(int argc, DBus::Argument* argv) {
 
 bool DinoDBusObject::remove_pattern(int argc, DBus::Argument* argv) {
   return m_proxy.remove_pattern(argv[0].i, argv[1].i);
+}
+
+
+bool DinoDBusObject::add_sequence_entry(int argc, DBus::Argument* argv) {
+  return m_proxy.add_sequence_entry(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
 }
 
 

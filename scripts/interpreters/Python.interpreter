@@ -6,4 +6,5 @@ import readline
 import rlcompleter
 readline.parse_and_bind('tab: complete')
 dino_dbus_wrapper.connect(sys.argv[1])
-from dino_dbus_wrapper import song, seq" $*
+from dino_dbus_wrapper import song, seq
+print \"Use the objects 'song' and 'seq' to control Dino.\"" $*

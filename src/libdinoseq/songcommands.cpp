@@ -1489,6 +1489,62 @@ namespace Dino {
   }
 
 
+  AddTrackCurvePoint::AddTrackCurvePoint(Song& song, int track, long number,
+					 unsigned int step, int value)
+    : Command("Add curve point"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_step(step),
+      m_value(value),
+      m_wasold(false) {
+
+  }
+  
+  
+  bool AddTrackCurvePoint::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::CurveIterator citer = titer->curves_find(m_number);
+    if (citer == titer->curves_end())
+      return false;
+    if (m_step > m_song.get_length())
+      return false;
+    if (m_value < citer->get_info().get_min())
+      return false;
+    if (m_value > citer->get_info().get_max())
+      return false;
+    const InterpolatedEvent* e = citer->get_event(m_step);
+    if (e) {
+      if (m_step == citer->get_size()) {
+	m_oldvalue = e->get_end();
+	m_wasold = true;
+      }
+      else if (m_step == e->get_step()) {
+	m_oldvalue = e->get_start();
+	m_wasold = true;
+      }
+    }
+    citer->add_point(m_step, m_value);
+    return true;
+  }
+  
+  
+  bool AddTrackCurvePoint::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    Track::CurveIterator citer = titer->curves_find(m_number);
+    if (citer == titer->curves_end())
+      return false;
+    if (m_wasold)
+      citer->add_point(m_step, m_oldvalue);
+    else
+      citer->remove_point(m_step);
+  }
+
+
   RemovePatternCurvePoint::RemovePatternCurvePoint(Song& song, int track, 
 						   int pattern, long number,
 						   unsigned int step)

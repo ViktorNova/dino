@@ -326,8 +326,12 @@ namespace Dino {
   bool CommandProxy::add_curve_point(int track, int pattern, 
 				     long number, unsigned step, 
 				     int value) {
-    return push_and_do(new AddPatternCurvePoint(m_song, track, pattern, 
-						number,	step, value));
+    if (pattern != -1) {
+      return push_and_do(new AddPatternCurvePoint(m_song, track, pattern, 
+						  number, step, value));
+    }
+    return push_and_do(new AddTrackCurvePoint(m_song, track, 
+					      number, step, value));
   }
   
   

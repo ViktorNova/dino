@@ -159,7 +159,7 @@ namespace Dino {
 
 
     /** A CurveIterator is a iterator type that can be used to
-        access and modify data from curves in the pattern. */
+        access and modify data from curves in the track. */
     class CurveIterator : 
       public std::iterator<std::forward_iterator_tag, Curve> {
     public:

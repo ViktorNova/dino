@@ -222,6 +222,9 @@ namespace Dino {
         that have been changed since the last call to reset_dirty_rect(). */
     void get_dirty_rect(int* min_step, int* min_note, 
                         int* max_step, int* max_note) const;
+    /** Check how long a note added at the given key and step could be. */
+    unsigned int check_maximal_free_space(unsigned int step, int key, 
+					  unsigned int limit);
     /** Check if it would be possible to add a note with the given start time,
 	key and length. */
     bool check_free_space(unsigned int step, int key, unsigned int length);

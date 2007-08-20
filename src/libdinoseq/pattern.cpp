@@ -387,6 +387,46 @@ namespace Dino {
     assert(velocity < 128);
     assert(note_length > 0);
     
+    dbg1<<"add_note("<<step<<", "<<key<<", "<<velocity<<", "<<note_length<<")"
+	<<endl;
+    
+    if (!check_free_space(step, key, note_length))
+      return notes_end();
+    
+    // create the new objects
+    NoteEvent* note_on = new NoteEvent(NoteEvent::NoteOn, step, key, velocity);
+    NoteEvent* note_off = 
+      new NoteEvent(NoteEvent::NoteOff, step + note_length - 1, key, 0);
+    Note* note = new Note(note_on, note_off);
+    note_on->set_note(note);
+    note_off->set_note(note);
+    
+    // add the new events
+    // this must be done in a safe way since the sequencer could be sequencing
+    // this pattern right now!
+    // let's hope that pointer assignments are atomic...
+    NoteEvent* old_note_off = (*m_sd->offs)[step + note_length - 1];
+    note_off->set_next(old_note_off);
+    if (old_note_off)
+      old_note_off->set_previous(note_off);
+    (*m_sd->offs)[step + note_length - 1] = note_off;
+    NoteEvent* old_note_on = (*m_sd->ons)[step];
+    note_on->set_next(old_note_on);
+    if (old_note_on)
+      old_note_on->set_previous(note_on);
+    (*m_sd->ons)[step] = note_on;
+    
+    m_signal_note_added(*note);
+    
+    return NoteIterator(this, note);
+  }
+  /*Pattern::NoteIterator Pattern::add_note(unsigned step, int key, int velocity, 
+                                          int note_length) {
+    assert(step < m_sd->length * m_sd->steps);
+    assert(key < 128);
+    assert(velocity < 128);
+    assert(note_length > 0);
+    
     // check if the same key is already playing at this step, if so, 
     // shorten it (or delete it if it starts at this step)
     NoteIterator iter;
@@ -433,7 +473,7 @@ namespace Dino {
     m_signal_note_added(*note);
     
     return NoteIterator(this, note);
-  }
+    }*/
 
 
   bool Pattern::add_notes(const NoteCollection& notes, unsigned step, int key,
@@ -925,6 +965,28 @@ namespace Dino {
     return NoteIterator(this, 0);
   }
 
+  
+  unsigned int Pattern::check_maximal_free_space(unsigned int step, int key,
+						 unsigned int limit) {
+    assert(key >= 0 && key < 128);
+    unsigned n = get_length() * get_steps();
+    if (step >= n)
+      return 0;
+
+    // XXX needs optimisation
+    NoteIterator iter;
+    unsigned i;
+    for (i = 0; i < limit; ++i) {
+      if (step + i >= n)
+	break;
+      iter = find_note(step + i, key);
+      if (iter != notes_end())
+	break;
+    }
+    
+    return i;
+  }
+  
 
   bool Pattern::check_free_space(unsigned int step, 
 				 int key, unsigned int length) {

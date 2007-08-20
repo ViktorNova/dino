@@ -1146,7 +1146,7 @@ namespace Dino {
 
   AddNote::AddNote(Song& song, int track, int pattern, 
 		   unsigned int step, int key, int velocity, int length)
-    : CompoundCommand("Add note"),
+    : Command("Add note"),
       m_song(song),
       m_track(track),
       m_pattern(pattern),
@@ -1170,18 +1170,9 @@ namespace Dino {
     unsigned int n = piter->get_length() * piter->get_steps();
     if (m_step >= n || m_step + m_length > n)
       return false;
-    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
-    if (niter != piter->notes_end()) {
-      if (niter->get_step() == m_step)
-	append(new DeleteNote(m_song, m_track, m_pattern, m_step, m_key));
-      else
-	append(new SetNoteSize(m_song, m_track, m_pattern, niter->get_step(),
-			       m_key, m_step - niter->get_step()));
-    }
-    if (!CompoundCommand::do_command())
-      return false;
-    piter->add_note(m_step, m_key, m_velocity, m_length);
-    return true;
+    Pattern::NoteIterator niter = piter->add_note(m_step, m_key, 
+						  m_velocity, m_length);
+    return (niter != piter->notes_end());
   }
   
   
@@ -1196,7 +1187,7 @@ namespace Dino {
     if (niter == piter->notes_end())
       return false;
     piter->delete_note(niter);
-    return CompoundCommand::undo_command();
+    return true;
   }
   
 

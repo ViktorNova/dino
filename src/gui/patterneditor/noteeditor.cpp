@@ -237,16 +237,19 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       
       // Ctrl-Button1 adds notes
       if (event->state & GDK_CONTROL_MASK) {
-	m_proxy.add_note(m_track, m_pat->get_id(), step, note, 64, 
-			 m_last_note_length);
-	Pattern::NoteIterator iter = m_pat->find_note(step, note);
-	//Pattern::NoteIterator iter = m_pat->add_note(step, note, 64, 
-	//					     m_last_note_length);
-	m_selection.clear();
-	if (iter != m_pat->notes_end())
-	  m_selection.add_note(iter);
-	m_added_note = make_pair(step, note);
-	m_drag_operation = DragChangingNoteLength;
+	unsigned int max = m_pat->check_maximal_free_space(step, note, 
+							   m_last_note_length);
+	if (max > 0) {
+	  m_last_note_length = max;
+	  if (m_proxy.add_note(m_track, m_pat->get_id(), step, note, 64, 
+			       m_last_note_length)) {
+	    Pattern::NoteIterator iter = m_pat->find_note(step, note);
+	    m_selection.clear();
+	    m_selection.add_note(iter);
+	    m_added_note = make_pair(step, note);
+	    m_drag_operation = DragChangingNoteLength;
+	  }
+	}
       }
       
       // Button1 without Ctrl selects and moves

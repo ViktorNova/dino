@@ -379,7 +379,7 @@ namespace Dino {
   };
 
 
-  class AddNote : public CompoundCommand {
+  class AddNote : public Command {
   public:
     AddNote(Song& song, int track, int pattern, 
 	    unsigned int step, int key, int velocity, int length);

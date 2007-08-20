@@ -22,8 +22,8 @@
 
 #include "commandproxy.hpp"
 #include "compoundcommand.hpp"
+#include "debug.hpp"
 #include "genericcommands.hpp"
-#include "sequencer.hpp"
 #include "song.hpp"
 #include "songcommands.hpp"
 
@@ -31,9 +31,8 @@
 namespace Dino {
 
 
-  CommandProxy::CommandProxy(Song& song, Sequencer& seq)
+  CommandProxy::CommandProxy(Song& song)
     : m_song(song),
-      m_seq(seq),
       m_active(false),
       m_atomic(false),
       m_atomic_count(0) {
@@ -109,18 +108,8 @@ namespace Dino {
   }
     
   
-  void CommandProxy::play() {
-    m_seq.play();
-  }
-  
-  
-  void CommandProxy::stop() {
-    m_seq.stop();
-  }
-  
-  
-  void CommandProxy::go_to_beat(double beat) {
-    m_seq.go_to_beat(beat);
+  const Song& CommandProxy::get_song() const {
+    return m_song;
   }
   
   

@@ -75,10 +75,10 @@ ArrangementEditor::ArrangementEditor(PluginInterface& plif)
     m_vbx_track_editor(false, 0),
     m_vbx_track_labels(false, 0),
     m_active_track(-1),
-    m_song(plif.get_song()),
+    m_plif(plif),
     m_seq(plif.get_sequencer()),
     m_proxy(plif.get_command_proxy()),
-    m_plif(plif) {
+    m_song(m_proxy.get_song()) {
   
   VBox* v = manage(new VBox);
   

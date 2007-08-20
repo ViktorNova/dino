@@ -21,12 +21,16 @@
 #include <sigc++/sigc++.h>
 
 #include "dbus/argument.hpp"
+
 #include "commandproxy.hpp"
 #include "dinodbusobject.hpp"
+#include "sequencer.hpp"
 
 
-DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy)
-  : m_proxy(proxy) {
+DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy, 
+			       Dino::Sequencer& sequencer)
+  : m_proxy(proxy),
+    m_seq(sequencer) {
   
   add_method("org.nongnu.dino.Sequencer", "Play", "", 
 	     sigc::mem_fun(*this, &DinoDBusObject::play));
@@ -110,19 +114,19 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy)
 
 
 bool DinoDBusObject::play(int argc, DBus::Argument* argv) {
-  m_proxy.play();
+  m_seq.play();
   return true;
 }
 
 
 bool DinoDBusObject::stop(int argc, DBus::Argument* argv) {
-  m_proxy.stop();
+  m_seq.stop();
   return true;
 }
 
 
 bool DinoDBusObject::go_to_beat(int argc, DBus::Argument* argv) {
-  m_proxy.go_to_beat(argv[0].d);
+  m_seq.go_to_beat(argv[0].d);
   return true;
 }
 

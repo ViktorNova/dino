@@ -52,9 +52,6 @@ public:
   /** Remove an action. */
   void remove_action(::Action& action);
   
-  /** Returns the used Dino::Song object. */
-  const Dino::Song& get_song();
-  
   /** Returns the used Dino::Sequencer object. */
   Dino::Sequencer& get_sequencer();
   

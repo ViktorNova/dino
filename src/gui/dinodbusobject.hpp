@@ -26,6 +26,7 @@
 
 namespace Dino {
   class CommandProxy;
+  class Sequencer;
 }
 
 
@@ -39,7 +40,7 @@ namespace DBus {
 class DinoDBusObject : public DBus::Object {
 public:
   
-  DinoDBusObject(Dino::CommandProxy& proxy);
+  DinoDBusObject(Dino::CommandProxy& proxy, Dino::Sequencer& sequencer);
 
 protected:
   
@@ -86,7 +87,8 @@ protected:
 
   
   Dino::CommandProxy& m_proxy;
-
+  Dino::Sequencer& m_seq;
+  
 };
 
 

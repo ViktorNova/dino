@@ -389,7 +389,7 @@ using namespace std;
 
 DinoGUI::DinoGUI(int argc, char** argv) 
   : m_seq("Dino", m_song),
-    m_proxy(m_song, m_seq),
+    m_proxy(m_song),
     m_dbus("org.nongnu.dino"),
     m_dbus_obj(0),
     m_plif(*this, m_song, m_seq, m_proxy, m_dbus.get_name()),
@@ -412,10 +412,10 @@ DinoGUI::DinoGUI(int argc, char** argv)
   
   m_valid = true;
   
-  m_dbus_obj = new DinoDBusObject(m_proxy);
+  m_dbus_obj = new DinoDBusObject(m_proxy, m_seq);
   m_dbus.register_object("/", m_dbus_obj);
-  signal_timeout().connect(bind(mem_fun(m_dbus, &DBus::Connection::run), 0),
-			   50);
+  signal_timeout().
+    connect(bind(mem_fun(m_dbus, &DBus::Connection::run), 0), 50);
   
   // initialise the main window
   m_window.set_title("Dino");
@@ -438,8 +438,7 @@ DinoGUI::DinoGUI(int argc, char** argv)
                                "<lars.luthman@gmail.com>");
   m_about_dialog.set_comments("A pattern based MIDI sequencer for GNU/Linux");
   m_about_dialog.set_license(GPL_TEXT);
-  m_about_dialog.
-    set_logo(Pixbuf::create_from_file(DATA_DIR "/midisaurus.png"));
+  m_about_dialog.set_logo(Pixbuf::create_from_file(DATA_DIR "/midisaurus.png"));
   
   // initialise the "Plugins" dialog
   m_plug_dialog.set_icon_from_file(DATA_DIR "/head.png");

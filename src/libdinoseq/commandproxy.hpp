@@ -30,7 +30,6 @@
 namespace Dino {
   
   
-  class Sequencer;
   class CompoundCommand;
   class Command;
   class NoteCollection;
@@ -51,7 +50,7 @@ namespace Dino {
     /** Creates a new command proxy for the given Song and Sequencer object.
 	The Song and Sequencer must not be destroyed before this CommandProxy
 	is. */
-    CommandProxy(Song& song, Sequencer& seq);
+    CommandProxy(Song& song);
     
     /** Return @c true if the latest command can be undone. */
     bool can_undo() const;
@@ -74,18 +73,8 @@ namespace Dino {
     /** End an atomic command - execute all queued command calls. */
     bool end_atomic();
     
-
-    /// @name Sequencer commands
-    //@{
-    
-    /** Start the transport. */
-    void play();
-    /** Stop the transport. */
-    void stop();
-    /** Go to the given beat. */
-    void go_to_beat(double beat);
-
-    //@}
+    /** Return a constant reference to the song. */
+    const Song& get_song() const;
     
     
     /// @name Song commands
@@ -188,7 +177,7 @@ namespace Dino {
     bool push_and_do(Command* cmd);
 
     /** A reference to the sequencer object this CommandProxy is controlling. */
-    Sequencer& m_seq;
+    //Sequencer& m_seq;
     /** A reference to the song object this CommandProxy is controlling. */
     Song& m_song;
     

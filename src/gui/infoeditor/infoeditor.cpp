@@ -44,7 +44,7 @@ extern "C" {
   }
   
   void dino_load_plugin(PluginInterface& plif) {
-    m_ie = manage(new InfoEditor(plif.get_song(), plif.get_command_proxy()));
+    m_ie = manage(new InfoEditor(plif.get_command_proxy()));
     plif.add_page("Information", *m_ie);
     m_plif = &plif;
   }
@@ -55,9 +55,9 @@ extern "C" {
 }
 
 
-InfoEditor::InfoEditor(const Dino::Song& song, Dino::CommandProxy& proxy)
-  : m_song(song),
-    m_proxy(proxy) {
+InfoEditor::InfoEditor(Dino::CommandProxy& proxy)
+  : m_proxy(proxy),
+    m_song(m_proxy.get_song()) {
   
   Table* t = manage(new Table(3, 2, false));
   m_ent_title = manage(new Entry);

@@ -92,10 +92,10 @@ protected:
   TrackDialog m_dlg_track;
   
   // external references
-  const Dino::Song& m_song;
+  PluginInterface& m_plif;
   Dino::Sequencer& m_seq;
   Dino::CommandProxy& m_proxy;
-  PluginInterface& m_plif;
+  const Dino::Song& m_song;
   
   // state
   std::map<int, SingleTrackGUI> m_track_map;

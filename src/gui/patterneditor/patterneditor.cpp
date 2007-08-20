@@ -50,7 +50,7 @@ extern "C" {
   
   void dino_load_plugin(PluginInterface& plif) {
     m_plif = &plif;
-    m_pe = manage(new PatternEditor(plif.get_song(), plif.get_command_proxy()));
+    m_pe = manage(new PatternEditor(plif.get_command_proxy()));
     plif.add_page("Patterns", *m_pe);
   }
   
@@ -61,7 +61,7 @@ extern "C" {
 }  
 
 
-PatternEditor::PatternEditor(const Song& song, CommandProxy& proxy)
+PatternEditor::PatternEditor(CommandProxy& proxy)
   : GUIPage(PageSupportsClipboard),
     m_octave_label(20, 8),
     m_ne(proxy),
@@ -69,8 +69,8 @@ PatternEditor::PatternEditor(const Song& song, CommandProxy& proxy)
     m_active_track(-1),
     m_active_pattern(-1),
     m_active_controller(-1),
-    m_song(song),
-    m_proxy(proxy) {
+    m_proxy(proxy),
+    m_song(m_proxy.get_song()) {
   
   VBox* v = manage(new VBox);
   
@@ -173,7 +173,7 @@ PatternEditor::PatternEditor(const Song& song, CommandProxy& proxy)
   m_tbn_set_pattern_properties->set_sensitive(false);
   
   // connect to song
-  m_pattern_ruler.set_song(&song);
+  m_pattern_ruler.set_song(&m_proxy.get_song());
   slot<void> update_t_combo = 
     mem_fun(*this, &PatternEditor::update_track_combo);
   m_song.signal_track_added().connect(sigc::hide(update_t_combo));

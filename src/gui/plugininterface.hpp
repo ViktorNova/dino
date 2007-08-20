@@ -89,9 +89,6 @@ public:
   /** Returns the Dino::CommandProxy object. */
   virtual Dino::CommandProxy& get_command_proxy() = 0;
   
-  /** Returns the used Dino::Song object. */
-  virtual const Dino::Song& get_song() = 0;
-  
   /** Returns the used Dino::Sequencer object. */
   virtual Dino::Sequencer& get_sequencer() = 0;
   

@@ -54,22 +54,22 @@ namespace {
   struct StopRecordingAction : SongAction {
     StopRecordingAction(PluginInterface& plif)
       : m_seq(plif.get_sequencer()),
-        m_song(plif.get_song()){
+	m_song(plif.get_command_proxy().get_song()) {
 
     }
     std::string get_name() const { return "Stop recording"; }
     void run(CommandProxy& proxy, const Song& song) {
       m_seq.record_to_track(m_song.tracks_end());
     }
-    const Song& m_song;
     Sequencer& m_seq;
+    const Song& m_song;
   }* stoprecording;
   
   
   // Change the track to record to
   struct RecordToTrackAction : public TrackAction {
     RecordToTrackAction(PluginInterface& plif) 
-      : m_song(plif.get_song()),
+      : m_song(plif.get_command_proxy().get_song()),
         m_seq(plif.get_sequencer()) { 
     
     }

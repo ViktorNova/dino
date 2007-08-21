@@ -879,30 +879,9 @@ namespace Dino {
       for ( ; cc_pos < (step + 1) / double(sd->steps) && cc_pos < to; 
             cc_pos += buffer.get_cc_resolution()) {
         ++cc_steps;
-        for (unsigned c = 0; c < sd->curves->size(); ++c) {
-          const InterpolatedEvent* event = (*sd->curves)[c]->get_event(step);
-          if (event) {
-            unsigned char* data = buffer.reserve(cc_pos, 3);
-            if (data && is_cc((*sd->curves)[c]->get_info().get_number())) {
-              data[0] = 0xB0 | (unsigned char)channel;
-              data[1] = cc_number((*sd->curves)[c]->get_info().get_number());
-              data[2] = (unsigned char)
-                (event->get_start() + (cc_pos * sd->steps - event->get_step()) *
-                 ((event->get_end() - event->get_start()) /
-                  double(event->get_length())));
-            }
-            else if (data && is_pbend((*sd->curves)[c]->
-				      get_info().get_number())) {
-              data[0] = 0xE0 | (unsigned char)channel;
-              int value = int(event->get_start() + 
-                              (cc_pos * sd->steps - event->get_step()) *
-                              ((event->get_end() - event->get_start()) /
-                               double(event->get_length())));
-              data[1] = (value + 8192) & 0x7F;
-              data[2] = ((value + 8192) >> 7) & 0x7F;
-            }
-          }
-        }
+        for (unsigned c = 0; c < sd->curves->size(); ++c)
+	  (*sd->curves)[c]->write_events(buffer, cc_pos * sd->steps, 
+					 cc_pos, channel);
       }
       
       // write note offs

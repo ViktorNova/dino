@@ -33,6 +33,7 @@ namespace Dino {
 
   
   class InterpolatedEvent;
+  class MIDIBuffer;
   
   
   /** This class represents a sequence of MIDI CC events used in a Pattern. */
@@ -61,6 +62,13 @@ namespace Dino {
     void remove_point(unsigned int step);
     //@}
     
+    /// @name Sequencing
+    //@{
+    /** Write the MIDI events (possibly interpolated) for the given step. */
+    bool write_events(MIDIBuffer& buffer, double step, 
+		      double beat_time, unsigned char channel) const;
+    //@}
+    
     /// @name Signals
     //@{
     /** Emitted when a control point has been added. */
@@ -70,6 +78,7 @@ namespace Dino {
     /** Emitted when a control point has been removed. */
     sigc::signal<void, int>& signal_point_removed() const;
     //@}
+    
   private:
     
     const ControllerInfo m_info;

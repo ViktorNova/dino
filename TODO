@@ -25,9 +25,9 @@ Should be done before 0.4:
  [/] Record MIDI CC and pitch bend events
  [X] Play loops, set loop points
  [ ] Support libmpmd or equivalent
- [X] Wrap libdinoseq in Python
+ [/] Wrap libdinoseq in Python
  [/] Embed a Python interpreter
- [/] Add track controllers (same as pattern controllers, but not bound to a 
+ [X] Add track controllers (same as pattern controllers, but not bound to a 
      pattern)
  
 Crazy ideas:

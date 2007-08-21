@@ -1050,31 +1050,8 @@ namespace Dino {
       // write global controller events
       if (sequence_globals) {
 	buffer.set_offset(0);
-	for (unsigned c = 0; c < curves.size(); ++c) {
-	  const InterpolatedEvent* event = curves[c]->get_event(unsigned(from));
-          if (event) {
-	    //dbg1<<"Sequencing event for curve "<<c<<endl;
-            unsigned char* data = buffer.reserve(from, 3);
-            if (data && is_cc(curves[c]->get_info().get_number())) {
-              data[0] = 0xB0 | (unsigned char)m_channel;
-              data[1] = cc_number(curves[c]->get_info().get_number());
-              data[2] = (unsigned char)
-                (event->get_start() + (from - event->get_step()) *
-                 ((event->get_end() - event->get_start()) /
-                  double(event->get_length())));
-            }
-            else if (data && is_pbend(curves[c]->get_info().get_number())) {
-	      //dbg1<<"Pitchbend event"<<endl;
-              data[0] = 0xE0 | (unsigned char)m_channel;
-              int value = int(event->get_start() + 
-                              (from - event->get_step()) *
-                              ((event->get_end() - event->get_start()) /
-                               double(event->get_length())));
-              data[1] = (value + 8192) & 0x7F;
-              data[2] = ((value + 8192) >> 7) & 0x7F;
-            }
-          }
-	}
+	for (unsigned c = 0; c < curves.size(); ++c)
+	  curves[c]->write_events(buffer, from, from, m_channel);
       }
       
       // if we're in a pattern, sequence it

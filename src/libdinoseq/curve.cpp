@@ -25,6 +25,8 @@
 #include "curve.hpp"
 #include "deleter.hpp"
 #include "interpolatedevent.hpp"
+#include "midibuffer.hpp"
+
 
 namespace Dino {
 
@@ -139,6 +141,37 @@ namespace Dino {
   const InterpolatedEvent* Curve::get_event(unsigned int step) const {
     assert(step < m_events.size());
     return m_events[step];
+  }
+
+
+  bool Curve::write_events(MIDIBuffer& buffer, double step, 
+			   double beat_time, unsigned char channel) const {
+    channel &= 0x0F;
+    const InterpolatedEvent* event = get_event(unsigned(step));
+    if (event) {
+      unsigned char* data = buffer.reserve(beat_time, 3);
+      if (!data)
+	return false;
+      if (data && is_cc(get_info().get_number())) {
+	data[0] = 0xB0 | channel;
+	data[1] = cc_number(get_info().get_number());
+	data[2] = (unsigned char)
+	  (event->get_start() + (step - event->get_step()) *
+	   ((event->get_end() - event->get_start()) /
+	    double(event->get_length())));
+      }
+      else if (data && is_pbend(get_info().get_number())) {
+	data[0] = 0xE0 | channel;
+	int value = int(event->get_start() + 
+			(beat_time - event->get_step()) *
+			((event->get_end() - event->get_start()) /
+			 double(event->get_length())));
+	data[1] = (value + 8192) & 0x7F;
+	data[2] = ((value + 8192) >> 7) & 0x7F;
+      }
+    }
+    
+    return true;
   }
 
 

@@ -1040,10 +1040,6 @@ namespace Dino {
     if (curves.size() > 0 && curves[0]->get_size() == sequence.size())
       sequence_globals = true;
     
-    //dbg1<<"curves.size() == "<<curves.size()<<endl;
-    //dbg1<<"curves[0]->get_size() == "<<curves[0]->get_size()<<endl;
-    //dbg1<<"sequence_globals = "<<sequence_globals<<endl;
-    
     // iterate over all beats in the interval [from, to)
     for ( ; from < to; from = floor(from + 1)) {
       
@@ -1062,7 +1058,6 @@ namespace Dino {
 	local_to -= se->start;
         se->pattern->sequence(buffer, from - se->start, 
                               local_to, se->length, m_channel);
-        //beat += sequence[beat]->start + sequence[beat]->length - beat;
       }
       
       // else, send all notes off

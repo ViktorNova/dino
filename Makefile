@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.192
+PACKAGE_VERSION = 0.3.193
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -27,7 +27,8 @@ dino_SOURCES = \
 	pluginlibrary.cpp pluginlibrary.hpp \
 	dbus/argument.cpp dbus/argument.hpp \
 	dbus/connection.cpp dbus/connection.hpp \
-	dbus/object.cpp dbus/object.hpp
+	dbus/object.cpp dbus/object.hpp \
+	dbus/proxy.cpp dbus/proxy.hpp
 dino_HEADERS = plugininterface.hpp action.hpp
 dino_SOURCEDIR = src/gui
 dino_CFLAGS = `pkg-config --cflags gtkmm-2.4 jack libxml++-2.6 lash-1.0 dbus-1` -Isrc/libdinoseq -Isrc

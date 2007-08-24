@@ -18,47 +18,56 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#ifndef ARGUMENT_HPP
-#define ARGUMENT_HPP
+#ifndef PROXY_HPP
 
 #include <string>
+
+#include <dbus/dbus.h>
+#include <sigc++/sigc++.h>
+
+#include "connection.hpp"
+#include "proxy.hpp"
 
 
 namespace DBus {
 
   
-  /** This class wraps an argument to a D-Bus method handler.
-      @seeAlso DBus::Object::add_method */
-  class Argument {
-  public:
-    
-    /** This default constructor creates an Argument object with the type 
-	INVALID. */
-    Argument();
-    /** Creates an integer argument. */
-    Argument(int value);
-    /** Creates a double precision floating point argument. */
-    Argument(double value);
-    /** Creates a string argument. */
-    Argument(const char* value);
-    
-    /** The different types that an argument can have. */
-    enum Type {
-      INT,
-      DOUBLE,
-      STRING,
-      INVALID
-    } type;
-    
-    
-    union {
-      int i;
-      double d;
-      const char* s;
-    };
-    
-  };
+  Proxy::Proxy(Connection& conn, const std::string& name, 
+	       const std::string& path, const std::string& interface)
+    : m_conn(conn),
+      m_name(name),
+      m_path(path),
+      m_interface(interface) {
 
+  }
+  
+  
+  void Proxy::connect(const std::string& member, SignalHandler& handler) {
+
+  }
+  
+    
+  std::vector<Argument> Proxy::call(const std::string& member, 
+				    const Argument& a1,
+				    const Argument& a2,
+				    const Argument& a3,
+				    const Argument& a4,
+				    const Argument& a5) {
+    std::vector<Argument> result;
+    return result;
+  }
+  
+  
+  void Proxy::call_async(const std::string& member,
+			 ReturnHandler& handler,
+			 const Argument& a1,
+			 const Argument& a2,
+			 const Argument& a3,
+			 const Argument& a4,
+			 const Argument& a5) {
+    
+  }
+    
 
 }
 

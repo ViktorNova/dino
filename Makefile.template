@@ -95,6 +95,7 @@ $(2)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(2)_LIBRARIES))))
 ALL_OBJECTS += $$($(2)_OBJECTS)
 ALL_SOURCES += $$($(2)_FULLSOURCES)
 LIBRARIES_REAL += $$($(2)_BLDPRF)/$(1)
+LIBRARIES_NOINST += $$(if $$($(2)_NOINST),$(2),)
 ALL_LIBHEADER_INSTALLS += $$(if $$($(2)_HEADERS),install-$(2)-headers)
 $(2)_INSTDIR = $$(if $$($(2)_INSTALLDIR),$$($(2)_INSTALLDIR),$(libdir))
 
@@ -149,11 +150,14 @@ $(2)_LIBNAME = $$($(2)_SRCPRF)/$$(patsubst %.lv2,%.so,$(1))
 $(2)_LOCALLIBRARIES = $$(patsubst lib%.so,-l%,$$(notdir $$($(2)_LIBRARIES)))
 $(2)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(2)_LIBRARIES))))
 PROGRAMS += $$($(2)_PROGRAMS)
+PROGRAMS_NOINST += $$($(2)_PROGRAMS)
 MODULES += $$($(2)_MODULES)
+MODULES_NOINST += $$($(2)_MODULES)
 ALL_OBJECTS += $$($(2)_OBJECTS) $$($(2)_LIBNAME)
 ALL_SOURCES += $$($(2)_FULLSOURCES) $$($(2)_FULLPEGFILES)
 ALL_DATA += $$($(2)_FULLDATA)
 LV2_PLUGINS_REAL += $$($(2)_BLDPRF)/$(1)
+LV2_PLUGINS_NOINST += $$(if $$($(2)_NOINST),$(2),)
 $(2)_INSTDIR = $$(if $$($(2)_INSTALLDIR),$$($(2)_INSTALLDIR),$(lv2plugindir))
 
 # targets
@@ -205,6 +209,7 @@ $(1)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(1)_LIBRARIES))))
 ALL_OBJECTS += $$($(1)_OBJECTS)
 ALL_SOURCES += $$($(1)_FULLSOURCES)
 PROGRAMS_REAL += $$($(1)_BLDPRF)/$(1)
+PROGRAMS_NOINST += $$(if $$($(1)_NOINST),$(1),)
 
 # targets
 $$($(1)_COBJECTS): Makefile.config
@@ -253,6 +258,7 @@ ALL_OBJECTS += $$($(2)_OBJECTS)
 ALL_SOURCES += $$($(2)_FULLSOURCES)
 $(2)_INSTDIR = $$(if $$($(2)_INSTALLDIR),$$($(2)_INSTALLDIR),$(pkglibdir))
 MODULES_REAL += $$($(2)_BLDPRF)/$(1)
+MODULES_NOINST += $$(if $$($(2)_NOINST),$(2),)
 
 # targets
 $$($(2)_COBJECTS): Makefile.config
@@ -320,18 +326,22 @@ Makefile.deps: $(DEP_FILES)
 
 # GLOBAL CLEAN
 clean:
-	rm -rf $(ALL_OBJECTS) $(PROGRAMS_REAL) $(MODULES_REAL) $(LIBRARIES_REAL) $(ARCHIVES_REAL) $(LV2_PLUGINS_REAL) $(DEP_FILES)
+	rm -rf $(ALL_OBJECTS) $(PROGRAMS_REAL) $(MODULES_REAL) $(LIBRARIES) $(ARCHIVES_REAL) $(LV2_PLUGINS_REAL) $(DEP_FILES)
 
 
 # GLOBAL INSTALL
-install-programs: $(patsubst %,install-%,$(subst .,_,$(PROGRAMS)))
+PROGRAMS_INST = $(filter-out $(PROGRAMS_NOINST),$(PROGRAMS))
+install-programs: $(patsubst %,install-%,$(subst .,_,$(PROGRAMS_INST)))
 
-install-modules: $(patsubst %,install-%,$(subst .,_,$(MODULES)))
+MODULES_INST = $(filter-out $(MODULES_NOINST),$(MODULES))
+install-modules: $(patsubst %,install-%,$(subst .,_,$(MODULES_INST)))
 
-install-libraries: $(patsubst %,install-%,$(subst .,_,$(LIBRARIES)))
+LIBRARIES_INST = $(filter-out $(LIBRARIES_NOINST),$(LIBRARIES))
+install-libraries: $(patsubst %,install-%,$(subst .,_,$(LIBRARIES_INST)))
 	$(if $(LIBRARIES),ldconfig -n $(libdir))
 
-install-lv2-plugins: $(patsubst %,install-%,$(subst .,_,$(LV2_PLUGINS)))
+LV2_PLUGINS_INST = $(filter-out $(LV2_PLUGINS_NOINST),$(LV2_PLUGINS))
+install-lv2-plugins: $(patsubst %,install-%,$(subst .,_,$(LV2_PLUGINS_INST)))
 
 install-data: $(DATA)
 	$(if $(DATA),mkdir -p $(DESTDIR)/$(pkgdatadir))
@@ -360,7 +370,7 @@ install: install-libraries install-modules install-programs install-lv2-plugins 
 # DISTRIBUTION
 THIS_FILE = $(patsubst ./%,%,$(firstword $(filter %/Makefile.template,$(patsubst %,./%,$(MAKEFILE_LIST)))))
 CONFIGURE_SCRIPT = $(if $(__path_to_configure),$(__path_to_configure),configure)
-ALL_DIST_FILES = $(ALL_SOURCES) $(DATA) $(DOCS) $(EXTRA_DIST) $(ALL_DATA) $(PCFILES)
+ALL_DIST_FILES = $(ALL_SOURCES) $(DATA) $(DOCS) $(EXTRA_DIST) $(ALL_DATA)
 dist: 
 	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2

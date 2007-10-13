@@ -364,6 +364,13 @@ namespace Dino {
     bool add_key(unsigned char number, const std::string& name);
     /** Remove a named key. */
     bool remove_key(unsigned char number);
+    /** Change a key name. */
+    bool set_key_name(unsigned char number, const std::string& name);
+    /** Move a named key to another MIDI key. */
+    bool set_key_number(unsigned char old_number, unsigned char new_number);
+    /** Return the index for the named key with the given key number, or 
+	255 if that key isn't named. */
+    size_t find_key(unsigned char key);
     //@}
     
     /// @name XML I/O
@@ -396,10 +403,14 @@ namespace Dino {
     sigc::signal<void, long>& signal_controller_changed() const;
     sigc::signal<void, long>& signal_curve_added() const;
     sigc::signal<void, long>& signal_curve_removed() const;
+    sigc::signal<void, unsigned char>& signal_key_added() const;
+    sigc::signal<void, unsigned char>& signal_key_removed() const;
+    sigc::signal<void, unsigned char>& signal_key_changed() const;
+    sigc::signal<void, unsigned char, unsigned char>& signal_key_moved() const;
     //@}
     
   private:
-  
+    
     int m_id;
     std::string m_name;
     std::map<int, Pattern*> m_patterns;
@@ -424,6 +435,10 @@ namespace Dino {
     mutable sigc::signal<void, long> m_signal_controller_changed;
     mutable sigc::signal<void, long> m_signal_curve_added;
     mutable sigc::signal<void, long> m_signal_curve_removed;
+    mutable sigc::signal<void, unsigned char> m_signal_key_added;
+    mutable sigc::signal<void, unsigned char> m_signal_key_removed;
+    mutable sigc::signal<void, unsigned char> m_signal_key_changed;
+    mutable sigc::signal<void, unsigned char, unsigned char> m_signal_key_moved;
     
   };
 

@@ -278,19 +278,19 @@ namespace Dino {
   
   
   bool CommandProxy::remove_key(int track, unsigned char number) {
-    return false;
+    return push_and_do(new RemoveKey(m_song, track, number));
   }
 
   
   bool CommandProxy::set_key_name(int track, unsigned char number, 
 				  const std::string& name) {
-    return false;
+    return push_and_do(new SetKeyName(m_song, track, number, name));
   }
   
   
   bool CommandProxy::set_key_number(int track, unsigned char old_number, 
 				    unsigned char new_number){
-    return false;
+    return push_and_do(new SetKeyNumber(m_song, track, old_number, new_number));
   }
 
   

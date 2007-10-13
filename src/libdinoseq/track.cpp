@@ -27,6 +27,7 @@
 #include "debug.hpp"
 #include "deleter.hpp"
 #include "interpolatedevent.hpp"
+#include "keyinfo.hpp"
 #include "midibuffer.hpp"
 #include "pattern.hpp"
 #include "track.hpp"
@@ -687,14 +688,71 @@ namespace Dino {
 
 
   bool Track::add_key(unsigned char number, const std::string& name) {
-    return false;
+    if (number > 127)
+      return false;
+    unsigned i;
+    for (i = 0; i < m_keys.size(); ++i) {
+      if (m_keys[i]->get_number() == number)
+	return false;
+      else if (m_keys[i]->get_number() > number)
+	break;
+    }
+    m_keys.insert(m_keys.begin() + i, new KeyInfo(number, name));
+    m_signal_key_added(number);
+    return true;
   }
   
   
   bool Track::remove_key(unsigned char number) {
+    size_t index = find_key(number);
+    if (index < 128) {
+      delete m_keys[index];
+      m_keys.erase(m_keys.begin() + index);
+      m_signal_key_removed(number);
+      return true;
+    }
+    return false;
+  }
+
+
+  bool Track::set_key_name(unsigned char number, const std::string& name) {
+    size_t index = find_key(number);
+    if (index < 128) {
+      m_keys[index]->set_name(name);
+      m_signal_key_changed(number);
+      return true;
+    }
+    return false;
+  }
+
+
+  bool Track::set_key_number(unsigned char old_number, 
+			     unsigned char new_number) {
+    unsigned index;
+    if ((index = find_key(old_number)) < 128 && find_key(new_number) == 255) {
+      string name = m_keys[index]->get_name();
+      delete m_keys[index];
+      m_keys.erase(m_keys.begin() + index);
+      for (unsigned i = 0; i < m_keys.size(); ++i) {
+	if (m_keys[i]->get_number() > new_number)
+	  m_keys.insert(m_keys.begin() + i, new KeyInfo(new_number, name));
+      }
+      m_signal_key_moved(old_number, new_number);
+      return true;
+    }
+    
     return false;
   }
   
+  
+  size_t Track::find_key(unsigned char key) {
+    for (unsigned i = 0; i < m_keys.size(); ++i) {
+      if (m_keys[i]->get_number() == key)
+	return i;
+    }
+    return 255;
+  }
+
     
   /** Sets the name of this track. */
   void Track::set_name(const string& name) {
@@ -1147,6 +1205,26 @@ namespace Dino {
   
   signal<void, long>& Track::signal_curve_removed() const {
     return m_signal_curve_removed;
+  }
+
+
+  signal<void, unsigned char>& Track::signal_key_added() const {
+    return m_signal_key_added;
+  }
+
+
+  signal<void, unsigned char>& Track::signal_key_removed() const {
+    return m_signal_key_removed;
+  }
+
+
+  signal<void, unsigned char>& Track::signal_key_changed() const {
+    return m_signal_key_changed;
+  }
+
+
+  signal<void, unsigned char, unsigned char>& Track::signal_key_moved() const {
+    return m_signal_key_moved;
   }
 
 

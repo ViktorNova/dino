@@ -362,6 +362,48 @@ namespace Dino {
   };
 
 
+  class RemoveKey : public Command {
+  public:
+    RemoveKey(Song& song, int track, unsigned char number);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    unsigned char m_number;
+    std::string m_name;
+  };
+
+
+  class SetKeyName : public Command {
+  public:
+    SetKeyName(Song& song, int track, unsigned char number, 
+	      const std::string& name);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    unsigned char m_number;
+    std::string m_name;
+    std::string m_oldname;
+  };
+
+
+  class SetKeyNumber : public Command {
+  public:
+    SetKeyNumber(Song& song, int track, unsigned char old_number, 
+	      unsigned char new_number);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    unsigned char m_newnumber;
+    unsigned char m_oldnumber;
+  };
+
+
   class SetPatternName : public Command {
   public:
     SetPatternName(Song& song, int track, int pattern, const std::string& name);

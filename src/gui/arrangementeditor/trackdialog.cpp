@@ -156,7 +156,9 @@ void TrackDialog::reset() {
   set_channel(1);
   m_cmb_port.set_active_id(-1);
   m_cmb_ctrls.clear();
+  m_cmb_keys.clear();
   m_ctrls.clear();
+  m_keys.clear();
   refocus();
 }
 
@@ -365,9 +367,10 @@ void TrackDialog::modify_controller_clicked() {
 
 
 bool TrackDialog::add_key(const KeyInfo& info) {
+  // XXX this should work even if the key has been deleted earlier
   cerr<<"Adding key "<<info.get_number()<<" ("<<info.get_name()<<")"<<endl;
   for (unsigned i = 0; i < m_keys.size(); ++i) {
-    if (info.get_number() == m_ctrls[i].ci.get_number())
+    if (info.get_number() == m_keys[i].ki.get_number())
       return false;
   }
   m_keys.push_back(KIWrapper(info));
@@ -408,7 +411,22 @@ void TrackDialog::add_key_clicked() {
 
 
 void TrackDialog::remove_key_clicked() {
+  if (m_cmb_keys.get_active_id() == -1) {
+    cerr<<"No key selected!"<<endl;
+    return;
+  }
   
+  unsigned i;
+  for (i = 0; i < m_keys.size(); ++i) {
+    if (m_keys[i].ki.get_number() == m_cmb_keys.get_active_id())
+      break;
+  }
+  if (i == m_keys.size()) {
+    assert(!"Non-existing key selected!");
+    return;
+  }
+
+  remove_key(m_cmb_keys.get_active_id());
 }
 
 

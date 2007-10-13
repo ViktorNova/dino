@@ -23,12 +23,13 @@
 #include "controller_numbers.hpp"
 #include "deleter.hpp"
 #include "interpolatedevent.hpp"
+#include "keyinfo.hpp"
 #include "note.hpp"
-#include "pattern.hpp"
 #include "noteselection.hpp"
+#include "pattern.hpp"
 #include "song.hpp"
-#include "track.hpp"
 #include "songcommands.hpp"
+#include "track.hpp"
 
 
 // The classes in this namespace are only used internally
@@ -1071,6 +1072,96 @@ namespace Dino {
     if (titer == m_song.tracks_end())
       return false;
     return titer->remove_key(m_number);
+  }
+
+
+  RemoveKey::RemoveKey(Song& song, int track, unsigned char number)
+    : Command("Remove named key"),
+      m_song(song),
+      m_track(track),
+      m_number(number) {
+
+  }
+  
+  
+  bool RemoveKey::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    size_t index = titer->find_key(m_number);
+    if (index < 128)
+      m_name = titer->get_keys()[index]->get_name();
+    return titer->remove_key(m_number);
+  }
+  
+  
+  bool RemoveKey::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    return titer->add_key(m_number, m_name);
+  }
+
+
+  SetKeyName::SetKeyName(Song& song, int track, unsigned char number,
+			 const std::string& name)
+    : Command("Change key name"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_name(name) {
+
+  }
+  
+  
+  bool SetKeyName::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    size_t index = titer->find_key(m_number);
+    if (index < 128) {
+      m_oldname = titer->get_keys()[index]->get_name();
+      titer->get_keys()[index]->set_name(m_name);
+      return true;
+    }
+    return false;
+  }
+  
+  
+  bool SetKeyName::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    size_t index = titer->find_key(m_number);
+    titer->get_keys()[index]->set_name(m_oldname);
+    return true;
+  }
+
+
+  SetKeyNumber::SetKeyNumber(Song& song, int track, unsigned char old_number,
+			     unsigned char new_number)
+    : Command("Change key name"),
+      m_song(song),
+      m_track(track),
+      m_oldnumber(old_number),
+      m_newnumber(new_number) {
+
+  }
+  
+  
+  bool SetKeyNumber::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    return titer->set_key_number(m_oldnumber, m_newnumber);
+  }
+  
+  
+  bool SetKeyNumber::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    return titer->set_key_number(m_newnumber, m_oldnumber);
   }
 
 

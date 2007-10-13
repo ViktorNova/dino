@@ -206,6 +206,7 @@ namespace Dino {
     : m_id(id),
       m_name(name),
       m_next_sid(0),
+      m_mode(NormalMode),
       m_sequence(new vector<SequenceEntry*>(length, (SequenceEntry*)0)),
       m_curves(new vector<Curve*>),
       m_dirty(false) {
@@ -376,6 +377,11 @@ namespace Dino {
   
   Curve* Track::get_curve(long number) {
     return 0;
+  }
+  
+  
+  Track::Mode Track::get_mode() const {
+    return m_mode;
   }
 
 
@@ -981,6 +987,15 @@ namespace Dino {
   void Track::set_channel(int channel) {
     dbg1<<"Setting MIDI channel for track \""<<m_name<<"\" to "<<channel<<endl;
     m_channel = channel;
+  }
+  
+  
+  /** Set the track mode. */
+  void Track::set_mode(Track::Mode mode) {
+    if (m_mode == mode)
+      return;
+    m_mode = mode;
+    m_mode_changed(mode);
   }
 
 

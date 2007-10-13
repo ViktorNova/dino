@@ -235,6 +235,19 @@ namespace Dino {
     };
 
     
+    /** Different track modes can be presented differently in the GUI
+	and played differently by the sequencer. */
+    enum Mode {
+      
+      /** Normal mode - play all notes, show as a normal piano roll. */
+      NormalMode,
+      
+      /** Drum mode - play only named keys, show only named keys. */
+      DrumMode,
+      
+    };
+    
+    
     Track(int id, int length = 0, const std::string& name = "Untitled");
   
     ~Track();
@@ -284,6 +297,11 @@ namespace Dino {
     const std::vector<KeyInfo*>& get_keys() const;
     /** Return the curve with the given controller number. */
     Curve* get_curve(long number);
+    /** Return the index for the named key with the given key number, or 
+	255 if that key isn't named. */
+    size_t find_key(unsigned char key);
+    /** The track mode. */
+    Mode get_mode() const;
     
     // non-const accessors
     PatternIterator pat_begin();
@@ -368,9 +386,8 @@ namespace Dino {
     bool set_key_name(unsigned char number, const std::string& name);
     /** Move a named key to another MIDI key. */
     bool set_key_number(unsigned char old_number, unsigned char new_number);
-    /** Return the index for the named key with the given key number, or 
-	255 if that key isn't named. */
-    size_t find_key(unsigned char key);
+    /** Set the track mode. */
+    void set_mode(Mode mode);
     //@}
     
     /// @name XML I/O
@@ -407,6 +424,7 @@ namespace Dino {
     sigc::signal<void, unsigned char>& signal_key_removed() const;
     sigc::signal<void, unsigned char>& signal_key_changed() const;
     sigc::signal<void, unsigned char, unsigned char>& signal_key_moved() const;
+    sigc::signal<void, Mode>& signal_mode_changed() const;
     //@}
     
   private:
@@ -418,6 +436,7 @@ namespace Dino {
     std::vector<KeyInfo*> m_keys;
     int m_next_sid;
     volatile int m_channel;
+    Mode m_mode;
     std::vector<SequenceEntry*>* volatile m_sequence;
     std::vector<Curve*>* volatile m_curves;
     
@@ -439,6 +458,7 @@ namespace Dino {
     mutable sigc::signal<void, unsigned char> m_signal_key_removed;
     mutable sigc::signal<void, unsigned char> m_signal_key_changed;
     mutable sigc::signal<void, unsigned char, unsigned char> m_signal_key_moved;
+    mutable sigc::signal<void, Mode> m_mode_changed;
     
   };
 

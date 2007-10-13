@@ -138,7 +138,15 @@ namespace Dino {
     bool set_controller_number(int track, long old_number, long new_number);
     /** Change the 'global' toggle of a controller. */
     bool set_controller_global(int track, long number, bool global);
-
+    /** Add a named key for a track. */
+    bool add_key(int track, unsigned char number, const std::string& name);
+    /** Remove a named key for a track. */
+    bool remove_key(int track, unsigned char number);
+    /** Change the name of a key. */
+    bool set_key_name(int track, unsigned char number, const std::string& name);
+    /** Change the key number value of a named key. */
+    bool set_key_number(int track, unsigned char old_number, 
+			unsigned char new_number);
 
     /** Change the name of a pattern. */
     bool set_pattern_name(int track, int pattern, const std::string& name);

@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.194
+PACKAGE_VERSION = 0.3.195
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \
@@ -56,6 +56,7 @@ libdinoseq_so_SOURCES = \
 	genericcommands.hpp \
 	instrumentinfo.cpp instrumentinfo.hpp \
 	interpolatedevent.cpp interpolatedevent.hpp \
+	keyinfo.cpp keyinfo.hpp \
 	midibuffer.cpp midibuffer.hpp \
 	note.cpp note.hpp \
 	notecollection.cpp notecollection.hpp \
@@ -130,14 +131,15 @@ MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so scr
 
 # The sequence editor
 arrangementeditor_so_SOURCES = \
-	controllerdialog.cpp controllerdialog.hpp \
 	arrangementeditor.cpp arrangementeditor.hpp \
+	controllerdialog.cpp controllerdialog.hpp \
+	keydialog.cpp keydialog.hpp \
 	tempolabel.cpp tempolabel.hpp \
+	sequencewidget.cpp sequencewidget.hpp \
 	tempowidget.cpp tempowidget.hpp \
 	trackdialog.cpp trackdialog.hpp \
 	tracklabel.cpp tracklabel.hpp \
-	trackwidget.cpp trackwidget.hpp \
-	sequencewidget.cpp sequencewidget.hpp
+	trackwidget.cpp trackwidget.hpp
 arrangementeditor_so_SOURCEDIR = src/gui/arrangementeditor
 arrangementeditor_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
 arrangementeditor_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so

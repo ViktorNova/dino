@@ -104,6 +104,18 @@ class SongInterface(dbus.Interface):
     def setControllerGlobal(self, track, number, isGlobal):
         self.SetControllerGlobal(track, number, isGlobal)
     
+    def addKey(self, track, number, name):
+        self.AddKey(track, number, name)
+    
+    def removeKey(self, track, number):
+        self.RemoveKey(track, number)
+    
+    def setKeyName(self, track, number, name):
+        self.SetKeyName(track, number, name)
+    
+    def setKeyNumber(self, track, number, newNumber):
+        self.SetKeyNumber(track, number, newNumber)
+    
     def setPatternName(self, track, pattern, name):
         self.SetPatternName(track, pattern, name)
     

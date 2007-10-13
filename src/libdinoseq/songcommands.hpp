@@ -348,6 +348,20 @@ namespace Dino {
   };
 
 
+  class AddKey : public Command {
+  public:
+    AddKey(Song& song, int track, unsigned char number, 
+	   const std::string& name);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    unsigned char m_number;
+    std::string m_name;
+  };
+
+
   class SetPatternName : public Command {
   public:
     SetPatternName(Song& song, int track, int pattern, const std::string& name);

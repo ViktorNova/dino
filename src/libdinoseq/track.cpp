@@ -366,7 +366,12 @@ namespace Dino {
   std::vector<ControllerInfo*>& Track::get_controllers() {
     return m_controllers;
   }
-  
+
+
+  const std::vector<KeyInfo*>& Track::get_keys() const {
+    return m_keys;
+  }
+
   
   Curve* Track::get_curve(long number) {
     return 0;
@@ -678,6 +683,16 @@ namespace Dino {
     }
     
     m_signal_controller_changed(number);
+  }
+
+
+  bool Track::add_key(unsigned char number, const std::string& name) {
+    return false;
+  }
+  
+  
+  bool Track::remove_key(unsigned char number) {
+    return false;
   }
   
     

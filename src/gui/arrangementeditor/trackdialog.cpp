@@ -39,15 +39,15 @@ TrackDialog::TrackDialog()
   set_title("Track properties");
   m_sbn_channel.set_range(1, 16);
   m_sbn_channel.set_increments(1, 10);
-  Table* table = manage(new Table(6, 2));
+  Table* table = manage(new Table(9, 2));
   table->attach(*manage(new Label("Track name:")), 0, 1, 0, 1);
+  table->attach(m_ent_name, 1, 2, 0, 1);
   table->attach(*manage(new Label("MIDI port:")), 0, 1, 1, 2);
+  table->attach(m_cmb_port, 1, 2, 1, 2);
   table->attach(*manage(new Label("MIDI channel:")), 0, 1, 2, 3);
+  table->attach(m_sbn_channel, 1, 2, 2, 3);
   table->attach(*manage(new HSeparator), 0, 2, 3, 4);
   table->attach(*manage(new Label("Controllers:")), 0, 1, 4, 5);
-  table->attach(m_ent_name, 1, 2, 0, 1);
-  table->attach(m_cmb_port, 1, 2, 1, 2);
-  table->attach(m_sbn_channel, 1, 2, 2, 3);
   table->attach(m_cmb_ctrls, 1, 2, 4, 5);
   HBox* hbox = manage(new HBox(false, 3));
   Button* add_ctrl_btn = manage(new Button("Add"));
@@ -57,6 +57,17 @@ TrackDialog::TrackDialog()
   Button* modify_ctrl_btn = manage(new Button("Modify"));
   hbox->pack_start(*modify_ctrl_btn);
   table->attach(*hbox, 1, 2, 5, 6);
+  table->attach(*manage(new HSeparator), 0, 2, 6, 7);
+  table->attach(*manage(new Label("Named keys:")), 0, 1, 7, 8);
+  table->attach(m_cmb_keys, 1, 2, 7, 8);
+  hbox = manage(new HBox(false, 3));
+  Button* add_key_btn = manage(new Button("Add"));
+  hbox->pack_start(*add_key_btn);
+  Button* remove_key_btn = manage(new Button("Remove"));
+  hbox->pack_start(*remove_key_btn);
+  Button* modify_key_btn = manage(new Button("Modify"));
+  hbox->pack_start(*modify_key_btn);
+  table->attach(*hbox, 1, 2, 8, 9);
   table->set_border_width(5);
   table->set_row_spacings(5);
   table->set_col_spacings(5);
@@ -70,6 +81,12 @@ TrackDialog::TrackDialog()
     connect(mem_fun(*this, &TrackDialog::remove_controller_clicked));
   modify_ctrl_btn->signal_clicked().
     connect(mem_fun(*this, &TrackDialog::modify_controller_clicked));
+  add_key_btn->signal_clicked().
+    connect(mem_fun(*this, &TrackDialog::add_key_clicked));
+  remove_key_btn->signal_clicked().
+    connect(mem_fun(*this, &TrackDialog::remove_key_clicked));
+  modify_key_btn->signal_clicked().
+    connect(mem_fun(*this, &TrackDialog::modify_key_clicked));
   
   update_ports();
 }
@@ -123,6 +140,17 @@ void TrackDialog::set_controllers(const vector<ControllerInfo*>& ctrls) {
 }
 
 
+void TrackDialog::set_keys(const vector<KeyInfo*>& keys) {
+  m_keys.clear();
+  m_cmb_keys.clear();
+  for (unsigned i = 0; i < keys.size(); ++i) {
+    m_keys.push_back(KIWrapper(KeyInfo(*keys[i])));
+    m_cmb_keys.append_text(m_keys[i].ki.get_name(), 
+			    m_keys[i].ki.get_number());
+  }
+}
+
+
 void TrackDialog::reset() {
   set_name("Untitled");
   set_channel(1);
@@ -137,6 +165,7 @@ void TrackDialog::set_track(const Dino::Track& track, Dino::Sequencer& seq) {
   set_name(track.get_name());
   set_channel(track.get_channel() + 1);
   set_controllers(track.get_controllers());
+  set_keys(track.get_keys());
   vector<InstrumentInfo> info = seq.get_instruments(track.get_id());
   for (unsigned i = 0; i < info.size(); ++i) {
     if (info[i].get_connected()) {
@@ -153,12 +182,14 @@ void TrackDialog::apply_to_track(const Dino::Track& t, Dino::Sequencer& seq,
   
   proxy.start_atomic("Edit track properties");
   
+  // update name and MIDI channel
   if (t.get_name() != get_name())
     proxy.set_track_name(t.get_id(), get_name());
   if (t.get_channel() != get_channel() - 1)
     proxy.set_track_midi_channel(t.get_id(), get_channel() - 1);
   seq.set_instrument(t.get_id(), get_port());
   
+  // update controllers
   unsigned ncontrollers = t.get_controllers().size();
   vector<long> numbers;
   for (unsigned i = 0; i < ncontrollers; ++i) {
@@ -185,6 +216,27 @@ void TrackDialog::apply_to_track(const Dino::Track& t, Dino::Sequencer& seq,
 			 m_ctrls[i].ci.get_name(), m_ctrls[i].ci.get_default(),
 			 m_ctrls[i].ci.get_min(), m_ctrls[i].ci.get_max(), 
 			 m_ctrls[i].ci.get_global());
+  }
+  
+  // update keys
+  unsigned nkeys = t.get_keys().size();
+  numbers.clear();
+  for (unsigned i = 0; i < nkeys; ++i) {
+    if (m_keys[i].deleted)
+      numbers.push_back(t.get_keys()[i]->get_number());
+    else {
+      const KeyInfo& ki = m_keys[i].ki;
+      if (ki.get_name() != t.get_keys()[i]->get_name())
+	proxy.set_key_name(t.get_id(), ki.get_number(), ki.get_name());
+      t.get_keys()[i]->set_number(m_keys[i].ki.get_number());
+    }
+  }
+  for (unsigned i = 0; i < numbers.size(); ++i)
+    proxy.remove_key(t.get_id(), numbers[i]);
+  
+  for (unsigned i = nkeys; i < m_keys.size(); ++i) {
+    proxy.add_key(t.get_id(), m_keys[i].ki.get_number(), 
+		  m_keys[i].ki.get_name());
   }
   
   proxy.end_atomic();
@@ -309,6 +361,59 @@ void TrackDialog::modify_controller_clicked() {
   m_cmb_ctrls.set_active_id(m_ctrls[i].ci.get_number());
 
   m_cdlg.hide();
+}
+
+
+bool TrackDialog::add_key(const KeyInfo& info) {
+  cerr<<"Adding key "<<info.get_number()<<" ("<<info.get_name()<<")"<<endl;
+  for (unsigned i = 0; i < m_keys.size(); ++i) {
+    if (info.get_number() == m_ctrls[i].ci.get_number())
+      return false;
+  }
+  m_keys.push_back(KIWrapper(info));
+  m_cmb_keys.append_text(info.get_name(), info.get_number());
+  return true;
+}
+
+
+bool TrackDialog::remove_key(long number) {
+  for (unsigned i = 0; i < m_keys.size(); ++i) {
+    if (number == m_keys[i].ki.get_number()) {
+      m_keys[i].deleted = true;
+      m_cmb_keys.remove_id(number);
+      return true;
+    }
+  }
+  return false;
+}
+
+
+void TrackDialog::add_key_clicked() {
+  m_kdlg.reset();
+  m_kdlg.refocus();
+  m_kdlg.show_all();
+  while (m_kdlg.run() == RESPONSE_OK) {
+    const KeyInfo& info = m_kdlg.get_info();
+    if (info.get_number() > 127)
+      cerr<<"Invalid key!"<<endl;
+    else if (!add_key(info))
+      cerr<<"Could not add key!"<<endl;
+    else {
+      m_cmb_keys.set_active_id(info.get_number());
+      break;
+    }
+  }
+  m_kdlg.hide();
+}
+
+
+void TrackDialog::remove_key_clicked() {
+  
+}
+
+
+void TrackDialog::modify_key_clicked() {
+
 }
 
 

@@ -1047,6 +1047,33 @@ namespace Dino {
   }
 
 
+  AddKey::AddKey(Song& song, int track, unsigned char number, 
+		 const string& name) 
+    : Command("Add named key"),
+      m_song(song),
+      m_track(track),
+      m_number(number),
+      m_name(name) {
+
+  }
+  
+  
+  bool AddKey::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    return titer->add_key(m_number, m_name);
+  }
+  
+  
+  bool AddKey::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    return titer->remove_key(m_number);
+  }
+
+
   SetPatternName::SetPatternName(Song& song, int track, 
 				 int pattern, const std::string& name)
     : Command("Set pattern name"),

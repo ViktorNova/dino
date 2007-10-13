@@ -27,6 +27,8 @@
 
 #include "controllerdialog.hpp"
 #include "controllerinfo.hpp"
+#include "keydialog.hpp"
+#include "keyinfo.hpp"
 #include "singletextcombo.hpp"
 
 
@@ -50,6 +52,7 @@ public:
   void set_channel(int channel);
   void update_ports(const Dino::Sequencer* seq = 0);
   void set_controllers(const std::vector<Dino::ControllerInfo*>& ctrls);
+  void set_keys(const std::vector<Dino::KeyInfo*>& ctrls);
   
   void refocus();
   
@@ -62,14 +65,25 @@ protected:
   
   bool add_controller(const Dino::ControllerInfo& info);
   bool remove_controller(long number);
+  bool add_key(const Dino::KeyInfo& info);
+  bool remove_key(long number);
   
   void add_controller_clicked();
   void remove_controller_clicked();
   void modify_controller_clicked();
+  void add_key_clicked();
+  void remove_key_clicked();
+  void modify_key_clicked();
   
   struct CIWrapper {
     CIWrapper(const Dino::ControllerInfo& _ci) : ci(_ci), deleted(false) { }
     Dino::ControllerInfo ci;
+    bool deleted;
+  };
+  
+  struct KIWrapper {
+    KIWrapper(const Dino::KeyInfo& _ki) : ki(_ki), deleted(false) { }
+    Dino::KeyInfo ki;
     bool deleted;
   };
   
@@ -78,7 +92,10 @@ protected:
   Gtk::SpinButton m_sbn_channel;
   SingleTextCombo m_cmb_ctrls;
   std::vector<CIWrapper> m_ctrls;
+  SingleTextCombo m_cmb_keys;
   ControllerDialog m_cdlg;
+  KeyDialog m_kdlg;
+  std::vector<KIWrapper> m_keys;
   
 };
 

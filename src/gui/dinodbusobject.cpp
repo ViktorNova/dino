@@ -92,6 +92,14 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy,
 	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_number));
   add_method("org.nongnu.dino.Song", "SetControllerGlobal", "iii",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_controller_global));
+  add_method("org.nongnu.dino.Song", "AddKey", "iis",
+	     sigc::mem_fun(*this, &DinoDBusObject::add_key));
+  add_method("org.nongnu.dino.Song", "RemoveKey", "ii",
+	     sigc::mem_fun(*this, &DinoDBusObject::remove_key));
+  add_method("org.nongnu.dino.Song", "SetKeyName", "iis",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_key_name));
+  add_method("org.nongnu.dino.Song", "SetKeyNumber", "iii",
+	     sigc::mem_fun(*this, &DinoDBusObject::set_key_number));
   add_method("org.nongnu.dino.Song", "SetPatternName", "iis",
 	     sigc::mem_fun(*this, &DinoDBusObject::set_pattern_name));
   add_method("org.nongnu.dino.Song", "SetPatternLength", "iii",
@@ -261,6 +269,26 @@ bool DinoDBusObject::set_controller_number(int argc, DBus::Argument* argv) {
 
 bool DinoDBusObject::set_controller_global(int argc, DBus::Argument* argv) {
   return m_proxy.set_controller_global(argv[0].i, argv[1].i, argv[2].i);
+}
+
+
+bool DinoDBusObject::add_key(int argc, DBus::Argument* argv) {
+  return false;
+}
+
+
+bool DinoDBusObject::remove_key(int argc, DBus::Argument* argv) {
+  return false;
+}
+
+
+bool DinoDBusObject::set_key_name(int argc, DBus::Argument* argv) {
+  return false;
+}
+
+
+bool DinoDBusObject::set_key_number(int argc, DBus::Argument* argv) {
+  return false;
 }
 
 

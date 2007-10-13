@@ -457,10 +457,10 @@ namespace Dino {
         jack_port_t* port = m_output_ports[iter->get_id()];
         if (port) {
           void* port_buf = jack_port_get_buffer(port, nframes);
-          jack_midi_clear_buffer(port_buf, nframes);
+          jack_midi_clear_buffer(port_buf);
           unsigned char all_notes_off[] = { 0xB0, 123, 0 };
           if (!m_sent_all_off)
-            jack_midi_event_write(port_buf, 0, all_notes_off, 3, nframes);
+            jack_midi_event_write(port_buf, 0, all_notes_off, 3);
         }
         m_sent_all_off = true;
       }
@@ -491,7 +491,7 @@ namespace Dino {
       jack_port_t* port = m_output_ports[iter->get_id()];
       if (port) {
         void* port_buf = jack_port_get_buffer(port, nframes);
-        jack_midi_clear_buffer(port_buf, nframes);
+        jack_midi_clear_buffer(port_buf);
         MIDIBuffer buffer(port_buf, start, 
                           pos.beats_per_minute, pos.frame_rate);
         buffer.set_period_size(nframes);
@@ -504,12 +504,11 @@ namespace Dino {
     void* input_buf = jack_port_get_buffer(m_input_port, nframes);
     jack_midi_event_t input_event;
     jack_nframes_t input_event_index = 0;
-    jack_nframes_t input_event_count = 
-      jack_midi_get_event_count(input_buf, nframes);
+    jack_nframes_t input_event_count = jack_midi_get_event_count(input_buf);
     jack_nframes_t timestamp;
     double bpf = pos.beats_per_minute / (60 * pos.frame_rate);
     for (unsigned int i = 0; i < input_event_count; ++i) {
-      jack_midi_event_get(&input_event, input_buf, i, nframes);
+      jack_midi_event_get(&input_event, input_buf, i);
       double beat = start + input_event.time * bpf;
       //m_rec.record_event(beat, input_event.size, input_event.buffer);
     }

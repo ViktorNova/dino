@@ -271,6 +271,29 @@ namespace Dino {
   }
   
   
+  bool CommandProxy::add_key(int track, unsigned char number, 
+			     const std::string& name) {
+    return push_and_do(new AddKey(m_song, track, number, name));
+  }
+  
+  
+  bool CommandProxy::remove_key(int track, unsigned char number) {
+    return false;
+  }
+
+  
+  bool CommandProxy::set_key_name(int track, unsigned char number, 
+				  const std::string& name) {
+    return false;
+  }
+  
+  
+  bool CommandProxy::set_key_number(int track, unsigned char old_number, 
+				    unsigned char new_number){
+    return false;
+  }
+
+  
   bool CommandProxy::set_pattern_name(int track, int pattern, 
 				      const std::string& name) {
     return push_and_do(new SetPatternName(m_song, track, pattern, name));

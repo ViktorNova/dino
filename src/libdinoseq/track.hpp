@@ -29,7 +29,6 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
-#include "controllerinfo.hpp"
 #include "curve.hpp"
 #include "xmlserialisable.hpp"
 #include "sequencable.hpp"
@@ -37,10 +36,12 @@
 
 namespace Dino {
 
+  class ControllerInfo;
   class InterpolatedEvent;
+  class KeyInfo;
   class MIDIBuffer;
   class Pattern;
-
+  
 
   /** This class represents a track, which holds information about an instrument
       and how that instrument is played. It has a list of patterns, and a
@@ -279,6 +280,8 @@ namespace Dino {
     ConstCurveIterator curves_find(long param) const;
     /** Return a vector of all controllers. */
     const std::vector<ControllerInfo*>& get_controllers() const;
+    /** Return a vector of all named keys. */
+    const std::vector<KeyInfo*>& get_keys() const;
     /** Return the curve with the given controller number. */
     Curve* get_curve(long number);
     
@@ -357,6 +360,10 @@ namespace Dino {
     void set_controller_number(long number, long new_number);    
     /** Change the 'global' toggle of a controller. */
     void set_controller_global(long number, bool global);    
+    /** Add a named key to the track. */
+    bool add_key(unsigned char number, const std::string& name);
+    /** Remove a named key. */
+    bool remove_key(unsigned char number);
     //@}
     
     /// @name XML I/O
@@ -397,6 +404,7 @@ namespace Dino {
     std::string m_name;
     std::map<int, Pattern*> m_patterns;
     std::vector<ControllerInfo*> m_controllers;
+    std::vector<KeyInfo*> m_keys;
     int m_next_sid;
     volatile int m_channel;
     std::vector<SequenceEntry*>* volatile m_sequence;

@@ -75,6 +75,10 @@ protected:
   bool set_controller_default(int argc, DBus::Argument* argv);
   bool set_controller_number(int argc, DBus::Argument* argv);
   bool set_controller_global(int argc, DBus::Argument* argv);
+  bool add_key(int argc, DBus::Argument* argv);
+  bool remove_key(int argc, DBus::Argument* argv);
+  bool set_key_name(int argc, DBus::Argument* argv);
+  bool set_key_number(int argc, DBus::Argument* argv);
 
   bool set_pattern_name(int argc, DBus::Argument* argv);
   bool set_pattern_length(int argc, DBus::Argument* argv);

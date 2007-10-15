@@ -26,6 +26,7 @@
 #include "note.hpp"
 #include "noteeditor.hpp"
 #include "plugininterface.hpp"
+#include "track.hpp"
 
 
 using namespace Dino;
@@ -48,6 +49,7 @@ NoteEditor::NoteEditor(Dino::CommandProxy& proxy)
     m_last_note_length(1),
     m_resize_ok(false),
     m_pat(0),
+    m_trk(0),
     m_vadj(0),
     m_proxy(proxy) {
   
@@ -100,16 +102,24 @@ NoteEditor::NoteEditor(Dino::CommandProxy& proxy)
 }
 
 
-void NoteEditor::set_pattern(int track, const Pattern* pattern) {
-  m_track = track;
-  if (pattern != m_pat) {
+void NoteEditor::set_pattern(const Track* track, const Pattern* pattern) {
+  if (track != m_trk && pattern != m_pat) {
+    m_trk = track;
     m_pat = pattern;
+    
+    if (m_trk) {
+      // XXX should disconnect this
+      m_trk->signal_mode_changed().
+	connect(mem_fun(*this, &NoteEditor::mode_changed));
+    }
+    
     if (m_pat) {
       
       m_last_note_length = m_pat->get_steps();
       
       m_selection = NoteSelection(m_pat);
       
+      // XXX should disconnect all these
       namespace s = sigc;
       sigc::slot<void> draw = mem_fun(*this, &NoteEditor::queue_draw);
       m_pat->signal_note_added().connect(s::hide(draw));
@@ -117,6 +127,7 @@ void NoteEditor::set_pattern(int track, const Pattern* pattern) {
       m_pat->signal_note_changed().connect(s::hide(draw));
       m_pat->signal_length_changed().connect(s::hide(draw));
       m_pat->signal_steps_changed().connect(s::hide(draw));
+      
       set_size_request(m_pat->get_length() * m_pat->get_steps() * 
 		       m_col_width + 1, m_max_note * m_row_height + 1);
       queue_draw();
@@ -182,7 +193,7 @@ void NoteEditor::delete_selection() {
     m_proxy.start_atomic("Delete selected notes");
     while (iter2 != m_selection.end()) {
       ++iter1;
-      m_proxy.delete_note(m_track, m_pat->get_id(), iter2->get_step(),
+      m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), iter2->get_step(),
 			  iter2->get_key());
       //m_pat->delete_note(iter2);
       iter2 = iter1;
@@ -224,7 +235,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       m_motion_operation = MotionNoOperation;
       if (event->button == 1) {
 	m_proxy.start_atomic("Paste notes");
-	m_proxy.add_notes(m_track, m_pat->get_id(), m_clipboard, step, note);
+	m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), 
+			  m_clipboard, step, note);
 	m_proxy.end_atomic();
 	return true;
       }
@@ -243,8 +255,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 							   m_last_note_length);
 	if (max > 0) {
 	  m_last_note_length = max;
-	  if (m_proxy.add_note(m_track, m_pat->get_id(), step, note, 64, 
-			       m_last_note_length)) {
+	  if (m_proxy.add_note(m_trk->get_id(), m_pat->get_id(), 
+			       step, note, 64, m_last_note_length)) {
 	    Pattern::NoteIterator iter = m_pat->find_note(step, note);
 	    m_selection.clear();
 	    m_selection.add_note(iter);
@@ -337,7 +349,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	step = (step < int(m_pat->get_length() * m_pat->get_steps()) ? step : 
 		m_pat->get_length() * m_pat->get_steps() - 1);
 	NoteCollection nc(m_selection);
-	m_proxy.add_notes(m_track, m_pat->get_id(), nc, step, note);
+	m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), nc, step, note);
 	//m_pat->add_notes(nc, step, note);
       }
       
@@ -386,8 +398,9 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       NoteSelection::Iterator iter;
       m_proxy.start_atomic("Resize notes");
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
-			      iter->get_key(), m_last_note_length);
+	m_proxy.set_note_size(m_trk->get_id(), m_pat->get_id(), 
+			      iter->get_step(), iter->get_key(), 
+			      m_last_note_length);
       m_proxy.end_atomic();
       m_added_note = make_pair(-1, -1);
     }
@@ -409,7 +422,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     if (unsigned(step) < m_pat->get_steps() * m_pat->get_length()) {
       m_proxy.start_atomic("Move notes");
       delete_selection();
-      m_proxy.add_notes(m_track, m_pat->get_id(), m_moved_notes, 
+      m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), m_moved_notes, 
 			step, note, &m_selection);
       m_proxy.end_atomic();
     }
@@ -451,8 +464,8 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     NoteSelection::Iterator iter;
     m_proxy.start_atomic("Change note velocities");
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-      m_proxy.set_note_velocity(m_track, m_pat->get_id(), iter->get_step(),
-				iter->get_key(), velocity);
+      m_proxy.set_note_velocity(m_trk->get_id(), m_pat->get_id(), 
+				iter->get_step(), iter->get_key(), velocity);
     m_proxy.end_atomic();
     //m_pat->set_velocity(iter, velocity);
     queue_draw();
@@ -497,9 +510,8 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
 	note >= 0 && note < m_max_note) {
       Pattern::NoteIterator iter = m_pat->find_note(step, note);
       if (iter != m_pat->notes_end())
-	m_proxy.delete_note(m_track, m_pat->get_id(), iter->get_step(),
+	m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), iter->get_step(),
 			    iter->get_key());
-	//m_pat->delete_note(iter);
       m_drag_step = step;
       m_drag_note = note;
     }
@@ -585,6 +597,10 @@ void NoteEditor::on_realize() {
 
 
 bool NoteEditor::on_expose_event(GdkEventExpose* event) {
+  
+  if (m_trk && m_trk->get_mode() == Track::DrumMode)
+    return true;
+  
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
   if (!m_pat)
@@ -831,3 +847,15 @@ void NoteEditor::update_menu(PluginInterface& plif) {
     }*/
 }
 
+
+void NoteEditor::mode_changed(Track::Mode mode) {
+  if (mode == Track::NormalMode) {
+    set_size_request(m_pat->get_length() * m_pat->get_steps() * 
+		     m_col_width + 1, m_max_note * m_row_height + 1);
+  }
+  else if (mode == Track::DrumMode) {
+    set_size_request(m_pat->get_length() * m_pat->get_steps() * 
+		     m_col_width + 1, 100);
+  }
+  queue_draw();
+}

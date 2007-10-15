@@ -321,12 +321,15 @@ void PatternEditor::set_active_track(int track) {
   // update connections
   m_conn_pat_added.disconnect();
   m_conn_pat_removed.disconnect();
+  m_conn_mode_label.disconnect();
   if (m_active_track != -1) {
     Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
     m_conn_pat_added = t->signal_pattern_added().
       connect(mem_fun(*this, &PatternEditor::pattern_added));
     m_conn_pat_removed = t->signal_pattern_removed().
       connect(sigc::hide(mem_fun(*this, &PatternEditor::update_pattern_combo)));
+    m_conn_mode_label = t->signal_mode_changed().
+      connect(mem_fun(m_octave_label, &OctaveLabel::track_mode_changed));
   }
   set_active_pattern(-1);
   update_pattern_combo();
@@ -342,10 +345,12 @@ void PatternEditor::set_active_pattern(int pattern) {
     return;
   
   m_active_pattern = pattern;
+  const Track* tptr = 0;
   const Pattern* pptr = 0;
   
   Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
   if (t != m_song.tracks_end()) {
+    tptr = &*t;
     Track::ConstPatternIterator p = t->pat_find(m_active_pattern);
     
     // update connections
@@ -363,7 +368,7 @@ void PatternEditor::set_active_pattern(int pattern) {
   }
   
   update_controller_combo();
-  m_ne.set_pattern(m_active_track, pptr);
+  m_ne.set_pattern(tptr, pptr);
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);
 
   bool active = (m_active_pattern != -1);

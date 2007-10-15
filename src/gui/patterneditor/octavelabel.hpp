@@ -23,22 +23,27 @@
 
 #include <gtkmm.h>
 
+#include "track.hpp"
+
 
 class OctaveLabel : public Gtk::DrawingArea {
 public:
   OctaveLabel(int width, int note_height);
   
+  void track_mode_changed(Dino::Track::Mode mode);  
+
+protected:
+  
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
 
-private:
-  
   int m_width;
   int m_note_height;
+  Dino::Track::Mode m_mode;
   
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;
-  Gdk::Color m_bg_color, m_fg_color;  
+  Gdk::Color m_bg_color, m_fg_color;
 };
 
 

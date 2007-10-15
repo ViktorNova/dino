@@ -404,6 +404,19 @@ namespace Dino {
   };
 
 
+  class SetTrackMode : public Command {
+  public:
+    SetTrackMode(Song& song, int track, Track::Mode mode);
+    bool do_command();
+    bool undo_command();
+  protected:
+    Song& m_song;
+    int m_track;
+    Track::Mode m_mode;
+    Track::Mode m_oldmode;
+  };
+
+
   class SetPatternName : public Command {
   public:
     SetPatternName(Song& song, int track, int pattern, const std::string& name);

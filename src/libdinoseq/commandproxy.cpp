@@ -294,6 +294,11 @@ namespace Dino {
   }
 
   
+  bool CommandProxy::set_track_mode(int track, Track::Mode mode) {
+    return push_and_do(new SetTrackMode(m_song, track, mode));
+  }
+
+  
   bool CommandProxy::set_pattern_name(int track, int pattern, 
 				      const std::string& name) {
     return push_and_do(new SetPatternName(m_song, track, pattern, name));

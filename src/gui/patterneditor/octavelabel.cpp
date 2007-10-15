@@ -18,8 +18,7 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
-#include <iostream>
-
+#include "debug.hpp"
 #include "octavelabel.hpp"
 
 
@@ -29,7 +28,9 @@ using namespace Gdk;
 
 
 OctaveLabel::OctaveLabel(int width, int note_height)
-  : m_width(width), m_note_height(note_height) {
+  : m_width(width), 
+    m_note_height(note_height),
+    m_mode(Dino::Track::NormalMode) {
   m_bg_color.set_rgb(60000, 60000, 65535);
   m_fg_color.set_rgb(40000, 40000, 40000);
   m_colormap = Colormap::get_system();
@@ -48,7 +49,10 @@ void OctaveLabel::on_realize() {
 
 
 bool OctaveLabel::on_expose_event(GdkEventExpose* event) {
-
+  
+  if (m_mode == Dino::Track::DrumMode)
+    return true;
+  
   Glib::RefPtr<Gdk::Window> win = get_window();
   win->clear();
   m_gc->set_foreground(m_bg_color);
@@ -79,3 +83,14 @@ bool OctaveLabel::on_expose_event(GdkEventExpose* event) {
 }
 
 
+void OctaveLabel::track_mode_changed(Dino::Track::Mode mode) {
+  Dino::dbg1<<"Called OctaveLabel::track_mode_changed("<<mode<<")"<<endl;
+  if (mode == m_mode)
+    return;
+  m_mode = mode;
+  if (m_mode == Dino::Track::NormalMode)
+    set_size_request(m_width, 128 * m_note_height + 1);
+  else if (m_mode == Dino::Track::DrumMode)
+    set_size_request(100, 100);
+  queue_draw();
+}

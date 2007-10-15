@@ -30,12 +30,12 @@
 #include "keydialog.hpp"
 #include "keyinfo.hpp"
 #include "singletextcombo.hpp"
+#include "track.hpp"
 
 
 namespace Dino {
   class CommandProxy;
   class Sequencer;
-  class Track;
 }
 
 
@@ -47,10 +47,12 @@ public:
   std::string get_name() const;
   std::string get_port() const;
   int get_channel() const;
+  Dino::Track::Mode get_mode() const;
   
   void set_name(const std::string& name);
   void set_channel(int channel);
   void update_ports(const Dino::Sequencer* seq = 0);
+  void set_mode(Dino::Track::Mode mode);
   void set_controllers(const std::vector<Dino::ControllerInfo*>& ctrls);
   void set_keys(const std::vector<Dino::KeyInfo*>& ctrls);
   
@@ -90,6 +92,7 @@ protected:
   Gtk::Entry m_ent_name;
   SingleTextCombo m_cmb_port;
   Gtk::SpinButton m_sbn_channel;
+  Gtk::CheckButton m_chk_mode;
   SingleTextCombo m_cmb_ctrls;
   std::vector<CIWrapper> m_ctrls;
   SingleTextCombo m_cmb_keys;

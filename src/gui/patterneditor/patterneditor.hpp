@@ -98,6 +98,7 @@ protected:
   sigc::connection m_conn_pat_removed;
   sigc::connection m_conn_cont_added;
   sigc::connection m_conn_cont_removed;
+  sigc::connection m_conn_mode_label;
 
   int m_active_track;
   int m_active_pattern;

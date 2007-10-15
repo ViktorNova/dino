@@ -147,7 +147,8 @@ namespace Dino {
     /** Change the key number value of a named key. */
     bool set_key_number(int track, unsigned char old_number, 
 			unsigned char new_number);
-
+    /** Set the mode of a track. */
+    bool set_track_mode(int track, Track::Mode mode);
     /** Change the name of a pattern. */
     bool set_pattern_name(int track, int pattern, const std::string& name);
     /** Change the length of a pattern (in beats). */

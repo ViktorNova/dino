@@ -995,7 +995,8 @@ namespace Dino {
     if (m_mode == mode)
       return;
     m_mode = mode;
-    m_mode_changed(mode);
+    dbg1<<"Setting new track mode: "<<mode<<endl;
+    m_signal_mode_changed(mode);
   }
 
 
@@ -1240,6 +1241,11 @@ namespace Dino {
 
   signal<void, unsigned char, unsigned char>& Track::signal_key_moved() const {
     return m_signal_key_moved;
+  }
+
+
+  signal<void, Track::Mode>& Track::signal_mode_changed() const {
+    return m_signal_mode_changed;
   }
 
 

@@ -1165,6 +1165,34 @@ namespace Dino {
   }
 
 
+  SetTrackMode::SetTrackMode(Song& song, int track, Track::Mode mode)
+    : Command("Change track mode"),
+      m_song(song),
+      m_track(track),
+      m_mode(mode) {
+
+  }
+  
+  
+  bool SetTrackMode::do_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    m_oldmode = titer->get_mode();
+    titer->set_mode(m_mode);
+    return true;
+  }
+  
+  
+  bool SetTrackMode::undo_command() {
+    Song::TrackIterator titer = m_song.tracks_find(m_track);
+    if (titer == m_song.tracks_end())
+      return false;
+    titer->set_mode(m_oldmode);
+    return true;
+  }
+
+
   SetPatternName::SetPatternName(Song& song, int track, 
 				 int pattern, const std::string& name)
     : Command("Set pattern name"),

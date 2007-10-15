@@ -34,21 +34,23 @@ using namespace Dino;
 
 
 TrackDialog::TrackDialog()
-  : m_sbn_channel(0, 0) {
+  : m_sbn_channel(0, 0),
+    m_chk_mode("Drum mode") {
   
   set_title("Track properties");
   m_sbn_channel.set_range(1, 16);
   m_sbn_channel.set_increments(1, 10);
-  Table* table = manage(new Table(9, 2));
+  Table* table = manage(new Table(10, 2));
   table->attach(*manage(new Label("Track name:")), 0, 1, 0, 1);
   table->attach(m_ent_name, 1, 2, 0, 1);
   table->attach(*manage(new Label("MIDI port:")), 0, 1, 1, 2);
   table->attach(m_cmb_port, 1, 2, 1, 2);
   table->attach(*manage(new Label("MIDI channel:")), 0, 1, 2, 3);
   table->attach(m_sbn_channel, 1, 2, 2, 3);
-  table->attach(*manage(new HSeparator), 0, 2, 3, 4);
-  table->attach(*manage(new Label("Controllers:")), 0, 1, 4, 5);
-  table->attach(m_cmb_ctrls, 1, 2, 4, 5);
+  table->attach(m_chk_mode, 1, 2, 3, 4);
+  table->attach(*manage(new HSeparator), 0, 2, 4, 5);
+  table->attach(*manage(new Label("Controllers:")), 0, 1, 5, 6);
+  table->attach(m_cmb_ctrls, 1, 2, 5, 6);
   HBox* hbox = manage(new HBox(false, 3));
   Button* add_ctrl_btn = manage(new Button("Add"));
   hbox->pack_start(*add_ctrl_btn);
@@ -56,10 +58,10 @@ TrackDialog::TrackDialog()
   hbox->pack_start(*remove_ctrl_btn);
   Button* modify_ctrl_btn = manage(new Button("Modify"));
   hbox->pack_start(*modify_ctrl_btn);
-  table->attach(*hbox, 1, 2, 5, 6);
-  table->attach(*manage(new HSeparator), 0, 2, 6, 7);
-  table->attach(*manage(new Label("Named keys:")), 0, 1, 7, 8);
-  table->attach(m_cmb_keys, 1, 2, 7, 8);
+  table->attach(*hbox, 1, 2, 6, 7);
+  table->attach(*manage(new HSeparator), 0, 2, 7, 8);
+  table->attach(*manage(new Label("Named keys:")), 0, 1, 8, 9);
+  table->attach(m_cmb_keys, 1, 2, 8, 9);
   hbox = manage(new HBox(false, 3));
   Button* add_key_btn = manage(new Button("Add"));
   hbox->pack_start(*add_key_btn);
@@ -67,7 +69,7 @@ TrackDialog::TrackDialog()
   hbox->pack_start(*remove_key_btn);
   Button* modify_key_btn = manage(new Button("Modify"));
   hbox->pack_start(*modify_key_btn);
-  table->attach(*hbox, 1, 2, 8, 9);
+  table->attach(*hbox, 1, 2, 9, 10);
   table->set_border_width(5);
   table->set_row_spacings(5);
   table->set_col_spacings(5);
@@ -107,6 +109,12 @@ int TrackDialog::get_channel() const {
 }
 
 
+Dino::Track::Mode TrackDialog::get_mode() const {
+  return m_chk_mode.get_active() ? 
+    Dino::Track::DrumMode : Dino::Track::NormalMode;
+}
+
+
 void TrackDialog::set_name(const string& name) {
   m_ent_name.set_text(name);
 }
@@ -126,6 +134,11 @@ void TrackDialog::update_ports(const Dino::Sequencer* seq) {
     for (size_t i = 0; i < info.size(); ++i)
       m_cmb_port.append_text(info[i].get_name(), i);
   }
+}
+
+
+void TrackDialog::set_mode(Dino::Track::Mode mode) {
+  m_chk_mode.set_active(mode == Dino::Track::DrumMode);
 }
 
 
@@ -166,6 +179,7 @@ void TrackDialog::reset() {
 void TrackDialog::set_track(const Dino::Track& track, Dino::Sequencer& seq) {
   set_name(track.get_name());
   set_channel(track.get_channel() + 1);
+  set_mode(track.get_mode());
   set_controllers(track.get_controllers());
   set_keys(track.get_keys());
   vector<InstrumentInfo> info = seq.get_instruments(track.get_id());
@@ -190,6 +204,8 @@ void TrackDialog::apply_to_track(const Dino::Track& t, Dino::Sequencer& seq,
   if (t.get_channel() != get_channel() - 1)
     proxy.set_track_midi_channel(t.get_id(), get_channel() - 1);
   seq.set_instrument(t.get_id(), get_port());
+  if (t.get_mode() != get_mode())
+    proxy.set_track_mode(t.get_id(), get_mode());
   
   // update controllers
   unsigned ncontrollers = t.get_controllers().size();

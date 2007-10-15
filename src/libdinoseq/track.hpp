@@ -458,7 +458,7 @@ namespace Dino {
     mutable sigc::signal<void, unsigned char> m_signal_key_removed;
     mutable sigc::signal<void, unsigned char> m_signal_key_changed;
     mutable sigc::signal<void, unsigned char, unsigned char> m_signal_key_moved;
-    mutable sigc::signal<void, Mode> m_mode_changed;
+    mutable sigc::signal<void, Mode> m_signal_mode_changed;
     
   };
 

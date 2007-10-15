@@ -26,8 +26,9 @@
 #include <gtkmm.h>
 
 #include "notecollection.hpp"
-#include "pattern.hpp"
 #include "noteselection.hpp"
+#include "pattern.hpp"
+#include "track.hpp"
 
 
 namespace Dino {
@@ -42,7 +43,7 @@ class NoteEditor : public Gtk::DrawingArea {
 public:
   NoteEditor(Dino::CommandProxy& proxy);
   
-  void set_pattern(int track, const Dino::Pattern* pattern);
+  void set_pattern(const Dino::Track* track, const Dino::Pattern* pattern);
   void set_step_width(int width);
   void set_vadjustment(Gtk::Adjustment* adj);
 
@@ -70,6 +71,7 @@ protected:
   void draw_outline(const Dino::NoteCollection& notes, unsigned int step,
 		    unsigned char key, bool good);
   void update();
+  void mode_changed(Dino::Track::Mode mode);
   
 private:
   
@@ -123,11 +125,11 @@ private:
   
   int m_d_min_step, m_d_max_step, m_d_min_note, m_d_max_note;
   const Dino::Pattern* m_pat;
+  const Dino::Track* m_trk;
   Glib::RefPtr<Pango::Layout> m_layout;
   Gtk::Adjustment* m_vadj;
   Gtk::Menu m_menu;
   
-  int m_track;
   Dino::CommandProxy& m_proxy;
 };
 

@@ -286,18 +286,36 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	      m_selection.add_note(iterator);
 	    }
 	    m_moved_notes.clear();
+	    m_drag_step_min = 0;
+	    m_drag_step_max = 0;
+	    m_drag_row_min = 0;
+	    m_drag_row_max = 0;
 	    NoteSelection::Iterator iter;
 	    for (iter = m_selection.begin(); iter != m_selection.end();++iter) {
 	      int krow = key2row(iter->get_key());
 	      if (krow < 128) {
 		m_moved_notes.add_note(iter->get_step(), iter->get_length(),
 				       krow, iter->get_velocity());
+		if (step - int(iter->get_step()) > m_drag_step_min)
+		  m_drag_step_min = step - int(iter->get_step());
+		if (int(iter->get_step() + iter->get_length()) - 1 - step > 
+		    m_drag_step_max) {
+		  m_drag_step_max = int(iter->get_step() + iter->get_length()) -
+		    1 - step;
+		}
+		if (row - key2row(iter->get_key()) > m_drag_row_min)
+		  m_drag_row_min = row - key2row(iter->get_key());
+		if (key2row(iter->get_key()) - row > m_drag_row_max)
+		  m_drag_row_max = key2row(iter->get_key()) - row;
 	      }
 	    }
-	    m_drag_operation = DragMovingNotes;
-	    NoteSelection::Iterator i;
 	    m_move_offset_step = step;
 	    m_move_offset_row = row;
+	    m_drag_step_max = m_pat->get_length() * m_pat->get_steps() - 1 -
+	      m_drag_step_max;
+	    m_drag_row_max = m_rows - 1 - m_drag_row_max;
+	    m_drag_operation = DragMovingNotes;
+	    NoteSelection::Iterator i;
 	    queue_draw();
 	  }
 	}
@@ -402,8 +420,6 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
   if (!m_pat)
     return false;
   
-  dbg1<<__PRETTY_FUNCTION__<<endl;
-  
   // resize
   if (m_drag_operation == DragChangingNoteLength) {
     if (m_resize_ok) {
@@ -430,14 +446,12 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     m_drag_operation = DragNoOperation;
     int step = m_drag_step - m_move_offset_step;
     int row = m_drag_row - m_move_offset_row;
-    dbg1<<__PRETTY_FUNCTION__<<", step = "<<step<<", row = "<<row<<endl;
     m_proxy.start_atomic("Move notes");
     delete_selection();
     NoteCollection::Iterator iter;
     for (iter = m_moved_notes.begin(); iter != m_moved_notes.end(); ++iter) {
       iter->key = row2key(iter->key + row);
       iter->start += step;
-      dbg1<<iter->start<<", "<<int(iter->key)<<endl;
     }
     m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), m_moved_notes, 
 		      0, 0, &m_selection);
@@ -531,7 +545,15 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
   case DragMovingNotes: {
     if (m_drag_step != step || m_drag_row != row) {
       m_drag_step = step;
+      if (m_drag_step < m_drag_step_min)
+	m_drag_step = m_drag_step_min;
+      if (m_drag_step > m_drag_step_max)
+	m_drag_step = m_drag_step_max;
       m_drag_row = row;
+      if (m_drag_row < m_drag_row_min)
+	m_drag_row = m_drag_row_min;
+      if (m_drag_row > m_drag_row_max)
+	m_drag_row = m_drag_row_max;
       queue_draw();
     }
     break;
@@ -847,7 +869,6 @@ void NoteEditor::draw_paste_outline(Glib::RefPtr<Gdk::Window> win,
 	}
       }
     }
-    dbg1<<"ok = "<<ok<<endl;
     draw_outline(m_clipboard, m_drag_step, m_drag_row, ok);
   }
 }
@@ -857,7 +878,6 @@ void NoteEditor::draw_move_outline(Glib::RefPtr<Gdk::Window> win,
 				   int width, int height) {
   int step = m_drag_step - m_move_offset_step;
   int row = m_drag_row - m_move_offset_row;
-  dbg1<<"step = "<<step<<", row = "<<row<<endl;
   bool ok = false;
   if (m_drag_step > 0) {
     ok = true;
@@ -870,7 +890,6 @@ void NoteEditor::draw_move_outline(Glib::RefPtr<Gdk::Window> win,
       }
     }
   }
-  dbg1<<"ok = "<<ok<<endl;
   draw_outline(m_moved_notes, step, row, ok);
 }
 

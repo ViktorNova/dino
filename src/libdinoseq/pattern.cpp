@@ -387,9 +387,6 @@ namespace Dino {
     assert(velocity < 128);
     assert(note_length > 0);
     
-    dbg1<<"add_note("<<step<<", "<<key<<", "<<velocity<<", "<<note_length<<")"
-	<<endl;
-    
     if (!check_free_space(step, key, note_length))
       return notes_end();
     
@@ -520,8 +517,6 @@ namespace Dino {
   void Pattern::delete_note(NoteIterator iterator) {
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
-    dbg1<<__PRETTY_FUNCTION__
-	<<", "<<iterator->get_step()<<", "<<iterator->get_key()<<endl;
     delete_note(iterator.m_note);
   }
 
@@ -995,13 +990,11 @@ namespace Dino {
     for (unsigned int i = step + length - 1; i >= step; --i) {
       iter = find_note(i, key);
       if (iter != notes_end() && ignore.find(iter) == ignore.end()) {
-	dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;
 	return false;
       }
       if (i == step)
 	break;
     }
-    dbg1<<__PRETTY_FUNCTION__<<" returns true!"<<endl;
     return true;
   }
 

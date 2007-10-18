@@ -119,7 +119,11 @@ private:
   
   std::pair<int, int> m_added_note;
   int m_drag_step;
+  int m_drag_step_min;
+  int m_drag_step_max;
   int m_drag_row;
+  int m_drag_row_min;
+  int m_drag_row_max;
   int m_drag_y;
   int m_drag_start_vel;
   int m_last_note_length;

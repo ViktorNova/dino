@@ -321,15 +321,13 @@ void PatternEditor::set_active_track(int track) {
   // update connections
   m_conn_pat_added.disconnect();
   m_conn_pat_removed.disconnect();
-  m_conn_mode_label.disconnect();
   if (m_active_track != -1) {
     Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
     m_conn_pat_added = t->signal_pattern_added().
       connect(mem_fun(*this, &PatternEditor::pattern_added));
     m_conn_pat_removed = t->signal_pattern_removed().
       connect(sigc::hide(mem_fun(*this, &PatternEditor::update_pattern_combo)));
-    m_conn_mode_label = t->signal_mode_changed().
-      connect(mem_fun(m_octave_label, &OctaveLabel::track_mode_changed));
+    m_octave_label.set_track(&*t);
   }
   set_active_pattern(-1);
   update_pattern_combo();

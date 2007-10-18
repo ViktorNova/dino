@@ -29,17 +29,24 @@
 class OctaveLabel : public Gtk::DrawingArea {
 public:
   OctaveLabel(int width, int note_height);
-  
-  void track_mode_changed(Dino::Track::Mode mode);  
+  void set_track(const Dino::Track* track);
 
 protected:
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
 
+  void track_mode_changed(Dino::Track::Mode mode);  
+
   int m_width;
   int m_note_height;
-  Dino::Track::Mode m_mode;
+  int m_drum_height;
+  const Dino::Track* m_track;
+  sigc::connection m_mode_conn;
+  sigc::connection m_add_conn;
+  sigc::connection m_remove_conn;
+  sigc::connection m_change_conn;
+  sigc::connection m_move_conn;
   
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;

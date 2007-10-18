@@ -68,10 +68,23 @@ protected:
   void draw_note(Dino::Pattern::NoteIterator iterator, bool selected = false);
   void draw_velocity_box(Dino::Pattern::NoteIterator iterator, 
 			 bool selected = false);
-  void draw_outline(const Dino::NoteCollection& notes, unsigned int step,
-		    unsigned char key, bool good);
+  void draw_outline(const Dino::NoteCollection& notes, int step,
+		    int row, bool good);
   void update();
   void mode_changed(Dino::Track::Mode mode);
+  void draw_background(Glib::RefPtr<Gdk::Window> win, int width, int height);
+  void draw_grid(Glib::RefPtr<Gdk::Window> win, int width, int height);
+  void draw_selection_box(Glib::RefPtr<Gdk::Window> win, int width, int height);
+  void draw_paste_outline(Glib::RefPtr<Gdk::Window> win, int width, int height);
+  void draw_move_outline(Glib::RefPtr<Gdk::Window> win, int width, int height);
+  void draw_resize_outline(Glib::RefPtr<Gdk::Window> win, 
+			   int width, int height);
+  int pixel2row(int y);
+  int pixel2step(int x);
+  int row2pixel(int row);
+  int step2pixel(int step);
+  int row2key(int row);
+  int key2row(int row);
   
 private:
   
@@ -102,17 +115,17 @@ private:
   Gdk::Color m_selected_note_colors[16];
   int m_row_height;
   int m_col_width;
-  int m_max_note;
+  int m_rows;
   
   std::pair<int, int> m_added_note;
   int m_drag_step;
-  int m_drag_note;
+  int m_drag_row;
   int m_drag_y;
   int m_drag_start_vel;
   int m_last_note_length;
   int m_move_offset_step;
-  int m_move_offset_note;
-  int m_sb_step, m_sb_note;
+  int m_move_offset_row;
+  int m_sb_step, m_sb_row;
   bool m_resize_ok;
   
   Dino::NoteSelection m_selection;
@@ -131,6 +144,8 @@ private:
   Gtk::Menu m_menu;
   
   Dino::CommandProxy& m_proxy;
+  
+  unsigned char m_keymap[128];
 };
 
 

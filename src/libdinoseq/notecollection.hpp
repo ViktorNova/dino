@@ -67,6 +67,13 @@ namespace Dino {
     Iterator end();
     ConstIterator end() const;
     
+    /** Add a new note to the collection. */
+    bool add_note(unsigned int start, unsigned int length, 
+		  unsigned char key, unsigned char velocity);
+    
+    /** Clear the collection. */
+    void clear();
+    
     /** Debug output. */
     void printall() const;
     

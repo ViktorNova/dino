@@ -402,6 +402,10 @@ namespace Dino {
       m_active = false;
       return true;
     }
+    else {
+      dbg0<<"Command '"<<cmd->get_name()<<"' failed!"<<std::endl;
+      delete cmd;
+    }
     m_active = false;
     return false;
   }

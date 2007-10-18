@@ -478,8 +478,13 @@ namespace Dino {
 
   bool Pattern::add_notes(const NoteCollection& notes, unsigned step, int key,
                           NoteSelection* selection) {
+    
+    dbg1<<1<<std::endl;
+    
     assert(step < m_sd->length * m_sd->steps);
     assert(key >= 0 && key < 128);
+
+    dbg1<<2<<std::endl;
     
     if (selection)
       selection->clear();
@@ -487,17 +492,14 @@ namespace Dino {
     // check if we can add all the notes
     NoteCollection::ConstIterator iter;
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
-      if (!check_free_space(step + iter->start, 
-			    iter->key - 127 + key, iter->length))
+      if (!check_free_space(step + iter->start, iter->key + key, iter->length))
 	return false;
+      dbg1<<3<<std::endl;
+
     }
     
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
-      if (iter->start + step >= m_sd->length * m_sd->steps)
-        continue;
-      if (iter->key + key < 128)
-        continue;
-      NoteIterator iter2 = add_note(iter->start + step, iter->key + key - 127, 
+      NoteIterator iter2 = add_note(iter->start + step, iter->key + key, 
                                     iter->velocity, iter->length);
       if (selection)
         selection->add_note(iter2);
@@ -515,7 +517,8 @@ namespace Dino {
   void Pattern::delete_note(NoteIterator iterator) {
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
-
+    dbg1<<__PRETTY_FUNCTION__
+	<<", "<<iterator->get_step()<<", "<<iterator->get_key()<<endl;
     delete_note(iterator.m_note);
   }
 
@@ -976,7 +979,8 @@ namespace Dino {
   bool Pattern::check_free_space(unsigned int step, int key, 
 				 unsigned int length, 
 				 const NoteSelection& ignore) const {
-    assert(key >= 0 && key < 128);
+    if (key < 0 || key > 128)
+      return false;
     unsigned n = get_length() * get_steps();
     if (step >= n || step + length > n) {
       dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;

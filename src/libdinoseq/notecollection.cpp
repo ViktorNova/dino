@@ -96,5 +96,23 @@ namespace Dino {
     
   }
 
+
+  bool NoteCollection::add_note(unsigned int start, unsigned int length, 
+				unsigned char key, unsigned char velocity) {
+    for (unsigned i = 0; i < m_data.size(); ++i) {
+      if (m_data[i].key == key &&
+	  (m_data[i].start < start + length && 
+	   m_data[i].start + m_data[i].length > start))
+	return false;
+    }
+    m_data.push_back(NoteDescription(start, length, key, velocity));
+    return true;
+  }
+
+
+  void NoteCollection::clear() {
+    m_data.clear();
+  }
+  
 }
 

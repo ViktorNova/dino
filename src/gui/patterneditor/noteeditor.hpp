@@ -150,6 +150,18 @@ private:
   Dino::CommandProxy& m_proxy;
   
   unsigned char m_keymap[128];
+  
+  sigc::connection m_mode_conn;
+  sigc::connection m_note_added_conn;
+  sigc::connection m_note_removed_conn;
+  sigc::connection m_note_changed_conn;
+  sigc::connection m_length_changed_conn;
+  sigc::connection m_steps_changed_conn;
+  sigc::connection m_key_added_conn;
+  sigc::connection m_key_removed_conn;
+  sigc::connection m_key_changed_conn;
+  sigc::connection m_key_moved_conn;
+  
 };
 
 

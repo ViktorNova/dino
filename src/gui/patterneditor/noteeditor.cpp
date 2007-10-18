@@ -108,14 +108,33 @@ NoteEditor::NoteEditor(Dino::CommandProxy& proxy)
 
 
 void NoteEditor::set_pattern(const Track* track, const Pattern* pattern) {
-  if (track != m_trk && pattern != m_pat) {
+  
+  if (track != m_trk || pattern != m_pat) {
     m_trk = track;
     m_pat = pattern;
     
+    m_mode_conn.disconnect();
+    m_key_added_conn.disconnect();
+    m_key_removed_conn.disconnect();
+    m_key_changed_conn.disconnect();
+    m_key_moved_conn.disconnect();
+    m_note_added_conn.disconnect();
+    m_note_removed_conn.disconnect();
+    m_note_changed_conn.disconnect();
+    m_length_changed_conn.disconnect();
+    m_steps_changed_conn.disconnect();
+    
     if (m_trk) {
-      // XXX should disconnect this
-      m_trk->signal_mode_changed().
+      m_mode_conn = m_trk->signal_mode_changed().
 	connect(mem_fun(*this, &NoteEditor::mode_changed));
+      sigc::slot<void> mc = 
+	compose(sigc::mem_fun(*this, &NoteEditor::mode_changed),
+		sigc::mem_fun(*m_trk, &Track::get_mode));
+      m_key_added_conn = m_trk->signal_key_added().connect(sigc::hide(mc));
+      m_key_removed_conn = m_trk->signal_key_removed().connect(sigc::hide(mc));
+      m_key_changed_conn = m_trk->signal_key_changed().connect(sigc::hide(mc));
+      m_key_moved_conn = m_trk->signal_key_moved().
+	connect(sigc::hide(sigc::hide(mc)));
     }
     
     if (m_pat) {
@@ -124,19 +143,22 @@ void NoteEditor::set_pattern(const Track* track, const Pattern* pattern) {
       
       m_selection = NoteSelection(m_pat);
       
-      // XXX should disconnect all these
       namespace s = sigc;
       sigc::slot<void> draw = mem_fun(*this, &NoteEditor::queue_draw);
-      m_pat->signal_note_added().connect(s::hide(draw));
-      m_pat->signal_note_removed().connect(s::hide(draw));
-      m_pat->signal_note_changed().connect(s::hide(draw));
-      m_pat->signal_length_changed().connect(s::hide(draw));
-      m_pat->signal_steps_changed().connect(s::hide(draw));
+      m_note_added_conn = m_pat->signal_note_added().connect(s::hide(draw));
+      m_note_removed_conn = m_pat->signal_note_removed().connect(s::hide(draw));
+      m_note_changed_conn = m_pat->signal_note_changed().connect(s::hide(draw));
+      m_length_changed_conn = m_pat->signal_length_changed().
+	connect(s::hide(draw));
+      m_steps_changed_conn = m_pat->signal_steps_changed().
+	connect(s::hide(draw));
       
       mode_changed(m_trk->get_mode());
     }
     else
       set_size_request();
+    
+    queue_draw();
   }
 }
 

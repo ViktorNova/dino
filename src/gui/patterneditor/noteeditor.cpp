@@ -347,13 +347,27 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	}
       }
       else {
-	// outside a note, add the selection here
+	// outside a note, add a copy of the selection here
 	step = (step < int(m_pat->get_length() * m_pat->get_steps()) ? step : 
 		m_pat->get_length() * m_pat->get_steps() - 1);
-	NoteCollection nc(m_selection);
-	m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), 
-			  nc, step, row2key(row));
-	//m_pat->add_notes(nc, step, note);
+	NoteSelection::Iterator iter;
+	int minstep = std::numeric_limits<int>::max();
+	int maxrow = 0;
+	for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
+	  if (iter->get_step() < minstep)
+	    minstep = iter->get_step();
+	  int r = key2row(iter->get_key());
+	  if (r < 128 && r > maxrow)
+	    maxrow = r;
+	}
+	m_proxy.start_atomic("Inserting notes");
+	for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
+	  m_proxy.add_note(m_trk->get_id(), m_pat->get_id(), 
+			   iter->get_step() + (step - minstep),
+			   row2key(key2row(iter->get_key()) + (row - maxrow)),
+			   iter->get_velocity(), iter->get_length());
+	}
+	m_proxy.end_atomic();
       }
       
       break;

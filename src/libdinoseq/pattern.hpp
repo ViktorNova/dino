@@ -249,7 +249,7 @@ namespace Dino {
     NoteIterator add_note(unsigned step, int key, int velocity, int length);
     /** Add a collection of notes with the given step and key offsets. 
         Can be used as a "paste" command. */
-    bool add_notes(const NoteCollection& notes, unsigned step, int key,
+    bool add_notes(const NoteCollection& notes, int step, int key,
                    NoteSelection* selection = 0);
     /** Delete a note. */
     void delete_note(NoteIterator note);

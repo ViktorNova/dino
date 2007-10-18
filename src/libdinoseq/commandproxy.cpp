@@ -325,7 +325,7 @@ namespace Dino {
   
 
   bool CommandProxy::add_notes(int track, int pattern, 
-			       const NoteCollection& notes, unsigned step, 
+			       const NoteCollection& notes, int step, 
 			       int key, NoteSelection* selection) {
     return push_and_do(new AddNotes(m_song, track, pattern, notes, 
 				    step, key, selection));

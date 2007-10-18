@@ -335,12 +335,6 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	else {
 	  NoteSelection::Iterator iter;
 	  unsigned new_size = step - iterator->get_step() + 1;
-	  //m_proxy.start_atomic("Resize notes");
-	  //for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-	  //  m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(),
-	  //                        iter->get_key(), new_size);
-	  //m_proxy.end_atomic();
-	  //m_pat->resize_note(iter, new_size);
 	  m_last_note_length = new_size;
 	  m_added_note = make_pair(iterator->get_step(), row2key(row));
 	  m_drag_operation = DragChangingNoteLength;
@@ -450,17 +444,20 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     m_proxy.end_atomic();
   }
   
+  // select
   if (m_drag_operation == DragSelectBox) {
     m_drag_operation = DragNoOperation;
     Pattern::NoteIterator iter;
     unsigned int minstep = m_drag_step < m_sb_step ? m_drag_step : m_sb_step;
     unsigned int maxstep = m_drag_step > m_sb_step ? m_drag_step : m_sb_step;
-    unsigned int minnote = m_drag_row < m_sb_row ? m_drag_row : m_sb_row;
-    unsigned int maxnote = m_drag_row > m_sb_row ? m_drag_row : m_sb_row;
+    unsigned int minrow = m_drag_row < m_sb_row ? m_drag_row : m_sb_row;
+    unsigned int maxrow = m_drag_row > m_sb_row ? m_drag_row : m_sb_row;
     for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter) {
       if (iter->get_step() <= maxstep && 
 	  iter->get_step() + iter->get_length() >= minstep &&
-	  iter->get_key() >= minnote && iter->get_key() <= maxnote) {
+	  key2row(iter->get_key()) < 128 &&
+	  key2row(iter->get_key()) >= minrow && 
+	  key2row(iter->get_key()) <= maxrow) {
 	m_selection.add_note(iter);
       }
     }
@@ -509,14 +506,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
       m_pat->find_note(m_added_note.first, m_added_note.second);
     unsigned new_size = step - m_added_note.first + 1;
     NoteSelection::Iterator iter;
-    //m_proxy.start_atomic("Resize notes");
-    //for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-    //  m_proxy.set_note_size(m_track, m_pat->get_id(), iter->get_step(), 
-    //                        iter->get_key(), new_size);
-    //m_proxy.end_atomic();
-    //m_pat->resize_note(iter, new_size);
     m_last_note_length = step - m_added_note.first + 1;
-    
     m_drag_step = step;
     m_drag_row = row;
     queue_draw();
@@ -549,7 +539,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     
   case DragSelectBox: {
     if (m_drag_step != step || m_drag_row != row) {
-      m_drag_row = row;
+      m_drag_row = (row < 0 ? 0 : (row < m_rows ? row : m_rows - 1));
       m_drag_step = (step >= int(m_pat->get_steps() * m_pat->get_length()) ?
 		     m_pat->get_steps() * m_pat->get_length() - 1: step);
       
@@ -832,11 +822,10 @@ void NoteEditor::draw_selection_box(Glib::RefPtr<Gdk::Window> win,
   if (m_drag_operation == DragSelectBox) {
     int minx = m_sb_step < m_drag_step ? m_sb_step : m_drag_step;
     int miny = m_sb_row > m_drag_row ? m_sb_row : m_drag_row;
-    miny = 127 - miny;
     int w = abs(m_sb_step - m_drag_step) + 1;
     int h = abs(m_sb_row - m_drag_row) + 1;
     m_gc->set_foreground(m_selbox_color);
-    win->draw_rectangle(m_gc, true, minx * m_col_width, miny * m_row_height,
+    win->draw_rectangle(m_gc, true, step2pixel(minx), row2pixel(miny),
 			w * m_col_width + 1, h * m_row_height + 1);
   }
 }

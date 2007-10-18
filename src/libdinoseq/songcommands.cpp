@@ -1387,7 +1387,7 @@ namespace Dino {
   
 
   AddNotes::AddNotes(Song& song, int track, int pattern, 
-		     const NoteCollection& notes, unsigned step, 
+		     const NoteCollection& notes, int step, 
 		     int key, NoteSelection* selection)
     : Command("Add notes"),
       m_song(song),

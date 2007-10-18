@@ -476,13 +476,13 @@ namespace Dino {
     }*/
 
 
-  bool Pattern::add_notes(const NoteCollection& notes, unsigned step, int key,
+  bool Pattern::add_notes(const NoteCollection& notes, int step, int key,
                           NoteSelection* selection) {
     
     dbg1<<1<<std::endl;
     
     assert(step < m_sd->length * m_sd->steps);
-    assert(key >= 0 && key < 128);
+    assert(key < 128);
 
     dbg1<<2<<std::endl;
     
@@ -492,6 +492,9 @@ namespace Dino {
     // check if we can add all the notes
     NoteCollection::ConstIterator iter;
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
+      // XXX clean this up
+      if (iter->key + key < 0 || step + iter->start < 0)
+	return false;
       if (!check_free_space(step + iter->start, iter->key + key, iter->length))
 	return false;
       dbg1<<3<<std::endl;

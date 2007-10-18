@@ -160,7 +160,7 @@ namespace Dino {
 		  int key, int velocity, int length);
     /** Add a collection of notes to a pattern. */
     bool add_notes(int track, int pattern, const NoteCollection& notes, 
-		   unsigned step, int key, NoteSelection* selection = 0);
+		   int step, int key, NoteSelection* selection = 0);
     /** Change the velocity of a note. */
     bool set_note_velocity(int track, int pattern, int step, int key, 
 			   int velocity);

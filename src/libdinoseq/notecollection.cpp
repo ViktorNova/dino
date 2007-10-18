@@ -50,19 +50,9 @@ namespace Dino {
 
   NoteCollection::NoteCollection(const NoteSelection& selection) {
     NoteSelection::Iterator iter;
-    unsigned int minstep = 666666;
-    unsigned int maxkey = 0;
     for (iter = selection.begin(); iter != selection.end(); ++iter) {
       m_data.push_back(NoteDescription(iter->get_step(), iter->get_length(),
                                        iter->get_key(), iter->get_velocity()));
-      if (iter->get_step() < minstep)
-        minstep = iter->get_step();
-      if (iter->get_key() > maxkey)
-        maxkey = iter->get_key();
-    }
-    for (unsigned i = 0; i < m_data.size(); ++i) {
-      m_data[i].start -= minstep;
-      m_data[i].key += 127 - maxkey;
     }
   }
   

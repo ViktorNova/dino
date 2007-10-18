@@ -155,7 +155,7 @@ void NoteEditor::set_vadjustment(Gtk::Adjustment* adj) {
 
 
 void NoteEditor::cut_selection() {
-  m_clipboard = NoteCollection(m_selection);
+  copy_selection();
   m_proxy.start_atomic("Cut selected notes");
   delete_selection();
   m_proxy.end_atomic();
@@ -163,7 +163,26 @@ void NoteEditor::cut_selection() {
 
 
 void NoteEditor::copy_selection() {
-  m_clipboard = NoteCollection(m_selection);
+  m_clipboard.clear();
+  int minstep = numeric_limits<int>::max();
+  int minrow = numeric_limits<int>::max();
+  NoteSelection::Iterator iter;
+  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
+    int row = key2row(iter->get_key());
+    if (row < m_rows) {
+      m_clipboard.add_note(iter->get_step(), iter->get_length(), 
+			   row, iter->get_velocity());
+      if (iter->get_step() < minstep)
+	minstep = iter->get_step();
+      if (row < minrow)
+	minrow = row;
+    }
+  }
+  NoteCollection::Iterator iter2;
+  for (iter2 = m_clipboard.begin(); iter2 != m_clipboard.end(); ++iter2) {
+    iter2->start -= minstep;
+    iter2->key -= minrow;
+  }
 }
 
 
@@ -178,6 +197,20 @@ void NoteEditor::paste() {
     y = y < 0 ? 0 : y;
     m_drag_step = pixel2step(x);
     m_drag_row = pixel2row(y);
+    int maxstep = 0;
+    int maxrow = 0;
+    NoteCollection::Iterator iter;
+    for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
+      maxstep = iter->start + iter->length - 1 > maxstep ? 
+	iter->start + iter->length - 1: maxstep;
+      maxrow = iter->key > maxrow ? iter->key : maxrow;
+    }
+    m_move_offset_step = 0;
+    m_move_offset_row = maxrow;
+    m_drag_step_min = 0;
+    m_drag_step_max = m_pat->get_length() * m_pat->get_steps() - 1 - maxstep;
+    m_drag_row_max = m_rows - 1;
+    m_drag_row_min = maxrow;
     queue_draw();
   }
 }
@@ -226,7 +259,11 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
     
     m_drag_y = int(event->y);
     m_drag_step = step;
+    m_drag_step = m_drag_step < m_drag_step_min ? m_drag_step_min : m_drag_step;
+    m_drag_step = m_drag_step > m_drag_step_max ? m_drag_step_max : m_drag_step;
     m_drag_row = row;
+    m_drag_row = m_drag_row < m_drag_row_min ? m_drag_row_min : m_drag_row;
+    m_drag_row = m_drag_row > m_drag_row_max ? m_drag_row_max : m_drag_row;
     
     // if we are pasting and clicking button 1, insert the clipboard
     // if we click another button, abort the paste
@@ -234,9 +271,13 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       m_motion_operation = MotionNoOperation;
       if (event->button == 1) {
 	m_proxy.start_atomic("Paste notes");
-	// XXX NormalMode-specific
-	m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), 
-			  m_clipboard, step, row2key(row));
+	NoteCollection::Iterator iter;
+	for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
+	  m_proxy.add_note(m_trk->get_id(), m_pat->get_id(),
+			   iter->start + m_drag_step - m_move_offset_step,
+			   row2key(iter->key + m_drag_row - m_move_offset_row),
+			   iter->velocity, iter->length);
+	}
 	m_proxy.end_atomic();
 	return true;
       }
@@ -574,7 +615,15 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     if (m_motion_operation == MotionPaste) {
       if (m_drag_step != step || m_drag_row != row) {
 	m_drag_step = step;
+	if (m_drag_step < m_drag_step_min)
+	  m_drag_step = m_drag_step_min;
+	if (m_drag_step > m_drag_step_max)
+	  m_drag_step = m_drag_step_max;
 	m_drag_row = row;
+	if (m_drag_row < m_drag_row_min)
+	  m_drag_row = m_drag_row_min;
+	if (m_drag_row > m_drag_row_max)
+	  m_drag_row = m_drag_row_max;
 	queue_draw();
       }
     }
@@ -855,22 +904,21 @@ void NoteEditor::draw_selection_box(Glib::RefPtr<Gdk::Window> win,
 
 void NoteEditor::draw_paste_outline(Glib::RefPtr<Gdk::Window> win, 
 				    int width, int height) {
-  if (m_motion_operation == MotionPaste) {
-    bool ok = false;
-    if (m_drag_step > 0) {
-      ok = true;
-      NoteCollection::ConstIterator iter;
-      for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
-	if (!m_pat->check_free_space(m_drag_step + iter->start,
-				     iter->key - 127 + row2key(m_drag_row), 
-				     iter->length)) {
-	  ok = false;
-	  break;
-	}
+  int step = m_drag_step - m_move_offset_step;
+  int row = m_drag_row - m_move_offset_row;
+  bool ok = false;
+  if (m_drag_step > 0) {
+    ok = true;
+    NoteCollection::ConstIterator iter;
+    for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
+      if (!m_pat->check_free_space(step + iter->start, row2key(iter->key + row),
+				   iter->length)) {
+	ok = false;
+	break;
       }
     }
-    draw_outline(m_clipboard, m_drag_step, m_drag_row, ok);
   }
+  draw_outline(m_clipboard, step, row, ok);
 }
 
 

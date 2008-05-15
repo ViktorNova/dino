@@ -25,10 +25,17 @@ Should be done before 0.4:
  [/] Record MIDI CC and pitch bend events
  [X] Play loops, set loop points
  [ ] Support libmpmd or equivalent
- [/] Wrap libdinoseq in Python
  [/] Embed a Python interpreter
  [X] Add track controllers (same as pattern controllers, but not bound to a 
      pattern)
+
+Should be done before 0.6:
+
+ [ ] Remove forced quantisation
+ [ ] Add export to Ogg Vorbis or other audio formats using JACK freewheeling
+     and recording
+ [ ] Add external actions (executable files talking to Dino over D-Bus)
+ [/] Wrap libdinoseq in Python
  
 Crazy ideas:
 
@@ -45,9 +52,6 @@ Crazy ideas:
  * Add OSC sequencing, both for CC-like control values and arbitrary OSC 
    events. (will probably not happen until JACK supports OSC)
 
- * Add export to Ogg Vorbis or other audio formats using JACK freewheeling 
-   and recording.
-
  * Make Dino a DSSI synth host? Naah...
 
  * Optional "soft ends" for sequence entries, i.e. don't send note offs for
@@ -61,7 +65,5 @@ Crazy ideas:
 
  * Store a voice number in each note
  
- * Remove forced quantisation
-
  * Add an aftertouch curve for every note
  

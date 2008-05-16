@@ -4,31 +4,30 @@
 my $project = "dino";
 my $module = "dino";
 my $user = "larsl";
-my $module_dir = "/cvsroot/$project/$module";
+
+$logmsg = "";
+
+@branches = split(' ', `ls .git/refs/heads`);
+@remote_branches = split(' ', `ls .git/refs/remotes/origin`);
+for $branch (@branches) {
+  for $remote (@remote_branches) {
+    if ($branch eq $remote) {
+      $thismsg = `git log --pretty=format:"  * %s" origin/$branch..$branch`;
+      if ($thismsg ne "") {
+	$logmsg = $logmsg . "Branch $branch:\n$thismsg";
+      }
+    }
+  }
+}
 
 
-
-# if the CVS command fails, copy the backup back in place
-if (system('cvs', @ARGV) != 0) {
-  system 'cp Makefile.bak Makefile';
+# if the push command fails, exit without sending the message
+if (system('git', 'push') != 0) {
   exit;
 }
 
 
 # The code below is adapted from Petr Baudis's ciabot_cvs.pl
-
-
-# Get log message
-$next = 0;
-foreach $arg (@ARGV) {
-  if ($next == 1) {
-    $logmsg = "$version: $arg";
-    break;
-  }
-  if ($arg eq "-m") {
-    $next = 1;
-  }
-}
 
 
 # Compose the RPC message
@@ -37,8 +36,8 @@ my $ts = time;
 $message = <<EM
 <message>
    <generator>
-       <name>dcvs</name>
-       <version>$version</version>
+       <name>dpush</name>
+       <version>666</version>
    </generator>
    <source>
        <project>$project</project>
@@ -72,6 +71,8 @@ EM
 
 ### Send out the XML-RPC message
 
+#print $message;
+#exit;
 
 # We gotta be careful from now on. We silence all the warnings because
 # RPC::XML code is crappy and works with undefs etc.

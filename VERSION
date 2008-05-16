@@ -3,7 +3,7 @@
 
 # Prints the last annotated tag beginning with Version_ , the number
 # of commits since then and the abbreviated object name of the current commit
-git describe --match 'Version_*'            |
+git describe --match 'Version_*' $1         |
 
 # Strips off the Version_ prefix
     sed 's/Version_//'                      |
@@ -27,7 +27,7 @@ git describe --match 'Version_*'            |
 
 # Add .EDITED to the version number if any files have been modified since
 # the last commit
-if test $(git ls-files --modified | wc -l) -gt 0 ; then
+if test \( $(git ls-files --modified | wc -l) -gt 0 \) -a \( -z "$1" \) ; then
     echo .EDITED
 else
     echo

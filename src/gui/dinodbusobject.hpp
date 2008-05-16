@@ -40,6 +40,7 @@ namespace DBus {
 class DinoDBusObject : public DBus::Object {
 public:
   
+  /** Create a new DinoDBusObject to control the given proxy and sequencer. */
   DinoDBusObject(Dino::CommandProxy& proxy, Dino::Sequencer& sequencer);
 
 protected:
@@ -179,7 +180,10 @@ protected:
   bool remove_curve_point(int argc, DBus::Argument* argv);
 
   
+  /** The global command proxy object. */
   Dino::CommandProxy& m_proxy;
+  
+  /** The sequencer. */
   Dino::Sequencer& m_seq;
   
 };

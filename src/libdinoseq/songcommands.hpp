@@ -323,7 +323,7 @@ namespace Dino {
   
   class SetControllerNumber : public Command {
   public:
-    SetControllerNumber(Song& song, int track, long number, long number);
+    SetControllerNumber(Song& song, int track, long number, long new_number);
     bool do_command();
     bool undo_command();
   protected:

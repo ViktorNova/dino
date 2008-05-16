@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cassert>
+#include <cstring>
 
 #include <jack/midiport.h>
 #include <glibmm.h>

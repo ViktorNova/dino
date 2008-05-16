@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 
 #include "controller_numbers.hpp"

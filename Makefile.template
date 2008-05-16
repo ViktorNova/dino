@@ -320,7 +320,7 @@ install-modules: $(patsubst %,install-%,$(subst .,_,$(MODULES_INST)))
 
 LIBRARIES_INST = $(filter-out $(LIBRARIES_NOINST),$(LIBRARIES))
 install-libraries: $(patsubst %,install-%,$(subst .,_,$(LIBRARIES_INST)))
-	$(if $(LIBRARIES),ldconfig -n $(libdir))
+	$(if $(LIBRARIES),/sbin/ldconfig -n $(libdir))
 
 LV2_BUNDLES_INST = $(filter-out $(LV2_BUNDLES_NOINST),$(LV2_BUNDLES))
 install-lv2-plugins: $(patsubst %,install-%,$(subst .,_,$(LV2_BUNDLES_INST)))

@@ -20,6 +20,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 
 #include "commandproxy.hpp"
 #include "debug.hpp"

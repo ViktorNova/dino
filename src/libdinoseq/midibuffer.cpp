@@ -61,7 +61,7 @@ namespace Dino {
     // XXX optimise this
     jack_nframes_t timestamp = jack_nframes_t((beat + m_offset - m_start_beat) *
                                               m_samplerate * 60 / m_bpm);
-    return jack_midi_event_reserve(m_buffer, timestamp, data_size, m_nframes);
+    return jack_midi_event_reserve(m_buffer, timestamp, data_size);
   }
     
   
@@ -71,7 +71,7 @@ namespace Dino {
     jack_nframes_t timestamp = jack_nframes_t((beat + m_offset - m_start_beat) *
                                               m_samplerate * 60 / m_bpm);
     return jack_midi_event_write(m_buffer, timestamp, (jack_midi_data_t*)data, 
-                                 data_size, m_nframes);
+                                 data_size);
   }
 
 

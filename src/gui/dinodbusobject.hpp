@@ -56,16 +56,37 @@ protected:
   bool go_to_beat(int argc, DBus::Argument* argv);
   
   
+  /** Change the title of the song. */
   bool set_song_title(int argc, DBus::Argument* argv);
+  
+  /** Change the author of the song. */
   bool set_song_author(int argc, DBus::Argument* argv);
+  
+  /** Change the information text about the song. */
   bool set_song_info(int argc, DBus::Argument* argv);
+  
+  /** Change the length of the song (deleting any sequence parts that are 
+      after the new length). */
   bool set_song_length(int argc, DBus::Argument* argv);
+  
+  /** Change the loop start point. */
   bool set_loop_start(int argc, DBus::Argument* argv);
+  
+  /** Change the loop end point. */
   bool set_loop_end(int argc, DBus::Argument* argv);
+  
+  /** Add a new track. */
   bool add_track(int argc, DBus::Argument* argv);
+  
+  /** Remove a track and all its patterns and controllers. */
   bool remove_track(int argc, DBus::Argument* argv);
+
+  /** Add a tempo change. */
   bool add_tempo_change(int argc, DBus::Argument* argv);
+  
+  /** Remove a tempo change. */
   bool remove_tempo_change(int argc, DBus::Argument* argv);
+  
   
   bool set_track_name(int argc, DBus::Argument* argv);
   bool add_pattern(int argc, DBus::Argument* argv);

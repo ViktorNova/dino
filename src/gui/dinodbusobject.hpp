@@ -148,15 +148,34 @@ protected:
   
   /** Set the MIDI key number of a named key. */
   bool set_key_number(int argc, DBus::Argument* argv);
-
+  
+  
+  /** Change the name of a pattern. */
   bool set_pattern_name(int argc, DBus::Argument* argv);
+  
+  /** Change the length of a pattern, deleting all notes and controller values
+      after the new length. */
   bool set_pattern_length(int argc, DBus::Argument* argv);
+  
+  /** Change the number of steps per beat in the pattern. */
   bool set_pattern_steps(int argc, DBus::Argument* argv);
+  
+  /** Add a note to the pattern. */
   bool add_note(int argc, DBus::Argument* argv);
+  
+  /** Set the velocity of a note. */
   bool set_note_velocity(int argc, DBus::Argument* argv);
+  
+  /** Set the length of a note. */
   bool set_note_size(int argc, DBus::Argument* argv);
+  
+  /** Delete a note from a pattern. */
   bool delete_note(int argc, DBus::Argument* argv);
+  
+  /** Add a curve point. */
   bool add_curve_point(int argc, DBus::Argument* argv);
+  
+  /** Remove a curve points. */
   bool remove_curve_point(int argc, DBus::Argument* argv);
 
   

@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = 0.3.208
+PACKAGE_VERSION = $(shell git describe --match 'Version_*' | sed 's/Version_//' | sed 's/-/ /g' | awk '{ print $$1 " " $$2}' | sed -r 's/\.([0-9]+) / \1 /' | awk '{ print $$1 "." $$2+$$3 }')
 PKG_DEPS = \
 	gtkmm-2.4>=2.6.4 \
 	libxml++-2.6>=2.6.1 \

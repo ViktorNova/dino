@@ -44,9 +44,17 @@ public:
 
 protected:
   
+  /** Start playing at the current position. Does nothing if the song is
+      already playing. */
   bool play(int argc, DBus::Argument* argv);
+  
+  /** Stop playing and stay at the current position. Does nothing if the song
+      isn't currently playing. */
   bool stop(int argc, DBus::Argument* argv);
+  
+  /** Move the play cursor to the given position in beats. */
   bool go_to_beat(int argc, DBus::Argument* argv);
+  
   
   bool set_song_title(int argc, DBus::Argument* argv);
   bool set_song_author(int argc, DBus::Argument* argv);

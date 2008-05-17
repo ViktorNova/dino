@@ -5,21 +5,31 @@ my $project = "dino";
 my $module = "dino";
 my $user = "larsl";
 
-$logmsg = "";
 
+# Generate a log message with the versions and oneline comments for all
+# commits that we are pushing
+$logmsg = "";
 @branches = split(' ', `ls .git/refs/heads`);
 @remote_branches = split(' ', `ls .git/refs/remotes/origin`);
+$branchlist = "";
 for $branch (@branches) {
   for $remote (@remote_branches) {
     if ($branch eq $remote) {
-      $thismsg = `git log --pretty=format:"  * %s" origin/$branch..$branch`;
-      if ($thismsg ne "") {
-	$version = `./VERSION $branch`;
-	chomp $version;
-	$logmsg = $logmsg . $version . ":\n$thismsg";
-      }
+      $branchlist = $branchlist . " $branch";
     }
   }
+}
+for $remote (@remote_branches) {
+  $branchlist = $branchlist . " ^origin/$remote~2";
+}
+@commits = `git rev-list $branchlist`;
+for $commit (@commits) {
+  chomp $commit;
+  $version = `./VERSION $commit`;
+  chomp $version;
+  $oneline = `git log --no-walk --pretty=format:%s $commit`;
+  chomp $oneline;
+  $logmsg = $logmsg . "  * $version: $oneline\n";
 }
 
 

@@ -20,7 +20,7 @@ for $branch (@branches) {
   }
 }
 for $remote (@remote_branches) {
-  $branchlist = $branchlist . " ^origin/$remote~2";
+  $branchlist = $branchlist . " ^origin/$remote";
 }
 @commits = `git rev-list $branchlist`;
 for $commit (@commits) {

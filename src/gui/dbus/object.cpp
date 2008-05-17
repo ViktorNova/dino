@@ -137,15 +137,17 @@ namespace DBus {
     }
     
     // call the method!
-    if (tsiter->second(argc, argv)) {
-      DBusMessage* reply = dbus_message_new_method_return(msg);
-      dbus_connection_send(conn, reply, 0);
-    }
-    else {
+    Argument* result = tsiter->second(argc, argv);
+    if (result && result[0].type == Argument::ERROR) {
       DBusMessage* reply = dbus_message_new_error(msg, DBUS_ERROR_FAILED,
 						  "Method handler failed");
       dbus_connection_send(conn, reply, 0);
     }
+    else {
+      DBusMessage* reply = dbus_message_new_method_return(msg);
+      dbus_connection_send(conn, reply, 0);
+    }
+    delete [] result;
     delete [] argv;
     
     return DBUS_HANDLER_RESULT_HANDLED;

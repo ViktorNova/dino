@@ -39,7 +39,7 @@ namespace DBus {
   public:
     
     /** A convenient typedef. */
-    typedef sigc::slot<bool, int, Argument*> Method;
+    typedef sigc::slot<Argument*, int, Argument*> Method;
     
     /** Another convenient typedef. */
     typedef std::map<std::string, std::map<std::string, std::map<std::string,

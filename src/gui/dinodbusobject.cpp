@@ -123,221 +123,238 @@ DinoDBusObject::DinoDBusObject(Dino::CommandProxy& proxy,
 }
 
 
-bool DinoDBusObject::play(int argc, DBus::Argument* argv) {
+DBus::Argument* DinoDBusObject::create_result(bool result) {
+  if (result)
+    return 0;
+  DBus::Argument* args = new DBus::Argument[2];
+  args[0] = DBus::Argument("The method call failed!", true);
+  return args;
+}
+
+
+DBus::Argument* DinoDBusObject::play(int argc, DBus::Argument* argv) {
   m_seq.play();
-  return true;
+  return 0;
 }
 
 
-bool DinoDBusObject::stop(int argc, DBus::Argument* argv) {
+DBus::Argument* DinoDBusObject::stop(int argc, DBus::Argument* argv) {
   m_seq.stop();
-  return true;
+  return 0;
 }
 
 
-bool DinoDBusObject::go_to_beat(int argc, DBus::Argument* argv) {
+DBus::Argument* DinoDBusObject::go_to_beat(int argc, DBus::Argument* argv) {
   m_seq.go_to_beat(argv[0].d);
-  return true;
+  return 0;
 }
 
 
-bool DinoDBusObject::set_song_title(int argc, DBus::Argument* argv) {
-  return m_proxy.set_song_title(argv[0].s);
+DBus::Argument* DinoDBusObject::set_song_title(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_song_title(argv[0].s));
 }
 
 
-bool DinoDBusObject::set_song_author(int argc, DBus::Argument* argv) {
-  return m_proxy.set_song_author(argv[0].s);
+DBus::Argument* DinoDBusObject::set_song_author(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_song_author(argv[0].s));
 }
 
 
-bool DinoDBusObject::set_song_info(int argc, DBus::Argument* argv) {
-  return m_proxy.set_song_info(argv[0].s);
+DBus::Argument* DinoDBusObject::set_song_info(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_song_info(argv[0].s));
 }
 
 
-bool DinoDBusObject::set_song_length(int argc, DBus::Argument* argv) {
-  return m_proxy.set_song_length(argv[0].i);
+DBus::Argument* DinoDBusObject::set_song_length(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_song_length(argv[0].i));
 }
 
 
-bool DinoDBusObject::set_loop_start(int argc, DBus::Argument* argv) {
-  return m_proxy.set_loop_start(argv[0].i);
+DBus::Argument* DinoDBusObject::set_loop_start(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_loop_start(argv[0].i));
 }
 
 
-bool DinoDBusObject::set_loop_end(int argc, DBus::Argument* argv) {
-  return m_proxy.set_loop_end(argv[0].i);
+DBus::Argument* DinoDBusObject::set_loop_end(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_loop_end(argv[0].i));
 }
 
 
-bool DinoDBusObject::add_track(int argc, DBus::Argument* argv) {
-  return m_proxy.add_track(argv[0].s);
+DBus::Argument* DinoDBusObject::add_track(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.add_track(argv[0].s));
 }
 
 
-bool DinoDBusObject::remove_track(int argc, DBus::Argument* argv) {
-  return m_proxy.remove_track(argv[0].i);
+DBus::Argument* DinoDBusObject::remove_track(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.remove_track(argv[0].i));
 }
 
 
-bool DinoDBusObject::add_tempo_change(int argc, DBus::Argument* argv) {
-  return m_proxy.add_tempo_change(argv[0].i, argv[1].d);
+DBus::Argument* DinoDBusObject::add_tempo_change(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.add_tempo_change(argv[0].i, argv[1].d));
 }
 
 
-bool DinoDBusObject::remove_tempo_change(int argc, DBus::Argument* argv) {
-  return m_proxy.remove_tempo_change(argv[0].i);
+DBus::Argument* DinoDBusObject::remove_tempo_change(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.remove_tempo_change(argv[0].i));
 }
 
 
-bool DinoDBusObject::set_track_name(int argc, DBus::Argument* argv) {
-  return m_proxy.set_track_name(argv[0].i, argv[1].s);
+DBus::Argument* DinoDBusObject::set_track_name(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_track_name(argv[0].i, argv[1].s));
 }
 
 
-bool DinoDBusObject::add_pattern(int argc, DBus::Argument* argv) {
-  return m_proxy.add_pattern(argv[0].i, argv[1].s, argv[2].i, argv[3].i);
+DBus::Argument* DinoDBusObject::add_pattern(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.add_pattern(argv[0].i, argv[1].s, argv[2].i, argv[3].i));
 }
 
 
-bool DinoDBusObject::duplicate_pattern(int argc, DBus::Argument* argv) {
-  return m_proxy.duplicate_pattern(argv[0].i, argv[1].i);
+DBus::Argument* DinoDBusObject::duplicate_pattern(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.duplicate_pattern(argv[0].i, argv[1].i));
 }
 
 
-bool DinoDBusObject::remove_pattern(int argc, DBus::Argument* argv) {
-  return m_proxy.remove_pattern(argv[0].i, argv[1].i);
+DBus::Argument* DinoDBusObject::remove_pattern(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.remove_pattern(argv[0].i, argv[1].i));
 }
 
 
-bool DinoDBusObject::add_sequence_entry(int argc, DBus::Argument* argv) {
-  return m_proxy.add_sequence_entry(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
+DBus::Argument* DinoDBusObject::add_sequence_entry(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.add_sequence_entry(argv[0].i, argv[1].i, argv[2].i, argv[3].i));
 }
 
 
-bool DinoDBusObject::remove_sequence_entry(int argc, DBus::Argument* argv) {
-  return m_proxy.remove_sequence_entry(argv[0].i, argv[1].i);
+DBus::Argument* DinoDBusObject::remove_sequence_entry(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.remove_sequence_entry(argv[0].i, argv[1].i));
 }
 
 
-bool DinoDBusObject::set_sequence_entry_length(int argc, DBus::Argument* argv) {
-  return m_proxy.set_sequence_entry_length(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_sequence_entry_length(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_sequence_entry_length(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::set_track_midi_channel(int argc, DBus::Argument* argv) {
-  return m_proxy.set_track_midi_channel(argv[0].i, argv[1].i);
+DBus::Argument* DinoDBusObject::set_track_midi_channel(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_track_midi_channel(argv[0].i, argv[1].i));
 }
 
 
-bool DinoDBusObject::add_controller(int argc, DBus::Argument* argv) {
-  return m_proxy.add_controller(argv[0].i, argv[1].i, argv[2].s, argv[3].i,
-				argv[4].i, argv[5].i, argv[6].i);
+DBus::Argument* DinoDBusObject::add_controller(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.add_controller(argv[0].i, argv[1].i, argv[2].s, 
+					      argv[3].i, argv[4].i, argv[5].i, 
+					      argv[6].i));
 }
 
 
-bool DinoDBusObject::remove_controller(int argc, DBus::Argument* argv) {
-  return m_proxy.remove_controller(argv[0].i, argv[1].i);
+DBus::Argument* DinoDBusObject::remove_controller(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.remove_controller(argv[0].i, argv[1].i));
 }
 
 
-bool DinoDBusObject::set_controller_name(int argc, DBus::Argument* argv) {
-  return m_proxy.set_controller_name(argv[0].i, argv[1].i, argv[2].s);
+DBus::Argument* DinoDBusObject::set_controller_name(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_controller_name(argv[0].i, argv[1].i, argv[2].s));
 }
 
 
-bool DinoDBusObject::set_controller_min(int argc, DBus::Argument* argv) {
-  return m_proxy.set_controller_min(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_controller_min(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_controller_min(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::set_controller_max(int argc, DBus::Argument* argv) {
-  return m_proxy.set_controller_max(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_controller_max(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_controller_max(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::set_controller_default(int argc, DBus::Argument* argv) {
-  return m_proxy.set_controller_default(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_controller_default(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_controller_default(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::set_controller_number(int argc, DBus::Argument* argv) {
-  return m_proxy.set_controller_number(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_controller_number(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_controller_number(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::set_controller_global(int argc, DBus::Argument* argv) {
-  return m_proxy.set_controller_global(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_controller_global(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_controller_global(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::add_key(int argc, DBus::Argument* argv) {
-  return false;
+DBus::Argument* DinoDBusObject::add_key(int argc, DBus::Argument* argv) {
+  return create_result(false);
 }
 
 
-bool DinoDBusObject::remove_key(int argc, DBus::Argument* argv) {
-  return false;
+DBus::Argument* DinoDBusObject::remove_key(int argc, DBus::Argument* argv) {
+  return create_result(false);
 }
 
 
-bool DinoDBusObject::set_key_name(int argc, DBus::Argument* argv) {
-  return false;
+DBus::Argument* DinoDBusObject::set_key_name(int argc, DBus::Argument* argv) {
+  return create_result(false);
 }
 
 
-bool DinoDBusObject::set_key_number(int argc, DBus::Argument* argv) {
-  return false;
+DBus::Argument* DinoDBusObject::set_key_number(int argc, DBus::Argument* argv) {
+  return create_result(false);
 }
 
 
-bool DinoDBusObject::set_pattern_name(int argc, DBus::Argument* argv) {
-  return m_proxy.set_pattern_name(argv[0].i, argv[1].i, argv[2].s);
+DBus::Argument* DinoDBusObject::set_pattern_name(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_pattern_name(argv[0].i, argv[1].i, argv[2].s));
 }
 
 
-bool DinoDBusObject::set_pattern_length(int argc, DBus::Argument* argv) {
-  return m_proxy.set_pattern_length(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_pattern_length(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_pattern_length(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::set_pattern_steps(int argc, DBus::Argument* argv) {
-  return m_proxy.set_pattern_steps(argv[0].i, argv[1].i, argv[2].i);
+DBus::Argument* DinoDBusObject::set_pattern_steps(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_pattern_steps(argv[0].i, argv[1].i, argv[2].i));
 }
 
 
-bool DinoDBusObject::add_note(int argc, DBus::Argument* argv) {
-  return m_proxy.add_note(argv[0].i, argv[1].i, argv[2].i, 
-			  argv[3].i, argv[4].i, argv[5].i);
+DBus::Argument* DinoDBusObject::add_note(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.add_note(argv[0].i, argv[1].i, argv[2].i, 
+					argv[3].i, argv[4].i, argv[5].i));
 }
 
 
-bool DinoDBusObject::set_note_velocity(int argc, DBus::Argument* argv) {
-  return m_proxy.set_note_velocity(argv[0].i, argv[1].i, argv[2].i, 
-				   argv[3].i, argv[4].i);
+DBus::Argument* DinoDBusObject::set_note_velocity(int argc, 
+						  DBus::Argument* argv) {
+  return create_result(m_proxy.set_note_velocity(argv[0].i, argv[1].i, 
+						 argv[2].i, argv[3].i, 
+						 argv[4].i));
 }
 
 
-bool DinoDBusObject::set_note_size(int argc, DBus::Argument* argv) {
-  return m_proxy.set_note_velocity(argv[0].i, argv[1].i, argv[2].i, 
-				   argv[3].i, argv[4].i);
+DBus::Argument* DinoDBusObject::set_note_size(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.set_note_velocity(argv[0].i, argv[1].i, 
+						 argv[2].i, argv[3].i, 
+						 argv[4].i));
 }
 
 
-bool DinoDBusObject::delete_note(int argc, DBus::Argument* argv) {
-  return m_proxy.delete_note(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
+DBus::Argument* DinoDBusObject::delete_note(int argc, DBus::Argument* argv) {
+  return create_result(m_proxy.delete_note(argv[0].i, argv[1].i, argv[2].i, 
+					   argv[3].i));
 }
 
 
-bool DinoDBusObject::add_curve_point(int argc, DBus::Argument* argv) {
-  return m_proxy.add_curve_point(argv[0].i, argv[1].i, argv[2].i,
-				 argv[3].i, argv[4].i);
+DBus::Argument* DinoDBusObject::add_curve_point(int argc, 
+						DBus::Argument* argv) {
+  return create_result(m_proxy.add_curve_point(argv[0].i, argv[1].i, argv[2].i,
+					       argv[3].i, argv[4].i));
 }
 
 
-bool DinoDBusObject::remove_curve_point(int argc, DBus::Argument* argv){
-  return m_proxy.remove_curve_point(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
+DBus::Argument* DinoDBusObject::remove_curve_point(int argc, 
+						   DBus::Argument* argv){
+  return create_result(m_proxy.remove_curve_point(argv[0].i, argv[1].i, 
+						  argv[2].i, argv[3].i));
 }
 
 

@@ -40,13 +40,14 @@ namespace DBus {
     /** Creates a double precision floating point argument. */
     Argument(double value);
     /** Creates a string argument. */
-    Argument(const char* value);
+    Argument(const char* value, bool is_error = false);
     
     /** The different types that an argument can have. */
     enum Type {
       INT,
       DOUBLE,
       STRING,
+      ERROR,
       INVALID
     } type;
     
@@ -55,6 +56,7 @@ namespace DBus {
       int i;
       double d;
       const char* s;
+      const char* e;
     };
     
   };

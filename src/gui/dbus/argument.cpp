@@ -44,8 +44,8 @@ namespace DBus {
   }
   
   
-  Argument::Argument(const char* value)
-    : type(STRING),
+  Argument::Argument(const char* value, bool is_error)
+    : type(is_error ? ERROR : STRING),
       s(value) {
 
   }

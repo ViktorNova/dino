@@ -21,3 +21,4 @@ src/gui/dino
 # Local installation directory (if you use 
   'configure --prefix=`pwd`/installation')
 installation/
+install/

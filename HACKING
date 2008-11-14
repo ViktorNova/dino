@@ -1,0 +1,53 @@
+This file contains some information that may be useful if you want to modify
+Dino.
+
+IF YOU HAVE GIT WRITE ACCESS
+============================
+
+PUSHING
+=======
+When pushing commits and tags to the central repository, please use the 
+./dpush script instead of 'git push'. It sends a message describing the
+commits to CIA (see http://cia.vc/stats/project/dino) which then distributes
+them to anyone else who is interested.
+
+BRANCH POLICY
+=============
+Feel free to create as many branches in the central repository as you like!
+Branches are good. They allow you to experiment with complex things without
+breaking the main code, and they allow others to track and test your work.
+However, in order to keep the build system happy when creating tarballs and
+things like that you should tag your branches. The first commit in every new
+branch that is not in the parent branch should be tagged using the following
+command:
+
+  git tag -a -s Version_BASEVERSION.mybranch.0
+
+where BASEVERSION is the version name of the parent commit (run ./VERSION to
+find it) and mybranch is a name for the new branch, which only needs to be
+unique among the branches starting from BASEVERSION. For example, if ./VERSION
+for the parent commit returns '0.3.220' and you want to name your branch 
+'pythongui', you would tag the first commit in the branch with this command:
+
+  git tag -a -s Version_0.3.220.pythongui.0
+
+The VERSION script will then know to call the next commit in this branch 
+0.3.220.pythongui.1, the next one after that 0.3.220.pythongui.2 and so on.
+
+When you merge a branch back into its parent branch you need to tag the merge
+commit so the VERSION script doesn't get confused. If the commit in the parent
+branch just before the merge commit was 0.3.235, you should tag the merge:
+
+  git tag -a -s Version_0.3.236
+
+i.e. you should add 1 to the last number.
+
+You can of course also create branches off other branches than the master,
+and then BASEVERSION will still be the version of the parent commit. If you
+for example would start a new branch for drawing flashy buttons off the commit
+0.3.220.pythongui.12, you should tag the first commit in that new branch with:
+
+  git tag -a -s Version_0.3.220.pythongui.12.flashybuttons.0
+
+The version names tend to get long, but they are very nice and descriptive with
+the branch history embedded in them.

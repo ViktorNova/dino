@@ -1,4 +1,17 @@
 #!/usr/bin/perl
+#
+# This script pushes local changes to the remote Git repository
+# and sends a message about the push to CIA.vc.
+#
+# It requires that the VERSION script is in the working directory
+# and that the Git tree is tagged so the VERSION script can generate
+# version numbers for commits.
+#
+# This script should be considered to be free for all uses.
+#
+#####################################################################
+
+
 
 # change these parameters if you are using this script for your own project
 my $project = "dino";

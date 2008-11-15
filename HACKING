@@ -1,6 +1,38 @@
 This file contains some information that may be useful if you want to modify
 Dino.
 
+
+ABOUT VERSION NAMES
+===================
+Dino version names normally consist of 3 numbers separated by points, 
+like "0.3.46".
+
+The first number (in this case 0) is the major version number. This is changed
+very rarely and indicates some sort of major change.
+
+The second number (in this case 3) is the minor version number. Dino uses the
+same convention as the Linux kernel, i.e. odd minor version numbers are used
+for development versions, and even minor version numbers are used for releases.
+
+The third number is the patch level. For odd minor version numbers (development
+versions) the patch level just indicates a change, usually a Git commit. For
+even minor version numbers (releases), the patch level is changed for 
+bugfix releases.
+
+If you want to create your own version of Dino you can of course use any
+version name you like, but if you want to minimise confusion you should use
+the name of the official version you are basing your version on, followed by
+a point, a short alphanumerical name, another point and a patch level, like
+this:
+
+  0.3.46.mycoolhack.0
+
+If you then make any new changes to your code you name next version
+0.3.46.mycoolhack.1, the next one 0.3.46.mycoolhack.2 and so on.
+
+If you write anything interesting I of course want to hear about it!
+
+
 IF YOU HAVE GIT WRITE ACCESS
 ============================
 
@@ -9,7 +41,7 @@ PUSHING
 When pushing commits and tags to the central repository, please use the 
 ./dpush script instead of 'git push'. It sends a message describing the
 commits to CIA (see http://cia.vc/stats/project/dino) which then distributes
-them to anyone else who is interested.
+it to anyone else who is interested.
 
 BRANCH POLICY
 =============

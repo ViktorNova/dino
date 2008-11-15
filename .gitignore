@@ -18,6 +18,9 @@
 # The Program
 src/gui/dino
 
+# Doxygen docs
+doxygen/
+
 # Local installation directory (if you use 
   'configure --prefix=`pwd`/installation')
 installation/

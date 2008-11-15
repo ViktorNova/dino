@@ -21,6 +21,8 @@
 #ifndef MIDIBUFFER_HPP
 #define MIDIBUFFER_HPP
 
+#include "songtime.hpp"
+
 
 namespace Dino {
   
@@ -32,31 +34,32 @@ namespace Dino {
     
     /** Create a new MIDIBuffer as a wrapper for the JACK MIDI output buffer
 	@c port_buffer. */
-    MIDIBuffer(void* port_buffer, double start_beat, 
+    MIDIBuffer(void* port_buffer, const SongTime& start_time, 
 	       double bpm, unsigned long framerate);
     
     /** Set the JACK MIDI period size (this is needed when adding events to
 	JACK MIDI buffers, not sure why). */
     void set_period_size(unsigned long nframes);
     
-    /** Set the desired CC resolution in beats. */
-    void set_cc_resolution(double beats);
+    /** Set the desired CC resolution in song time units. */
+    void set_cc_resolution(const SongTime& resolution);
     
     /** Return the desired CC resolution in beats. Anyone who fills this buffer
 	should try to add continuous controller events at least this close
 	to each other. */
-    double get_cc_resolution() const;
+    const SongTime& get_cc_resolution() const;
     
     /** Set the current offset. This will be added to the timestamp of all 
 	subsequently written events. */
-    void set_offset(double offset);
+    void set_offset(const SongTime& offset);
     
-    /** Retrieves a buffer to write MIDI data to, or 0 if there is no more space
-	in the buffer. */
-    unsigned char* reserve(double beat, size_t data_size);
+    /** Retrieves a buffer to write MIDI data to, or 0 if there is no 
+	more space in the buffer. */
+    unsigned char* reserve(const SongTime& time, size_t data_size);
     
     /** Copy MIDI data to the buffer. */
-    int write(double beat, const unsigned char* data, size_t data_size);
+    int write(const SongTime& time, 
+	      const unsigned char* data, size_t data_size);
     
   protected:
     
@@ -68,10 +71,10 @@ namespace Dino {
     unsigned long m_nframes;
     
     /** The desired CC resolution. */
-    double m_cc_resolution;
+    SongTime m_cc_resolution;
     
-    /** The beat position at the beginning of the buffer. */
-    double m_start_beat;
+    /** The song position at the beginning of the buffer. */
+    SongTime m_start_beat;
     
     /** The BPM (constant). */
     double m_bpm;
@@ -79,7 +82,7 @@ namespace Dino {
     /** The sample rate. */
     unsigned long m_samplerate;
     
-    double m_offset;
+    SongTime m_offset;
     
   };
 

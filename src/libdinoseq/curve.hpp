@@ -34,6 +34,7 @@ namespace Dino {
   
   class InterpolatedEvent;
   class MIDIBuffer;
+  class SongTime;
   
   
   /** This class represents a sequence of MIDI CC events used in a Pattern. */
@@ -66,7 +67,7 @@ namespace Dino {
     //@{
     /** Write the MIDI events (possibly interpolated) for the given step. */
     bool write_events(MIDIBuffer& buffer, double step, 
-		      double beat_time, unsigned char channel) const;
+		      const SongTime& song_time, unsigned char channel) const;
     //@}
     
     /// @name Signals

@@ -42,7 +42,9 @@ pluginlibrary_cpp_CFLAGS = -DPLUGIN_DIR=\"$(pkglibdir)\"
 # Shared libraries
 LIBRARIES = libdinoseq.so libdinoseq_gui.so
 
+
 # The library with the sequencer and the song structures
+#	curve.cpp curve.hpp
 libdinoseq_so_SOURCES = \
 	cdtree.hpp \
 	command.cpp command.hpp \
@@ -50,7 +52,6 @@ libdinoseq_so_SOURCES = \
 	compoundcommand.cpp compoundcommand.hpp \
 	controllerinfo.cpp controllerinfo.hpp \
 	controller_numbers.hpp \
-	curve.cpp curve.hpp \
 	debug.cpp debug.hpp \
 	deleter.hpp \
 	genericcommands.hpp \
@@ -69,6 +70,7 @@ libdinoseq_so_SOURCES = \
 	sequencer.cpp sequencer.hpp \
 	song.cpp song.hpp \
 	songcommands.cpp songcommands.hpp \
+	songtime.hpp \
 	tempomap.cpp tempomap.hpp \
 	track.cpp track.hpp \
 	xmlserialisable.hpp
@@ -97,6 +99,7 @@ libdinoseq_so_HEADERS = \
 	sequencer.hpp \
 	song.hpp \
 	songcommands.hpp \
+	songtime.hpp \
 	tempomap.hpp \
 	track.hpp \
 	xmlserialisable.hpp

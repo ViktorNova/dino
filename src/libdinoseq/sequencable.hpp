@@ -26,14 +26,18 @@
 
 namespace Dino {
   
+  
   class MIDIBuffer;
+  class SongTime;
+  
   
   /** Abstract base class for all objects that generates MIDI events. */
   class Sequencable {
   public:
     
-    virtual void sequence(MIDIBuffer& buffer, double from, double to,
-			  unsigned int length, int channel) const = 0;
+    virtual void sequence(MIDIBuffer& buffer, 
+			  const SongTime& from, const SongTime& to,
+			  const SongTime& length, int channel) const = 0;
     
     virtual const std::string& get_label() const = 0;
 

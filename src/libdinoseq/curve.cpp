@@ -26,6 +26,7 @@
 #include "deleter.hpp"
 #include "interpolatedevent.hpp"
 #include "midibuffer.hpp"
+#include "songtime.hpp"
 
 
 namespace Dino {
@@ -145,7 +146,8 @@ namespace Dino {
 
 
   bool Curve::write_events(MIDIBuffer& buffer, double step, 
-			   double beat_time, unsigned char channel) const {
+			   const SongTime& beat_time, 
+			   unsigned char channel) const {
     channel &= 0x0F;
     const InterpolatedEvent* event = get_event(unsigned(step));
     if (event) {

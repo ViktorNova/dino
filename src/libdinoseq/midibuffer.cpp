@@ -26,13 +26,13 @@
 namespace Dino {
 
     
-  MIDIBuffer::MIDIBuffer(void* port_buffer, double start_beat, double bpm,
-       unsigned long framerate) 
+  MIDIBuffer::MIDIBuffer(void* port_buffer, const SongTime& start_beat, 
+			 double bpm, unsigned long framerate) 
     : m_buffer(port_buffer),
       m_start_beat(start_beat),
       m_bpm(bpm),
       m_samplerate(framerate),
-      m_offset(0) { 
+      m_offset(0, 0) { 
   
   }
     
@@ -42,36 +42,43 @@ namespace Dino {
   }
 
 
-  void MIDIBuffer::set_cc_resolution(double beats) {
-    m_cc_resolution = beats;
+  void MIDIBuffer::set_cc_resolution(const SongTime& resolution) {
+    m_cc_resolution = resolution;
   }
 
 
-  double MIDIBuffer::get_cc_resolution() const {
+  const SongTime& MIDIBuffer::get_cc_resolution() const {
     return m_cc_resolution;
   }
   
   
-  void MIDIBuffer::set_offset(double offset) {
+  void MIDIBuffer::set_offset(const SongTime& offset) {
     m_offset = offset;
   }
   
   
-  unsigned char* MIDIBuffer::reserve(double beat, size_t data_size) {
-    // XXX optimise this
-    jack_nframes_t timestamp = jack_nframes_t((beat + m_offset - m_start_beat) *
-                                              m_samplerate * 60 / m_bpm);
+  unsigned char* MIDIBuffer::reserve(const SongTime& beat, size_t data_size) {
+    // XXX implement this
+    /*
+    jack_nframes_t timestamp = 
+      jack_nframes_t((beat + m_offset - m_start_beat) *
+		     m_samplerate * 60 / m_bpm);
     return jack_midi_event_reserve(m_buffer, timestamp, data_size);
+    */
+    return 0;
   }
     
   
-  int MIDIBuffer::write(double beat, const 
-      unsigned char* data, size_t data_size) {
-    // XXX optimise this
+  int MIDIBuffer::write(const SongTime& beat, const 
+			unsigned char* data, size_t data_size) {
+    // XXX implement this
+    /*
     jack_nframes_t timestamp = jack_nframes_t((beat + m_offset - m_start_beat) *
                                               m_samplerate * 60 / m_bpm);
     return jack_midi_event_write(m_buffer, timestamp, (jack_midi_data_t*)data, 
                                  data_size);
+    */
+    return 0;
   }
 
 

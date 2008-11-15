@@ -32,6 +32,7 @@
 #include "curve.hpp"
 #include "xmlserialisable.hpp"
 #include "sequencable.hpp"
+#include "songtime.hpp"
 
 
 namespace Dino {
@@ -56,13 +57,13 @@ namespace Dino {
     public:
 
       SequenceEntry(int patID, Pattern* patPtr, 
-                    unsigned int st, unsigned int len) 
+                    const SongTime& st, const SongTime& len) 
         : pattern_id(patID), pattern(patPtr), start(st), length(len), id(-1) { }
       
       int get_pattern_id() const { return pattern_id; }
       Pattern& get_pattern() { return *pattern; }
-      unsigned int get_start() const { return start; }
-      unsigned int get_length() const { return length; }
+      const SongTime& get_start() const { return start; }
+      const SongTime& get_length() const { return length; }
       int get_id() const { return id; }
       
     private:
@@ -71,8 +72,8 @@ namespace Dino {
       
       int pattern_id;
       Pattern* pattern;
-      unsigned int start;
-      unsigned int length;
+      SongTime start;
+      SongTime length;
       int id;
     };
     
@@ -400,7 +401,8 @@ namespace Dino {
     
     /// @name Sequencing
     //@{
-    void sequence(MIDIBuffer& buffer, double from, double to,
+    void sequence(MIDIBuffer& buffer, 
+		  const SongTime& from, const SongTime& to,
 		  unsigned int length, int channel) const;
     //@}
     

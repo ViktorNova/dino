@@ -7,6 +7,7 @@ my $module = "dino";
 
 # Get the user name from Git
 my $user = `git config user.name`;
+chomp $user;
 
 
 # Generate a log message with the versions and oneline comments for all
@@ -34,7 +35,7 @@ for $commit (@commits) {
   chomp $oneline;
   $logmsg = $logmsg . "  * $version: $oneline\n";
 }
-
+chomp $logmsg;
 
 # if the push command fails, exit without sending the message
 if (system('git', 'push') != 0) {
@@ -86,8 +87,8 @@ EM
 
 ### Send out the XML-RPC message
 
-print $message;
-exit;
+#print $message;
+#exit;
 
 # We gotta be careful from now on. We silence all the warnings because
 # RPC::XML code is crappy and works with undefs etc.

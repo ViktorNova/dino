@@ -22,6 +22,7 @@
 #define CONTROLLERDIALOG_HPP
 
 #include <gtkmm.h>
+#include <libglademm.h>
 
 #include "singletextcombo.hpp"
 
@@ -29,7 +30,8 @@
 class ControllerDialog : public Gtk::Dialog {
 public:
   
-  ControllerDialog();
+  ControllerDialog(BaseObjectType* obj, 
+		   const Glib::RefPtr<Gnome::Glade::Xml>& xml);
   
   std::string get_name() const;
   long get_controller() const;

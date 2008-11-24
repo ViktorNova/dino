@@ -31,171 +31,140 @@
 #include "tracklabel.hpp"
 
 
+using namespace Gnome::Glade;
 using namespace Glib;
 using namespace Gtk;
 using namespace sigc;
 using namespace Dino;
 
 
-class SequenceEditorPlugin : public Plugin {
-public:
-  
-  SequenceEditorPlugin() : m_se(0), m_plif(0) { }
-  
-  string get_name() const { return "Sequence editor"; }
-  
-  void initialise(PluginInterface& plif) {
-    m_se = manage(new SequenceEditor(plif.get_song(), plif.get_sequencer()));
-    plif.add_page("Arrangement", *m_se);
-    m_plif = &plif;
-  }
-  
-  ~SequenceEditorPlugin() { 
-    if (m_plif) {
-      m_plif->remove_page(*m_se); 
-      delete m_se;
-    }
-  }
-  
-private:
-  
-  SequenceEditor* m_se;
-  PluginInterface* m_plif;
-  
-} dino_plugin;
-
-
-SequenceEditor::SequenceEditor(Dino::Song& song, Dino::Sequencer& seq)
-  : m_sequence_ruler(32, 1, 4, 20, 20),
+SequenceEditor::SequenceEditor(BaseObjectType* cobject, 
+			       const Glib::RefPtr<Gnome::Glade::Xml>& xml)
+  : Gtk::VBox(cobject),
+    m_sequence_ruler(32, 1, 4, 20, 20),
     m_dlg_track(0),
     m_active_track(-1),
-    m_song(song),
-    m_seq(seq) {
+    m_song(0),
+    m_seq(0) {
   
-  VBox* v = manage(new VBox);
-  
-  // initialise the toolbar
-  Toolbar* tbar = manage(new Toolbar);
-  tbar->set_toolbar_style(TOOLBAR_ICONS);
-  m_tbn_add_track = manage(new ToolButton(*manage(new Image(Stock::ADD, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_add_track, mem_fun(*this, &SequenceEditor::add_track));
-  m_tbn_delete_track = manage(new ToolButton(*manage(new Image(Stock::DELETE, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_delete_track, mem_fun(*this, &SequenceEditor::delete_track));
-  m_tbn_edit_track_properties = manage(new ToolButton(*manage(new Image(Stock::PROPERTIES, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_edit_track_properties, mem_fun(*this, &SequenceEditor::edit_track_properties));
-  tbar->append(*manage(new SeparatorToolItem));
-  m_tbn_play = manage(new ToolButton(*manage(new Image(Stock::MEDIA_PLAY, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_play, mem_fun(*this, &SequenceEditor::play));
-  m_tbn_stop = manage(new ToolButton(*manage(new Image(Stock::MEDIA_PAUSE, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_stop, mem_fun(*this, &SequenceEditor::stop));
-  m_tbn_go_to_start = manage(new ToolButton(*manage(new Image(Stock::MEDIA_PREVIOUS, ICON_SIZE_SMALL_TOOLBAR))));
-  tbar->append(*m_tbn_go_to_start, mem_fun(*this, &SequenceEditor::go_to_start));
-  tbar->append(*manage(new SeparatorToolItem));
-  HBox* thbx = manage(new HBox(false, 5));
-  thbx->pack_start(*manage(new Label("Song length:")));
-  m_spb_song_length = manage(new SpinButton);
-  m_spb_song_length->set_range(1, 10000);
-  m_spb_song_length->set_increments(1, 16);
-  thbx->pack_start(*m_spb_song_length);
-  ToolItem* ti = manage(new ToolItem);
-  ti->add(*thbx);
-  tbar->append(*ti);
-  v->pack_start(*tbar, false, true);
-  
+  // get the widgets
+  VBox* boxArrangementEditor = w<VBox>(xml, "box_arrangement_editor");
+  VBox* box_track_labels  = w<VBox>(xml, "box_track_labels");
+  Scrollbar* scbHorizontal = w<Scrollbar>(xml, "scbh_arrangement_editor");
+  Scrollbar* scbVertical = w<Scrollbar>(xml, "scbv_arrangement_editor");
+  Box* boxSequenceRuler = w<Box>(xml, "box_sequence_ruler");
+  m_spb_song_length = w<SpinButton>(xml, "sbn_song_length");
+  m_dlg_track = xml->get_widget_derived("dlg_track_properties", m_dlg_track);
+  assert(m_dlg_track);
+
   // add the ruler
-  Table* table = manage(new Table(3, 3));
-  v->pack_start(*table);
-  EvilScrolledWindow* scw_ruler = manage(new EvilScrolledWindow(true, false));
-  scw_ruler->add(m_sequence_ruler);
-  table->attach(*scw_ruler, 1, 2, 0, 1, FILL, FILL);
-  
-  // add the scrollbars
-  HScrollbar* hscroll = manage(new HScrollbar);
-  VScrollbar* vscroll = manage(new VScrollbar);
-  table->attach(*vscroll, 2, 3, 1, 2, FILL, FILL);
-  table->attach(*hscroll, 1, 2, 2, 3, FILL, FILL);
+  EvilScrolledWindow* scwSequenceRuler = 
+    manage(new EvilScrolledWindow(true, false));
+  boxSequenceRuler->pack_start(*scwSequenceRuler);
+  scwSequenceRuler->add(m_sequence_ruler);
 
   // add the box for the trackwidgets
-  EvilScrolledWindow* scw_trackwidgets = manage(new EvilScrolledWindow);
-  table->attach(*scw_trackwidgets, 1, 2, 1, 2);
+  EvilScrolledWindow* scwArrangementEditor = manage(new EvilScrolledWindow);
+  boxArrangementEditor->pack_start(*scwArrangementEditor);
   m_vbx_track_editor = manage(new VBox(false, 0));
-  scw_trackwidgets->add(*m_vbx_track_editor);
+  scwArrangementEditor->add(*m_vbx_track_editor);
   
   // add the box for the track labels
   EvilScrolledWindow* scw_track_labels = manage(new EvilScrolledWindow(false));
-  table->attach(*scw_track_labels, 0, 1, 1, 2, FILL);
+  box_track_labels->pack_start(*scw_track_labels);
   m_vbx_track_labels = manage(new VBox(false, 0));
   m_vbx_track_labels->set_border_width(2);
   scw_track_labels->add(*m_vbx_track_labels);
-  scw_track_labels->set_shadow_type(SHADOW_NONE);
+  Viewport* vp = dynamic_cast<Viewport*>(scw_track_labels->get_child());
+  if (vp)
+    vp->set_shadow_type(SHADOW_NONE);
   
   // synchronise scrolling
-  scw_ruler->set_hadjustment(scw_trackwidgets->get_hadjustment());
-  hscroll->set_adjustment(*scw_trackwidgets->get_hadjustment());
-  vscroll->set_adjustment(*scw_trackwidgets->get_vadjustment());
-  scw_track_labels->set_vadjustment(*scw_trackwidgets->get_vadjustment());
+  scwSequenceRuler->set_hadjustment(scwArrangementEditor->get_hadjustment());
+  scbHorizontal->set_adjustment(*scwArrangementEditor->get_hadjustment());
+  scbVertical->set_adjustment(*scwArrangementEditor->get_vadjustment());
+  scw_track_labels->set_vadjustment(*scwArrangementEditor->get_vadjustment());
   
-  pack_start(*v);
-  
-  m_dlg_track = new TrackDialog;
-  
-  // connect to the song
+  // setup the track properties dialog
+  m_dlg_track = xml->get_widget_derived("dlg_track_properties", m_dlg_track);
+
+  // and toolbuttons
+  typedef std::map<string, void (SequenceEditor::*)(void)> slotmap;
+  slotmap toolSlots;
+  toolSlots["tbn_add_track"] = &SequenceEditor::add_track;
+  toolSlots["tbn_delete_track"] = &SequenceEditor::delete_track;
+  toolSlots["tbn_edit_track_properties"] = 
+    &SequenceEditor::edit_track_properties;
+  toolSlots["tbn_play"] = &SequenceEditor::play;
+  toolSlots["tbn_stop"] = &SequenceEditor::stop;
+  toolSlots["tbn_go_to_start"] = &SequenceEditor::go_to_start;
+  slotmap::const_iterator iter;
+  for (iter = toolSlots.begin(); iter != toolSlots.end(); ++iter) {
+    m_toolbuttons[iter->first] = w<ToolButton>(xml, iter->first);
+    m_toolbuttons[iter->first]->signal_clicked().
+      connect(mem_fun(*this, iter->second));
+  }
+
+}
+
+
+void SequenceEditor::set_song(Song* song) {
+  m_song = song;
   slot<void, int> update_track_view = 
     sigc::hide(mem_fun(*this, &SequenceEditor::reset_gui));
-  m_song.signal_track_added.connect(update_track_view);
-  m_song.signal_track_removed.connect(update_track_view);
-  m_song.signal_length_changed.connect(update_track_view);
-  m_song.signal_length_changed.connect(mem_fun(*m_spb_song_length,
-  						&SpinButton::set_value));
+  m_song->signal_track_added.connect(update_track_view);
+  m_song->signal_track_removed.connect(update_track_view);
+  m_song->signal_length_changed.connect(update_track_view);
+  m_song->signal_length_changed.connect(mem_fun(*m_spb_song_length,
+						&SpinButton::set_value));
   m_spb_song_length->signal_value_changed().
-    connect(compose(mem_fun(m_song, &Song::set_length),
-  		    mem_fun(*m_spb_song_length, &SpinButton::get_value_as_int)));
-  m_song.signal_length_changed.
+    connect(compose(mem_fun(*m_song, &Song::set_length),
+		    mem_fun(*m_spb_song_length, &SpinButton::get_value_as_int)));
+  m_song->signal_length_changed.
     connect(mem_fun(m_sequence_ruler, &::Ruler::set_length));
+}
 
-  // connect to sequencer
-  m_seq.signal_instruments_changed.
-    connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), &m_seq));
-  m_dlg_track->update_ports(&m_seq);
+
+void SequenceEditor::set_sequencer(Dino::Sequencer* seq) {
+  m_seq = seq;
+  m_seq->signal_instruments_changed.
+    connect(bind(mem_fun(*m_dlg_track, &TrackDialog::update_ports), m_seq));
+  m_dlg_track->update_ports(m_seq);
   m_sequence_ruler.signal_clicked.
-    connect(sigc::hide(mem_fun(m_seq, &Sequencer::go_to_beat)));
-  
-  reset_gui();
+    connect(sigc::hide(mem_fun(*m_seq, &Sequencer::go_to_beat)));
 }
 
 
 void SequenceEditor::reset_gui() {
   
-  m_spb_song_length->set_value(m_song.get_length());
-  
   m_vbx_track_editor->children().clear();
   m_vbx_track_labels->children().clear();
   
-  TempoWidget* tmpw = manage(new TempoWidget(&m_song));
+  TempoWidget* tmpw = manage(new TempoWidget(m_song));
   m_vbx_track_editor->pack_start(*tmpw, PACK_SHRINK);
-  TempoLabel* tmpl = manage(new TempoLabel(&m_song));
+  TempoLabel* tmpl = manage(new TempoLabel(m_song));
   m_vbx_track_labels->pack_start(*tmpl, PACK_SHRINK);
   
   // find the new selected track
   int new_active = -1;
   Song::TrackIterator iter;
-  for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
+  for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
     new_active = iter->get_id();
     if (new_active >= m_active_track)
       break;
   }
   m_active_track = new_active;
   
-  for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
-    TrackWidget* tw = manage(new TrackWidget(&m_song));
+  for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
+    TrackWidget* tw = manage(new TrackWidget(m_song));
     tw->set_track(&*iter);
     tw->signal_clicked.
       connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
 			      iter->get_id())));
-    m_seq.signal_beat_changed.
+    m_seq->signal_beat_changed.
       connect(mem_fun(*tw, &TrackWidget::set_current_beat));
     m_vbx_track_editor->pack_start(*tw, PACK_SHRINK);
-    TrackLabel* tl = manage(new TrackLabel(&m_song));
+    TrackLabel* tl = manage(new TrackLabel(m_song));
     tl->set_track(iter->get_id(), &(*iter));
     tl->signal_clicked.
       connect(sigc::hide(bind(mem_fun(*this, &SequenceEditor::set_active_track),
@@ -206,8 +175,8 @@ void SequenceEditor::reset_gui() {
   m_vbx_track_editor->show_all();
   m_vbx_track_labels->show_all();
   
-  m_tbn_delete_track->set_sensitive(m_active_track != -1);
-  m_tbn_edit_track_properties->set_sensitive(m_active_track!=-1);
+  m_toolbuttons["tbn_delete_track"]->set_sensitive(m_active_track != -1);
+  m_toolbuttons["tbn_edit_track_properties"]->set_sensitive(m_active_track!=-1);
 }
 
 
@@ -217,9 +186,9 @@ void SequenceEditor::add_track() {
   m_dlg_track->refocus();
   m_dlg_track->show_all();
   if (m_dlg_track->run() == RESPONSE_OK) {
-    Song::TrackIterator iter = m_song.add_track(m_dlg_track->get_name());
+    Song::TrackIterator iter = m_song->add_track(m_dlg_track->get_name());
     iter->set_channel(m_dlg_track->get_channel() - 1);
-    m_seq.set_instrument(iter->get_id(), m_dlg_track->get_port());
+    m_seq->set_instrument(iter->get_id(), m_dlg_track->get_port());
     set_active_track(iter->get_id());
   }
   m_dlg_track->hide();
@@ -228,14 +197,14 @@ void SequenceEditor::add_track() {
 
 void SequenceEditor::delete_track() {
   if (m_active_track >= 0) {
-    m_song.remove_track(m_song.tracks_find(m_active_track));
+    m_song->remove_track(m_song->tracks_find(m_active_track));
   }
 }
 
 
 void SequenceEditor::edit_track_properties() {
   if (m_active_track >= 0) {
-    Track& t = *(m_song.tracks_find(m_active_track));
+    Track& t = *(m_song->tracks_find(m_active_track));
     m_dlg_track->set_name(t.get_name());
     m_dlg_track->set_channel(t.get_channel() + 1);
     m_dlg_track->refocus();
@@ -243,7 +212,7 @@ void SequenceEditor::edit_track_properties() {
     if (m_dlg_track->run() == RESPONSE_OK) {
       t.set_name(m_dlg_track->get_name());
       t.set_channel(m_dlg_track->get_channel() - 1);
-      m_seq.set_instrument(m_active_track, m_dlg_track->get_port());
+      m_seq->set_instrument(m_active_track, m_dlg_track->get_port());
     }
   }
   m_dlg_track->hide();
@@ -251,17 +220,17 @@ void SequenceEditor::edit_track_properties() {
 
 
 void SequenceEditor::play() {
-  m_seq.play();
+  m_seq->play();
 }
 
 
 void SequenceEditor::stop() {
-  m_seq.stop();
+  m_seq->stop();
 }
 
 
 void SequenceEditor::go_to_start() {
-  m_seq.go_to_beat(0);
+  m_seq->go_to_beat(0);
 }
 
 

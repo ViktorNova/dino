@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 
 #include "debug.hpp"

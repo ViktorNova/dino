@@ -22,12 +22,12 @@
 #define PATTERNEDITOR_HPP
 
 #include <gtkmm.h>
+#include <libglademm.h>
 
 #include "cceditor.hpp"
 #include "debug.hpp"
 #include "octavelabel.hpp"
 #include "noteeditor.hpp"
-#include "plugininterface.hpp"
 #include "ruler.hpp"
 #include "singletextcombo.hpp"
 
@@ -40,11 +40,13 @@ class PatternDialog;
 class ControllerDialog;
 
 
-class PatternEditor : public GUIPage {
+class PatternEditor : public Gtk::VBox {
 public:
   
-  PatternEditor(Dino::Song& song);
+  PatternEditor(BaseObjectType* cobject, 
+		const Glib::RefPtr<Gnome::Glade::Xml>& xml);
   
+  void set_song(Dino::Song* song);
   void reset_gui();
   
   void cut_selection();
@@ -54,6 +56,17 @@ public:
   void select_all();
   
 protected:
+  
+  template <class T>
+  static inline T* w(const Glib::RefPtr<Gnome::Glade::Xml>& xml, 
+		     const std::string& name) {
+    using namespace Dino;
+    T* widget = dynamic_cast<T*>(xml->get_widget(name));
+    if (widget == 0)
+      dbg0<<"Could not load widget "<<name<<" of type "
+	  <<demangle(typeid(T).name())<<endl;
+    return widget;
+  }
   
   void pattern_added(int id);
   
@@ -84,12 +97,7 @@ protected:
   PatternDialog* m_dlg_pattern;
   ControllerDialog* m_dlg_controller;
 
-  Gtk::ToolButton* m_tbn_add_pattern;
-  Gtk::ToolButton* m_tbn_delete_pattern;
-  Gtk::ToolButton* m_tbn_duplicate_pattern;
-  Gtk::ToolButton* m_tbn_set_pattern_properties;
-  Gtk::ToolButton* m_tbn_add_controller;
-  Gtk::ToolButton* m_tbn_delete_controller;
+  std::map<std::string, Gtk::ToolButton*> m_toolbuttons;
 
   sigc::connection m_track_combo_connection;
   sigc::connection m_pattern_combo_connection;
@@ -102,7 +110,7 @@ protected:
   int m_active_pattern;
   long m_active_controller;
 
-  Dino::Song& m_song;
+  Dino::Song* m_song;
 };
 
 

@@ -49,7 +49,6 @@ CCEditor::CCEditor()
   cmap->alloc_color(m_fg_colour);
 
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
-  set_size_request(-1, 68);
 }
 
 
@@ -58,7 +57,7 @@ void CCEditor::set_controller(Dino::Pattern* pat, long controller) {
   m_controller = controller;
   if (m_pat) {
     set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width,
-		     68);
+		     -1);
     slot<void> draw = mem_fun(*this, &CCEditor::queue_draw);
     m_pat->signal_cc_added.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
     m_pat->signal_cc_changed.connect(sigc::hide(sigc::hide(sigc::hide(draw))));
@@ -75,7 +74,7 @@ void CCEditor::set_step_width(int width) {
   m_step_width = width;
   if (m_pat) {
     set_size_request(m_pat->get_length() * m_pat->get_steps() * m_step_width, 
-		     68);
+		     -1);
     queue_draw();
   }
 }

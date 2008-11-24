@@ -26,13 +26,17 @@
 
 using namespace Glib;
 using namespace Gtk;
+using namespace Gnome::Glade;
 using namespace std;
 
 
-ControllerDialog::ControllerDialog() {
-  set_title("Controller properties");
-  
-  m_ent_name = manage(new Entry);
+ControllerDialog::ControllerDialog(BaseObjectType* obj, 
+				   const RefPtr<Xml>& xml) 
+  : Dialog(obj) {
+  m_ent_name = dynamic_cast<Entry*>(xml->get_widget("dlgcont_ent_name"));
+  Box* box = dynamic_cast<Box*>(xml->get_widget("dlgcont_box_controller"));
+  box->pack_start(m_cmb_controller);
+
   m_cmb_controller.append_text("Pitchbend", Dino::make_pbend());
 
   ostringstream oss;
@@ -46,19 +50,6 @@ ControllerDialog::ControllerDialog() {
     connect(mem_fun(*this, &ControllerDialog::update_entry));
   m_ent_name->select_region(0, -1);
   m_cmb_controller.set_active_id(1);
-
-  Table* table = manage(new Table(2, 2));
-  table->attach(*manage(new Label("Name:")), 0, 1, 0, 1);
-  table->attach(*manage(new Label("MIDI controller:")), 0, 1, 1, 2);
-  table->attach(*m_ent_name, 1, 2, 0, 1);
-  table->attach(m_cmb_controller, 1, 2, 1, 2);
-  table->set_border_width(5);
-  table->set_row_spacings(5);
-  table->set_col_spacings(5);
-  get_vbox()->pack_start(*table);
-  add_button(Stock::CANCEL, RESPONSE_CANCEL);
-  add_button(Stock::OK, RESPONSE_OK);
-
   update_entry();
 }
 

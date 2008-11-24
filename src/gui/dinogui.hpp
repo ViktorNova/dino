@@ -29,8 +29,6 @@
 #include "debug.hpp"
 #include "octavelabel.hpp"
 #include "patterneditor.hpp"
-#include "plugininterfaceimplementation.hpp"
-#include "pluginlibrary.hpp"
 #include "ringbuffer.hpp"
 #include "ruler.hpp"
 #include "sequencer.hpp"
@@ -38,8 +36,11 @@
 #include "song.hpp"
 
 
+class ControllerDialog;
+class InfoEditor;
+class PatternDialog;
 class PatternEditor;
-class GUIPage;
+class SequenceEditor;
 
 
 /** This is the main class. It connects our custom widgets to the rest of the
@@ -49,9 +50,6 @@ public:
   DinoGUI(int argc, char** argv, Glib::RefPtr<Gnome::Glade::Xml> xml);
   
   Gtk::Window* get_window();
-  
-  void add_page(const std::string& label, GUIPage& page);
-  void remove_page(GUIPage& page);
   
 private:
 
@@ -114,17 +112,16 @@ private:
   
   Gtk::Window* m_window;
   std::map<std::string, Gtk::MenuItem*> m_menuitems;
-  
-  Gtk::Notebook* m_nb;
+
+  PatternEditor* m_pe;
+  SequenceEditor* m_se;
+  InfoEditor* m_ie;
   
   Gtk::AboutDialog* m_about_dialog;
   
   Dino::Sequencer m_seq;
   
   lash_client_t* m_lash_client;
-  
-  PluginInterfaceImplementation m_plif;
-  PluginLibrary m_plib;
 };
 
 

@@ -24,8 +24,8 @@
 #include <map>
 
 #include <gtkmm.h>
+#include <libglademm.h>
 
-#include "plugininterface.hpp"
 #include "debug.hpp"
 #include "ruler.hpp"
 #include "trackdialog.hpp"
@@ -36,15 +36,30 @@ namespace Dino {
 }
 
 
-class SequenceEditor : public GUIPage {
+class SequenceEditor : public Gtk::VBox {
 public:
   
-  SequenceEditor(Dino::Song& song, Dino::Sequencer& seq);
+  SequenceEditor(BaseObjectType* cobject, 
+		 const Glib::RefPtr<Gnome::Glade::Xml>& xml);
+  
+  void set_song(Dino::Song* song);
+  void set_sequencer(Dino::Sequencer* seq);
   
   void reset_gui();
   
 protected:
   
+  template <class T>
+  static inline T* w(const Glib::RefPtr<Gnome::Glade::Xml>& xml, 
+		     const string& name) {
+    using namespace Dino;
+    T* widget = dynamic_cast<T*>(xml->get_widget(name));
+    if (widget == 0)
+      dbg0<<"Could not load widget "<<name<<" of type "
+	  <<demangle(typeid(T).name())<<endl;
+    return widget;
+  }
+
   void add_track();
   void delete_track();
   void edit_track_properties();
@@ -61,19 +76,14 @@ protected:
   Ruler m_sequence_ruler;
   Gtk::VBox* m_vbx_track_editor;
   Gtk::VBox* m_vbx_track_labels;
-  Gtk::ToolButton* m_tbn_add_track;
-  Gtk::ToolButton* m_tbn_delete_track;
-  Gtk::ToolButton* m_tbn_edit_track_properties;
-  Gtk::ToolButton* m_tbn_play;
-  Gtk::ToolButton* m_tbn_stop;
-  Gtk::ToolButton* m_tbn_go_to_start;
   Gtk::SpinButton* m_spb_song_length;
   TrackDialog* m_dlg_track;
-  
+  std::map<std::string, Gtk::ToolButton*> m_toolbuttons;
+
   int m_active_track;
   
-  Dino::Song& m_song;
-  Dino::Sequencer& m_seq;
+  Dino::Song* m_song;
+  Dino::Sequencer* m_seq;
 };
 
 

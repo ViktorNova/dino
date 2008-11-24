@@ -23,30 +23,23 @@
 
 
 using namespace Gtk;
+using namespace Gnome::Glade;
 using namespace Glib;
 using namespace std;
 using namespace Dino;
 
 
-TrackDialog::TrackDialog() {
-  set_title("Track properties");
-  m_ent_name = manage(new Entry);
-  m_sbn_channel = manage(new SpinButton(0, 0));
-  m_sbn_channel->set_range(1, 16);
-  m_sbn_channel->set_increments(1, 10);
-  Table* table = manage(new Table(3, 2));
-  table->attach(*manage(new Label("Track name:")), 0, 1, 0, 1);
-  table->attach(*manage(new Label("MIDI port:")), 0, 1, 1, 2);
-  table->attach(*manage(new Label("MIDI channel:")), 0, 1, 2, 3);
-  table->attach(*m_ent_name, 1, 2, 0, 1);
-  table->attach(m_cmb_port, 1, 2, 1, 2);
-  table->attach(*m_sbn_channel, 1, 2, 2, 3);
-  table->set_border_width(5);
-  table->set_row_spacings(5);
-  table->set_col_spacings(5);
-  get_vbox()->pack_start(*table);
-  add_button(Stock::CANCEL, RESPONSE_CANCEL);
-  add_button(Stock::OK, RESPONSE_OK);
+TrackDialog::TrackDialog(BaseObjectType* obj, const RefPtr<Xml>& xml)
+  : Dialog(obj) {
+  
+  m_ent_name = dynamic_cast<Entry*>(xml->get_widget("dlgtrack_ent_name"));
+  m_sbn_channel = 
+    dynamic_cast<SpinButton*>(xml->get_widget("dlgtrack_sbn_channel"));
+  dynamic_cast<VBox*>(xml->get_widget("dlgtrack_vbx_port"))->
+    pack_start(m_cmb_port);
+  
+  manage(m_ent_name);
+  manage(m_sbn_channel);
   
   update_ports();
 }

@@ -35,10 +35,10 @@
 #include "deleter.hpp"
 #include "dinogui.hpp"
 #include "evilscrolledwindow.hpp"
+#include "infoeditor.hpp"
 #include "pattern.hpp"
 #include "patterndialog.hpp"
 #include "patterneditor.hpp"
-#include "plugininterfaceimplementation.hpp"
 #include "ruler.hpp"
 #include "sequenceeditor.hpp"
 #include "song.hpp"
@@ -56,9 +56,7 @@ using namespace Dino;
 
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_seq("Dino", m_song),
-    m_plif(*this, m_song, m_seq),
-    m_plib(m_plif) {
+  : m_seq("Dino", m_song) {
   
   if (!m_seq.is_valid()) {
     MessageDialog dlg("Could not initialise the sequencer! You will not be "
@@ -73,21 +71,23 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   }
   
   m_window = w<Gtk::Window>(xml, "main_window");
-  
-  // initialise the "About" dialog
   m_about_dialog = w<AboutDialog>(xml, "dlg_about");
   m_about_dialog->set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
 				"<larsl@users.sourceforge.net>");
   m_about_dialog->set_version(PACKAGE_VERSION);
   
-  m_nb = w<Notebook>(xml, "main_notebook");
+  m_pe = wd<PatternEditor>(xml, "patternVBox");
+  m_pe->set_song(&m_song);
+  m_se = wd<SequenceEditor>(xml, "arrangementVBox");
+  m_se->set_song(&m_song);
+  m_se->set_sequencer(&m_seq);
+  m_ie = wd<InfoEditor>(xml, "table1");
+  m_ie->set_song(&m_song);
+  
+  w<Notebook>(xml, "main_notebook")->signal_switch_page().
+    connect(sigc::hide<0>(mem_fun(*this, &DinoGUI::page_switched)));
   
   init_menus(xml);
-
-  PluginLibrary::iterator iter;
-  for (iter = m_plib.begin(); iter != m_plib.end(); ++iter)
-    m_plib.load_plugin(iter);
-  
   reset_gui();
   
   m_window->show_all();
@@ -96,16 +96,6 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
 
 Gtk::Window* DinoGUI::get_window() {
   return m_window;
-}
-
-
-void DinoGUI::add_page(const std::string& label, GUIPage& page) {
-  m_nb->append_page(page, label);
-}
-
-
-void DinoGUI::remove_page(GUIPage& page) {
-  m_nb->remove_page(page);
 }
 
 
@@ -142,27 +132,27 @@ void DinoGUI::slot_file_quit() {
 
 
 void DinoGUI::slot_edit_cut() {
-  //m_pe->cut_selection();
+  m_pe->cut_selection();
 }
 
 
 void DinoGUI::slot_edit_copy() {
-  //m_pe->copy_selection();
+  m_pe->copy_selection();
 }
 
 
 void DinoGUI::slot_edit_paste() {
-  //m_pe->paste();
+  m_pe->paste();
 }
 
 
 void DinoGUI::slot_edit_delete() {
-  //m_pe->delete_selection();
+  m_pe->delete_selection();
 }
 
 
 void DinoGUI::slot_edit_select_all() {
-  //m_pe->select_all();
+  m_pe->select_all();
 }
 
 
@@ -189,10 +179,9 @@ void DinoGUI::slot_help_about_dino() {
 
 
 void DinoGUI::reset_gui() {
-  std::list<Widget*> pages = m_nb->get_children();
-  std::list<Widget*>::iterator iter;
-  for (iter = pages.begin(); iter != pages.end(); ++iter)
-    static_cast<GUIPage*>(*iter)->reset_gui();
+  m_pe->reset_gui();
+  m_se->reset_gui();
+  m_ie->reset_gui();
 }
 
 

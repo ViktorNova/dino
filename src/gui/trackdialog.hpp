@@ -22,6 +22,7 @@
 #define TRACKDIALOG_HPP
 
 #include <gtkmm.h>
+#include <libglademm.h>
 
 #include "singletextcombo.hpp"
 
@@ -33,7 +34,7 @@ namespace Dino {
 class TrackDialog : public Gtk::Dialog {
 public:
   
-  TrackDialog();
+  TrackDialog(BaseObjectType* obj, const Glib::RefPtr<Gnome::Glade::Xml>& xml);
   
   std::string get_name() const;
   std::string get_port() const;

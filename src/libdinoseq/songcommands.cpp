@@ -407,7 +407,8 @@ namespace Dino {
   
 
   AddPattern::AddPattern(Song& song, int track, const std::string& name, 
-			 int length, int steps, Track::PatternIterator* iter)
+			 const SongTime& length, 
+			 int steps, Track::PatternIterator* iter)
     : Command("Add pattern"),
       m_song(song),
       m_track(track),
@@ -570,7 +571,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    if (m_length.get_beat() > piter->get_length())
+    if (m_length > piter->get_length())
       return false;
     // XXX can probably be optimised
     Track::SequenceIterator siter;
@@ -1229,7 +1230,7 @@ namespace Dino {
 
 
   SetPatternLength::SetPatternLength(Song& song, int track, int pattern, 
-				     unsigned int beats)
+				     const SongTime& beats)
     : CompoundCommand("Set pattern length"),
       m_song(song),
       m_track(track),
@@ -1250,7 +1251,7 @@ namespace Dino {
     
     if (m_beats < m_oldbeats) {
       Pattern::NoteIterator niter;
-      unsigned n = m_beats * piter->get_steps();
+      unsigned n = m_beats.get_beat() * piter->get_steps();
       for (niter = piter->notes_begin(); niter != piter->notes_end(); ++niter) {
 	if (niter->get_step() >= n) {
 	  append(new DeleteNote(m_song, m_track, m_pattern, 
@@ -1361,7 +1362,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    unsigned int n = piter->get_length() * piter->get_steps();
+    unsigned int n = piter->get_length().get_beat() * piter->get_steps();
     if (m_step >= n || m_step + m_length > n)
       return false;
     Pattern::NoteIterator niter = piter->add_note(m_step, m_key, 
@@ -1409,7 +1410,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    unsigned int n = piter->get_length() * piter->get_steps();
+    unsigned int n = piter->get_length().get_beat() * piter->get_steps();
     if (m_step >= n)
       return false;
     return piter->add_notes(m_notes, m_step, m_key, m_selection);

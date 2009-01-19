@@ -414,7 +414,7 @@ void PatternEditor::add_pattern() {
       Track::PatternIterator iter;
       m_proxy.add_pattern(m_active_track, 
 			  m_dlg_pattern->get_name(),
-			  m_dlg_pattern->get_length(),
+			  SongTime(m_dlg_pattern->get_length(), 0),
 			  m_dlg_pattern->get_steps(),
 			  &iter);
       m_cmb_pattern.set_active_id(iter->get_id());
@@ -446,7 +446,7 @@ void PatternEditor::edit_pattern_properties() {
     assert(pat != iter->pat_end());
 
     m_dlg_pattern->set_name(pat->get_name());
-    m_dlg_pattern->set_length(pat->get_length());
+    m_dlg_pattern->set_length(pat->get_length().get_beat());
     m_dlg_pattern->set_steps(pat->get_steps());
     m_dlg_pattern->refocus();
     m_dlg_pattern->show_all();
@@ -455,9 +455,9 @@ void PatternEditor::edit_pattern_properties() {
 	m_proxy.set_pattern_name(m_active_track, m_active_pattern,
 				 m_dlg_pattern->get_name());
       }
-      if (m_dlg_pattern->get_length() != pat->get_length()) {
+      if (m_dlg_pattern->get_length() != pat->get_length().get_beat()) {
 	m_proxy.set_pattern_length(m_active_track, m_active_pattern,
-				   m_dlg_pattern->get_length());
+				   SongTime(m_dlg_pattern->get_length(), 0));
       }
       if (m_dlg_pattern->get_steps() != pat->get_steps()) {
 	m_proxy.set_pattern_steps(m_active_track, m_active_pattern,

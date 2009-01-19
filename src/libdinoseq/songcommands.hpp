@@ -135,14 +135,15 @@ namespace Dino {
   class AddPattern : public Command {
   public:
     AddPattern(Song& song, int track, const std::string& name, 
-	       int length, int steps, Track::PatternIterator* iter);
+	       const SongTime& length, 
+	       int steps, Track::PatternIterator* iter);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
     std::string m_name;
-    int m_length;
+    SongTime m_length;
     int m_steps;
     Track::PatternIterator* m_iter_store;
     int m_id;
@@ -434,15 +435,16 @@ namespace Dino {
 
   class SetPatternLength : public CompoundCommand {
   public:
-    SetPatternLength(Song& song, int track, int pattern, unsigned int beats);
+    SetPatternLength(Song& song, int track, 
+		     int pattern, const SongTime& beats);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
     int m_pattern;
-    unsigned int m_beats;
-    unsigned int m_oldbeats;
+    SongTime m_beats;
+    SongTime m_oldbeats;
   };
   
   

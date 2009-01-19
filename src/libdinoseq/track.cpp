@@ -438,7 +438,7 @@ namespace Dino {
 	  pi->add_curve(*info);
 	else {
 	  assert(citer->second->get_size() == 
-		 (pi->get_length() * pi->get_steps()));
+		 (pi->get_length().get_beat() * pi->get_steps()));
 	  pi->add_curve(citer->second);
 	}
       }
@@ -765,8 +765,9 @@ namespace Dino {
 
 
   /** Creates and adds a new pattern in this track with the given parameters.*/
-  Track::PatternIterator Track::add_pattern(const string& name, int length, 
-                                            int steps) {
+  Track::PatternIterator Track::add_pattern(const string& name, 
+					    const SongTime& length, 
+					    int steps) {
     /* This does not actually need to be threadsafe since the sequencer
        never accesses the patterns through the map, only through the 
        sequence entries. */
@@ -864,13 +865,13 @@ namespace Dino {
 	start >= m_length ||
 	m_patterns.find(pattern) == m_patterns.end() ||
 	length <= SongTime(0, 0) ||
-	length.get_beat() > m_patterns.find(pattern)->second->get_length())
+	length > m_patterns.find(pattern)->second->get_length())
       return SequenceIterator();
     
     // if length is 0, get it from the pattern
     SongTime newLength;
     if (length == SongTime(0, 0))
-      newLength = SongTime(m_patterns[pattern]->get_length(), 0);
+      newLength = m_patterns[pattern]->get_length();
     else
       newLength = length;
   
@@ -929,7 +930,7 @@ namespace Dino {
 	max = iter2->start - iter->start;
       else
 	max = m_length - iter->start;
-      SongTime pat_length = SongTime(iter->pattern->get_length(), 0);
+      SongTime pat_length = iter->pattern->get_length();
       max = max > pat_length ? pat_length : max;
       max = max > length ? length : max;
     }
@@ -1088,7 +1089,7 @@ namespace Dino {
       sscanf(pat_elt->get_attribute("steps")->get_value().c_str(), 
              "%d", &steps);
       string name = pat_elt->get_attribute("name")->get_value();
-      m_patterns[id] = new Pattern(id, name, length, steps);
+      m_patterns[id] = new Pattern(id, name, SongTime(length, 0), steps);
       m_patterns[id]->parse_xml_node(pat_elt);
     }
   

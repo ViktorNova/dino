@@ -105,7 +105,8 @@ namespace Dino {
     /** Set the name for a track. */
     bool set_track_name(int id, const std::string& name);
     /** Add a pattern to a track. */
-    bool add_pattern(int track, const std::string& name, int length, int steps,
+    bool add_pattern(int track, const std::string& name, 
+		     const SongTime& length, int steps,
 		     Track::PatternIterator* iter = 0);
     /** Duplicate an existing pattern. */
     bool duplicate_pattern(int track, int pattern, 
@@ -153,7 +154,7 @@ namespace Dino {
     /** Change the name of a pattern. */
     bool set_pattern_name(int track, int pattern, const std::string& name);
     /** Change the length of a pattern (in beats). */
-    bool set_pattern_length(int track, int pattern, unsigned int beats);
+    bool set_pattern_length(int track, int pattern, const SongTime& beats);
     /** Change the number of steps per beat in a pattern. */
     bool set_pattern_steps(int track, int pattern, unsigned int steps);
     /** Add a note to a pattern. */

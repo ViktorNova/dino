@@ -32,6 +32,7 @@
 #include <libxml++/libxml++.h>
 
 #include "sequencable.hpp"
+#include "songtime.hpp"
 #include "xmlserialisable.hpp"
 
 
@@ -178,7 +179,8 @@ namespace Dino {
 
 
     /** Create a new pattern. */
-    Pattern(int id, const std::string& name, int length, int steps);
+    Pattern(int id, const std::string& name, 
+	    const SongTime& length, int steps);
     /** Create a new pattern as a copy of @c pat. */
     Pattern(int id, const Pattern& pat);
     
@@ -217,7 +219,7 @@ namespace Dino {
     /** Return the number of steps per beat. */
     unsigned int get_steps() const;
     /** Return the length in beats. */
-    unsigned int get_length() const;
+    const SongTime& get_length() const;
     /** Return the bounding rectangle in the (step, key) plane for all notes
         that have been changed since the last call to reset_dirty_rect(). */
     void get_dirty_rect(int* min_step, int* min_note, 
@@ -241,7 +243,7 @@ namespace Dino {
     /** Set the name of this pattern. */
     void set_name(const std::string& name);
     /** Change the length in beats. */
-    void set_length(unsigned int length);
+    void set_length(const SongTime& length);
     /** Change the number of steps per beat. */
     void set_steps(unsigned int steps);
     /** Add a note at the given step with the given key, velocity, and length
@@ -323,13 +325,13 @@ namespace Dino {
     struct SeqData {
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
               std::vector<Curve*>* controllers,
-              unsigned int l, unsigned int s);
+              const SongTime& l, unsigned int s);
       ~SeqData();
       
       NoteEventList* ons;
       NoteEventList* offs;
       std::vector<Curve*>* curves;
-      unsigned int length;
+      SongTime length;
       unsigned int steps;
     };
     

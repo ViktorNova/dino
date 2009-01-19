@@ -99,7 +99,8 @@ namespace Dino {
     }
     else {
       for (unsigned int i = m_note->get_step() + 1;
-           i < m_pattern->get_length() * m_pattern->get_steps(); ++i) {
+           i < m_pattern->get_length().get_beat() * m_pattern->get_steps();
+	   ++i) {
         if ((*m_pattern->m_sd->ons)[i]) {
           m_note = (*m_pattern->m_sd->ons)[i]->get_note();
           return *this;
@@ -119,20 +120,21 @@ namespace Dino {
   }
 
   
-  Pattern::Pattern(int id, const string& name, int length, int steps) 
+  Pattern::Pattern(int id, const string& name, 
+		   const SongTime& length, int steps) 
     : m_id(id),
       m_name(name),
-      m_sd(new SeqData(new NoteEventList(length * steps),
-                       new NoteEventList(length * steps),
+      m_sd(new SeqData(new NoteEventList(length.get_beat() * steps),
+                       new NoteEventList(length.get_beat() * steps),
                        new vector<Curve*>(), length, steps)),
       m_dirty(false) {
     
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
     
     assert(m_sd->steps > 0);
-    assert(m_sd->length > 0);
+    assert(m_sd->length > SongTime(0, 0));
     
-    m_min_step = m_sd->length * m_sd->steps;
+    m_min_step = m_sd->length.get_beat() * m_sd->steps;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
@@ -142,8 +144,10 @@ namespace Dino {
   Pattern::Pattern(int id, const Pattern& pat) 
     : m_id(id),
       m_name(pat.get_name()),
-      m_sd(new SeqData(new NoteEventList(pat.get_length() * pat.get_steps()),
-                       new NoteEventList(pat.get_length() * pat.get_steps()),
+      m_sd(new SeqData(new NoteEventList(pat.get_length().get_beat() *
+					 pat.get_steps()),
+                       new NoteEventList(pat.get_length().get_beat() *
+					 pat.get_steps()),
                        new vector<Curve*>(), 
                        pat.get_length(), pat.get_steps())),
       m_dirty(false) {
@@ -151,9 +155,9 @@ namespace Dino {
     dbg1<<"Duplicating pattern \""<<pat.get_name()<<"\""<<endl;
     
     assert(m_sd->steps > 0);
-    assert(m_sd->length > 0);
+    assert(m_sd->length > SongTime(0, 0));
     
-    m_min_step = m_sd->length * m_sd->steps;
+    m_min_step = m_sd->length.get_beat() * m_sd->steps;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
@@ -231,7 +235,7 @@ namespace Dino {
 
 
   Pattern::NoteIterator Pattern::notes_begin() const {
-    for (unsigned i = 0; i < m_sd->length * m_sd->steps; ++i) {
+    for (unsigned i = 0; i < m_sd->length.get_beat() * m_sd->steps; ++i) {
       if ((*m_sd->ons)[i])
         return NoteIterator(this, (*m_sd->ons)[i]->get_note());
     }
@@ -254,8 +258,8 @@ namespace Dino {
   }
 
 
-  void Pattern::set_length(unsigned int length) {
-    assert(length > 0);
+  void Pattern::set_length(const SongTime& length) {
+    assert(length > SongTime(0, 0));
     
     // no change
     if (length == m_sd->length)
@@ -263,16 +267,17 @@ namespace Dino {
     
     // the new length is shorter, we may have to delete and resize notes
     if (length < m_sd->length) {
-      for (unsigned i = length * m_sd->steps; 
-           i < m_sd->length * m_sd->steps; ++i) {
+      for (unsigned i = length.get_beat() * m_sd->steps; 
+           i < m_sd->length.get_beat() * m_sd->steps; ++i) {
         while ((*m_sd->ons)[i] != 0)
           delete_note((*m_sd->ons)[i]->get_note());
       }
-      for (unsigned i = length * m_sd->steps; 
-           i < m_sd->length * m_sd->steps; ++i) {
+      for (unsigned i = length.get_beat() * m_sd->steps; 
+           i < m_sd->length.get_beat() * m_sd->steps; ++i) {
         while ((*m_sd->offs)[i] != 0) {
           Note* note = (*m_sd->offs)[i]->get_note();
-          resize_note(note, length * m_sd->steps - note->get_step());
+          resize_note(note, length.get_beat() * m_sd->steps - 
+		      note->get_step());
         }
       }
     }
@@ -281,8 +286,8 @@ namespace Dino {
     NoteEventList* new_note_offs = new NoteEventList(*m_sd->offs);
     vector<Curve*>* new_controllers = new vector<Curve*>();
     
-    new_note_ons->resize(length * m_sd->steps);
-    new_note_offs->resize(length * m_sd->steps);
+    new_note_ons->resize(length.get_beat() * m_sd->steps);
+    new_note_offs->resize(length.get_beat() * m_sd->steps);
     
     // iterate over all controllers
     for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
@@ -292,12 +297,12 @@ namespace Dino {
       Curve* c = (*m_sd->curves)[i];
       
       // create a new controller with the same settings but different size
-      Curve* new_c = new Curve(c->get_info(), length * m_sd->steps);
+      Curve* new_c = new Curve(c->get_info(), length.get_beat() * m_sd->steps);
       new_controllers->push_back(new_c);
       
       // copy all the controller events that fit into the new size
-      for (unsigned j = 0; j < length * m_sd->steps && 
-             j < m_sd->length * m_sd->steps; ++j) {
+      for (unsigned j = 0; j < length.get_beat() * m_sd->steps && 
+             j < m_sd->length.get_beat() * m_sd->steps; ++j) {
         const InterpolatedEvent* cce = c->get_event(j);
         if (cce)
           new_c->add_point(j, cce->get_start());
@@ -310,7 +315,7 @@ namespace Dino {
                        length, old_sd->steps);
     Deleter::queue(old_sd);
 
-    m_signal_length_changed(m_sd->length);
+    m_signal_length_changed(m_sd->length.get_beat());
   }
 
 
@@ -321,8 +326,10 @@ namespace Dino {
       return;
     
     // allocate new data structures
-    NoteEventList* new_note_ons = new NoteEventList(steps * m_sd->length);
-    NoteEventList* new_note_offs = new NoteEventList(steps * m_sd->length);
+    NoteEventList* new_note_ons = 
+      new NoteEventList(steps * m_sd->length.get_beat());
+    NoteEventList* new_note_offs = 
+      new NoteEventList(steps * m_sd->length.get_beat());
     vector<Curve*>* new_controllers = new vector<Curve*>();
     
     // copy information about the notes
@@ -347,12 +354,12 @@ namespace Dino {
       Curve* c = (*m_sd->curves)[i];
       
       // create a new controller with the same settings but different size
-      Curve* new_c = new Curve(c->get_info(), m_sd->length * steps);
+      Curve* new_c = new Curve(c->get_info(), m_sd->length.get_beat() * steps);
       new_controllers->push_back(new_c);
       
       // copy the events from the old controller to the new controller
       // this may not be a 1 to 1 copy since the step resolutions differ
-      for (unsigned j = 0; j < m_sd->length * m_sd->steps; ++j) {
+      for (unsigned j = 0; j < m_sd->length.get_beat() * m_sd->steps; ++j) {
         const InterpolatedEvent* e = c->get_event(j);
         if (e != 0) {
           new_c->add_point(unsigned(steps * j / double(m_sd->steps)), 
@@ -371,7 +378,7 @@ namespace Dino {
     for (unsigned i = 0; i < starts.size(); ++i)
       add_note(starts[i], keys[i], velocities[i], lengths[i]);
     
-    m_signal_steps_changed(m_sd->length);
+    m_signal_steps_changed(m_sd->length.get_beat());
   }
 
 
@@ -383,7 +390,7 @@ namespace Dino {
   */
   Pattern::NoteIterator Pattern::add_note(unsigned step, int key, int velocity, 
                                           int note_length) {
-    assert(step < m_sd->length * m_sd->steps);
+    assert(step < m_sd->length.get_beat() * m_sd->steps);
     assert(key < 128);
     assert(velocity < 128);
     assert(note_length > 0);
@@ -479,7 +486,7 @@ namespace Dino {
     
     dbg1<<1<<std::endl;
     
-    assert(step < m_sd->length * m_sd->steps);
+    assert(step < m_sd->length.get_beat() * m_sd->steps);
     assert(key < 128);
 
     dbg1<<2<<std::endl;
@@ -560,8 +567,8 @@ namespace Dino {
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
     
-    if (iterator->get_step() + length > m_sd->length * m_sd->steps)
-      length = m_sd->length * m_sd->steps - iterator->get_step();
+    if (iterator->get_step() + length > m_sd->length.get_beat() * m_sd->steps)
+      length = m_sd->length.get_beat() * m_sd->steps - iterator->get_step();
     
     return resize_note(iterator.m_note, length);
   }
@@ -680,14 +687,14 @@ namespace Dino {
   
   void Pattern::add_curve_point(CurveIterator iter, unsigned int step, 
 				int value) {
-    assert(step <= m_sd->length * m_sd->steps);
+    assert(step <= m_sd->length.get_beat() * m_sd->steps);
     (*iter.m_iterator)->add_point(step, value);
     //m_signal_cc_added((*iter.m_iterator)->get_info().get_number(), step, value);
   }
 
 
   void Pattern::remove_curve_point(CurveIterator iter, unsigned int step) {
-    assert(step < m_sd->length * m_sd->steps);
+    assert(step < m_sd->length.get_beat() * m_sd->steps);
     (*iter.m_iterator)->remove_point(step);
     //m_signal_cc_removed((*iter.m_iterator)->get_info().get_number(), step);
   }
@@ -698,7 +705,7 @@ namespace Dino {
   }
 
 
-  unsigned int Pattern::get_length() const {
+  const SongTime& Pattern::get_length() const {
     return m_sd->length;
   }
   
@@ -717,7 +724,7 @@ namespace Dino {
   
   
   void Pattern::reset_dirty_rect() const {
-    m_min_step = m_sd->length * m_sd->steps;
+    m_min_step = m_sd->length.get_beat() * m_sd->steps;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
@@ -737,7 +744,7 @@ namespace Dino {
   bool Pattern::fill_xml_node(Element* elt) const {
     char tmp_txt[256];
     elt->set_attribute("name", m_name);
-    sprintf(tmp_txt, "%d", get_length());
+    sprintf(tmp_txt, "%d", get_length().get_beat());
     elt->set_attribute("length", tmp_txt);
     sprintf(tmp_txt, "%d", get_steps());
     elt->set_attribute("steps", tmp_txt);
@@ -923,7 +930,7 @@ namespace Dino {
   Pattern::NoteIterator Pattern::find_note(unsigned step, int value) const {
     assert(value < 128);
     
-    if (step >= get_length() * get_steps())
+    if (step >= get_length().get_beat() * get_steps())
       return NoteIterator(this, 0);
     
     // iterate backwards until we find a note on event
@@ -951,7 +958,7 @@ namespace Dino {
   unsigned int Pattern::check_maximal_free_space(unsigned int step, int key,
 						 unsigned int limit) const {
     assert(key >= 0 && key < 128);
-    unsigned n = get_length() * get_steps();
+    unsigned n = get_length().get_beat() * get_steps();
     if (step >= n)
       return 0;
 
@@ -982,7 +989,7 @@ namespace Dino {
 				 const NoteSelection& ignore) const {
     if (key < 0 || key > 128)
       return false;
-    unsigned n = get_length() * get_steps();
+    unsigned n = get_length().get_beat() * get_steps();
     if (step >= n || step + length > n) {
       dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;
       return false;
@@ -1006,7 +1013,7 @@ namespace Dino {
 
     // make a copy of the curve vector and add the new curve
     vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
-    new_vector->push_back(new Curve(info, m_sd->steps * m_sd->length));
+    new_vector->push_back(new Curve(info, m_sd->steps * m_sd->length.get_beat()));
     
     // delete the old vector
     vector<Curve*>* tmp = m_sd->curves;
@@ -1027,7 +1034,7 @@ namespace Dino {
     // already
     
     // check that the lengths match
-    if (curve->get_size() != get_length() * get_steps())
+    if (curve->get_size() != get_length().get_beat() * get_steps())
       return curves_end();
     
     // make a copy of the curve vector and add the new curve
@@ -1142,13 +1149,13 @@ namespace Dino {
 
   Pattern::SeqData::SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
                             std::vector<Curve*>* controllers,
-                            unsigned int l, unsigned int s)
+                            const SongTime& l, unsigned int s)
     : ons(note_ons), offs(note_offs), curves(controllers),
       length(l), steps(s) {
     assert(ons != 0);
     assert(offs != 0);
     assert(curves != 0);
-    assert(length > 0);
+    assert(length > SongTime(0, 0));
     assert(steps > 0);
   }
 

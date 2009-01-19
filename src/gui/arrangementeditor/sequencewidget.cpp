@@ -230,8 +230,7 @@ bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
   if ((event->state & GDK_BUTTON2_MASK) && m_drag_seqid != -1) {
     Track::SequenceIterator siter = m_track->seq_find_by_id(m_drag_seqid);
     if (siter != m_track->seq_end() && beat >= siter->get_start() &&
-        beat - siter->get_start() <= 
-	SongTime(siter->get_pattern().get_length(), 0)) {
+        beat - siter->get_start() <= siter->get_pattern().get_length()) {
       m_proxy.set_sequence_entry_length(m_track->get_id(), 
 					siter->get_start(),
 					beat - siter->get_start());
@@ -244,7 +243,7 @@ bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
 
 
 void SequenceWidget::slot_insert_pattern(int pattern, SongTime position) {
-  SongTime length = SongTime(m_track->pat_find(pattern)->get_length(), 0);
+  SongTime length = m_track->pat_find(pattern)->get_length();
   cout<<"Adding entry at "<<position.get_beat()
       <<", "<<position.get_tick()<<endl;
   m_proxy.add_sequence_entry(m_track->get_id(), position, pattern, length);

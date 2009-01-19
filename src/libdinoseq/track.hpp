@@ -329,7 +329,8 @@ namespace Dino {
     void set_name(const std::string& name);
     /** Add a new pattern to the track with the given name, length in beats
 	and number of steps per beat. */
-    PatternIterator add_pattern(const std::string& name, int length, int steps);
+    PatternIterator add_pattern(const std::string& name, 
+				const SongTime& length, int steps);
     /** Add an existing Pattern object to the track. The object must be 
 	allocated using @c new, and the track will assume ownership of the 
 	object. */

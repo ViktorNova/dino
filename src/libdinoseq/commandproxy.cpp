@@ -180,7 +180,7 @@ namespace Dino {
 
  
   bool CommandProxy::add_pattern(int track, const std::string& name, 
-				 int length, int steps, 
+				 const SongTime& length, int steps, 
 				 Track::PatternIterator* iter) {
     return push_and_do(new AddPattern(m_song, track, name, 
 				      length, steps, iter));
@@ -306,7 +306,7 @@ namespace Dino {
 
 
   bool CommandProxy::set_pattern_length(int track, int pattern, 
-					unsigned int beats) {
+					const SongTime& beats) {
     return push_and_do(new SetPatternLength(m_song, track, pattern, beats));
   }
 

@@ -42,6 +42,7 @@ namespace Dino {
   class KeyInfo;
   class MIDIBuffer;
   class Pattern;
+  class SongTime;
   
 
   /** This class represents a track, which holds information about an instrument
@@ -250,7 +251,8 @@ namespace Dino {
     };
     
     
-    Track(int id, int length = 0, const std::string& name = "Untitled");
+    Track(int id, const SongTime& length, 
+	  const std::string& name = "Untitled");
   
     ~Track();
   

@@ -113,12 +113,13 @@ namespace Dino {
     /** Remove an existing pattern. */
     bool remove_pattern(int track, int pattern);
     /** Add a sequence entry. */
-    bool add_sequence_entry(int track, int beat, int pattern, int length = 0);
+    bool add_sequence_entry(int track, const SongTime& beat, int pattern, 
+			    const SongTime& length = SongTime(0, 0));
     /** Remove a sequence entry. */
-    bool remove_sequence_entry(int track, unsigned long beat);
+    bool remove_sequence_entry(int track, const SongTime& beat);
     /** Change the length of a sequence entry. */
-    bool set_sequence_entry_length(int track, unsigned long beat, 
-				   unsigned int length);
+    bool set_sequence_entry_length(int track, const SongTime& beat, 
+				   const SongTime& length);
     /** Set the MIDI channel of a track. */
     bool set_track_midi_channel(int track, int channel);
     /** Add a controller for a track. */

@@ -198,20 +198,20 @@ namespace Dino {
   }
   
 
-  bool CommandProxy::add_sequence_entry(int track, int beat, 
-					int pattern, int length) {
+  bool CommandProxy::add_sequence_entry(int track, const SongTime& beat, 
+					int pattern, const SongTime& length) {
     return push_and_do(new AddSequenceEntry(m_song, track, 
 					    beat, pattern, length));
   }
   
   
-  bool CommandProxy::remove_sequence_entry(int track, unsigned long beat) {
+  bool CommandProxy::remove_sequence_entry(int track, const SongTime& beat) {
     return push_and_do(new RemoveSequenceEntry(m_song, track, beat));
   }
  
 
-  bool CommandProxy::set_sequence_entry_length(int track, unsigned long beat, 
-					       unsigned int length) {
+  bool CommandProxy::set_sequence_entry_length(int track, const SongTime& beat,
+					       const SongTime& length) {
     return push_and_do(new SetSequenceEntryLength(m_song, track, beat, length));
   }
   

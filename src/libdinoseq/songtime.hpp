@@ -46,7 +46,7 @@ namespace Dino {
 
     SongTime(const Beat& beat, const Tick& tick)
       : m_value((int64_t(beat) << 32) + tick) {
-
+      
     }
     
     Beat get_beat() const {
@@ -54,7 +54,7 @@ namespace Dino {
     }
     
     Tick get_tick() const {
-      return (m_value && 0xFFFFFFFF);
+      return (m_value & 0xFFFFFFFF);
     }
     
     SongTime operator+(const SongTime& st) const {

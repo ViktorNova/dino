@@ -212,17 +212,21 @@ bool DinoDBusObject::remove_pattern(int argc, DBus::Argument* argv) {
 
 
 bool DinoDBusObject::add_sequence_entry(int argc, DBus::Argument* argv) {
-  return m_proxy.add_sequence_entry(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
+  return m_proxy.add_sequence_entry(argv[0].i, Dino::SongTime(argv[1].i, 0), 
+				    argv[2].i, Dino::SongTime(argv[3].i, 0));
 }
 
 
 bool DinoDBusObject::remove_sequence_entry(int argc, DBus::Argument* argv) {
-  return m_proxy.remove_sequence_entry(argv[0].i, argv[1].i);
+  return m_proxy.remove_sequence_entry(argv[0].i, 
+				       Dino::SongTime(argv[1].i, 0));
 }
 
 
 bool DinoDBusObject::set_sequence_entry_length(int argc, DBus::Argument* argv) {
-  return m_proxy.set_sequence_entry_length(argv[0].i, argv[1].i, argv[2].i);
+  return m_proxy.set_sequence_entry_length(argv[0].i, 
+					   Dino::SongTime(argv[1].i, 0),
+					   Dino::SongTime(argv[2].i, 0));
 }
 
 

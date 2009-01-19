@@ -23,6 +23,8 @@
 
 #include <gtkmm.h>
 
+#include "songtime.hpp"
+
 
 namespace Dino {
   class CommandProxy;
@@ -55,8 +57,11 @@ public:
   
 private:
   
-  void slot_insert_pattern(int pattern, int position);
+  void slot_insert_pattern(int pattern, Dino::SongTime position);
   void slot_length_changed(const Dino::SongTime& length);
+  
+  int time2x(const Dino::SongTime& time);
+  Dino::SongTime x2time(int x);
   
   Dino::CommandProxy& m_proxy;
   const Dino::Track* m_track;

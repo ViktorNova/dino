@@ -177,44 +177,45 @@ namespace Dino {
   
   class AddSequenceEntry : public Command {
   public:
-    AddSequenceEntry(Song& song, int track, int beat, int pattern, int length);
+    AddSequenceEntry(Song& song, int track, const SongTime& beat, 
+		     int pattern, const SongTime& length);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
-    int m_beat;
+    SongTime m_beat;
     int m_pattern;
-    int m_length;
+    SongTime m_length;
   };
   
 
   class RemoveSequenceEntry : public Command {
   public:
-    RemoveSequenceEntry(Song& song, int track, unsigned long beat);
+    RemoveSequenceEntry(Song& song, int track, const SongTime& beat);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
-    unsigned long m_beat;
+    SongTime m_beat;
     int m_pattern;
-    int m_length;
+    SongTime m_length;
   };
 
 
   class SetSequenceEntryLength : public Command {
   public:
-    SetSequenceEntryLength(Song& song, int track, unsigned long beat, 
-			   unsigned int length);
+    SetSequenceEntryLength(Song& song, int track, const SongTime& beat, 
+			   const SongTime& length);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
-    unsigned long m_beat;
-    int m_length;
-    int m_old_length;
+    SongTime m_beat;
+    SongTime m_length;
+    SongTime m_old_length;
   };
   
   

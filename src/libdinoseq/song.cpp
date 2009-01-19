@@ -299,7 +299,7 @@ namespace Dino {
       id = 1;
     else
       id = iter->first + 1;
-    Track* track = new Track(id, const_cast<SongTime&>(m_length).get_beat(), 
+    Track* track = new Track(id, const_cast<SongTime&>(m_length), 
 			     name);
 
     return add_track(track);
@@ -572,8 +572,7 @@ namespace Dino {
       const Element* track_elt = dynamic_cast<const Element*>(*iter);
       int id;
       sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
-      (*new_tracks)[id] = new Track(id, const_cast<SongTime&>(m_length).
-				    get_beat());
+      (*new_tracks)[id] = new Track(id, const_cast<SongTime&>(m_length));
       (*new_tracks)[id]->parse_xml_node(track_elt);
     }
     map<int, Track*>* old_tracks = m_tracks;

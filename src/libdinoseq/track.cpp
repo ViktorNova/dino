@@ -199,12 +199,13 @@ namespace Dino {
   }
 
 
-  Track::Track(int id, int length, const string& name) 
+  Track::Track(int id, const SongTime& length, const string& name) 
     : m_id(id),
       m_name(name),
       m_next_sid(0),
       m_mode(NormalMode),
       m_curves(new vector<Curve*>),
+      m_length(length),
       m_dirty(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
@@ -282,10 +283,14 @@ namespace Dino {
   
   Track::SequenceIterator Track::seq_find(const SongTime& beat) const {
     map<SongTime, SequenceEntry*>::const_iterator iter;
-    iter = m_sequence_new.lower_bound(beat);
-    if (iter != m_sequence_new.end() &&
-	iter->first + iter->second->length > beat)
-      return SequenceIterator(iter, m_sequence_new);
+    // XXX This could probably be optimised
+    for (iter = m_sequence_new.begin(); iter != m_sequence_new.end(); ++iter) {
+      if (iter->first <= beat && 
+	  iter->first + iter->second->length > beat)
+	return SequenceIterator(iter, m_sequence_new);
+      if (iter->first > beat)
+	break;
+    }
     return SequenceIterator(m_sequence_new.end(), m_sequence_new);
   }
 
@@ -916,7 +921,7 @@ namespace Dino {
       return;
     
     // if the new length is larger than the old one, check how large it can be
-    SongTime max;
+    SongTime max = length;
     if (length > se->length) {
       SequenceIterator iter2 = iter;
       ++iter2;

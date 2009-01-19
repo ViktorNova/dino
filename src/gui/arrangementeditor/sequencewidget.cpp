@@ -19,6 +19,7 @@
 ****************************************************************************/
 
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <map>
 
@@ -49,7 +50,7 @@ SequenceWidget::SequenceWidget(CommandProxy& proxy)
     m_drag_seqid(-1),
     m_current_beat(0) {
   
-  m_colormap  = Colormap::get_system();
+  m_colormap = Colormap::get_system();
   m_bg_color.set_rgb(65535, 65535, 65535);
   m_bg_color2.set_rgb(65535, 60000, 50000);
   m_fg_color.set_rgb(40000, 40000, 65535);
@@ -80,7 +81,10 @@ void SequenceWidget::set_track(const Track* track) {
     connect(sigc::hide(sigc::hide(sigc::hide(draw))));
   m_track->signal_sequence_entry_changed().
     connect(sigc::hide(sigc::hide(sigc::hide(draw))));
-  set_size_request(m_col_width * m_track->get_length().get_beat(), m_col_width + 4);
+  const SongTime& track_length = m_track->get_length();
+  double width = m_col_width * track_length.get_beat() + 
+    double(track_length.get_tick()) / SongTime::ticks_per_beat();
+  set_size_request(int(width), m_col_width + 4);
 }
 
 
@@ -102,7 +106,11 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
 
-  int width = m_col_width * m_track->get_length().get_beat();
+  const SongTime& track_length = m_track->get_length();
+  double dwidth = m_col_width * track_length.get_beat() + 
+    double(track_length.get_tick()) / SongTime::ticks_per_beat();
+
+  int width = int(dwidth);
   int height = m_col_width;
   
   // draw current beat
@@ -141,20 +149,20 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   for (se = m_track->seq_begin(); se != m_track->seq_end(); ++se) {
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
-    int length = se->get_length().get_beat();
-    win->draw_rectangle(m_gc, true, se->get_start().get_beat() * m_col_width,
-			4, length * m_col_width, height - 1);
+    const SongTime& length = se->get_length();
+    win->draw_rectangle(m_gc, true, time2x(se->get_start()),
+			4, time2x(length), height - 1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, se->get_start().get_beat() * m_col_width, 4,
-			length * m_col_width, height - 1);
+    win->draw_rectangle(m_gc, false, time2x(se->get_start()), 4,
+			time2x(length), height - 1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
     sprintf(tmp, "%03d", se->get_pattern_id());
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Gdk::Rectangle textBounds(se->get_start().get_beat() * m_col_width, 0, 
-			      length * m_col_width, height - 1);
+    Gdk::Rectangle textBounds(time2x(se->get_start()), 0, 
+			      time2x(length), height - 1);
     m_gc->set_clip_rectangle(textBounds);
-    win->draw_layout(m_gc, se->get_start().get_beat() * m_col_width + 2, 
+    win->draw_layout(m_gc, time2x(se->get_start()) + 2, 
 		     4 + (height - lHeight)/2, l);
   }
   
@@ -165,7 +173,7 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
 bool SequenceWidget::on_button_press_event(GdkEventButton* event) {
   signal_clicked(event->button);
   
-  int beat = int(event->x) / m_col_width;
+  SongTime beat = x2time(event->x);
 
   switch (event->button) {
   case 1: {
@@ -188,13 +196,11 @@ bool SequenceWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 2: {
-    Track::SequenceIterator se = m_track->seq_find(SongTime(beat, 0));
+    Track::SequenceIterator se = m_track->seq_find(beat);
     if (se != m_track->seq_end()) {
-      //m_drag_beat = se->get_start();
-      //m_drag_pattern = se->get_pattern_id();
       m_drag_seqid = se->get_id();
       m_proxy.set_sequence_entry_length(m_track->get_id(), beat,
-					beat - se->get_start().get_beat() + 1);
+					beat - se->get_start());
     }
     return true;
   }
@@ -219,14 +225,16 @@ bool SequenceWidget::on_button_release_event(GdkEventButton* event) {
 
 
 bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
-  int beat = int(event->x) / m_col_width;
+  SongTime beat = x2time(event->x);
   
   if ((event->state & GDK_BUTTON2_MASK) && m_drag_seqid != -1) {
     Track::SequenceIterator siter = m_track->seq_find_by_id(m_drag_seqid);
-    if (siter != m_track->seq_end() && beat >= siter->get_start().get_beat() &&
-        beat - siter->get_start().get_beat() + 1 <= siter->get_pattern().get_length()) {
-      m_proxy.set_sequence_entry_length(m_track->get_id(), siter->get_start().get_beat(),
-					beat - siter->get_start().get_beat() + 1);
+    if (siter != m_track->seq_end() && beat >= siter->get_start() &&
+        beat - siter->get_start() <= 
+	SongTime(siter->get_pattern().get_length(), 0)) {
+      m_proxy.set_sequence_entry_length(m_track->get_id(), 
+					siter->get_start(),
+					beat - siter->get_start());
       return true;
     }
   }
@@ -235,16 +243,20 @@ bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
 }
 
 
-void SequenceWidget::slot_insert_pattern(int pattern, int position) {
-  int length = m_track->pat_find(pattern)->get_length();
+void SequenceWidget::slot_insert_pattern(int pattern, SongTime position) {
+  SongTime length = SongTime(m_track->pat_find(pattern)->get_length(), 0);
+  cout<<"Adding entry at "<<position.get_beat()
+      <<", "<<position.get_tick()<<endl;
   m_proxy.add_sequence_entry(m_track->get_id(), position, pattern, length);
-  //m_track->set_sequence_entry(position, pattern, length);
   update();
 }
 
 
 void SequenceWidget::slot_length_changed(const SongTime& length) {
-  set_size_request(m_col_width * length.get_beat(), m_col_width + 4);
+  const SongTime& track_length = m_track->get_length();
+  double width = m_col_width * track_length.get_beat() + 
+    double(track_length.get_tick()) / SongTime::ticks_per_beat();
+  set_size_request(int(width), m_col_width + 4);
 }
 
 
@@ -281,3 +293,19 @@ void SequenceWidget::update_menu(PluginInterface& plif) {
   }
 }
 
+
+int SequenceWidget::time2x(const SongTime& time) {
+  return int((time.get_beat() + 
+	      double(time.get_tick()) / SongTime::ticks_per_beat()) * 
+	     m_col_width);
+}
+
+ 
+SongTime SequenceWidget::x2time(int x) {
+  double b = double(x) / m_col_width;
+  double ipart, fpart;
+  fpart = modf(b, &ipart);
+  SongTime result = SongTime(int32_t(ipart), 
+			     uint32_t(SongTime::ticks_per_beat() * fpart));
+  return result;
+}

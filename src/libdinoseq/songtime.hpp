@@ -21,6 +21,8 @@
 #ifndef SONGTIME_HPP
 #define SONGTIME_HPP
 
+#include <limits>
+
 
 namespace Dino {
 
@@ -31,7 +33,7 @@ namespace Dino {
   public:
     
     /** The type for the Beat part. */
-    typedef uint32_t Beat;
+    typedef int32_t Beat;
     
     /** The type for the Tick part. */
     typedef uint32_t Tick;
@@ -43,7 +45,7 @@ namespace Dino {
     }
 
     SongTime(const Beat& beat, const Tick& tick)
-      : m_value((uint64_t(beat) << 32) + tick) {
+      : m_value((int64_t(beat) << 32) + tick) {
 
     }
     
@@ -101,21 +103,17 @@ namespace Dino {
       return (m_value >= st.m_value);
     }
     
-    bool is_valid() const {
-      return (m_value <= 0x7FFFFFFFFFFFFFFF);
-    }
-    
     static Beat beat_max() {
-      return 0x7FFFFFFF;
+      return std::numeric_limits<Beat>::max();
     }
     
     static Tick ticks_per_beat() {
-      return 0xFFFFFFFF;
+      return std::numeric_limits<Tick>::max();
     }
     
   protected:
     
-    uint64_t m_value;
+    int64_t m_value;
     
   };
 

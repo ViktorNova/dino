@@ -56,7 +56,7 @@ public:
 private:
   
   void slot_insert_pattern(int pattern, int position);
-  void slot_length_changed(int length);
+  void slot_length_changed(const Dino::SongTime& length);
   
   Dino::CommandProxy& m_proxy;
   const Dino::Track* m_track;

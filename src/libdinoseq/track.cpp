@@ -41,18 +41,18 @@ using namespace xmlpp;
 namespace Dino {
 
 
-  Track::SequenceIterator::SequenceIterator() : m_vector(0) {
-
+  Track::SequenceIterator::SequenceIterator() : m_map(0) {
+    
   }
   
   
   Track::SequenceEntry* Track::SequenceIterator::operator->() {
-    return *m_iter;
+    return m_iter->second;
   }
   
   
   Track::SequenceEntry& Track::SequenceIterator::operator*() {
-    return **m_iter;
+    return *(m_iter->second);
   }
   
   
@@ -67,11 +67,7 @@ namespace Dino {
   
   
   Track::SequenceIterator& Track::SequenceIterator::operator++() {
-    const SequenceEntry* old_ptr = *m_iter;
-    do {
-      ++m_iter;
-    } while (m_iter != m_vector->end() && 
-             (*m_iter == old_ptr || *m_iter == 0));
+    ++m_iter;
     return *this;
   }
   
@@ -84,13 +80,13 @@ namespace Dino {
   
 
   Track::SequenceIterator::SequenceIterator(const 
-                                            std::vector<SequenceEntry*>::
+                                            std::map<SongTime,SequenceEntry*>::
                                             const_iterator& 
                                             iter,
-                                            const std::vector<SequenceEntry*>&
-                                            vec) 
+                                            const std::map<SongTime, SequenceEntry*>&
+                                            mp) 
     : m_iter(iter),
-      m_vector(&vec) {
+      m_map(&mp) {
     
   }
 
@@ -208,7 +204,6 @@ namespace Dino {
       m_name(name),
       m_next_sid(0),
       m_mode(NormalMode),
-      m_sequence(new vector<SequenceEntry*>(length, (SequenceEntry*)0)),
       m_curves(new vector<Curve*>),
       m_dirty(false) {
   
@@ -221,13 +216,10 @@ namespace Dino {
     map<int, Pattern*>::iterator iter;
     for (iter = m_patterns.begin(); iter != m_patterns.end(); ++iter)
       delete iter->second;
-    SequenceEntry* ptr = 0;
-    for (unsigned int i = 0; i < m_sequence->size(); ++i) {
-      if ((*m_sequence)[i] != ptr)
-        delete (*m_sequence)[i];
-      ptr = (*m_sequence)[i];
+    map<SongTime, SequenceEntry*>::iterator siter;
+    for (siter = m_sequence_new.begin(); siter != m_sequence_new.end(); ++siter) {
+      delete &*siter;
     }
-    delete m_sequence;
   }
 
 
@@ -279,36 +271,32 @@ namespace Dino {
 
 
   Track::SequenceIterator Track::seq_begin() const {
-    std::vector<SequenceEntry*>::const_iterator iter;
-    unsigned i;
-    for (i = 0; i < m_sequence->size(); ++i) {
-      if ((*m_sequence)[i] != 0)
-        break;
-    }
-    return SequenceIterator(m_sequence->begin() + i, *m_sequence);
+    return SequenceIterator(m_sequence_new.begin(), m_sequence_new);
   }
   
   
   Track::SequenceIterator Track::seq_end() const {
-    return SequenceIterator(m_sequence->end(), *m_sequence);
+    return SequenceIterator(m_sequence_new.end(), m_sequence_new);
   }
   
   
-  Track::SequenceIterator Track::seq_find(unsigned int beat) const {
-    if ((*m_sequence)[beat] != 0)
-      return SequenceIterator(m_sequence->begin() + beat, *m_sequence);
-    return SequenceIterator(m_sequence->end(), *m_sequence);
+  Track::SequenceIterator Track::seq_find(const SongTime& beat) const {
+    map<SongTime, SequenceEntry*>::const_iterator iter;
+    iter = m_sequence_new.lower_bound(beat);
+    if (iter != m_sequence_new.end() &&
+	iter->first + iter->second->length > beat)
+      return SequenceIterator(iter, m_sequence_new);
+    return SequenceIterator(m_sequence_new.end(), m_sequence_new);
   }
 
 
   Track::SequenceIterator Track::seq_find_by_id(int id) const {
-    for (unsigned int beat = 0; beat < m_sequence->size(); ++beat) {
-      if ((*m_sequence)[beat] != 0) {
-        if ((*m_sequence)[beat]->get_id() == id)
-          return SequenceIterator(m_sequence->begin() + beat, *m_sequence);
-      }
+    map<SongTime, SequenceEntry*>::const_iterator iter;
+    for (iter = m_sequence_new.begin(); iter != m_sequence_new.end(); ++iter) {
+      if (iter->second->get_id() == id)
+	return SequenceIterator(iter, m_sequence_new);
     }
-    return SequenceIterator(m_sequence->end(), *m_sequence);
+    return SequenceIterator(m_sequence_new.end(), m_sequence_new);
   }
 
 
@@ -356,8 +344,8 @@ namespace Dino {
   }
 
 
-  unsigned int Track::get_length() const {
-    return m_sequence->size();
+  const SongTime& Track::get_length() const {
+    return m_length;
   }
 
 
@@ -413,7 +401,7 @@ namespace Dino {
     
     // else (if it is a global controller), add a curve to the track
     else {
-      m_curves->push_back(new Curve(*ci, get_length()));
+      m_curves->push_back(new Curve(*ci, get_length().get_beat()));
       m_signal_curve_added(number);
     }
     
@@ -455,9 +443,9 @@ namespace Dino {
     else {
       map<int, Curve*>::iterator citer = curves.find(-1);
       if (citer == curves.end())
-	m_curves->push_back(new Curve(*info, get_length()));
+	m_curves->push_back(new Curve(*info, get_length().get_beat()));
       else {
-	assert(citer->second->get_size() == get_length());
+	assert(citer->second->get_size() == get_length().get_beat());
 	m_curves->push_back(citer->second);
       }
       m_signal_curve_added(info->get_number());
@@ -685,7 +673,7 @@ namespace Dino {
       
       // add global curve
       // XXX should add a private add_curve() function
-      m_curves->push_back(new Curve(*m_controllers[i], get_length()));
+      m_curves->push_back(new Curve(*m_controllers[i], get_length().get_beat()));
       m_signal_curve_added(number);
       
     }
@@ -833,15 +821,23 @@ namespace Dino {
   // XXX must figure out what to do with the ControllerInfo references here -
   //     it's probably not a good idea to let the curves store them by reference
   Pattern* Track::disown_pattern(int id) {
+    
     /* Changing the map itself does not need to be threadsafe since the 
        sequencer never accesses patterns through the map, but actually
        deleting the pattern must be done in a threadsafe way. */
     map<int, Pattern*>::iterator iter = m_patterns.find(id);
     if (iter == m_patterns.end())
       return 0;
-    for (unsigned int i = 0; i < m_sequence->size(); ++i) {
-      if ((*m_sequence)[i] != 0 && (*m_sequence)[i]->pattern == iter->second)
-	remove_sequence_entry(seq_find(i));
+    
+    SequenceIterator siter;
+    for (siter = seq_begin(); siter != seq_end(); ) {
+      if (siter->pattern_id == id) {
+	SequenceIterator siter2 = siter;
+	++siter;
+	remove_sequence_entry(siter2);
+      }
+      else
+	++siter;
     }
     
     Pattern* result = iter->second;
@@ -855,84 +851,88 @@ namespace Dino {
 
   /** Set the sequency entry at the given beat to the given pattern 
       and length. */
-  Track::SequenceIterator Track::set_sequence_entry(int beat, 
+  Track::SequenceIterator Track::set_sequence_entry(const SongTime& start, 
                                                     int pattern, 
-                                                    unsigned int length) {
-    // XXX shouldn't exit here, just return an invalid iterator
-    assert(beat >= 0);
-    assert(beat < int(m_sequence->size()));
-    assert(m_patterns.find(pattern) != m_patterns.end());
-    assert(length >= 0);
-    assert(length <= m_patterns.find(pattern)->second->get_length());
+                                                    const SongTime& length) {
+    // check that the input is sane
+    if (start < SongTime(0, 0) ||
+	start >= m_length ||
+	m_patterns.find(pattern) == m_patterns.end() ||
+	length <= SongTime(0, 0) ||
+	length.get_beat() > m_patterns.find(pattern)->second->get_length())
+      return SequenceIterator();
     
     // if length is 0, get it from the pattern
-    int newLength;
-    if (length == 0)
-      newLength = m_patterns[pattern]->get_length();
+    SongTime newLength;
+    if (length == SongTime(0, 0))
+      newLength = SongTime(m_patterns[pattern]->get_length(), 0);
     else
       newLength = length;
   
     // delete or shorten any sequence entry at this beat
-    SequenceEntry* se = (*m_sequence)[beat];
-    if (se) {
-      int stop = se->start.get_beat() + se->length.get_beat();
-      for (int i = stop - 1; i >= beat; --i)
-        (*m_sequence)[i] = 0;
-      if (se->start.get_beat() == unsigned(beat))
-        Deleter::queue(se);
-      else
-        se->length = SongTime(beat - se->start.get_beat(), 0);
+    map<SongTime, SequenceEntry*>::iterator iter = 
+      m_sequence_new.lower_bound(start);
+    if (iter != m_sequence_new.end()) {
+      if (iter->first == start) {
+	SequenceEntry* se = iter->second;
+	m_sequence_new.erase(iter);
+	Deleter::queue(se);
+      }
+      else if (iter->first + iter->second->length > start)
+	iter->second->length = start - iter->first;
     }
   
     // make sure the new sequence entry fits
-    for (int i = beat; i < beat + newLength; ++i) {
-      if (i >= int(m_sequence->size()) || (*m_sequence)[i]) {
-        newLength = i - beat;
-        break;
-      }
-    }
-  
-    se  = new SequenceEntry(pattern, m_patterns.find(pattern)->second, 
-                            SongTime(beat, 0), SongTime(newLength, 0));
+    iter = m_sequence_new.upper_bound(start);
+    if (iter != m_sequence_new.end() && iter->first < start + length)
+      newLength = iter->first - start;
+    
+    // create the SequenceEntry object
+    SequenceEntry* se = new SequenceEntry(pattern, 
+					  m_patterns.find(pattern)->second, 
+					  start, newLength);
     se->id = m_next_sid;
     cerr<<"Setting sid for new seq to "<<m_next_sid<<endl;
     ++m_next_sid;
     if (m_next_sid == -1)
       ++m_next_sid;
     
-    int i;
-    for (i = beat; i < beat + newLength; ++i)
-      (*m_sequence)[i] = se;
+    // insert it in the sequence
+    m_sequence_new.insert(make_pair(start, se));
     
-    m_signal_sequence_entry_added(beat, (*m_sequence)[beat]->pattern->get_id(), 
-                                  newLength);
-    return SequenceIterator(m_sequence->begin() + i, *m_sequence);
+    m_signal_sequence_entry_added(start, pattern, newLength);
+    
+    return SequenceIterator();
   }
 
 
-  void Track::set_seq_entry_length(SequenceIterator iter, unsigned int length) {
-    unsigned beat = iter->start.get_beat();
-    assert((*m_sequence)[beat]);
-    SequenceEntry* se = (*m_sequence)[beat];
-    if (length == se->length.get_beat())
+  void Track::set_seq_entry_length(SequenceIterator iter, 
+				   const SongTime& length) {
+    SongTime start = iter->start;
+    SequenceEntry* se = &*iter;
+    
+    // if the new length is the same as the old one, do nothing
+    if (length == se->length)
       return;
-    else if (length > se->length.get_beat()) {
-      unsigned int i;
-      for (i = se->start.get_beat() + se->length.get_beat();
-	   i < se->start.get_beat() + length; ++i) {
-        if ((*m_sequence)[i])
-          break;
-        (*m_sequence)[i] = se;
-      }
-      se->length = SongTime(i - se->start.get_beat(), 0);
+    
+    // if the new length is larger than the old one, check how large it can be
+    SongTime max;
+    if (length > se->length) {
+      SequenceIterator iter2 = iter;
+      ++iter2;
+      if (iter2 != seq_end())
+	max = iter2->start - iter->start;
+      else
+	max = m_length - iter->start;
+      SongTime pat_length = SongTime(iter->pattern->get_length(), 0);
+      max = max > pat_length ? pat_length : max;
+      max = max > length ? length : max;
     }
-    else {
-      int tmp = se->length.get_beat();
-      se->length = SongTime(length, 0);
-      for (int i = se->start.get_beat() + tmp - 1; i >= int((se->start + se->length).get_beat()); --i)
-        (*m_sequence)[i] = 0;
-    }
-    m_signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length.get_beat());
+    
+    se->length = max;
+    
+    m_signal_sequence_entry_changed(se->start, se->pattern->get_id(), 
+				    se->length);
   }
 
 
@@ -943,45 +943,44 @@ namespace Dino {
     if (iterator == seq_end())
       return false;
     
-    unsigned beat = iterator->start.get_beat();
-    SequenceEntry* se = (*m_sequence)[beat];
-    if (se) {
-      int start = se->start.get_beat();
-      for (int i = (se->start + se->length).get_beat() - 1; 
-	   i >= int(se->start.get_beat()); --i)
-        (*m_sequence)[i] = 0;
-      Deleter::queue(se);
-      m_signal_sequence_entry_removed(start);
-      return true;
-    }
-    return false;
+    SequenceEntry* se = &*iterator;
+    SongTime start = se->start;
+    m_sequence_new.erase(iterator.m_iter->first);
+    Deleter::queue(se);
+    m_signal_sequence_entry_removed(start);
+    return true;
   }
 
 
   /** Set the length of the track. Only the Song should do this. */
-  void Track::set_length(int length) {
+  void Track::set_length(const SongTime& length) {
     
-    assert(length != 0);
-    if (length != int(m_sequence->size())) {
-      for (unsigned i = length; i < m_sequence->size(); ++i) {
-        if ((*m_sequence)[i]) {
-          if ((*m_sequence)[i]->start.get_beat() < (unsigned)length) {
-            set_seq_entry_length(seq_find((*m_sequence)[i]->start.get_beat()), 
-                                 length - (*m_sequence)[i]->start.get_beat());
-          }
-          else {
-            remove_sequence_entry(seq_find(i));
-          }
-        }
+    if (length != m_length) {
+      
+      // find all sequence entries that end or begin after the new length
+      // and modify them accordingly
+      map<SongTime, SequenceEntry*>::iterator iter;
+      iter = m_sequence_new.lower_bound(length);
+      if (iter == m_sequence_new.end())
+	iter = m_sequence_new.begin();
+      for ( ; iter != m_sequence_new.end(); ) {
+	if (iter->first < length && 
+	    iter->first + iter->second->length > length) {
+	  iter->second->length = length - iter->first;
+	  ++iter;
+	}
+	else if (iter->first >= length) {
+	  map<SongTime, SequenceEntry*>::iterator iter2 = iter;
+	  ++iter;
+	  m_sequence_new.erase(iter2);
+	}
+	else
+	  ++iter;
       }
       
-      vector<SequenceEntry*>* new_seq = new vector<SequenceEntry*>(*m_sequence);
-      new_seq->resize(length);
-      vector<SequenceEntry*>* old_seq = m_sequence;
-      m_sequence = new_seq;
-      Deleter::queue(old_seq);
+      m_length = length;
       
-      m_signal_length_changed(m_sequence->size());
+      m_signal_length_changed(m_length);
     }
   }
 
@@ -1045,17 +1044,15 @@ namespace Dino {
   
     // the sequence
     Element* seq_elt = elt->add_child("sequence");
-    for (unsigned int i = 0; i < m_sequence->size(); ++i) {
-      SequenceEntry* se = (*m_sequence)[i];
-      if (se && se->start.get_beat() == i) {
-        Element* entry_elt = seq_elt->add_child("entry");
-        sprintf(tmp_txt, "%d", se->start.get_beat());
-        entry_elt->set_attribute("beat", tmp_txt);
-        sprintf(tmp_txt, "%d", se->pattern_id);
-        entry_elt->set_attribute("pattern", tmp_txt);
-        sprintf(tmp_txt, "%d", se->length.get_beat());
-        entry_elt->set_attribute("length", tmp_txt);
-      }
+    SequenceIterator siter;
+    for (siter = seq_begin(); siter != seq_end(); ++siter) {
+      Element* entry_elt = seq_elt->add_child("entry");
+      sprintf(tmp_txt, "%d", siter->start.get_beat());
+      entry_elt->set_attribute("beat", tmp_txt);
+      sprintf(tmp_txt, "%d", siter->pattern_id);
+      entry_elt->set_attribute("pattern", tmp_txt);
+      sprintf(tmp_txt, "%d", siter->length.get_beat());
+      entry_elt->set_attribute("length", tmp_txt);
     }
   
     return true;
@@ -1108,7 +1105,7 @@ namespace Dino {
                  "%d", &pattern);
           sscanf(entry_elt->get_attribute("length")->get_value().c_str(), 
                  "%d", &length);
-          set_sequence_entry(beat, pattern, length);
+          set_sequence_entry(SongTime(beat, 0), pattern, SongTime(length, 0));
         }
       }
     }
@@ -1182,22 +1179,24 @@ namespace Dino {
   }
 
 
-  signal<void, int, int, int>& Track::signal_sequence_entry_added() const {
+  signal<void, const SongTime&, int, const SongTime&>& 
+  Track::signal_sequence_entry_added() const {
     return m_signal_sequence_entry_added;
   }
 
 
-  signal<void, int, int, int>& Track::signal_sequence_entry_changed() const {
+  signal<void, const SongTime&, int, const SongTime&>&
+  Track::signal_sequence_entry_changed() const {
     return m_signal_sequence_entry_changed;
   }
 
 
-  signal<void, int>& Track::signal_sequence_entry_removed() const {
+  signal<void, const SongTime&>& Track::signal_sequence_entry_removed() const {
     return m_signal_sequence_entry_removed;
   }
 
 
-  signal<void, int>& Track::signal_length_changed() const {
+  signal<void, const SongTime&>& Track::signal_length_changed() const {
     return m_signal_length_changed;
   }
 

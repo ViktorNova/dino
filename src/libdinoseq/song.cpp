@@ -286,7 +286,7 @@ namespace Dino {
       const_cast<SongTime&>(m_length) = length;
       map<int, Track*>::iterator iter;
       for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter)
-	iter->second->set_length(length.get_beat());
+	iter->second->set_length(length);
       m_signal_length_changed(length.get_beat());
     }
   }

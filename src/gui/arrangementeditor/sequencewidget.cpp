@@ -80,7 +80,7 @@ void SequenceWidget::set_track(const Track* track) {
     connect(sigc::hide(sigc::hide(sigc::hide(draw))));
   m_track->signal_sequence_entry_changed().
     connect(sigc::hide(sigc::hide(sigc::hide(draw))));
-  set_size_request(m_col_width * m_track->get_length(), m_col_width + 4);
+  set_size_request(m_col_width * m_track->get_length().get_beat(), m_col_width + 4);
 }
 
 
@@ -102,11 +102,11 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
 
-  int width = m_col_width * m_track->get_length();
+  int width = m_col_width * m_track->get_length().get_beat();
   int height = m_col_width;
   
   // draw current beat
-  if (m_current_beat < m_track->get_length()) {
+  if (m_current_beat < m_track->get_length().get_beat()) {
     Gdk::Rectangle bounds(0, 0, width + 1, 4);
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_grid_color);
@@ -119,7 +119,7 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   
   // draw background
   int bpb = 4;
-  for (int b = 0; b < m_track->get_length(); ++b) {
+  for (int b = 0; b < m_track->get_length().get_beat(); ++b) {
     if (b % (2*bpb) < bpb)
       m_gc->set_foreground(m_bg_color);
     else
@@ -129,7 +129,7 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   m_gc->set_foreground(m_grid_color);
   win->draw_line(m_gc, 0, 4, width, 4);
   win->draw_line(m_gc, 0, height-1 + 4, width, height-1 + 4);
-  for (int c = 0; c < m_track->get_length() + 1; ++c) {
+  for (int c = 0; c < m_track->get_length().get_beat() + 1; ++c) {
     win->draw_line(m_gc, c * m_col_width, 4, c * m_col_width, height + 4);
   }
   
@@ -188,7 +188,7 @@ bool SequenceWidget::on_button_press_event(GdkEventButton* event) {
   }
     
   case 2: {
-    Track::SequenceIterator se = m_track->seq_find(beat);
+    Track::SequenceIterator se = m_track->seq_find(SongTime(beat, 0));
     if (se != m_track->seq_end()) {
       //m_drag_beat = se->get_start();
       //m_drag_pattern = se->get_pattern_id();
@@ -243,8 +243,8 @@ void SequenceWidget::slot_insert_pattern(int pattern, int position) {
 }
 
 
-void SequenceWidget::slot_length_changed(int length) {
-  set_size_request(m_col_width * length, m_col_width + 4);
+void SequenceWidget::slot_length_changed(const SongTime& length) {
+  set_size_request(m_col_width * length.get_beat(), m_col_width + 4);
 }
 
 

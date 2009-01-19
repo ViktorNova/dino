@@ -99,11 +99,12 @@ namespace Dino {
       
       friend class Track;
       
-      SequenceIterator(const std::vector<SequenceEntry*>::const_iterator& iter,
-                       const std::vector<SequenceEntry*>& vec);
+      SequenceIterator(const std::map<SongTime, SequenceEntry*>::
+		       const_iterator& iter,
+                       const std::map<SongTime, SequenceEntry*>& mp);
       
-      std::vector<SequenceEntry*>::const_iterator m_iter;
-      const std::vector<SequenceEntry*>* m_vector;
+      std::map<SongTime, SequenceEntry*>::const_iterator m_iter;
+      const std::map<SongTime, SequenceEntry*>* m_map;
     };
     
     
@@ -266,7 +267,7 @@ namespace Dino {
     int get_channel() const;
     /** Return the length of this track in beats. When it belongs to a Song 
 	it should always be the same as the length of the Song. */
-    unsigned int get_length() const;
+    const SongTime& get_length() const;
     /** Return an iterator pointing to the first pattern. */
     ConstPatternIterator pat_begin() const;
     /** Return an (invalid) iterator pointing to the end of the pattern list. */
@@ -280,7 +281,7 @@ namespace Dino {
     SequenceIterator seq_end() const;
     /** Return an iterator pointing to the SequenceEntry at the given beat, 
 	or seq_end() if there is no such SequenceEntry. */
-    SequenceIterator seq_find(unsigned int beat) const;
+    SequenceIterator seq_find(const SongTime& beat) const;
     /** Return an iterator pointing to the SequenceEntry with the given ID,
 	or seq_end() if there is no such SequenceEntry. */
     SequenceIterator seq_find_by_id(int id) const;
@@ -340,15 +341,17 @@ namespace Dino {
 	using @c delete (or Delete::queue() if the sequencer is running). */
     Pattern* disown_pattern(int id);
     /** Add a sequence entry. */
-    SequenceIterator set_sequence_entry(int beat, int pattern, 
-                                        unsigned int length = 0);
+    SequenceIterator set_sequence_entry(const SongTime& start, int pattern, 
+                                        const SongTime& length = 
+					SongTime(0, 0));
     /** Change the length of a sequence entry. */
-    void set_seq_entry_length(SequenceIterator iterator, unsigned int length);
+    void set_seq_entry_length(SequenceIterator iterator, 
+			      const SongTime& length);
     /** Remove a sequence entry. */
     bool remove_sequence_entry(SequenceIterator iterator);
     /** Change the length of a track. This should not be used when the track
 	belongs to a Song. */
-    void set_length(int length);
+    void set_length(const SongTime& length);
     /** Set the MIDI channel that the track writes its events to. */
     void set_channel(int channel);
     /** Add a new controller to the track with the given parameters. */
@@ -413,10 +416,12 @@ namespace Dino {
     sigc::signal<void, const std::string&>& signal_name_changed() const;
     sigc::signal<void, int>& signal_pattern_added() const;
     sigc::signal<void, int>& signal_pattern_removed() const;
-    sigc::signal<void, int, int, int>& signal_sequence_entry_added() const;
-    sigc::signal<void, int, int, int>& signal_sequence_entry_changed() const;
-    sigc::signal<void, int>& signal_sequence_entry_removed() const;
-    sigc::signal<void, int>& signal_length_changed() const;
+    sigc::signal<void, const SongTime&, int, const SongTime&>&
+    signal_sequence_entry_added() const;
+    sigc::signal<void, const SongTime&, int, const SongTime&>&
+    signal_sequence_entry_changed() const;
+    sigc::signal<void, const SongTime&>& signal_sequence_entry_removed() const;
+    sigc::signal<void, const SongTime&>& signal_length_changed() const;
     sigc::signal<void, long>& signal_controller_added() const;
     sigc::signal<void, long>& signal_controller_removed() const;
     sigc::signal<void, long>& signal_controller_changed() const;
@@ -439,18 +444,23 @@ namespace Dino {
     int m_next_sid;
     volatile int m_channel;
     Mode m_mode;
-    std::vector<SequenceEntry*>* volatile m_sequence;
+    std::map<SongTime, SequenceEntry*> m_sequence_new;
     std::vector<Curve*>* volatile m_curves;
+    
+    SongTime m_length;
     
     mutable bool m_dirty;
   
     mutable sigc::signal<void, const std::string&> m_signal_name_changed;
     mutable sigc::signal<void, int> m_signal_pattern_added;
     mutable sigc::signal<void, int> m_signal_pattern_removed;
-    mutable sigc::signal<void, int, int, int> m_signal_sequence_entry_added;
-    mutable sigc::signal<void, int, int, int> m_signal_sequence_entry_changed;
-    mutable sigc::signal<void, int> m_signal_sequence_entry_removed;
-    mutable sigc::signal<void, int> m_signal_length_changed;
+    mutable sigc::signal<void, const SongTime&, int, const SongTime&> 
+    m_signal_sequence_entry_added;
+    mutable sigc::signal<void, const SongTime&, int, const SongTime&>
+    m_signal_sequence_entry_changed;
+    mutable sigc::signal<void, const SongTime&> 
+    m_signal_sequence_entry_removed;
+    mutable sigc::signal<void, const SongTime&> m_signal_length_changed;
     mutable sigc::signal<void, long> m_signal_controller_added;
     mutable sigc::signal<void, long> m_signal_controller_removed;
     mutable sigc::signal<void, long> m_signal_controller_changed;

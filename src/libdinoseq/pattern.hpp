@@ -31,6 +31,7 @@
 #include <sigc++/signal.h>
 #include <libxml++/libxml++.h>
 
+#include "eventlist.hpp"
 #include "sequencable.hpp"
 #include "songtime.hpp"
 #include "xmlserialisable.hpp"
@@ -369,6 +370,9 @@ namespace Dino {
     mutable sigc::signal<void, Note const&> m_signal_note_removed;
     mutable sigc::signal<void, int> m_signal_curve_added;
     mutable sigc::signal<void, int> m_signal_curve_removed;
+    
+    
+    EventList<4, 4> m_eventlist;
     
   };
 

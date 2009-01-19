@@ -875,13 +875,13 @@ namespace Dino {
     // delete or shorten any sequence entry at this beat
     SequenceEntry* se = (*m_sequence)[beat];
     if (se) {
-      int stop = se->start + se->length;
+      int stop = se->start.get_beat() + se->length.get_beat();
       for (int i = stop - 1; i >= beat; --i)
         (*m_sequence)[i] = 0;
-      if (se->start == unsigned(beat))
+      if (se->start.get_beat() == unsigned(beat))
         Deleter::queue(se);
       else
-        se->length = beat - se->start;
+        se->length = SongTime(beat - se->start.get_beat(), 0);
     }
   
     // make sure the new sequence entry fits
@@ -893,7 +893,7 @@ namespace Dino {
     }
   
     se  = new SequenceEntry(pattern, m_patterns.find(pattern)->second, 
-                            beat, newLength);
+                            SongTime(beat, 0), SongTime(newLength, 0));
     se->id = m_next_sid;
     cerr<<"Setting sid for new seq to "<<m_next_sid<<endl;
     ++m_next_sid;
@@ -911,27 +911,28 @@ namespace Dino {
 
 
   void Track::set_seq_entry_length(SequenceIterator iter, unsigned int length) {
-    unsigned beat = iter->start;
+    unsigned beat = iter->start.get_beat();
     assert((*m_sequence)[beat]);
     SequenceEntry* se = (*m_sequence)[beat];
-    if (length == se->length)
+    if (length == se->length.get_beat())
       return;
-    else if (length > se->length) {
+    else if (length > se->length.get_beat()) {
       unsigned int i;
-      for (i = se->start + se->length; i < se->start + length; ++i) {
+      for (i = se->start.get_beat() + se->length.get_beat();
+	   i < se->start.get_beat() + length; ++i) {
         if ((*m_sequence)[i])
           break;
         (*m_sequence)[i] = se;
       }
-      se->length = i - se->start;
+      se->length = SongTime(i - se->start.get_beat(), 0);
     }
     else {
-      int tmp = se->length;
-      se->length = length;
-      for (int i = se->start + tmp - 1; i >= int(se->start + se->length); --i)
+      int tmp = se->length.get_beat();
+      se->length = SongTime(length, 0);
+      for (int i = se->start.get_beat() + tmp - 1; i >= int((se->start + se->length).get_beat()); --i)
         (*m_sequence)[i] = 0;
     }
-    m_signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length);
+    m_signal_sequence_entry_changed(beat, se->pattern->get_id(), se->length.get_beat());
   }
 
 
@@ -942,11 +943,12 @@ namespace Dino {
     if (iterator == seq_end())
       return false;
     
-    unsigned beat = iterator->start;
+    unsigned beat = iterator->start.get_beat();
     SequenceEntry* se = (*m_sequence)[beat];
     if (se) {
-      int start = se->start;
-      for (int i = se->start + se->length - 1; i >= int(se->start); --i)
+      int start = se->start.get_beat();
+      for (int i = (se->start + se->length).get_beat() - 1; 
+	   i >= int(se->start.get_beat()); --i)
         (*m_sequence)[i] = 0;
       Deleter::queue(se);
       m_signal_sequence_entry_removed(start);
@@ -959,13 +961,13 @@ namespace Dino {
   /** Set the length of the track. Only the Song should do this. */
   void Track::set_length(int length) {
     
-    assert(length > 0);
+    assert(length != 0);
     if (length != int(m_sequence->size())) {
       for (unsigned i = length; i < m_sequence->size(); ++i) {
         if ((*m_sequence)[i]) {
-          if ((*m_sequence)[i]->start < (unsigned)length) {
-            set_seq_entry_length(seq_find((*m_sequence)[i]->start), 
-                                 length - (*m_sequence)[i]->start);
+          if ((*m_sequence)[i]->start.get_beat() < (unsigned)length) {
+            set_seq_entry_length(seq_find((*m_sequence)[i]->start.get_beat()), 
+                                 length - (*m_sequence)[i]->start.get_beat());
           }
           else {
             remove_sequence_entry(seq_find(i));
@@ -1045,13 +1047,13 @@ namespace Dino {
     Element* seq_elt = elt->add_child("sequence");
     for (unsigned int i = 0; i < m_sequence->size(); ++i) {
       SequenceEntry* se = (*m_sequence)[i];
-      if (se && se->start == i) {
+      if (se && se->start.get_beat() == i) {
         Element* entry_elt = seq_elt->add_child("entry");
-        sprintf(tmp_txt, "%d", se->start);
+        sprintf(tmp_txt, "%d", se->start.get_beat());
         entry_elt->set_attribute("beat", tmp_txt);
         sprintf(tmp_txt, "%d", se->pattern_id);
         entry_elt->set_attribute("pattern", tmp_txt);
-        sprintf(tmp_txt, "%d", se->length);
+        sprintf(tmp_txt, "%d", se->length.get_beat());
         entry_elt->set_attribute("length", tmp_txt);
       }
     }
@@ -1114,11 +1116,11 @@ namespace Dino {
   }
 
 
-  void Track::sequence(MIDIBuffer& buffer, double from, double to,
-		       unsigned int length, int channel) const {
-    assert(from >= 0);
-    assert(to >= 0);
-    
+  void Track::sequence(MIDIBuffer& buffer, const SongTime& from, 
+		       const SongTime& to,
+		       const SongTime& length, int channel) const {
+
+    /*
     const vector<SequenceEntry*>& sequence = *m_sequence;
     if (from >= sequence.size())
       return;
@@ -1161,7 +1163,7 @@ namespace Dino {
       }
       
     }
-
+    */
   }
 
 

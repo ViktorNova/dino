@@ -148,6 +148,7 @@ namespace Dino {
   bool Curve::write_events(MIDIBuffer& buffer, double step, 
 			   const SongTime& beat_time, 
 			   unsigned char channel) const {
+    /*
     channel &= 0x0F;
     const InterpolatedEvent* event = get_event(unsigned(step));
     if (event) {
@@ -172,7 +173,7 @@ namespace Dino {
 	data[2] = ((value + 8192) >> 7) & 0x7F;
       }
     }
-    
+    */
     return true;
   }
 

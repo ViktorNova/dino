@@ -403,7 +403,7 @@ namespace Dino {
     //@{
     void sequence(MIDIBuffer& buffer, 
 		  const SongTime& from, const SongTime& to,
-		  unsigned int length, int channel) const;
+		  const SongTime& length, int channel) const;
     //@}
     
   public:

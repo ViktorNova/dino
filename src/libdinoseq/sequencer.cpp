@@ -326,8 +326,8 @@ namespace Dino {
   void Sequencer::jack_timebase_callback(jack_transport_state_t state, 
                                          jack_nframes_t nframes, 
                                          jack_position_t* pos, int new_pos) {
-    int loop_end = m_song.get_loop_end();
-    int loop_start = m_song.get_loop_start();
+    int loop_end = m_song.get_loop_end().get_beat();
+    int loop_start = m_song.get_loop_start().get_beat();
     bool looping = (loop_end >= 0 && loop_start >= 0 && 
                     loop_end != loop_start);
     
@@ -405,7 +405,7 @@ namespace Dino {
     m_current_beat = pos.bar * int(pos.beats_per_bar) + pos.beat;
     
     // at the end of the song, stop and go back to the beginning
-    if (m_current_beat >= m_song.get_length()) {
+    if (m_current_beat >= m_song.get_length().get_beat()) {
       jack_transport_stop(m_jack_client);
       jack_transport_locate(m_jack_client, 0);
       return 0;
@@ -482,12 +482,12 @@ namespace Dino {
     
     // XXX this is bad - if we are not the timebase master we are not looping,
     // and then we shouldn't change the end
-    double loop_end = m_song.get_loop_end();
+    double loop_end = m_song.get_loop_end().get_beat();
     if (start < loop_end && end > loop_end)
       end = loop_end;
     
     for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
-
+      /*
       // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->get_id()];
       if (port) {
@@ -499,6 +499,7 @@ namespace Dino {
         buffer.set_cc_resolution(m_cc_resolution * pos.beats_per_minute / 60);
         iter->sequence(buffer, start, end, m_song.get_length(), -1);
       }
+      */
     }
     
     // record MIDI

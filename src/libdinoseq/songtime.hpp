@@ -76,6 +76,30 @@ namespace Dino {
       m_value -= st.m_value;
       return *this;
     }
+
+    bool operator==(const SongTime& st) const {
+      return (m_value == st.m_value);
+    }
+    
+    bool operator!=(const SongTime& st) const {
+      return (m_value == st.m_value);
+    }
+    
+    bool operator<(const SongTime& st) const {
+      return (m_value < st.m_value);
+    }
+    
+    bool operator<=(const SongTime& st) const {
+      return (m_value <= st.m_value);
+    }
+    
+    bool operator>(const SongTime& st) const {
+      return (m_value > st.m_value);
+    }
+    
+    bool operator>=(const SongTime& st) const {
+      return (m_value >= st.m_value);
+    }
     
     bool is_valid() const {
       return (m_value <= 0x7FFFFFFFFFFFFFFF);

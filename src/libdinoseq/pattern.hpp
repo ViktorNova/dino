@@ -287,8 +287,8 @@ namespace Dino {
     
     /// @name Sequencing
     //@{
-    void sequence(MIDIBuffer& buffer, double from, double to,
-                  unsigned int pattern_length, int channel) const;
+    void sequence(MIDIBuffer& buffer, const SongTime& from, const SongTime& to,
+                  const SongTime& pattern_length, int channel) const;
     //@}
     
   public:

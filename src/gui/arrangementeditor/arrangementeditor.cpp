@@ -162,7 +162,7 @@ ArrangementEditor::ArrangementEditor(PluginInterface& plif)
   m_vbx_track_labels.pack_start(*tmpl, PACK_SHRINK);
   
   // set song length
-  m_spb_song_length.set_value(m_song.get_length());
+  m_spb_song_length.set_value(m_song.get_length().get_beat());
   
   // add track widgets
   Song::ConstTrackIterator tit;

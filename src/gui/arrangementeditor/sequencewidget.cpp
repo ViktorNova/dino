@@ -141,20 +141,20 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
   for (se = m_track->seq_begin(); se != m_track->seq_end(); ++se) {
     m_gc->set_clip_rectangle(bounds);
     m_gc->set_foreground(m_fg_color);
-    int length = se->get_length();
-    win->draw_rectangle(m_gc, true, se->get_start() * m_col_width, 4, 
-			length * m_col_width, height - 1);
+    int length = se->get_length().get_beat();
+    win->draw_rectangle(m_gc, true, se->get_start().get_beat() * m_col_width,
+			4, length * m_col_width, height - 1);
     m_gc->set_foreground(m_edge_color);
-    win->draw_rectangle(m_gc, false, se->get_start() * m_col_width, 4,
+    win->draw_rectangle(m_gc, false, se->get_start().get_beat() * m_col_width, 4,
 			length * m_col_width, height - 1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
     sprintf(tmp, "%03d", se->get_pattern_id());
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Gdk::Rectangle textBounds(se->get_start() * m_col_width, 0, 
+    Gdk::Rectangle textBounds(se->get_start().get_beat() * m_col_width, 0, 
 			      length * m_col_width, height - 1);
     m_gc->set_clip_rectangle(textBounds);
-    win->draw_layout(m_gc, se->get_start() * m_col_width + 2, 
+    win->draw_layout(m_gc, se->get_start().get_beat() * m_col_width + 2, 
 		     4 + (height - lHeight)/2, l);
   }
   
@@ -194,7 +194,7 @@ bool SequenceWidget::on_button_press_event(GdkEventButton* event) {
       //m_drag_pattern = se->get_pattern_id();
       m_drag_seqid = se->get_id();
       m_proxy.set_sequence_entry_length(m_track->get_id(), beat,
-					beat - se->get_start() + 1);
+					beat - se->get_start().get_beat() + 1);
     }
     return true;
   }
@@ -223,10 +223,10 @@ bool SequenceWidget::on_motion_notify_event(GdkEventMotion* event) {
   
   if ((event->state & GDK_BUTTON2_MASK) && m_drag_seqid != -1) {
     Track::SequenceIterator siter = m_track->seq_find_by_id(m_drag_seqid);
-    if (siter != m_track->seq_end() && beat >= siter->get_start() &&
-        beat - siter->get_start() + 1 <= siter->get_pattern().get_length()) {
-      m_proxy.set_sequence_entry_length(m_track->get_id(), siter->get_start(),
-					beat - siter->get_start() + 1);
+    if (siter != m_track->seq_end() && beat >= siter->get_start().get_beat() &&
+        beat - siter->get_start().get_beat() + 1 <= siter->get_pattern().get_length()) {
+      m_proxy.set_sequence_entry_length(m_track->get_id(), siter->get_start().get_beat(),
+					beat - siter->get_start().get_beat() + 1);
       return true;
     }
   }

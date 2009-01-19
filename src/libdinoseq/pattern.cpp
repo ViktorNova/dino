@@ -848,8 +848,10 @@ namespace Dino {
   }
   
   
-  void Pattern::sequence(MIDIBuffer& buffer, double from, double to, 
-                         unsigned int pattern_length, int channel) const {
+  void Pattern::sequence(MIDIBuffer& buffer, const SongTime& from, 
+			 const SongTime& to, 
+                         const SongTime& pattern_length, int channel) const {
+    /*
     unsigned long cc_steps = 0;
     
     // need to copy this because the editing thread might change it
@@ -914,7 +916,7 @@ namespace Dino {
       }
       
     }
-    
+    */
   }
   
 

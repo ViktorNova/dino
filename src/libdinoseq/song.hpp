@@ -27,6 +27,7 @@
 
 #include <sigc++/signal.h>
 
+#include "songtime.hpp"
 #include "tempomap.hpp"
 
 
@@ -136,9 +137,9 @@ namespace Dino {
     TempoIterator tempo_end() const;
     TempoIterator tempo_find(int beat) const;
     const size_t get_number_of_tracks() const;
-    int get_length() const;
-    int get_loop_start() const;
-    int get_loop_end() const;
+    const SongTime& get_length() const;
+    const SongTime& get_loop_start() const;
+    const SongTime& get_loop_end() const;
     
     // non-const accessors
     TrackIterator tracks_begin();
@@ -151,7 +152,7 @@ namespace Dino {
     void set_title(const std::string& title);
     void set_author(const std::string& author);
     void set_info(const std::string& info);
-    void set_length(int length);
+    void set_length(const SongTime& length);
     TrackIterator add_track(const std::string& name = "");
     TrackIterator add_track(Track* track);
     bool remove_track(const TrackIterator& iterator);
@@ -204,12 +205,12 @@ namespace Dino {
     std::string m_author;
     std::string m_info;
     std::map<int, Track*>* volatile m_tracks;
-    volatile int m_length;
+    volatile SongTime m_length;
     
     TempoMap m_tempo_map;
     
-    int m_loop_start;
-    int m_loop_end;
+    SongTime m_loop_start;
+    SongTime m_loop_end;
     
     mutable bool m_dirty;
 

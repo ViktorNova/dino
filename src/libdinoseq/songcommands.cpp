@@ -43,20 +43,18 @@ namespace {
       : Dino::Command("Change song length [INTERNAL]"),
 	m_song(song),
 	m_length(length),
-	m_oldlength(-1) {
+	m_oldlength() {
 
     }
     
     bool do_command() {
-      if (m_length < 1)
-	return false;
-      m_oldlength = m_song.get_length();
-      m_song.set_length(m_length);
+      m_oldlength = m_song.get_length().get_beat();
+      m_song.set_length(Dino::SongTime(m_length, 0));
       return true;
     }
     
     bool undo_command() {
-      m_song.set_length(m_oldlength);
+      m_song.set_length(Dino::SongTime(m_oldlength, 0));
       return true;
     }
     
@@ -141,12 +139,12 @@ namespace Dino {
     
     clear();
     
-    if (m_length < m_song.get_length()) {
+    if (m_length < m_song.get_length().get_beat()) {
       
       // remove or change the loop
-      if (m_song.get_loop_start() > m_length)
+      if (m_song.get_loop_start().get_beat() > m_length)
 	append(new SetLoopStart(m_song, -1));
-      if (m_song.get_loop_end() > m_length)
+      if (m_song.get_loop_end().get_beat() > m_length)
 	append(new SetLoopEnd(m_song, m_length));
       
       // remove all tempochanges after the new length
@@ -162,13 +160,15 @@ namespace Dino {
       for ( ; titer != m_song.tracks_end(); ++titer) {
 	Track::SequenceIterator siter = titer->seq_begin();
 	for ( ; siter != titer->seq_end(); ++siter) {
-	  if (siter->get_start() >= m_length)
+	  if (siter->get_start().get_beat() >= m_length)
 	    append(new RemoveSequenceEntry(m_song, titer->get_id(), 
-					   siter->get_start()));
-	  else if (siter->get_start() + siter->get_length() > m_length)
+					   siter->get_start().get_beat()));
+	  else if ((siter->get_start() + siter->get_length()).get_beat() > 
+		   m_length)
 	    append(new SetSequenceEntryLength(m_song, titer->get_id(),
-					      siter->get_start(),
-					      m_length - siter->get_start()));
+					      siter->get_start().get_beat(),
+					      m_length - 
+					      siter->get_start().get_beat()));
 	}
       }
 
@@ -190,8 +190,8 @@ namespace Dino {
   
   
   bool SetLoopStart::do_command() {
-    m_oldbeat = m_song.get_loop_start();
-    if (m_beat == m_oldbeat || m_beat > m_song.get_length())
+    m_oldbeat = m_song.get_loop_start().get_beat();
+    if (m_beat == m_oldbeat || m_beat > m_song.get_length().get_beat())
       return false;
     m_song.set_loop_start(m_beat);
     return true;
@@ -199,7 +199,7 @@ namespace Dino {
   
   
   bool SetLoopStart::undo_command() {
-    if (m_oldbeat > m_song.get_length())
+    if (m_oldbeat > m_song.get_length().get_beat())
       return false;
     m_song.set_loop_start(m_oldbeat);
     return true;
@@ -216,8 +216,8 @@ namespace Dino {
   
   
   bool SetLoopEnd::do_command() {
-    m_oldbeat = m_song.get_loop_end();
-    if (m_beat == m_oldbeat || m_beat > m_song.get_length())
+    m_oldbeat = m_song.get_loop_end().get_beat();
+    if (m_beat == m_oldbeat || m_beat > m_song.get_length().get_beat())
       return false;
     m_song.set_loop_end(m_beat);
     return true;
@@ -225,7 +225,7 @@ namespace Dino {
   
   
   bool SetLoopEnd::undo_command() {
-    if (m_oldbeat > m_song.get_length())
+    if (m_oldbeat > m_song.get_length().get_beat())
       return false;
     m_song.set_loop_end(m_oldbeat);
     return true;
@@ -310,7 +310,7 @@ namespace Dino {
   
   
   bool AddTempoChange::do_command() {
-    if (m_beat < 0 || m_beat >= m_song.get_length()) {
+    if (m_beat < 0 || m_beat >= m_song.get_length().get_beat()) {
       if (m_iter_store) {
 	*m_iter_store = m_song.tempo_end();
 	m_iter_store = 0;
@@ -537,7 +537,7 @@ namespace Dino {
     Track::SequenceIterator siter;
     for (siter = titer->seq_begin(); siter != titer->seq_end(); ++siter) {
       if (siter->get_pattern_id() == m_pattern)
-	append(new RemoveSequenceEntry(m_song, m_track, siter->get_start()));
+	append(new RemoveSequenceEntry(m_song, m_track, siter->get_start().get_beat()));
     }
     
     append(new _RemovePattern(m_song, m_track, m_pattern));
@@ -559,9 +559,9 @@ namespace Dino {
   
   
   bool AddSequenceEntry::do_command() {
-    if (m_beat < 0 || m_beat >= m_song.get_length())
+    if (m_beat < 0 || m_beat >= m_song.get_length().get_beat())
       return false;
-    if (m_beat + m_length > m_song.get_length())
+    if (m_beat + m_length > m_song.get_length().get_beat())
       return false;
     Song::TrackIterator titer = m_song.tracks_find(m_track);
     if (titer == m_song.tracks_end())
@@ -614,9 +614,9 @@ namespace Dino {
     Track::SequenceIterator siter = titer->seq_find(m_beat);
     if (siter == titer->seq_end())
       return false;
-    m_beat = siter->get_start();
+    m_beat = siter->get_start().get_beat();
     m_pattern = siter->get_pattern_id();
-    m_length = siter->get_length();
+    m_length = siter->get_length().get_beat();
     titer->remove_sequence_entry(siter);
     return true;
   }
@@ -651,8 +651,8 @@ namespace Dino {
     Track::SequenceIterator siter = titer->seq_find(m_beat);
     if (siter == titer->seq_end())
       return false;
-    m_beat = siter->get_start();
-    m_old_length = siter->get_length();
+    m_beat = siter->get_start().get_beat();
+    m_old_length = siter->get_length().get_beat();
     if (m_old_length == m_length)
       return false;
     titer->set_seq_entry_length(siter, m_length);
@@ -1655,7 +1655,7 @@ namespace Dino {
     Track::CurveIterator citer = titer->curves_find(m_number);
     if (citer == titer->curves_end())
       return false;
-    if (m_step > m_song.get_length())
+    if (m_step > m_song.get_length().get_beat())
       return false;
     if (m_value < citer->get_info().get_min())
       return false;

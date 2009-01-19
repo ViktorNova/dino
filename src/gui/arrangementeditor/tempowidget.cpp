@@ -68,7 +68,7 @@ TempoWidget::TempoWidget(CommandProxy& proxy, const Song* song)
     connect(mem_fun(*this, &TempoWidget::length_changed));
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
-  set_size_request(m_col_width * m_song->get_length(), m_col_width);
+  set_size_request(m_col_width * m_song->get_length().get_beat(), m_col_width);
 }
   
 
@@ -87,14 +87,14 @@ bool TempoWidget::on_expose_event(GdkEventExpose* event) {
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
   
-  int width = m_col_width * m_song->get_length();
+  int width = m_col_width * m_song->get_length().get_beat();
   int height = m_col_width;
   Rectangle bounds(0, 0, width + 1, height);
   m_gc->set_clip_rectangle(bounds);
   
   // draw background
   int bpb = 4;
-  for (int b = 0; b < m_song->get_length(); ++b) {
+  for (int b = 0; b < m_song->get_length().get_beat(); ++b) {
     if (b % (2*bpb) < bpb)
       m_gc->set_foreground(m_bg_color);
     else
@@ -104,7 +104,7 @@ bool TempoWidget::on_expose_event(GdkEventExpose* event) {
   m_gc->set_foreground(m_grid_color);
   win->draw_line(m_gc, 0, 0, width, 0);
   win->draw_line(m_gc, 0, height-1, width, height-1);
-  for (int c = 0; c < m_song->get_length() + 1; ++c) {
+  for (int c = 0; c < m_song->get_length().get_beat() + 1; ++c) {
     win->draw_line(m_gc, c * m_col_width, 0, c * m_col_width, height);
   }
   
@@ -176,7 +176,7 @@ bool TempoWidget::on_button_press_event(GdkEventButton* event) {
   switch (event->button) {
   case 1: {
     if (event->state & GDK_CONTROL_MASK) {
-      if (beat >= 0 && beat < unsigned(m_song->get_length())) {
+      if (beat >= 0 && beat < unsigned(m_song->get_length().get_beat())) {
         double bpm = m_song->get_current_tempo(beat);
         Song::TempoIterator iter;
 	m_proxy.add_tempo_change(beat, bpm, &iter);

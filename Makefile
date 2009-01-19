@@ -44,7 +44,6 @@ LIBRARIES = libdinoseq.so libdinoseq_gui.so
 
 
 # The library with the sequencer and the song structures
-#	curve.cpp curve.hpp
 libdinoseq_so_SOURCES = \
 	cdtree.hpp \
 	command.cpp command.hpp \
@@ -52,6 +51,7 @@ libdinoseq_so_SOURCES = \
 	compoundcommand.cpp compoundcommand.hpp \
 	controllerinfo.cpp controllerinfo.hpp \
 	controller_numbers.hpp \
+	curve.cpp curve.hpp \
 	debug.cpp debug.hpp \
 	deleter.hpp \
 	genericcommands.hpp \

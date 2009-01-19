@@ -191,9 +191,9 @@ namespace Dino {
   
   Song::Song() 
     : m_tracks(new map<int, Track*>()), 
-      m_length(32), 
-      m_loop_start(-1),
-      m_loop_end(-1),
+      m_length(32, 0), 
+      m_loop_start(),
+      m_loop_end(),
       m_dirty(false) {
   
     dbg1<<"Initialising song"<<endl;
@@ -281,13 +281,13 @@ namespace Dino {
   }
 
 
-  void Song::set_length(int length) {
-    if (length != m_length) {
-      m_length = length;
+  void Song::set_length(const SongTime& length) {
+    if (length != const_cast<SongTime&>(m_length)) {
+      const_cast<SongTime&>(m_length) = length;
       map<int, Track*>::iterator iter;
       for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter)
-	iter->second->set_length(length);
-      m_signal_length_changed(length);
+	iter->second->set_length(length.get_beat());
+      m_signal_length_changed(length.get_beat());
     }
   }
 
@@ -299,7 +299,8 @@ namespace Dino {
       id = 1;
     else
       id = iter->first + 1;
-    Track* track = new Track(id, m_length, name);
+    Track* track = new Track(id, const_cast<SongTime&>(m_length).get_beat(), 
+			     name);
 
     return add_track(track);
   }
@@ -379,14 +380,14 @@ namespace Dino {
   
   
   void Song::set_loop_start(int start) {
-    m_loop_start = start;
-    m_signal_loop_start_changed(m_loop_start);
+    m_loop_start = SongTime(start, 0);
+    m_signal_loop_start_changed(m_loop_start.get_beat());
   }
   
   
   void Song::set_loop_end(int end) {
-    m_loop_end = end;
-    m_signal_loop_end_changed(m_loop_end);
+    m_loop_end = SongTime(end, 0);
+    m_signal_loop_end_changed(m_loop_end.get_beat());
   }
   
 
@@ -405,17 +406,17 @@ namespace Dino {
   }
   
   
-  int Song::get_length() const {
-    return m_length;
+  const SongTime& Song::get_length() const {
+    return const_cast<const SongTime&>(m_length);
   }
 
   
-  int Song::get_loop_start() const {
+  const SongTime& Song::get_loop_start() const {
     return m_loop_start;
   }
   
   
-  int Song::get_loop_end() const {
+  const SongTime& Song::get_loop_end() const {
     return m_loop_end;
   }
 
@@ -463,7 +464,7 @@ namespace Dino {
   
     // write length
     char length_txt[10];
-    sprintf(length_txt, "%d", m_length);
+    sprintf(length_txt, "%d", const_cast<SongTime&>(m_length).get_beat());
     dino_elt->set_attribute("length", length_txt);
   
     // write the tempomap
@@ -479,18 +480,17 @@ namespace Dino {
     }
     
     // write the loop
-    if (get_loop_start() != -1) {
+    //if (get_loop_start() != -1) {
       char tmp_txt[10];
-      sprintf(tmp_txt, "%d", get_loop_start());
+      sprintf(tmp_txt, "%d", get_loop_start().get_beat());
       Element* loop_start_elt = dino_elt->add_child("loop_start");
       loop_start_elt->set_attribute("beat", tmp_txt);
-    }
-    if (get_loop_end() != -1) {
-      char tmp_txt[10];
-      sprintf(tmp_txt, "%d", get_loop_end());
+      //}
+      //if (get_loop_end() != -1) {
+      sprintf(tmp_txt, "%d", get_loop_end().get_beat());
       Element* loop_end_elt = dino_elt->add_child("loop_end");
       loop_end_elt->set_attribute("beat", tmp_txt);
-    }
+      //}
   
     // write all tracks
     map<int, Track*>::const_iterator iter;
@@ -572,7 +572,8 @@ namespace Dino {
       const Element* track_elt = dynamic_cast<const Element*>(*iter);
       int id;
       sscanf(track_elt->get_attribute("id")->get_value().c_str(), "%d", &id);
-      (*new_tracks)[id] = new Track(id, m_length);
+      (*new_tracks)[id] = new Track(id, const_cast<SongTime&>(m_length).
+				    get_beat());
       (*new_tracks)[id]->parse_xml_node(track_elt);
     }
     map<int, Track*>* old_tracks = m_tracks;
@@ -592,7 +593,7 @@ namespace Dino {
     m_title = "";
     m_author = "";
     m_info = "";
-    m_length = 0;
+    const_cast<SongTime&>(m_length) = SongTime(0, 0);
 
     map<int, Track*>* old_tracks = m_tracks;
     m_tracks = new map<int, Track*>();

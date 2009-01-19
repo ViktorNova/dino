@@ -79,6 +79,8 @@ namespace Dino {
     Event e;
     while (m_from_audio.pop(e)) {
       
+      /*
+      
       // if we are in a different sequence entry, stop all notes from the last
       int sid = -1;
       if (titer != m_song.tracks_end()) {
@@ -236,7 +238,7 @@ namespace Dino {
         break;
         
       }
-      
+      */
     }
   }
     
@@ -318,6 +320,7 @@ namespace Dino {
 
   void Recorder::handle_note_on(double beat, unsigned char key, 
                                 unsigned char velocity, Track& track) {
+    /*
     Track::SequenceIterator siter = track.seq_find(int(beat));
     if (siter != track.seq_end()) {
       Key& k = m_keys[key];
@@ -329,11 +332,13 @@ namespace Dino {
       cerr<<"NOTE ON in pattern "<<k.pattern<<" at beat "<<k.start
           <<" with velocity "<<int(k.velocity)<<endl;
     }
+    */
   }
 
   
   void Recorder::handle_note_off(double beat, unsigned char key, 
                                  Track& track) {
+    /*
     Key& k = m_keys[key];
     // XXX shouldn't use the ID, should connect to the seq_entry_removed 
     // signal instead
@@ -375,6 +380,7 @@ namespace Dino {
     }
     
     k.held = false;
+    */
   }
   
   

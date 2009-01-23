@@ -34,6 +34,7 @@ Should be done before 0.6:
 Should be done before 0.8:
 
  [/] Add D-Bus interface
+ [ ] Move D-Bus interface to a plugin
  [/] Embed a Python interpreter
  [ ] Add external actions (executable files talking to Dino over D-Bus)
 
@@ -41,7 +42,6 @@ Should be done before 0.10:
 
  [ ] Add export to Ogg Vorbis or other audio formats using JACK freewheeling
      and recording
- [/] Wrap libdinoseq in Python
  
 Crazy ideas:
 
@@ -73,3 +73,4 @@ Crazy ideas:
  
  * Add an aftertouch curve for every note
  
+ * Wrap libdinoseq in Python

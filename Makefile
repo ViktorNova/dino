@@ -34,7 +34,7 @@ dino_SOURCEDIR = src/gui
 dino_CFLAGS = `pkg-config --cflags gtkmm-2.4 jack libxml++-2.6 lash-1.0 dbus-1` -Isrc/libdinoseq -Isrc
 dino_LDFLAGS = `pkg-config --libs gtkmm-2.4 lash-1.0 dbus-1` -Wl,-E
 dino_LIBRARIES = src/libdinoseq/libdinoseq.so
-main_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\" -DVERSION=\"$(PACKAGE_VERSION)\" -DCR_YEAR=\"2005-2008\"
+main_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\" -DVERSION=\"$(PACKAGE_VERSION)\" -DCR_YEAR=\"2005-2009\"
 dinogui_cpp_CFLAGS = $(main_cpp_CFLAGS)
 pluginlibrary_cpp_CFLAGS = -DPLUGIN_DIR=\"$(pkglibdir)\"
 

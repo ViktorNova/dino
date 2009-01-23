@@ -314,8 +314,8 @@ bool DinoDBusObject::set_pattern_steps(int argc, DBus::Argument* argv) {
 
 
 bool DinoDBusObject::add_note(int argc, DBus::Argument* argv) {
-  return m_proxy.add_note(argv[0].i, argv[1].i, argv[2].i, 
-			  argv[3].i, argv[4].i, argv[5].i);
+  return m_proxy.add_note(argv[0].i, argv[1].i, Dino::SongTime(argv[2].i, 0), 
+			  argv[3].i, argv[4].i, Dino::SongTime(argv[5].i, 0));
 }
 
 
@@ -338,12 +338,13 @@ bool DinoDBusObject::delete_note(int argc, DBus::Argument* argv) {
 
 bool DinoDBusObject::add_curve_point(int argc, DBus::Argument* argv) {
   return m_proxy.add_curve_point(argv[0].i, argv[1].i, argv[2].i,
-				 argv[3].i, argv[4].i);
+				 Dino::SongTime(argv[3].i, 0), argv[4].i);
 }
 
 
 bool DinoDBusObject::remove_curve_point(int argc, DBus::Argument* argv){
-  return m_proxy.remove_curve_point(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
+  return m_proxy.remove_curve_point(argv[0].i, argv[1].i, argv[2].i, 
+				    Dino::SongTime(argv[3].i, 0));
 }
 
 

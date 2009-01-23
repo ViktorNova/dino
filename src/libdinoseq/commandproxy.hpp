@@ -158,11 +158,12 @@ namespace Dino {
     /** Change the number of steps per beat in a pattern. */
     bool set_pattern_steps(int track, int pattern, unsigned int steps);
     /** Add a note to a pattern. */
-    bool add_note(int track, int pattern, unsigned int step, 
-		  int key, int velocity, int length);
+    bool add_note(int track, int pattern, const SongTime& step, 
+		  int key, int velocity, const SongTime& length);
     /** Add a collection of notes to a pattern. */
     bool add_notes(int track, int pattern, const NoteCollection& notes, 
-		   int step, int key, NoteSelection* selection = 0);
+		   const SongTime& start, 
+		   int key, NoteSelection* selection = 0);
     /** Change the velocity of a note. */
     bool set_note_velocity(int track, int pattern, int step, int key, 
 			   int velocity);
@@ -172,10 +173,10 @@ namespace Dino {
     bool delete_note(int track, int pattern, int step, int key);
     /** Add a point to a pattern curve. */
     bool add_curve_point(int track, int pattern, long number, 
-			 unsigned step, int value);
+			 const SongTime& step, int value);
     /** Remove a point from a pattern curve. */
     bool remove_curve_point(int track, int pattern, long number, 
-			    unsigned step);
+			    const SongTime& step);
     
     //@}
     

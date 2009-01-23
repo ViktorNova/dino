@@ -1334,13 +1334,14 @@ namespace Dino {
       piter->delete_note(piter->notes_begin());
     piter->set_steps(m_oldsteps);
     if (m_notes.begin() != m_notes.end())
-      piter->add_notes(m_notes, m_step, m_key);
+      piter->add_notes(m_notes, SongTime(m_step, 0), m_key);
     return true;
   }
 
 
   AddNote::AddNote(Song& song, int track, int pattern, 
-		   unsigned int step, int key, int velocity, int length)
+		   const SongTime& step, int key, int velocity, 
+		   const SongTime& length)
     : Command("Add note"),
       m_song(song),
       m_track(track),
@@ -1362,7 +1363,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    unsigned int n = piter->get_length().get_beat() * piter->get_steps();
+    const SongTime& n = piter->get_length();
     if (m_step >= n || m_step + m_length > n)
       return false;
     Pattern::NoteIterator niter = piter->add_note(m_step, m_key, 
@@ -1387,14 +1388,14 @@ namespace Dino {
   
 
   AddNotes::AddNotes(Song& song, int track, int pattern, 
-		     const NoteCollection& notes, int step, 
+		     const NoteCollection& notes, const SongTime& start, 
 		     int key, NoteSelection* selection)
     : Command("Add notes"),
       m_song(song),
       m_track(track),
       m_pattern(pattern),
       m_notes(notes),
-      m_step(step),
+      m_start(start),
       m_key(key),
       m_selection(selection) {
 
@@ -1410,10 +1411,10 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    unsigned int n = piter->get_length().get_beat() * piter->get_steps();
-    if (m_step >= n)
+    const SongTime& n = piter->get_length();
+    if (m_start >= n)
       return false;
-    return piter->add_notes(m_notes, m_step, m_key, m_selection);
+    return piter->add_notes(m_notes, m_start, m_key, m_selection);
   }
   
   
@@ -1426,7 +1427,8 @@ namespace Dino {
       return false;
     NoteCollection::ConstIterator iter;
     for (iter = m_notes.begin(); iter != m_notes.end(); ++iter) {
-      Pattern::NoteIterator niter = piter->find_note(m_step + iter->start, 
+      Pattern::NoteIterator niter = piter->find_note(m_start + 
+						     SongTime(iter->start, 0), 
 						     iter->key + m_key);
       if (niter != piter->notes_end())
 	piter->delete_note(niter);
@@ -1455,7 +1457,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
     if (niter == piter->notes_end())
       return false;
     m_oldvelocity = niter->get_velocity();
@@ -1471,7 +1473,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
     if (niter == piter->notes_end())
       return false;
     piter->set_velocity(niter, m_oldvelocity);
@@ -1499,7 +1501,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
     if (niter == piter->notes_end())
       return false;
     m_oldsize = niter->get_length();
@@ -1515,7 +1517,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
     if (niter == piter->notes_end())
       return false;
     piter->resize_note(niter, m_oldsize);
@@ -1541,7 +1543,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
+    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
     if (niter == piter->notes_end())
       return false;
     m_step = niter->get_step();
@@ -1559,14 +1561,15 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    piter->add_note(m_step, m_key, m_velocity, m_length);
+    piter->add_note(SongTime(m_step, 0), m_key, m_velocity, 
+		    SongTime(m_length, 0));
     return true;
   }
 
   
   AddPatternCurvePoint::AddPatternCurvePoint(Song& song, int track, 
 					     int pattern, long number,
-					     unsigned int step, int value)
+					     const SongTime& step, int value)
     : Command("Add curve point"),
       m_song(song),
       m_track(track),
@@ -1593,7 +1596,7 @@ namespace Dino {
     if (citer == piter->curves_end())
       return false;
     cerr<<__PRETTY_FUNCTION__<<" 3"<<endl;
-    if (m_step > citer->get_size())
+  if (m_step.get_beat() > citer->get_size())
       return false;
     cerr<<__PRETTY_FUNCTION__<<" 4"<<endl;
     if (m_value < citer->get_info().get_min())
@@ -1602,13 +1605,13 @@ namespace Dino {
     if (m_value > citer->get_info().get_max())
       return false;
     cerr<<__PRETTY_FUNCTION__<<" 6"<<endl;
-    const InterpolatedEvent* e = citer->get_event(m_step);
+    const InterpolatedEvent* e = citer->get_event(m_step.get_beat());
     if (e) {
-      if (m_step == citer->get_size()) {
+      if (m_step == SongTime(citer->get_size(), 0)) {
 	m_oldvalue = e->get_end();
 	m_wasold = true;
       }
-      else if (m_step == e->get_step()) {
+      else if (m_step == SongTime(e->get_step(), 0)) {
 	m_oldvalue = e->get_start();
 	m_wasold = true;
       }
@@ -1636,7 +1639,7 @@ namespace Dino {
 
 
   AddTrackCurvePoint::AddTrackCurvePoint(Song& song, int track, long number,
-					 unsigned int step, int value)
+					 const SongTime& step, int value)
     : Command("Add curve point"),
       m_song(song),
       m_track(track),
@@ -1655,24 +1658,24 @@ namespace Dino {
     Track::CurveIterator citer = titer->curves_find(m_number);
     if (citer == titer->curves_end())
       return false;
-    if (m_step > m_song.get_length().get_beat())
+    if (m_step > m_song.get_length())
       return false;
     if (m_value < citer->get_info().get_min())
       return false;
     if (m_value > citer->get_info().get_max())
       return false;
-    const InterpolatedEvent* e = citer->get_event(m_step);
+    const InterpolatedEvent* e = citer->get_event(m_step.get_beat());
     if (e) {
-      if (m_step == citer->get_size()) {
+      if (m_step == SongTime(citer->get_size(), 0)) {
 	m_oldvalue = e->get_end();
 	m_wasold = true;
       }
-      else if (m_step == e->get_step()) {
+      else if (m_step == SongTime(e->get_step(), 0)) {
 	m_oldvalue = e->get_start();
 	m_wasold = true;
       }
     }
-    citer->add_point(m_step, m_value);
+    citer->add_point(m_step.get_beat(), m_value);
     return true;
   }
   
@@ -1685,15 +1688,15 @@ namespace Dino {
     if (citer == titer->curves_end())
       return false;
     if (m_wasold)
-      citer->add_point(m_step, m_oldvalue);
+      citer->add_point(m_step.get_beat(), m_oldvalue);
     else
-      citer->remove_point(m_step);
+      citer->remove_point(m_step.get_beat());
   }
 
 
   RemovePatternCurvePoint::RemovePatternCurvePoint(Song& song, int track, 
 						   int pattern, long number,
-						   unsigned int step)
+						   const SongTime& step)
     : Command("Remove curve point"),
       m_song(song),
       m_track(track),
@@ -1714,10 +1717,10 @@ namespace Dino {
     Pattern::CurveIterator citer = piter->curves_find(m_number);
     if (citer == piter->curves_end())
       return false;
-    if (m_step >= citer->get_size())
+    if (m_step >= SongTime(citer->get_size(), 0))
       return false;
-    const InterpolatedEvent* e = citer->get_event(m_step);
-    if (!e || m_step != e->get_step())
+    const InterpolatedEvent* e = citer->get_event(m_step.get_beat());
+    if (!e || m_step != SongTime(e->get_step(), 0))
       return false;
     
     m_oldvalue = e->get_start();

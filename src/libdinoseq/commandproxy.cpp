@@ -317,18 +317,19 @@ namespace Dino {
   }
 
 
-  bool CommandProxy::add_note(int track, int pattern, unsigned int step, 
-			      int key, int velocity, int length) {
+  bool CommandProxy::add_note(int track, int pattern, const SongTime& step, 
+			      int key, int velocity, const SongTime& length) {
     return push_and_do(new AddNote(m_song, track, pattern, 
 				   step, key, velocity, length));
   }
   
 
   bool CommandProxy::add_notes(int track, int pattern, 
-			       const NoteCollection& notes, int step, 
+			       const NoteCollection& notes, 
+			       const SongTime& start, 
 			       int key, NoteSelection* selection) {
     return push_and_do(new AddNotes(m_song, track, pattern, notes, 
-				    step, key, selection));
+				    start, key, selection));
   }
 
 
@@ -352,7 +353,7 @@ namespace Dino {
 
 
   bool CommandProxy::add_curve_point(int track, int pattern, 
-				     long number, unsigned step, 
+				     long number, const SongTime& step, 
 				     int value) {
     if (pattern != -1) {
       return push_and_do(new AddPatternCurvePoint(m_song, track, pattern, 
@@ -364,7 +365,7 @@ namespace Dino {
   
   
   bool CommandProxy::remove_curve_point(int track, int pattern, 
-					long number, unsigned step) {
+					long number, const SongTime& step) {
     push_and_do(new RemovePatternCurvePoint(m_song, track, pattern,
 					    number, step));
   }

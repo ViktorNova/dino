@@ -200,7 +200,7 @@ namespace Dino {
     NoteIterator notes_end() const;
     /** Return an iterator for the note with key @c value that is playing at
         step @c step, or an invalid iterator if there is no such note. */
-    NoteIterator find_note(unsigned int step, int value) const;
+    NoteIterator find_note(const SongTime& step, int value) const;
     /** Return an iterator that refers to the first controller in the pattern.*/
     ConstCurveIterator curves_begin() const;
     /** Return an invalid iterator that can be used to check when an iterator
@@ -226,15 +226,16 @@ namespace Dino {
     void get_dirty_rect(int* min_step, int* min_note, 
                         int* max_step, int* max_note) const;
     /** Check how long a note added at the given key and step could be. */
-    unsigned int check_maximal_free_space(unsigned int step, int key, 
-					  unsigned int limit) const;
+    const SongTime check_maximal_free_space(const SongTime& start, int key, 
+					    const SongTime& limit) const;
     /** Check if it would be possible to add a note with the given start time,
 	key and length. */
-    bool check_free_space(unsigned int step, int key, 
-			  unsigned int length) const;
+    bool check_free_space(const SongTime& step, int key, 
+			  const SongTime& length) const;
     /** Check if it would be possible to add a note with the given start time,
 	key and length, assuming that the notes in @c ignore were removed. */
-    bool check_free_space(unsigned int step, int key, unsigned int length,
+    bool check_free_space(const SongTime& step, int key, 
+			  const SongTime& length,
 			  const NoteSelection& ignore) const;
     
     //@}
@@ -247,13 +248,14 @@ namespace Dino {
     void set_length(const SongTime& length);
     /** Change the number of steps per beat. */
     void set_steps(unsigned int steps);
-    /** Add a note at the given step with the given key, velocity, and length
-        (in steps). */
-    NoteIterator add_note(unsigned step, int key, int velocity, int length);
+    /** Add a note at the given time with the given key, velocity, and 
+	length. */
+    NoteIterator add_note(const SongTime& start, int key, int velocity, 
+			  const SongTime& length);
     /** Add a collection of notes with the given step and key offsets. 
         Can be used as a "paste" command. */
-    bool add_notes(const NoteCollection& notes, int step, int key,
-                   NoteSelection* selection = 0);
+    bool add_notes(const NoteCollection& notes, const SongTime& start, 
+		   int key, NoteSelection* selection = 0);
     /** Delete a note. */
     void delete_note(NoteIterator note);
     /** Change the length of a note. */
@@ -272,9 +274,9 @@ namespace Dino {
 	the Curve object. */
     Curve* disown_curve(CurveIterator iter);
     /** Add a CC event to the given controller. */
-    void add_curve_point(CurveIterator iter, unsigned int step, int value);
+    void add_curve_point(CurveIterator iter, const SongTime& step, int value);
     /** Remove a CC event. */
-    void remove_curve_point(CurveIterator iter, unsigned int step);
+    void remove_curve_point(CurveIterator iter, const SongTime& step);
     /** Reset the "dirty rect".
         @see get_dirty_rect(). */
     void reset_dirty_rect() const; // XXX the "dirty rect" functions need to go
@@ -301,7 +303,7 @@ namespace Dino {
     /** Emitted when the pattern name has changed. */
     sigc::signal<void, std::string>& signal_name_changed() const;
     /** Emitted when the length in beats has changed. */
-    sigc::signal<void, int>& signal_length_changed() const;
+    sigc::signal<void, SongTime const&>& signal_length_changed() const;
     /** Emitted when the number of steps per beat has changed. */
     sigc::signal<void, int>& signal_steps_changed() const;
     /** Emitted when a note has been added. */
@@ -363,7 +365,7 @@ namespace Dino {
     mutable int m_min_step, m_min_note, m_max_step, m_max_note;
 
     mutable sigc::signal<void, std::string> m_signal_name_changed;
-    mutable sigc::signal<void, int> m_signal_length_changed;
+    mutable sigc::signal<void, SongTime const&> m_signal_length_changed;
     mutable sigc::signal<void, int> m_signal_steps_changed;
     mutable sigc::signal<void, Note const&> m_signal_note_added;
     mutable sigc::signal<void, Note const&> m_signal_note_changed;

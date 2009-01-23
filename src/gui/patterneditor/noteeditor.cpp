@@ -299,9 +299,10 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	NoteCollection::Iterator iter;
 	for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
 	  m_proxy.add_note(m_trk->get_id(), m_pat->get_id(),
-			   iter->start + m_drag_step - m_move_offset_step,
+			   SongTime(iter->start + m_drag_step - 
+				    m_move_offset_step, 0),
 			   row2key(iter->key + m_drag_row - m_move_offset_row),
-			   iter->velocity, iter->length);
+			   iter->velocity, SongTime(iter->length, 0));
 	}
 	m_proxy.end_atomic();
 	return true;
@@ -317,13 +318,18 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       
       // Ctrl-Button1 adds notes
       if (event->state & GDK_CONTROL_MASK) {
-	unsigned int max = m_pat->check_maximal_free_space(step, row2key(row), 
-							   m_last_note_length);
+	unsigned int max = 
+	  m_pat->check_maximal_free_space(SongTime(step, 0),
+					  row2key(row), 
+					  SongTime(m_last_note_length, 0)).
+	  get_beat();
 	if (max > 0) {
 	  m_last_note_length = max;
 	  if (m_proxy.add_note(m_trk->get_id(), m_pat->get_id(), 
-			       step, row2key(row), 64, m_last_note_length)) {
-	    Pattern::NoteIterator iter = m_pat->find_note(step, row2key(row));
+			       SongTime(step, 0), row2key(row), 64, 
+			       SongTime(m_last_note_length, 0))) {
+	    Pattern::NoteIterator iter = m_pat->find_note(SongTime(step, 0),
+							  row2key(row));
 	    m_selection.clear();
 	    m_selection.add_note(iter);
 	    m_added_note = make_pair(step, row2key(row));
@@ -334,7 +340,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
       
       // Button1 without Ctrl selects and moves
       else {
-	Pattern::NoteIterator iterator = m_pat->find_note(step, row2key(row));
+	Pattern::NoteIterator iterator = m_pat->find_note(SongTime(step, 0),
+							  row2key(row));
 	if (iterator != m_pat->notes_end()) {
 	  
 	  // Shift adds or removes from selection
@@ -403,7 +410,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
     // button 2 changes the velocity or length or inserts a copy of the 
     // selection
     case 2: {
-      Pattern::NoteIterator iterator = m_pat->find_note(step, row2key(row));
+      Pattern::NoteIterator iterator = m_pat->find_note(SongTime(step, 0), 
+							row2key(row));
       if (iterator != m_pat->notes_end()) {
 	
 	// if the click is outside the selection, clear the selection first
@@ -443,9 +451,10 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	m_proxy.start_atomic("Inserting notes");
 	for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
 	  m_proxy.add_note(m_trk->get_id(), m_pat->get_id(), 
-			   iter->get_step() + (step - minstep),
+			   SongTime(iter->get_step() + (step - minstep), 0),
 			   row2key(key2row(iter->get_key()) + (row - maxrow)),
-			   iter->get_velocity(), iter->get_length());
+			   iter->get_velocity(), 
+			   SongTime(iter->get_length(), 0));
 	}
 	m_proxy.end_atomic();
       }
@@ -455,7 +464,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
     
     // Ctrl-Button3 deletes or pops up menu
     case 3: {
-      Pattern::NoteIterator iterator = m_pat->find_note(step, row2key(row));
+      Pattern::NoteIterator iterator = m_pat->find_note(SongTime(step, 0),
+							row2key(row));
       if (iterator != m_pat->notes_end()) {
 	// if shift isn't pressed the selection is set to this single note
 	if (m_selection.find(iterator) == m_selection.end()) {
@@ -522,7 +532,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       iter->start += step;
     }
     m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), m_moved_notes, 
-		      0, 0, &m_selection);
+		      SongTime(0, 0), 0, &m_selection);
     m_proxy.end_atomic();
   }
   
@@ -585,7 +595,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     else if (step >= int(m_pat->get_length().get_beat() * m_pat->get_steps()))
       step = m_pat->get_length().get_beat() * m_pat->get_steps() - 1;
     Pattern::NoteIterator iterator = 
-      m_pat->find_note(m_added_note.first, m_added_note.second);
+      m_pat->find_note(SongTime(m_added_note.first, 0), m_added_note.second);
     unsigned new_size = step - m_added_note.first + 1;
     NoteSelection::Iterator iter;
     m_last_note_length = step - m_added_note.first + 1;
@@ -601,7 +611,8 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     if (step >= 0 && step < 
 	int(m_pat->get_length().get_beat() * m_pat->get_steps()) &&
 	row >= 0 && row < m_rows) {
-      Pattern::NoteIterator iter = m_pat->find_note(step, row2key(row));
+      Pattern::NoteIterator iter = m_pat->find_note(SongTime(step, 0),
+						    row2key(row));
       if (iter != m_pat->notes_end())
 	m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), iter->get_step(),
 			    iter->get_key());
@@ -723,7 +734,7 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
   for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter)
     draw_note(iter, m_selection.find(iter) != m_selection.end());
   if (m_drag_operation == DragChangingNoteVelocity) {
-    iter = m_pat->find_note(m_drag_step, row2key(m_drag_row));
+    iter = m_pat->find_note(SongTime(m_drag_step, 0), row2key(m_drag_row));
     draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
   }
   if (m_motion_operation == MotionPaste)
@@ -939,8 +950,9 @@ void NoteEditor::draw_paste_outline(Glib::RefPtr<Gdk::Window> win,
     ok = true;
     NoteCollection::ConstIterator iter;
     for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
-      if (!m_pat->check_free_space(step + iter->start, row2key(iter->key + row),
-				   iter->length)) {
+      if (!m_pat->check_free_space(SongTime(step + iter->start, 0), 
+				   row2key(iter->key + row),
+				   SongTime(iter->length, 0))) {
 	ok = false;
 	break;
       }
@@ -959,8 +971,9 @@ void NoteEditor::draw_move_outline(Glib::RefPtr<Gdk::Window> win,
     ok = true;
     NoteCollection::ConstIterator iter;
     for (iter = m_moved_notes.begin(); iter != m_moved_notes.end(); ++iter) {
-      if (!m_pat->check_free_space(step + iter->start, row2key(iter->key + row),
-				   iter->length, m_selection)) {
+      if (!m_pat->check_free_space(SongTime(step + iter->start, 0), 
+				   row2key(iter->key + row),
+				   SongTime(iter->length, 0), m_selection)) {
 	ok = false;
 	break;
       }
@@ -977,9 +990,11 @@ void NoteEditor::draw_resize_outline(Glib::RefPtr<Gdk::Window> win,
   for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
     if (m_last_note_length <= iter->get_length())
       continue;
-    if (!m_pat->check_free_space(iter->get_step() + iter->get_length(),
+    if (!m_pat->check_free_space(SongTime(iter->get_step() + 
+					  iter->get_length(), 0),
 				 iter->get_key(), 
-				 m_last_note_length - iter->get_length())) {
+				 SongTime(m_last_note_length - 
+					  iter->get_length(), 0))) {
       m_resize_ok = false;
     }
   }

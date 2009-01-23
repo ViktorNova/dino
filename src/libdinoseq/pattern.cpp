@@ -165,8 +165,8 @@ namespace Dino {
     // copy all notes
     NoteIterator iter;
     for (iter = pat.notes_begin(); iter != pat.notes_end(); ++iter) {
-      add_note(iter->get_step(), iter->get_key(), 
-               iter->get_velocity(), iter->get_length());
+      add_note(SongTime(iter->get_step(), 0), iter->get_key(), 
+               iter->get_velocity(), SongTime(iter->get_length(), 0));
     }
     
     // copy all curves with data
@@ -315,7 +315,7 @@ namespace Dino {
                        length, old_sd->steps);
     Deleter::queue(old_sd);
 
-    m_signal_length_changed(m_sd->length.get_beat());
+    m_signal_length_changed(m_sd->length);
   }
 
 
@@ -376,7 +376,8 @@ namespace Dino {
     
     // add the notes using the new event lists
     for (unsigned i = 0; i < starts.size(); ++i)
-      add_note(starts[i], keys[i], velocities[i], lengths[i]);
+      add_note(SongTime(starts[i], 0), keys[i], velocities[i], 
+	       SongTime(lengths[i], 0));
     
     m_signal_steps_changed(m_sd->length.get_beat());
   }
@@ -388,20 +389,23 @@ namespace Dino {
       step with the same value, the old note will be shortened so it ends just
       before @c step. 
   */
-  Pattern::NoteIterator Pattern::add_note(unsigned step, int key, int velocity, 
-                                          int note_length) {
-    assert(step < m_sd->length.get_beat() * m_sd->steps);
+  Pattern::NoteIterator Pattern::add_note(const SongTime& start, int key, 
+					  int velocity, 
+					  const SongTime& note_length) {
+    assert(start < m_sd->length);
     assert(key < 128);
     assert(velocity < 128);
-    assert(note_length > 0);
+    assert(note_length > SongTime(0, 0));
     
-    if (!check_free_space(step, key, note_length))
+    if (!check_free_space(start, key, note_length))
       return notes_end();
     
     // create the new objects
-    NoteEvent* note_on = new NoteEvent(NoteEvent::NoteOn, step, key, velocity);
+    NoteEvent* note_on = new NoteEvent(NoteEvent::NoteOn, start.get_beat(),
+				       key, velocity);
     NoteEvent* note_off = 
-      new NoteEvent(NoteEvent::NoteOff, step + note_length - 1, key, 0);
+      new NoteEvent(NoteEvent::NoteOff, (start + note_length).get_beat(),
+		    key, 0);
     Note* note = new Note(note_on, note_off);
     note_on->set_note(note);
     note_off->set_note(note);
@@ -410,16 +414,16 @@ namespace Dino {
     // this must be done in a safe way since the sequencer could be sequencing
     // this pattern right now!
     // let's hope that pointer assignments are atomic...
-    NoteEvent* old_note_off = (*m_sd->offs)[step + note_length - 1];
+    NoteEvent* old_note_off = (*m_sd->offs)[(start + note_length).get_beat()];
     note_off->set_next(old_note_off);
     if (old_note_off)
       old_note_off->set_previous(note_off);
-    (*m_sd->offs)[step + note_length - 1] = note_off;
-    NoteEvent* old_note_on = (*m_sd->ons)[step];
+    (*m_sd->offs)[(start + note_length).get_beat()] = note_off;
+    NoteEvent* old_note_on = (*m_sd->ons)[start.get_beat()];
     note_on->set_next(old_note_on);
     if (old_note_on)
       old_note_on->set_previous(note_on);
-    (*m_sd->ons)[step] = note_on;
+    (*m_sd->ons)[start.get_beat()] = note_on;
     
     m_signal_note_added(*note);
     
@@ -481,12 +485,10 @@ namespace Dino {
     }*/
 
 
-  bool Pattern::add_notes(const NoteCollection& notes, int step, int key,
-                          NoteSelection* selection) {
+  bool Pattern::add_notes(const NoteCollection& notes, const SongTime& start,
+			  int key, NoteSelection* selection) {
     
-    dbg1<<1<<std::endl;
-    
-    assert(step < m_sd->length.get_beat() * m_sd->steps);
+    assert(start < m_sd->length);
     assert(key < 128);
 
     dbg1<<2<<std::endl;
@@ -498,17 +500,20 @@ namespace Dino {
     NoteCollection::ConstIterator iter;
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
       // XXX clean this up
-      if (iter->key + key < 0 || step + iter->start < 0)
+      if (iter->key + key < 0 || start.get_beat() + iter->start < 0)
 	return false;
-      if (!check_free_space(step + iter->start, iter->key + key, iter->length))
+      if (!check_free_space(start + SongTime(iter->start, 0), iter->key + key, 
+			    SongTime(iter->length, 0)))
 	return false;
       dbg1<<3<<std::endl;
 
     }
     
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
-      NoteIterator iter2 = add_note(iter->start + step, iter->key + key, 
-                                    iter->velocity, iter->length);
+      NoteIterator iter2 = add_note(start + SongTime(iter->start, 0), 
+				    iter->key + key, 
+                                    iter->velocity, 
+				    SongTime(iter->length, 0));
       if (selection)
         selection->add_note(iter2);
     }
@@ -685,17 +690,17 @@ namespace Dino {
   */
   
   
-  void Pattern::add_curve_point(CurveIterator iter, unsigned int step, 
+  void Pattern::add_curve_point(CurveIterator iter, const SongTime& step, 
 				int value) {
-    assert(step <= m_sd->length.get_beat() * m_sd->steps);
-    (*iter.m_iterator)->add_point(step, value);
+    assert(step <= m_sd->length);
+    (*iter.m_iterator)->add_point(step.get_beat(), value);
     //m_signal_cc_added((*iter.m_iterator)->get_info().get_number(), step, value);
   }
 
 
-  void Pattern::remove_curve_point(CurveIterator iter, unsigned int step) {
-    assert(step < m_sd->length.get_beat() * m_sd->steps);
-    (*iter.m_iterator)->remove_point(step);
+  void Pattern::remove_curve_point(CurveIterator iter, const SongTime& step) {
+    assert(step < m_sd->length);
+    (*iter.m_iterator)->remove_point(step.get_beat());
     //m_signal_cc_removed((*iter.m_iterator)->get_info().get_number(), step);
   }
 
@@ -815,7 +820,7 @@ namespace Dino {
         sscanf(note_elt->get_attribute("velocity")->get_value().c_str(), 
                "%d", &velocity);
       }
-      add_note(step, value, velocity, length);
+      add_note(SongTime(step, 0), value, velocity, SongTime(length, 0));
     }
     
     // XXX Fix this!
@@ -927,11 +932,15 @@ namespace Dino {
   }
   
 
-  Pattern::NoteIterator Pattern::find_note(unsigned step, int value) const {
+  Pattern::NoteIterator Pattern::find_note(const SongTime& step, 
+					   int value) const {
     assert(value < 128);
     
-    if (step >= get_length().get_beat() * get_steps())
+    if (step >= get_length())
       return NoteIterator(this, 0);
+    
+    // XXX This needs IMPLEMENTATION
+    /*
     
     // iterate backwards until we find a note on event
     for (int i = step; i >= 0; --i) {
@@ -950,19 +959,24 @@ namespace Dino {
       }
       
     }
+    */
     
     return NoteIterator(this, 0);
   }
 
   
-  unsigned int Pattern::check_maximal_free_space(unsigned int step, int key,
-						 unsigned int limit) const {
+  const SongTime Pattern::check_maximal_free_space(const SongTime& start,
+						   int key,
+						   const SongTime& limit) 
+    const {
+    
     assert(key >= 0 && key < 128);
-    unsigned n = get_length().get_beat() * get_steps();
-    if (step >= n)
-      return 0;
+    const SongTime& n = get_length();
+    if (start >= n)
+      return SongTime(0, 0);
 
-    // XXX needs optimisation
+    // XXX needs IMPLEMENTATION
+    /*
     NoteIterator iter;
     unsigned i;
     for (i = 0; i < limit; ++i) {
@@ -974,28 +988,32 @@ namespace Dino {
     }
     
     return i;
+    */
+    
+    return SongTime(0, 0);
   }
   
 
-  bool Pattern::check_free_space(unsigned int step, 
-				 int key, unsigned int length) const {
+  bool Pattern::check_free_space(const SongTime& start, 
+				 int key, const SongTime& length) const {
     NoteSelection empty(this);
-    return check_free_space(step, key, length, empty);
+    return check_free_space(start, key, length, empty);
   }
 
 
-  bool Pattern::check_free_space(unsigned int step, int key, 
-				 unsigned int length, 
+  bool Pattern::check_free_space(const SongTime& step, int key, 
+				 const SongTime& length, 
 				 const NoteSelection& ignore) const {
     if (key < 0 || key > 128)
       return false;
-    unsigned n = get_length().get_beat() * get_steps();
+    const SongTime& n = get_length();
     if (step >= n || step + length > n) {
       dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;
       return false;
     }
     
-    // XXX this can probably be optimised
+    // XXX this needs IMPLEMENTATION
+    /*
     NoteIterator iter;
     for (unsigned int i = step + length - 1; i >= step; --i) {
       iter = find_note(i, key);
@@ -1006,6 +1024,8 @@ namespace Dino {
 	break;
     }
     return true;
+    */
+    return false;
   }
 
 
@@ -1174,7 +1194,7 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_length_changed() const {
+  sigc::signal<void, SongTime const&>& Pattern::signal_length_changed() const {
     return m_signal_length_changed;
   }
 

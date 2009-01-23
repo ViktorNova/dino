@@ -113,7 +113,8 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
       value = (value < min ? min : value);
       value = (value > max ? max : value);
       m_proxy.add_curve_point(m_track, m_pattern, 
-			      m_curve->get_info().get_number(), step, value);
+			      m_curve->get_info().get_number(), 
+			      SongTime(step, 0), value);
       //m_curve->add_point(step, value);
       stringstream oss;
       oss<<"New value: "<<value;
@@ -130,7 +131,8 @@ bool CurveEditor::on_button_press_event(GdkEventButton* event) {
     int step;
     if ((step = xpix2step(int(event->x))) < int(m_curve->get_size())) {
       m_proxy.remove_curve_point(m_track, m_pattern,
-				 m_curve->get_info().get_number(), step);
+				 m_curve->get_info().get_number(), 
+				 SongTime(step, 0));
       //m_curve->remove_point(step);
     }
   }
@@ -160,7 +162,8 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
       value = (value < min ? min : value);
       value = (value > max ? max : value);
       m_proxy.add_curve_point(m_track, m_pattern, 
-			      m_curve->get_info().get_number(), step, value);
+			      m_curve->get_info().get_number(), 
+			      SongTime(step, 0), value);
       stringstream oss;
       oss<<"New value: "<<value;
       m_signal_status(ref(oss.str()));
@@ -173,7 +176,8 @@ bool CurveEditor::on_motion_notify_event(GdkEventMotion* event) {
     if ((step = xpix2step(int(event->x))) < 
 	int(m_curve->get_size())) {
       m_proxy.remove_curve_point(m_track, m_pattern,
-				 m_curve->get_info().get_number(), step);
+				 m_curve->get_info().get_number(), 
+				 SongTime(step, 0));
     }
   }
 

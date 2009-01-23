@@ -408,16 +408,16 @@ namespace Dino {
     if (step + 1 < citer->get_size() && (ev = citer->get_event(step + 1))) {
       float v = ev->get_start() + (ev->get_end() - ev->get_start()) * 
         (float(step + 1 - ev->get_step()) / ev->get_length());
-      pat.add_curve_point(citer, step + 1, int(v));
+      pat.add_curve_point(citer, SongTime(step + 1, 0), int(v));
     }
     if (step > 0 && (ev = citer->get_event(step - 1))) {
       float v = ev->get_start() + (ev->get_end() - ev->get_start()) * 
         (float(step - 1 - ev->get_step()) / ev->get_length());
-      pat.add_curve_point(citer, step - 1, int(v));
+      pat.add_curve_point(citer, SongTime(step - 1, 0), int(v));
     }
     
     // add the actual point
-    pat.add_curve_point(citer, step, value);
+    pat.add_curve_point(citer, SongTime(step, 0), value);
   }
   
 

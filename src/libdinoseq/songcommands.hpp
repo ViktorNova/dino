@@ -468,24 +468,25 @@ namespace Dino {
   class AddNote : public Command {
   public:
     AddNote(Song& song, int track, int pattern, 
-	    unsigned int step, int key, int velocity, int length);
+	    const SongTime& step, int key, int velocity, 
+	    const SongTime& length);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
     int m_pattern;
-    unsigned int m_step;
+    SongTime m_step;
     int m_key;
     int m_velocity;
-    int m_length;
+    SongTime m_length;
   };
 
 
   class AddNotes : public Command {
   public:
     AddNotes(Song& song, int track, int pattern, const NoteCollection& notes, 
-	     int step, int key, NoteSelection* selection);
+	     const SongTime& start, int key, NoteSelection* selection);
     bool do_command();
     bool undo_command();
   protected:
@@ -493,7 +494,7 @@ namespace Dino {
     int m_track;
     int m_pattern;
     NoteCollection m_notes;
-    int m_step;
+    SongTime m_start;
     int m_key;
     NoteSelection* m_selection;
   };
@@ -552,7 +553,7 @@ namespace Dino {
   class AddPatternCurvePoint : public Command {
   public:
     AddPatternCurvePoint(Song& song, int track, int pattern, long number,
-			 unsigned int step, int value);
+			 const SongTime& step, int value);
     bool do_command();
     bool undo_command();
   protected:
@@ -560,7 +561,7 @@ namespace Dino {
     int m_track;
     int m_pattern;
     long m_number;
-    unsigned int m_step;
+    SongTime m_step;
     int m_value;
     int m_oldvalue;
     bool m_wasold;
@@ -570,14 +571,14 @@ namespace Dino {
   class AddTrackCurvePoint : public Command {
   public:
     AddTrackCurvePoint(Song& song, int track, long number,
-		       unsigned int step, int value);
+		       const SongTime& step, int value);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
     long m_number;
-    unsigned int m_step;
+    SongTime m_step;
     int m_value;
     int m_oldvalue;
     bool m_wasold;
@@ -587,7 +588,7 @@ namespace Dino {
   class RemovePatternCurvePoint : public Command {
   public:
     RemovePatternCurvePoint(Song& song, int track, int pattern, long number,
-			    unsigned int step);
+			    const SongTime& step);
     bool do_command();
     bool undo_command();
   protected:
@@ -595,7 +596,7 @@ namespace Dino {
     int m_track;
     int m_pattern;
     long m_number;
-    unsigned int m_step;
+    const SongTime& m_step;
     int m_oldvalue;
   };
 

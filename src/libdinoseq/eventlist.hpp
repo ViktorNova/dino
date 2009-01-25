@@ -30,116 +30,24 @@
 namespace Dino {
 
   
-  template <unsigned int Levels, unsigned int Scale>
   class EventList {
   public:
     
-    struct Node {
-      
-      Node(Event* e = 0)
-	: event(e) {
-	
-      }
-      
-      Event* event;
-      
-      Node* prev[Levels];
-      Node* next[Levels];
-      Node* buddy;
-      
-    };
-    
-    
-    EventList() {
-      
-    };
-    
-    
     /** Insert a new event into the event list. */
-    void insert(Event* event) {
-      
-      Node* node = new Node(event);
-      
-      // initialise the pointers to previous and next nodes on all levels
-      Node* prev[Levels];
-      Node* next[Levels];
-      for (unsigned i = 0; i < Levels; ++i) {
-	prev[i] = &m_head;
-	next[i] = m_head.m_next[i];
-	node->prev[i] = 0;
-	node->next[i] = 0;
-      }
-      
-      // find where to insert the node
-      for (int level = Levels - 1; level >= 0; --level) {
-	while (next[level] && 
-	       next[level]->event->get_time() < node->event->get_time()) {
-	  prev[level] = next[level];
-	  next[level] = next[level]->next[level];
-	}
-      }
-      
-      // insert it
-      int r = std::rand();
-      int t = RAND_MAX / Scale;
-      for (int level = 0; level < Levels; ++level) {
-	node->next[level] = next[level];
-	node->prev[level] = prev[level];
-	if (next[level])
-	  next[level]->prev[level] = node;
-	prev[level]->next[level] = node;
-	if (r > t)
-	  break;
-	t /= Scale;
-      }
-    }
+    Event* insert(Event* event);
     
+    /** Remove a event from the list, but don't delete it. */
+    void erase(Event* event);
     
-    /** Remove a node from the list, but don't delete it. */
-    void erase(Node* node) {
-      for (int level = 0; level < Levels; ++level) {
-	if (!node->prev[level])
-	  break;
-	node->prev[level]->next[level] = node->next[level];
-	if (node->next[level])
-	  node->next[level]->prev[level] = node->prev[level];
-	node->prev[level] = 0;
-	// keep the next pointer since the sequencer may be visiting
-	// this node right now
-      }
-    }
+    /** Find the first event at or after the given time. */
+    Event* find(const SongTime& time);
     
-    
-    /** Find the first node at or after the given time. */
-    Node* find(const SongTime& time) {
-      
-      // initialise the pointers to previous and next nodes on all levels
-      Node* prev[Levels];
-      Node* next[Levels];
-      for (unsigned i = 0; i < Levels; ++i) {
-	prev[i] = &m_head;
-	next[i] = m_head.m_next[i];
-      }
-      
-      // find the node
-      for (int level = Levels - 1; level >= 0; --level) {
-	while (next[level] && 
-	       next[level]->event->get_time() < time) {
-	  prev[level] = next[level];
-	  next[level] = next[level]->next[level];
-	}
-      }
-      
-      if (!next[0])
-	return 0;
-      
-      return next[0];
-    }
-    
+    /** Return the first element in the list. */
+    Event* get_start();
 
   private:
     
-    Node m_head;
+    Event m_head;
     
   };
 

@@ -96,10 +96,10 @@ namespace Dino {
       
       friend class Pattern;
       
-      NoteIterator(const Pattern* pat, EventList<4, 4>::Node* node);
+      NoteIterator(const Pattern* pat, Event* node);
       
       const Pattern* m_pattern;
-      EventList<4, 4>::Node* m_node;
+      Event* m_event;
     };
     
     
@@ -245,7 +245,7 @@ namespace Dino {
     /** Set the name of this pattern. */
     void set_name(const std::string& name);
     /** Change the length in beats. */
-    void set_length(const SongTime& length);
+    bool set_length(const SongTime& length);
     /** Change the number of steps per beat. */
     void set_steps(unsigned int steps);
     /** Add a note at the given time with the given key, velocity, and 
@@ -259,7 +259,7 @@ namespace Dino {
     /** Delete a note. */
     void delete_note(NoteIterator note);
     /** Change the length of a note. */
-    int resize_note(NoteIterator note, const SongTime& length);
+    SongTime resize_note(NoteIterator note, const SongTime& length);
     /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
     /** Add a new parameter curve. */
@@ -346,13 +346,10 @@ namespace Dino {
     Pattern(const Pattern&) { assert(0); }
     Pattern& operator=(const Pattern&) { assert(0); return *this; }
     
-    /** Find a note on event with the specified @c key between the steps
-        @c start and @c end. */
-    NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
     /** Delete a note in a safe way. */
-    void delete_note(EventList<4, 4>::Node* note);
+    void delete_note(Event* note);
     /** Resize a note. */
-    int resize_note(Note* note, int length);
+    SongTime resize_note(Event* note, const SongTime& length);
     
     /** The pattern id. */
     int m_id;
@@ -365,7 +362,8 @@ namespace Dino {
 
     /** The actual events. This data structure is accessed by both threads,
 	so be careful! */
-    EventList<4, 4> m_events;
+    EventList m_events;
+    SongTime m_length;
     
     mutable bool m_dirty;
   
@@ -380,9 +378,6 @@ namespace Dino {
     mutable sigc::signal<void, Event const&> m_signal_note_removed;
     mutable sigc::signal<void, int> m_signal_curve_added;
     mutable sigc::signal<void, int> m_signal_curve_removed;
-    
-    
-    EventList<4, 4> m_eventlist;
     
   };
 

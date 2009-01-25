@@ -187,24 +187,23 @@ void NoteEditor::cut_selection() {
 
 void NoteEditor::copy_selection() {
   m_clipboard.clear();
-  int minstep = numeric_limits<int>::max();
+  SongTime mintime = m_pat->get_length();
   int minrow = numeric_limits<int>::max();
   NoteSelection::Iterator iter;
   for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
     int row = key2row(iter->get_key());
     if (row < m_rows) {
-      m_clipboard.add_note(iter->get_time().get_beat(), 
-			   iter->get_length().get_beat(), 
+      m_clipboard.add_note(iter->get_time(), iter->get_length(), 
 			   row, iter->get_velocity());
-      if (iter->get_time().get_beat() < minstep)
-	minstep = iter->get_time().get_beat();
+      if (iter->get_time() < mintime)
+	mintime = iter->get_time();
       if (row < minrow)
 	minrow = row;
     }
   }
   NoteCollection::Iterator iter2;
   for (iter2 = m_clipboard.begin(); iter2 != m_clipboard.end(); ++iter2) {
-    iter2->start -= minstep;
+    iter2->start -= mintime;
     iter2->key -= minrow;
   }
 }
@@ -221,19 +220,19 @@ void NoteEditor::paste() {
     y = y < 0 ? 0 : y;
     m_drag_step = pixel2step(x);
     m_drag_row = pixel2row(y);
-    int maxstep = 0;
+    SongTime maxtime = SongTime(0, 0);
     int maxrow = 0;
     NoteCollection::Iterator iter;
     for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
-      maxstep = iter->start + iter->length - 1 > maxstep ? 
-	iter->start + iter->length - 1: maxstep;
+      maxtime = (iter->start + iter->length > maxtime ? 
+		 iter->start + iter->length : maxtime);
       maxrow = iter->key > maxrow ? iter->key : maxrow;
     }
     m_move_offset_step = 0;
     m_move_offset_row = maxrow;
     m_drag_step_min = 0;
     m_drag_step_max = m_pat->get_length().get_beat() * m_pat->get_steps()
-      - 1 - maxstep;
+      - 1 - maxtime.get_beat();
     m_drag_row_max = m_rows - 1;
     m_drag_row_min = maxrow;
     queue_draw();
@@ -300,10 +299,10 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	NoteCollection::Iterator iter;
 	for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
 	  m_proxy.add_note(m_trk->get_id(), m_pat->get_id(),
-			   SongTime(iter->start + m_drag_step - 
-				    m_move_offset_step, 0),
+			   iter->start + 
+			   SongTime(m_drag_step - m_move_offset_step, 0),
 			   row2key(iter->key + m_drag_row - m_move_offset_row),
-			   iter->velocity, SongTime(iter->length, 0));
+			   iter->velocity, iter->length);
 	}
 	m_proxy.end_atomic();
 	return true;
@@ -368,8 +367,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	    for (iter = m_selection.begin(); iter != m_selection.end();++iter) {
 	      int krow = key2row(iter->get_key());
 	      if (krow < 128) {
-		m_moved_notes.add_note(iter->get_time().get_beat(), 
-				       iter->get_length().get_beat(),
+		m_moved_notes.add_note(iter->get_time(), iter->get_length(),
 				       krow, iter->get_velocity());
 		if (step - int(iter->get_time().get_beat()) > m_drag_step_min)
 		  m_drag_step_min = step - int(iter->get_time().get_beat());
@@ -535,7 +533,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     NoteCollection::Iterator iter;
     for (iter = m_moved_notes.begin(); iter != m_moved_notes.end(); ++iter) {
       iter->key = row2key(iter->key + row);
-      iter->start += step;
+      iter->start += SongTime(step, 0);
     }
     m_proxy.add_notes(m_trk->get_id(), m_pat->get_id(), m_moved_notes, 
 		      SongTime(0, 0), 0, &m_selection);
@@ -846,17 +844,19 @@ void NoteEditor::draw_outline(const Dino::NoteCollection& notes,
     m_gc->set_foreground(m_bad_hl_color);
   NoteCollection::ConstIterator iter;
   for (iter = notes.begin(); iter != notes.end(); ++iter) {
-    if (step + iter->start >= m_pat->get_length().get_beat() * m_pat->get_steps())
+    if (step + iter->start.get_beat() >= 
+	m_pat->get_length().get_beat() * m_pat->get_steps())
       continue;
     int r = iter->key + row;
     if (r >= m_rows)
       continue;
-    int length = iter->length;
-    if (step + iter->start + iter->length >= 
+    int length = iter->length.get_beat();
+    if (step + (iter->start + iter->length).get_beat() >= 
 	m_pat->get_length().get_beat() * m_pat->get_steps())
-      length = m_pat->get_length().get_beat() * m_pat->get_steps() - step - iter->start;
-    win->draw_rectangle(m_gc, false, step2pixel(step + iter->start),
-			row2pixel(r), iter->length * m_col_width, m_row_height);
+      length = m_pat->get_length().get_beat() * m_pat->get_steps() - step - iter->start.get_beat();
+    win->draw_rectangle(m_gc, false, step2pixel(step + iter->start.get_beat()),
+			row2pixel(r), iter->length.get_beat() * m_col_width,
+			m_row_height);
   }
 }
 
@@ -962,9 +962,8 @@ void NoteEditor::draw_paste_outline(Glib::RefPtr<Gdk::Window> win,
     ok = true;
     NoteCollection::ConstIterator iter;
     for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
-      if (!m_pat->check_free_space(SongTime(step + iter->start, 0), 
-				   row2key(iter->key + row),
-				   SongTime(iter->length, 0))) {
+      if (!m_pat->check_free_space(SongTime(step, 0) + iter->start, 
+				   row2key(iter->key + row), iter->length)) {
 	ok = false;
 	break;
       }
@@ -983,9 +982,9 @@ void NoteEditor::draw_move_outline(Glib::RefPtr<Gdk::Window> win,
     ok = true;
     NoteCollection::ConstIterator iter;
     for (iter = m_moved_notes.begin(); iter != m_moved_notes.end(); ++iter) {
-      if (!m_pat->check_free_space(SongTime(step + iter->start, 0), 
+      if (!m_pat->check_free_space(SongTime(step, 0) + iter->start, 
 				   row2key(iter->key + row),
-				   SongTime(iter->length, 0), m_selection)) {
+				   iter->length, m_selection)) {
 	ok = false;
 	break;
       }

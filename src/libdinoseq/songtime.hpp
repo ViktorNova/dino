@@ -21,6 +21,7 @@
 #ifndef SONGTIME_HPP
 #define SONGTIME_HPP
 
+#include <stdint.h>
 #include <limits>
 
 

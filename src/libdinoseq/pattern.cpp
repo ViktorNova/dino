@@ -50,31 +50,30 @@ namespace Dino {
   
   Pattern::NoteIterator::NoteIterator() 
     : m_pattern(0),
-      m_node(0) {
+      m_event(0) {
 
   }
   
   
-  Pattern::NoteIterator::NoteIterator(const Pattern* pat, 
-				      EventList<4, 4>::Node* node)
+  Pattern::NoteIterator::NoteIterator(const Pattern* pat, Event* event)
     : m_pattern(pat),
-      m_node(node) {
+      m_event(event) {
 
   }
   
   
   Event& Pattern::NoteIterator::operator*() const {
-    return *(m_node->event);
+    return *(m_event);
   }
   
   
   Event* Pattern::NoteIterator::operator->() const {
-    return (m_node->event);
+    return (m_event);
   }
   
   
   bool Pattern::NoteIterator::operator==(const NoteIterator& iter) const {
-    return (m_pattern == iter.m_pattern && m_node == iter.m_node);
+    return (m_pattern == iter.m_pattern && m_event == iter.m_event);
   }
   
   
@@ -84,41 +83,20 @@ namespace Dino {
   
   
   bool Pattern::NoteIterator::operator<(const NoteIterator& iter) const {
-    return (m_node->event->get_time() < iter->get_time()) || 
-      ((m_node->event->get_time() == iter->get_time()) && 
-       (m_node->event->get_key() < iter->get_key()));
+    return (m_event->get_time() < iter->get_time()) || 
+      ((m_event->get_time() == iter->get_time()) && 
+       (m_event->get_key() < iter->get_key()));
   }
 
 
   Pattern::NoteIterator& Pattern::NoteIterator::operator++() {
     
-    return *this;
-    
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    
-    assert(m_pattern);
-    assert(m_note);
-    
-    if (m_note->get_note_on()->get_next()) {
-      m_note = m_note->get_note_on()->get_next()->get_note();
-      return *this;
+    for ( ; m_event; m_event = m_event->m_next[0]) {
+      if (Event::is_note_on(m_event->get_type()))
+	break;
     }
-    else {
-      for (unsigned int i = m_note->get_step() + 1;
-           i < m_pattern->get_length().get_beat() * m_pattern->get_steps();
-	   ++i) {
-        if ((*m_pattern->m_sd->ons)[i]) {
-          m_note = (*m_pattern->m_sd->ons)[i]->get_note();
-          return *this;
-        }
-      }
-    }
-    
-    m_note = 0;
+
     return *this;
-    */
   }
 
 
@@ -133,7 +111,8 @@ namespace Dino {
 		   const SongTime& length, int steps) 
     : m_id(id),
       m_name(name),
-      m_dirty(false) {
+      m_dirty(false),
+      m_length(length) {
     
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
     
@@ -150,7 +129,8 @@ namespace Dino {
   Pattern::Pattern(int id, const Pattern& pat) 
     : m_id(id),
       m_name(pat.get_name()),
-      m_dirty(false) {
+      m_dirty(false),
+      m_length(pat.m_length) {
 
     dbg1<<"Duplicating pattern \""<<pat.get_name()<<"\""<<endl;
     
@@ -216,7 +196,11 @@ namespace Dino {
 
 
   Pattern::NoteIterator Pattern::notes_begin() const {
-    return notes_end();
+    // XXX clean this up!
+    Event* e = const_cast<EventList&>(m_events).get_start();
+    while (e && Event::is_note_on(e->get_type()))
+      e = e->m_next[0];
+    return NoteIterator(this, e);
   }
 
   
@@ -235,68 +219,34 @@ namespace Dino {
   }
 
 
-  void Pattern::set_length(const SongTime& length) {
-    assert(length > SongTime(0, 0));
+  bool Pattern::set_length(const SongTime& length) {
     
-    // XXX This needs IMPLEMENTATION
+    // can't set a negative or zero length
+    if (length <= SongTime(0, 0))
+      return false;
     
-    /*
-    // no change
-    if (length == m_sd->length)
-      return;
+    // no change?
+    if (length == m_length)
+      return true;
     
-    // the new length is shorter, we may have to delete and resize notes
-    if (length < m_sd->length) {
-      for (unsigned i = length.get_beat() * m_sd->steps; 
-           i < m_sd->length.get_beat() * m_sd->steps; ++i) {
-        while ((*m_sd->ons)[i] != 0)
-          delete_note((*m_sd->ons)[i]->get_note());
-      }
-      for (unsigned i = length.get_beat() * m_sd->steps; 
-           i < m_sd->length.get_beat() * m_sd->steps; ++i) {
-        while ((*m_sd->offs)[i] != 0) {
-          Note* note = (*m_sd->offs)[i]->get_note();
-          resize_note(note, length.get_beat() * m_sd->steps - 
-		      note->get_step());
-        }
-      }
-    }
-    
-    NoteEventList* new_note_ons = new NoteEventList(*m_sd->ons);
-    NoteEventList* new_note_offs = new NoteEventList(*m_sd->offs);
-    vector<Curve*>* new_controllers = new vector<Curve*>();
-    
-    new_note_ons->resize(length.get_beat() * m_sd->steps);
-    new_note_offs->resize(length.get_beat() * m_sd->steps);
-    
-    // iterate over all controllers
-    for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
-      
-      // XXX this crashes since the CurveEditor holds a pointer to its Curve
-      
-      Curve* c = (*m_sd->curves)[i];
-      
-      // create a new controller with the same settings but different size
-      Curve* new_c = new Curve(c->get_info(), length.get_beat() * m_sd->steps);
-      new_controllers->push_back(new_c);
-      
-      // copy all the controller events that fit into the new size
-      for (unsigned j = 0; j < length.get_beat() * m_sd->steps && 
-             j < m_sd->length.get_beat() * m_sd->steps; ++j) {
-        const InterpolatedEvent* cce = c->get_event(j);
-        if (cce)
-          new_c->add_point(j, cce->get_start());
+    // if the new length is shorter we may have to delete and resize notes
+    if (length < m_length) {
+      NoteIterator iter = notes_begin();
+      NoteIterator iter2;
+      while (iter != notes_end()) {
+	if (iter->get_time() >= length) {
+	  iter2 = iter;
+	  ++iter;
+	  delete_note(&*iter2);
+	}
+	else if (iter->get_time() + iter->get_length() > length)
+	  resize_note(&*iter, length - iter->get_time());
+	++iter;
       }
     }
     
-    // swap the SeqData pointer
-    SeqData* old_sd = m_sd;
-    m_sd = new SeqData(new_note_ons, new_note_offs, new_controllers,
-                       length, old_sd->steps);
-    Deleter::queue(old_sd);
-
-    m_signal_length_changed(m_sd->length);
-    */
+    m_length = length;
+    m_signal_length_changed(m_length);
   }
 
 
@@ -376,261 +326,147 @@ namespace Dino {
   */
   Pattern::NoteIterator Pattern::add_note(const SongTime& start, int key, 
 					  int velocity, 
-					  const SongTime& note_length) {
-    
-    // XXX This needs IMPLEMENTATION
-    /*
-    
-    assert(start < m_sd->length);
+					  const SongTime& length) {
+    // sanity checks
+    assert(start > SongTime(0, 0));
+    assert(start < m_length);
+    assert(length > SongTime(0, 0));
+    assert(start + length <= m_length);
     assert(key < 128);
     assert(velocity < 128);
-    assert(note_length > SongTime(0, 0));
     
-    if (!check_free_space(start, key, note_length))
+    // check that the new note won't overlap with any old ones
+    if (!check_free_space(start, key, length))
       return notes_end();
     
-    // create the new objects
-    NoteEvent* note_on = new NoteEvent(NoteEvent::NoteOn, start.get_beat(),
-				       key, velocity);
-    NoteEvent* note_off = 
-      new NoteEvent(NoteEvent::NoteOff, (start + note_length).get_beat(),
-		    key, 0);
-    Note* note = new Note(note_on, note_off);
-    note_on->set_note(note);
-    note_off->set_note(note);
+    // create the events
+    Event* note_on = new Event(Event::note_on(), start, key, velocity);
+    Event* note_off = new Event(Event::note_off(), start + length, key, 64);
+    note_on->set_buddy(note_off);
+    note_off->set_buddy(note_on);
+
+    // insert the events in the list
+    Event* node = m_events.insert(note_off);
+    if (node)
+      node = m_events.insert(note_on);
     
-    // add the new events
-    // this must be done in a safe way since the sequencer could be sequencing
-    // this pattern right now!
-    // let's hope that pointer assignments are atomic...
-    NoteEvent* old_note_off = (*m_sd->offs)[(start + note_length).get_beat()];
-    note_off->set_next(old_note_off);
-    if (old_note_off)
-      old_note_off->set_previous(note_off);
-    (*m_sd->offs)[(start + note_length).get_beat()] = note_off;
-    NoteEvent* old_note_on = (*m_sd->ons)[start.get_beat()];
-    note_on->set_next(old_note_on);
-    if (old_note_on)
-      old_note_on->set_previous(note_on);
-    (*m_sd->ons)[start.get_beat()] = note_on;
-    
-    m_signal_note_added(*note);
-    
-    return NoteIterator(this, note);
-    */
-    
-    return notes_end();
+    return NoteIterator(this, node);
   }
-  /*Pattern::NoteIterator Pattern::add_note(unsigned step, int key, int velocity, 
-                                          int note_length) {
-    assert(step < m_sd->length * m_sd->steps);
-    assert(key < 128);
-    assert(velocity < 128);
-    assert(note_length > 0);
-    
-    // check if the same key is already playing at this step, if so, 
-    // shorten it (or delete it if it starts at this step)
-    NoteIterator iter;
-    if ((iter = find_note(step, key)) != notes_end()) {
-      if (iter->get_step() == step)
-        delete_note(iter);
-      else
-        resize_note(iter, step - iter->get_step());
-    }
-    
-    // check if there is room for a note of the wanted length or if
-    // it has to be shortened
-    int new_length = note_length;
-    if (step + new_length > m_sd->length * m_sd->steps)
-      new_length = m_sd->length * m_sd->steps - step;
-    if ((iter = find_note_on(step + 1, step + new_length, key)) != notes_end())
-      new_length = iter->get_step() - step;
-
-
-    
-    // create the new objects
-    NoteEvent* note_on = new NoteEvent(NoteEvent::NoteOn, step, key, velocity);
-    NoteEvent* note_off = 
-      new NoteEvent(NoteEvent::NoteOff, step + new_length - 1, key, 0);
-    Note* note = new Note(note_on, note_off);
-    note_on->set_note(note);
-    note_off->set_note(note);
-    
-    // add the new events
-    // this must be done in a safe way since the sequencer could be sequencing
-    // this pattern right now!
-    // let's hope that pointer assignments are atomic...
-    NoteEvent* old_note_off = (*m_sd->offs)[step + new_length - 1];
-    note_off->set_next(old_note_off);
-    if (old_note_off)
-      old_note_off->set_previous(note_off);
-    (*m_sd->offs)[step + new_length - 1] = note_off;
-    NoteEvent* old_note_on = (*m_sd->ons)[step];
-    note_on->set_next(old_note_on);
-    if (old_note_on)
-      old_note_on->set_previous(note_on);
-    (*m_sd->ons)[step] = note_on;
-    
-    m_signal_note_added(*note);
-    
-    return NoteIterator(this, note);
-    }*/
-
-
+  
+  
   bool Pattern::add_notes(const NoteCollection& notes, const SongTime& start,
 			  int key, NoteSelection* selection) {
     
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    assert(start < m_sd->length);
+    // sanity checks
+    assert(start < m_length);
     assert(key < 128);
-
-    dbg1<<2<<std::endl;
     
+    // clear the selection if there is one
     if (selection)
       selection->clear();
     
-    // check if we can add all the notes
+    // check if we can add all the notes in the collection, otherwise don't
+    // try to add any of them
     NoteCollection::ConstIterator iter;
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
-      // XXX clean this up
-      if (iter->key + key < 0 || start.get_beat() + iter->start < 0)
+      if (int(iter->key) + int(key) > 127)
 	return false;
-      if (!check_free_space(start + SongTime(iter->start, 0), iter->key + key, 
-			    SongTime(iter->length, 0)))
+      if (!check_free_space(start + iter->start, iter->key + key,
+			    iter->length))
 	return false;
-      dbg1<<3<<std::endl;
-
     }
-    
+
+    // actually add the notes
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
-      NoteIterator iter2 = add_note(start + SongTime(iter->start, 0), 
+      NoteIterator iter2 = add_note(start + iter->start, 
 				    iter->key + key, 
                                     iter->velocity, 
-				    SongTime(iter->length, 0));
+				    iter->length);
       if (selection)
         selection->add_note(iter2);
     }
     
     return true;
-    */
-    
-    return false;
   }
 
 
-  /** This function will delete the note with the given value playing at the
-      given step, if there is one. It will also update the @c previous and 
-      @c next pointers so the doubly linked list will stay consistent with the
-      note map. It will return the step that the deleted note started on,
-      or -1 if no note was deleted. */
   void Pattern::delete_note(NoteIterator iterator) {
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
-    delete_note(iterator.m_node);
+    delete_note(iterator.m_event);
   }
 
 
-  void Pattern::delete_note(EventList<4, 4>::Node* note) {
+  void Pattern::delete_note(Event* note_on) {
+
+    assert(note_on);
+
+    Event* note_off = note_on->get_buddy();
     
-    // XXX This needs IMPLEMENTATION
+    assert(note_off);
     
-    /*
-    
-    NoteEvent* previous;
-    NoteEvent* next;
-    
-    // remove the note off event first
-    // must be threadsafe!
-    previous = note->m_note_off->get_previous();
-    next = note->m_note_off->get_next();
-    if (next)
-      next->set_previous(previous);
-    if (previous)
-      previous->set_next(next);
-    else
-      (*m_sd->offs)[note->m_note_off->get_step()] = next;
-    
-    // then the note on event
-    // must be threadsafe!
-    previous = note->m_note_on->get_previous();
-    next = note->m_note_on->get_next();
-    if (next)
-      next->set_previous(previous);
-    if (previous)
-      previous->set_next(next);
-    else
-      (*m_sd->ons)[note->m_note_on->get_step()] = next;
+    m_events.erase(note_off);
+    m_events.erase(note_on);
     
     // delete the note object and queue the events for deletion
-    m_signal_note_removed(*note);
-    Deleter::queue(note->m_note_on);
-    Deleter::queue(note->m_note_off);
-    Deleter::queue(note);
-    */
+    m_signal_note_removed(*note_on);
+    Deleter::queue(note_off);
+    Deleter::queue(note_on);
   }
 
 
-  int Pattern::resize_note(NoteIterator iterator, const SongTime& length) {
-    
-    // XXX This needs IMPLEMENTATION
-    /*
+  SongTime Pattern::resize_note(NoteIterator iterator, 
+				const SongTime& length) {
     
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
     
-    if (iterator->get_step() + length > m_sd->length.get_beat() * m_sd->steps)
-      length = m_sd->length.get_beat() * m_sd->steps - iterator->get_step();
+    SongTime result = resize_note(iterator.m_event, length);
     
-    return resize_note(iterator.m_note, length);
-    */
+    m_signal_note_changed(*iterator.m_event);
     
-    return 0;
+    return result;
   }
 
 
-  int Pattern::resize_note(Note* note, int length) {
+  SongTime Pattern::resize_note(Event* note, const SongTime& length) {
     
-    // XXX This needs IMPLEMENTATION
+    // same length?
+    if (note->get_length() == length)
+      return length;
     
-    /*
+    // check if there is room for a note of the wanted length or of it has to
+    // be shortened
+    SongTime new_length = length;
+    if (length > note->get_length()) {
+      NoteIterator iter(this, note);
+      ++iter;
+      for ( ; iter != notes_end(); ++iter) {
+	if (iter->get_time() >= note->get_time() + length)
+	  break;
+	if (iter->get_key() == note->get_key()) {
+	  new_length = iter->get_time() - note->get_time();
+	  break;
+	}
+      }
+      if (note->get_time() + new_length > m_length)
+	new_length = m_length - note->get_time();
+    }
     
-    // check if there is room for a note of the wanted length or if
-    // it has to be shortened
-    int new_length = length;
-    NoteIterator iter;
-    if ((iter = find_note_on(note->get_step() + 1, 
-                             note->get_step() + length, 
-                             note->get_key())) != notes_end())
-      new_length = iter->get_step() - note->get_step();
+    // create the new note off event, insert it and remove the old one
+    Event* old_off = note->get_buddy();
+    Event* new_off = new Event(Event::note_off(), note->get_time() + length,
+			       old_off->get_key(), old_off->get_velocity());
+    new_off->m_buddy = note;
+    if (!m_events.insert(new_off)) {
+      delete new_off;
+      return note->get_length();
+    }
+    note->m_buddy = new_off;
+    m_events.erase(old_off);
+    Deleter::queue(old_off);
     
-    // remove the note off event
-    // must be threadsafe!
-    NoteEvent* previous = note->m_note_off->get_previous();
-    NoteEvent* next = note->m_note_off->get_next();
-    if (next)
-      next->set_previous(previous);
-    if (previous)
-      previous->set_next(next);
-    else
-      (*m_sd->offs)[note->m_note_off->get_step()] = next;
-    
-    // insert the note off event at the new position
-    // must be threadsafe!
-    note->m_note_off->set_step(note->get_step() + new_length - 1);
-    NoteEvent* old_note_off = (*m_sd->offs)[note->get_step() + new_length - 1];
-    note->m_note_off->set_next(old_note_off);
-    if (old_note_off)
-      old_note_off->set_previous(note->m_note_off);
-    (*m_sd->offs)[note->get_step() + new_length - 1] = note->m_note_off;
-    
-    m_signal_note_changed(*note);
-    
-    return note->get_length();
-    */
-    
-    return 0;
+    return new_length;
   }
 
 
@@ -739,12 +575,7 @@ namespace Dino {
 
 
   const SongTime& Pattern::get_length() const {
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    return m_sd->length;
-    */
-    return SongTime(0, 0);
+    return m_length;
   }
   
 
@@ -973,65 +804,42 @@ namespace Dino {
   }
   
 
-  Pattern::NoteIterator Pattern::find_note(const SongTime& step, 
-					   int value) const {
-    assert(value < 128);
-    
-    if (step >= get_length())
+  Pattern::NoteIterator Pattern::find_note(const SongTime& time, 
+					   int key) const {
+    if (time >= get_length() || key >= 128)
       return NoteIterator(this, 0);
     
-    // XXX This needs IMPLEMENTATION
-    /*
-    
-    // iterate backwards until we find a note on event
-    for (int i = step; i >= 0; --i) {
-      NoteEvent* note_on = (*m_sd->ons)[i];
-      
-      // look for a note on event with the right key
-      while (note_on) {
-  
-        if (note_on->get_key() == value) {
-          if (note_on->get_note()->m_note_off->get_step() >= step)
-            return NoteIterator(this, note_on->get_note());
-          else
-            return NoteIterator(this, 0);
-        }
-        note_on = note_on->get_next();
-      }
-      
+    NoteIterator iter = notes_begin();
+    for ( ; iter != notes_end() && iter->get_time() <= time; ++iter) {
+      if (iter->get_key() != key)
+	continue;
+      if (iter->get_time() <= time && 
+	  iter->get_time() + iter->get_length() > time)
+	return iter;
     }
-    */
     
-    return NoteIterator(this, 0);
+    return notes_end();
   }
 
   
-  const SongTime Pattern::check_maximal_free_space(const SongTime& start,
-						   int key,
-						   const SongTime& limit) 
-    const {
-    
-    assert(key >= 0 && key < 128);
-    const SongTime& n = get_length();
-    if (start >= n)
+  const SongTime 
+  Pattern::check_maximal_free_space(const SongTime& start, int key,
+				    const SongTime& limit) const {
+    if (key >= 128)
       return SongTime(0, 0);
-
-    // XXX needs IMPLEMENTATION
-    /*
-    NoteIterator iter;
-    unsigned i;
-    for (i = 0; i < limit; ++i) {
-      if (step + i >= n)
-	break;
-      iter = find_note(step + i, key);
-      if (iter != notes_end())
-	break;
+    
+    NoteIterator iter = notes_begin();
+    for ( ; iter != notes_end() && iter->get_time() < start + limit; ++iter) {
+      if (iter->get_key() != key)
+	continue;
+      if (iter->get_time() <= start)
+	return iter->get_time() - start;
     }
     
-    return i;
-    */
+    SongTime result = m_length - start;
+    result = result > limit ? limit : result;
     
-    return SongTime(0, 0);
+    return result;
   }
   
 
@@ -1042,31 +850,25 @@ namespace Dino {
   }
 
 
-  bool Pattern::check_free_space(const SongTime& step, int key, 
+  bool Pattern::check_free_space(const SongTime& start, int key, 
 				 const SongTime& length, 
 				 const NoteSelection& ignore) const {
-    if (key < 0 || key > 128)
+    if (key < 0 || key > 128 || length < SongTime(0, 0) || 
+	start >= m_length || start + length > m_length)
       return false;
-    const SongTime& n = get_length();
-    if (step >= n || step + length > n) {
-      dbg1<<__PRETTY_FUNCTION__<<" returns false!"<<endl;
-      return false;
-    }
     
-    // XXX this needs IMPLEMENTATION
-    /*
-    NoteIterator iter;
-    for (unsigned int i = step + length - 1; i >= step; --i) {
-      iter = find_note(i, key);
-      if (iter != notes_end() && ignore.find(iter) == ignore.end()) {
-	return false;
-      }
-      if (i == step)
+    // XXX Room for optimisation - we can do a log(N) search
+    NoteIterator iter = notes_begin();
+    for ( ; iter != notes_end(); ++iter) {
+      if (iter->get_time() >= start + length)
 	break;
+      if (iter->get_key() == key && 
+	  iter->get_time() < start + length &&
+	  iter->get_time() + iter->get_length() > start &&
+	  ignore.find(iter) == ignore.end())
+	return false;
     }
     return true;
-    */
-    return false;
   }
 
 
@@ -1245,23 +1047,6 @@ namespace Dino {
   }
 
   
-  Pattern::NoteIterator Pattern::find_note_on(unsigned start, unsigned end, 
-                                              unsigned char key) {
-    // XXX This needs IMPLEMENTATION
-    
-    /*for (unsigned i = start; i < end; ++i) {
-      NoteEvent* note_on = (*m_sd->ons)[i];
-      while (note_on) {
-        if (note_on->get_key() == key)
-	  return NoteIterator(this, note_on->get_note());
-        note_on = note_on->get_next();
-      }
-      }*/
-    
-    return NoteIterator(this, 0);
-  }
-
-
   sigc::signal<void, string>& Pattern::signal_name_changed() const {
     return m_signal_name_changed;
   }

@@ -54,7 +54,7 @@ libdinoseq_so_SOURCES = \
 	curve.cpp curve.hpp \
 	debug.cpp debug.hpp \
 	deleter.hpp \
-	eventlist.hpp \
+	eventlist.cpp eventlist.hpp \
 	genericcommands.hpp \
 	instrumentinfo.cpp instrumentinfo.hpp \
 	interpolatedevent.cpp interpolatedevent.hpp \

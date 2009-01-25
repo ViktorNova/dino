@@ -27,30 +27,139 @@
 namespace Dino {
 
 
+  class Pattern;
+  
+
   class Event {
   public:
+    
+    Event()
+      : m_type(0),
+	m_time(0, 0),
+	m_buddy(0) {
+
+    }
+
+    
+    Event(uint32_t type, const SongTime& time, 
+	  unsigned char data1, unsigned char data2 = 0,
+	  unsigned char data3 = 0, unsigned char data4 = 0)
+      : m_type(type),
+	m_time(time),
+	m_buddy(0) {
+      m_data[0] = data1;
+      m_data[1] = data2;
+      m_data[2] = data3;
+      m_data[3] = data4;
+    }
     
     uint32_t get_type() const { return m_type; }
     
     const unsigned char* get_data() const { return m_data; }
     
+    Event* get_buddy() { return m_buddy; }
+    
+    bool operator<=(const Event& e) {
+      return (m_time <= e.get_time() ||
+	      (m_time == e.get_time() && 
+	       m_type <= e.get_type()) ||
+	      (m_time == e.get_time() && 
+	       m_type == e.get_type() &&
+	       m_data[0] <= e.get_data()[0]) ||
+	      (m_time == e.get_time() &&
+	       m_type == e.get_type() &&
+	       m_data[0] <= e.get_data()[0] &&
+	       m_data[1] <= e.get_data()[1]) ||
+	      (m_time == e.get_time() &&
+	       m_type == e.get_type() &&
+	       m_data[0] <= e.get_data()[0] &&
+	       m_data[1] <= e.get_data()[1] &&
+	       m_data[2] <= e.get_data()[2]) ||
+	      (m_time == e.get_time() &&
+	       m_type == e.get_type() &&
+	       m_data[0] <= e.get_data()[0] &&
+	       m_data[1] <= e.get_data()[1] &&
+	       m_data[2] <= e.get_data()[2] &&
+	       m_data[3] <= e.get_data()[3]));
+    }
+    
+    bool operator<(const Event& e) {
+      return (m_time < e.get_time() ||
+	      (m_time == e.get_time() && 
+	       m_type < e.get_type()) ||
+	      (m_time == e.get_time() && 
+	       m_type == e.get_type() &&
+	       m_data[0] < e.get_data()[0]) ||
+	      (m_time == e.get_time() &&
+	       m_type == e.get_type() &&
+	       m_data[0] < e.get_data()[0] &&
+	       m_data[1] < e.get_data()[1]) ||
+	      (m_time == e.get_time() &&
+	       m_type == e.get_type() &&
+	       m_data[0] < e.get_data()[0] &&
+	       m_data[1] < e.get_data()[1] &&
+	       m_data[2] < e.get_data()[2]) ||
+	      (m_time == e.get_time() &&
+	       m_type == e.get_type() &&
+	       m_data[0] < e.get_data()[0] &&
+	       m_data[1] < e.get_data()[1] &&
+	       m_data[2] < e.get_data()[2] &&
+	       m_data[3] < e.get_data()[3]));
+    }
+        
     const SongTime& get_time() const { return m_time; }
     
     unsigned char* get_data() { return m_data; }
     
-    unsigned char get_key() { return 64; }
+    unsigned char get_key() { return m_data[0]; }
     
-    unsigned char get_velocity() { return 64; }
+    unsigned char get_velocity() { return m_data[1]; }
     
-    const SongTime& get_length() { static SongTime st(0, 0); return st; }
+    SongTime get_length() { 
+      if (!m_buddy)
+	return SongTime(0, 0);
+      return m_buddy->get_time() - get_time();
+    }
+	
     
-    bool set_velocity(unsigned char velocity) { return false; }
+    bool set_velocity(unsigned char velocity) { 
+      if (velocity > 128)
+	return false;
+      m_data[1] = velocity;
+      return true;
+    }
     
+    void set_buddy(Event* buddy) { m_buddy = buddy; }
+    
+  public:
+    
+    static uint32_t note_on() { return 1; }
+
+    static uint32_t note_off() { return 0; }
+    
+    static bool is_note_on(uint32_t type) { return (type == 0); }
+
+    static bool is_note_off(uint32_t type) { return (type == 1); }
+    
+  public:
+
+    static const unsigned int Levels = 4;
+    static const unsigned int Scale = 4;
+
   private:
     
-    SongTime m_time;
+    friend class EventList;
+    friend class Pattern;
+    
     uint32_t m_type;
+    SongTime m_time;
     unsigned char m_data[4];
+
+    Event* m_prev[Levels];
+    Event* m_next[Levels];
+    Event* m_prev_similar;
+    Event* m_next_similar;
+    Event* m_buddy;
 
   };
 

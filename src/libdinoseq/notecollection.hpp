@@ -23,6 +23,8 @@
 
 #include <vector>
 
+#include "songtime.hpp"
+
 
 namespace Dino {
   
@@ -39,10 +41,10 @@ namespace Dino {
     
     /** A description of a single note. */
     struct NoteDescription {
-      NoteDescription(unsigned int start, unsigned int length,
+      NoteDescription(const SongTime& start, const SongTime& length,
 		      unsigned char key, unsigned char velocity);
-      unsigned int start;
-      unsigned int length;
+      SongTime start;
+      SongTime length;
       unsigned char key;
       unsigned char velocity;
     };
@@ -68,7 +70,7 @@ namespace Dino {
     ConstIterator end() const;
     
     /** Add a new note to the collection. */
-    bool add_note(unsigned int start, unsigned int length, 
+    bool add_note(const SongTime& start, const SongTime& length, 
 		  unsigned char key, unsigned char velocity);
     
     /** Clear the collection. */

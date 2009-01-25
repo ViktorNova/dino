@@ -1430,7 +1430,7 @@ namespace Dino {
     NoteCollection::ConstIterator iter;
     for (iter = m_notes.begin(); iter != m_notes.end(); ++iter) {
       Pattern::NoteIterator niter = piter->find_note(m_start + 
-						     SongTime(iter->start, 0), 
+						     iter->start, 
 						     iter->key + m_key);
       if (niter != piter->notes_end())
 	piter->delete_note(niter);

@@ -31,8 +31,8 @@ using namespace std;
 namespace Dino {
   
   
-  NoteCollection::NoteDescription::NoteDescription(unsigned int _start, 
-						   unsigned int _length,
+  NoteCollection::NoteDescription::NoteDescription(const SongTime& _start, 
+						   const SongTime& _length,
 						   unsigned char _key, 
 						   unsigned char _velocity)
     : start(_start),
@@ -51,11 +51,8 @@ namespace Dino {
   NoteCollection::NoteCollection(const NoteSelection& selection) {
     NoteSelection::Iterator iter;
     for (iter = selection.begin(); iter != selection.end(); ++iter) {
-      // XXX This needs IMPLEMENTATION
-      /*
-      m_data.push_back(NoteDescription(iter->get_step(), iter->get_length(),
+      m_data.push_back(NoteDescription(iter->get_time(), iter->get_length(),
                                        iter->get_key(), iter->get_velocity()));
-      */
     }
   }
   
@@ -83,14 +80,15 @@ namespace Dino {
   void NoteCollection::printall() const {
     cout<<"NoteCollection:"<<endl;
     for (unsigned i = 0; i < m_data.size(); ++i) {
-      cout<<"("<<m_data[i].start<<", "<<m_data[i].length<<", "
-          <<m_data[i].key<<", "<<m_data[i].velocity<<")"<<endl;
+      cout<<"("<<m_data[i].start.get_beat()<<':'<<m_data[i].start.get_tick()
+	  <<", "<<m_data[i].length.get_beat()<<':'<<m_data[i].start.get_tick()
+	  <<", "<<m_data[i].key<<", "<<m_data[i].velocity<<")"<<endl;
     }
     
   }
 
 
-  bool NoteCollection::add_note(unsigned int start, unsigned int length, 
+  bool NoteCollection::add_note(const SongTime& start, const SongTime& length, 
 				unsigned char key, unsigned char velocity) {
     for (unsigned i = 0; i < m_data.size(); ++i) {
       if (m_data[i].key == key &&

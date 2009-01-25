@@ -93,14 +93,14 @@ namespace {
       NoteSelection::Iterator iter = selection.begin();
       if (iter == selection.end())
         return;
-      start_step = iter->get_step();
+      start_step = iter->get_time().get_beat();
       start_vel = iter->get_velocity();
       for ( ; iter != selection.end(); ++iter) {
-        end_step = iter->get_step();
+        end_step = iter->get_time().get_beat();
         end_vel = iter->get_velocity();
       }
       for (iter = selection.begin(); iter != selection.end(); ++iter) {
-        double phase = double(iter->get_step() - start_step) / 
+        double phase = double(iter->get_time().get_beat() - start_step) / 
           (end_step - start_step);
         unsigned char vel = (unsigned char)(start_vel + (end_vel - start_vel) *
                                             phase);

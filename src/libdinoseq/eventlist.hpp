@@ -36,13 +36,11 @@ namespace Dino {
     
     struct Node {
       
-      Node(const SongTime& t = SongTime(), Event* e = 0)
-	: time(t),
-	  event(e) {
+      Node(Event* e = 0)
+	: event(e) {
 	
       }
       
-      SongTime time;
       Event* event;
       
       Node* prev[Levels];
@@ -56,7 +54,11 @@ namespace Dino {
       
     };
     
-    void insert(Node* node) {
+    
+    /** Insert a new event into the event list. */
+    void insert(Event* event) {
+      
+      Node* node = new Node(event);
       
       // initialise the pointers to previous and next nodes on all levels
       Node* prev[Levels];
@@ -70,7 +72,8 @@ namespace Dino {
       
       // find where to insert the node
       for (int level = Levels - 1; level >= 0; --level) {
-	while (next[level] && next[level]->time < node->time) {
+	while (next[level] && 
+	       next[level]->event->get_time() < node->event->get_time()) {
 	  prev[level] = next[level];
 	  next[level] = next[level]->next[level];
 	}
@@ -92,6 +95,7 @@ namespace Dino {
     }
     
     
+    /** Remove a node from the list, but don't delete it. */
     void erase(Node* node) {
       for (int level = 0; level < Levels; ++level) {
 	if (!node->prev[level])
@@ -106,9 +110,30 @@ namespace Dino {
     }
     
     
+    /** Find the first node at or after the given time. */
     Node* find(const SongTime& time) {
       
+      // initialise the pointers to previous and next nodes on all levels
+      Node* prev[Levels];
+      Node* next[Levels];
+      for (unsigned i = 0; i < Levels; ++i) {
+	prev[i] = &m_head;
+	next[i] = m_head.m_next[i];
+      }
       
+      // find the node
+      for (int level = Levels - 1; level >= 0; --level) {
+	while (next[level] && 
+	       next[level]->event->get_time() < time) {
+	  prev[level] = next[level];
+	  next[level] = next[level]->next[level];
+	}
+      }
+      
+      if (!next[0])
+	return 0;
+      
+      return next[0];
     }
     
 

@@ -69,16 +69,16 @@ namespace Dino {
   
         @see Pattern::notes_begin(), Pattern::notes_end(), Pattern::find_note()
     */
-    class NoteIterator : public std::iterator<std::forward_iterator_tag, Note> {
+    class NoteIterator {
     public:
       
       /** Create an invalid iterator. */
       NoteIterator();
       
-      /** Dereference the iterator to get a constant Note reference. */
-      Note& operator*() const;
-      /** Dereference the iterator to get a constant Note pointer. */
-      Note* operator->() const;
+      /** Dereference the iterator to get a constant Event reference. */
+      Event& operator*() const;
+      /** Dereference the iterator to get a constant Event pointer. */
+      Event* operator->() const;
       /** Returns @c true if the two iterators refer to the same note. */
       bool operator==(const NoteIterator& iter) const;
       /** Returns @c true if the two iterators does not refer to the 
@@ -96,10 +96,10 @@ namespace Dino {
       
       friend class Pattern;
       
-      NoteIterator(const Pattern* pat, Note* event);
+      NoteIterator(const Pattern* pat, EventList<4, 4>::Node* node);
       
       const Pattern* m_pattern;
-      Note* m_note;
+      EventList<4, 4>::Node* m_node;
     };
     
     
@@ -307,11 +307,11 @@ namespace Dino {
     /** Emitted when the number of steps per beat has changed. */
     sigc::signal<void, int>& signal_steps_changed() const;
     /** Emitted when a note has been added. */
-    sigc::signal<void, Note const&>& signal_note_added() const;
+    sigc::signal<void, Event const&>& signal_note_added() const;
     /** Emitted when an existing note has been changed. */
-    sigc::signal<void, Note const&>& signal_note_changed() const;
+    sigc::signal<void, Event const&>& signal_note_changed() const;
     /** Emitted when a note has been removed. */
-    sigc::signal<void, Note const&>& signal_note_removed() const;
+    sigc::signal<void, Event const&>& signal_note_removed() const;
     /** Emitted when a whole controller has been added. */
     sigc::signal<void, int>& signal_curve_added() const;
     /** Emitted when a whole controller has been removed. */
@@ -325,6 +325,9 @@ namespace Dino {
     /** This struct is used internally so we can swap all data used by the
         sequencer with a single pointer assignment (for lock-free 
         thread safety). */
+    /** We shouln't need this anymore, all sequencer structures will be 
+	lock-free. */
+    /*
     struct SeqData {
       SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
               std::vector<Curve*>* controllers,
@@ -337,6 +340,7 @@ namespace Dino {
       SongTime length;
       unsigned int steps;
     };
+    */
     
     // no copying for now
     Pattern(const Pattern&) { assert(0); }
@@ -346,7 +350,7 @@ namespace Dino {
         @c start and @c end. */
     NoteIterator find_note_on(unsigned start, unsigned end, unsigned char key);
     /** Delete a note in a safe way. */
-    void delete_note(Note* note);
+    void delete_note(EventList<4, 4>::Node* note);
     /** Resize a note. */
     int resize_note(Note* note, int length);
     
@@ -357,7 +361,11 @@ namespace Dino {
     /** The data used by the sequencing functions need to be stored in a
         single structure so we can modify it in a lock-free way by swapping 
         a single pointer. */
-    SeqData* volatile m_sd;
+    //SeqData* volatile m_sd;
+
+    /** The actual events. This data structure is accessed by both threads,
+	so be careful! */
+    EventList<4, 4> m_events;
     
     mutable bool m_dirty;
   
@@ -367,9 +375,9 @@ namespace Dino {
     mutable sigc::signal<void, std::string> m_signal_name_changed;
     mutable sigc::signal<void, SongTime const&> m_signal_length_changed;
     mutable sigc::signal<void, int> m_signal_steps_changed;
-    mutable sigc::signal<void, Note const&> m_signal_note_added;
-    mutable sigc::signal<void, Note const&> m_signal_note_changed;
-    mutable sigc::signal<void, Note const&> m_signal_note_removed;
+    mutable sigc::signal<void, Event const&> m_signal_note_added;
+    mutable sigc::signal<void, Event const&> m_signal_note_changed;
+    mutable sigc::signal<void, Event const&> m_signal_note_removed;
     mutable sigc::signal<void, int> m_signal_curve_added;
     mutable sigc::signal<void, int> m_signal_curve_removed;
     

@@ -21,7 +21,7 @@
 #include <iostream>
 #include <typeinfo>
 
-#include "note.hpp"
+#include "event.hpp"
 #include "noteselection.hpp"
 
 
@@ -31,13 +31,13 @@ using namespace std;
 namespace Dino {
 
 
-  Note& NoteSelection::Iterator::operator*() {
-    return const_cast<Note&>(**m_iter);
+  Event& NoteSelection::Iterator::operator*() {
+    return const_cast<Event&>(**m_iter);
   }
   
   
-  Note* NoteSelection::Iterator::operator->() {
-    return const_cast<Note*>((*m_iter).operator->());
+  Event* NoteSelection::Iterator::operator->() {
+    return const_cast<Event*>((*m_iter).operator->());
   }
 
   
@@ -140,20 +140,24 @@ namespace Dino {
 
 
   void NoteSelection::printall() {
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     Iterator iter;
     cout<<"The selection contains "<<m_data.size()<<" elements:"<<endl;
     for (iter = begin(); iter != end(); ++iter)
       cout<<"  "<<iter->get_step()<<", "<<int(iter->get_key())<<endl;
+    */
   }
 
   
-  void NoteSelection::remove_note_internal(const Note& note) {
-    const Note* ptr = &note;
+  void NoteSelection::remove_note_internal(const Event& note) {
+    const Event* ptr = &note;
     std::set<Pattern::NoteIterator>::iterator iter;
     for (iter = m_data.begin(); iter != m_data.end(); ++iter) {
       if (&**iter == ptr) {
-  m_data.erase(iter);
-  break;
+	m_data.erase(iter);
+	break;
       }
     }
   }

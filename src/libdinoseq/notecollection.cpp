@@ -51,8 +51,11 @@ namespace Dino {
   NoteCollection::NoteCollection(const NoteSelection& selection) {
     NoteSelection::Iterator iter;
     for (iter = selection.begin(); iter != selection.end(); ++iter) {
+      // XXX This needs IMPLEMENTATION
+      /*
       m_data.push_back(NoteDescription(iter->get_step(), iter->get_length(),
                                        iter->get_key(), iter->get_velocity()));
+      */
     }
   }
   

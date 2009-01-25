@@ -50,9 +50,9 @@ namespace Dino {
       Iterator() { }
       
       /** Dereference the iterator to get a constant Note reference. */
-      Note& operator*();
+      Event& operator*();
       /** Dereference the iterator to get a constant Note pointer. */
-      Note* operator->();
+      Event* operator->();
       /** Compare two iterators for equality. */
       bool operator==(const Iterator& iter) const;
       /** Compare two iterators for inequality. */
@@ -114,7 +114,7 @@ namespace Dino {
     
     /** Used to remove notes from the selection automatically when they are
 	removed from the pattern. */
-    void remove_note_internal(const Note& note);
+    void remove_note_internal(const Event& note);
     
     /** The actual set of selected notes. */
     std::set<Pattern::NoteIterator> m_data;

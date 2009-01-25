@@ -1251,15 +1251,18 @@ namespace Dino {
     
     if (m_beats < m_oldbeats) {
       Pattern::NoteIterator niter;
-      unsigned n = m_beats.get_beat() * piter->get_steps();
-      for (niter = piter->notes_begin(); niter != piter->notes_end(); ++niter) {
-	if (niter->get_step() >= n) {
+      for (niter = piter->notes_begin(); 
+	   niter != piter->notes_end(); ++niter) {
+	if (niter->get_time() >= m_beats) {
 	  append(new DeleteNote(m_song, m_track, m_pattern, 
-				niter->get_step(), niter->get_key()));
+				niter->get_time().get_beat(), 
+				niter->get_key()));
 	}
-	else if (niter->get_step() + niter->get_length() > n) {
-	  append(new SetNoteSize(m_song, m_track, m_pattern, niter->get_step(),
-				 niter->get_key(), n - niter->get_step()));
+	else if (niter->get_time() + niter->get_length() > m_beats) {
+	  append(new SetNoteSize(m_song, m_track, m_pattern, 
+				 niter->get_time().get_beat(),
+				 niter->get_key(), 
+				 (m_beats - niter->get_time()).get_beat()));
 	}
       }
     }
@@ -1310,8 +1313,8 @@ namespace Dino {
     m_key = 0;
     Pattern::NoteIterator niter;
     for (niter = piter->notes_begin(); niter != piter->notes_end(); ++niter) {
-      if (niter->get_step() < m_step)
-	m_step = niter->get_step();
+      if (niter->get_time().get_beat() < m_step)
+	m_step = niter->get_time().get_beat();
       if (niter->get_key() > m_key)
 	m_key = niter->get_key();
       sel.add_note(niter);
@@ -1504,7 +1507,7 @@ namespace Dino {
     Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
     if (niter == piter->notes_end())
       return false;
-    m_oldsize = niter->get_length();
+    m_oldsize = niter->get_length().get_beat();
     piter->resize_note(niter, m_size);
     return true;
   }
@@ -1546,9 +1549,9 @@ namespace Dino {
     Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
     if (niter == piter->notes_end())
       return false;
-    m_step = niter->get_step();
+    m_step = niter->get_time().get_beat();
     m_velocity = niter->get_velocity();
-    m_length = niter->get_length();
+    m_length = niter->get_length().get_beat();
     piter->delete_note(niter);
     return true;
   }

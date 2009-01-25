@@ -50,30 +50,31 @@ namespace Dino {
   
   Pattern::NoteIterator::NoteIterator() 
     : m_pattern(0),
-      m_note(0) {
+      m_node(0) {
 
   }
   
   
-  Pattern::NoteIterator::NoteIterator(const Pattern* pat, Note* note)
+  Pattern::NoteIterator::NoteIterator(const Pattern* pat, 
+				      EventList<4, 4>::Node* node)
     : m_pattern(pat),
-      m_note(note) {
+      m_node(node) {
 
   }
   
   
-  Note& Pattern::NoteIterator::operator*() const {
-    return *m_note;
+  Event& Pattern::NoteIterator::operator*() const {
+    return *(m_node->event);
   }
   
   
-  Note* Pattern::NoteIterator::operator->() const {
-    return m_note;
+  Event* Pattern::NoteIterator::operator->() const {
+    return (m_node->event);
   }
   
   
   bool Pattern::NoteIterator::operator==(const NoteIterator& iter) const {
-    return (m_pattern == iter.m_pattern && m_note == iter.m_note);
+    return (m_pattern == iter.m_pattern && m_node == iter.m_node);
   }
   
   
@@ -83,13 +84,20 @@ namespace Dino {
   
   
   bool Pattern::NoteIterator::operator<(const NoteIterator& iter) const {
-    return (m_note->get_step() < iter->get_step()) || 
-      ((m_note->get_step() == iter->get_step()) && 
-       (m_note->get_key() < iter->get_key()));
+    return (m_node->event->get_time() < iter->get_time()) || 
+      ((m_node->event->get_time() == iter->get_time()) && 
+       (m_node->event->get_key() < iter->get_key()));
   }
 
 
   Pattern::NoteIterator& Pattern::NoteIterator::operator++() {
+    
+    return *this;
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
+    
     assert(m_pattern);
     assert(m_note);
     
@@ -110,6 +118,7 @@ namespace Dino {
     
     m_note = 0;
     return *this;
+    */
   }
 
 
@@ -124,17 +133,14 @@ namespace Dino {
 		   const SongTime& length, int steps) 
     : m_id(id),
       m_name(name),
-      m_sd(new SeqData(new NoteEventList(length.get_beat() * steps),
-                       new NoteEventList(length.get_beat() * steps),
-                       new vector<Curve*>(), length, steps)),
       m_dirty(false) {
     
     dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
     
-    assert(m_sd->steps > 0);
-    assert(m_sd->length > SongTime(0, 0));
+    assert(steps > 0);
+    assert(length > SongTime(0, 0));
     
-    m_min_step = m_sd->length.get_beat() * m_sd->steps;
+    m_min_step = length.get_beat() * steps;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
@@ -144,20 +150,11 @@ namespace Dino {
   Pattern::Pattern(int id, const Pattern& pat) 
     : m_id(id),
       m_name(pat.get_name()),
-      m_sd(new SeqData(new NoteEventList(pat.get_length().get_beat() *
-					 pat.get_steps()),
-                       new NoteEventList(pat.get_length().get_beat() *
-					 pat.get_steps()),
-                       new vector<Curve*>(), 
-                       pat.get_length(), pat.get_steps())),
       m_dirty(false) {
 
     dbg1<<"Duplicating pattern \""<<pat.get_name()<<"\""<<endl;
     
-    assert(m_sd->steps > 0);
-    assert(m_sd->length > SongTime(0, 0));
-    
-    m_min_step = m_sd->length.get_beat() * m_sd->steps;
+    m_min_step = 9999999;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
@@ -165,8 +162,8 @@ namespace Dino {
     // copy all notes
     NoteIterator iter;
     for (iter = pat.notes_begin(); iter != pat.notes_end(); ++iter) {
-      add_note(SongTime(iter->get_step(), 0), iter->get_key(), 
-               iter->get_velocity(), SongTime(iter->get_length(), 0));
+      add_note(iter->get_time(), iter->get_key(), 
+               iter->get_velocity(), iter->get_length());
     }
     
     // copy all curves with data
@@ -195,27 +192,11 @@ namespace Dino {
     NoteEventList::iterator iter;
     
     // delete all note on events
-    for (iter = m_sd->ons->begin(); iter != m_sd->ons->end(); ++iter) {
-      NoteEvent* event = *iter;
-      while (event) {
-        NoteEvent* tmp = event;
-        event = tmp->get_next();
-        delete tmp;
-      }
-    }
     
     // delete all note off events
-    for (iter = m_sd->offs->begin(); iter != m_sd->offs->end(); ++iter) {
-      NoteEvent* event = *iter;
-      while (event) {
-        NoteEvent* tmp = event;
-        event = tmp->get_next();
-        delete tmp;
-      }
-    }
     
     // delete all containers
-    delete m_sd;
+
   }
   
   
@@ -235,10 +216,6 @@ namespace Dino {
 
 
   Pattern::NoteIterator Pattern::notes_begin() const {
-    for (unsigned i = 0; i < m_sd->length.get_beat() * m_sd->steps; ++i) {
-      if ((*m_sd->ons)[i])
-        return NoteIterator(this, (*m_sd->ons)[i]->get_note());
-    }
     return notes_end();
   }
 
@@ -261,6 +238,9 @@ namespace Dino {
   void Pattern::set_length(const SongTime& length) {
     assert(length > SongTime(0, 0));
     
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     // no change
     if (length == m_sd->length)
       return;
@@ -316,11 +296,14 @@ namespace Dino {
     Deleter::queue(old_sd);
 
     m_signal_length_changed(m_sd->length);
+    */
   }
 
 
   void Pattern::set_steps(unsigned int steps) {
     assert(steps > 0);
+    
+    /*
     
     if (steps == m_sd->steps)
       return;
@@ -380,6 +363,8 @@ namespace Dino {
 	       SongTime(lengths[i], 0));
     
     m_signal_steps_changed(m_sd->length.get_beat());
+    
+    */
   }
 
 
@@ -392,6 +377,10 @@ namespace Dino {
   Pattern::NoteIterator Pattern::add_note(const SongTime& start, int key, 
 					  int velocity, 
 					  const SongTime& note_length) {
+    
+    // XXX This needs IMPLEMENTATION
+    /*
+    
     assert(start < m_sd->length);
     assert(key < 128);
     assert(velocity < 128);
@@ -428,6 +417,9 @@ namespace Dino {
     m_signal_note_added(*note);
     
     return NoteIterator(this, note);
+    */
+    
+    return notes_end();
   }
   /*Pattern::NoteIterator Pattern::add_note(unsigned step, int key, int velocity, 
                                           int note_length) {
@@ -488,6 +480,9 @@ namespace Dino {
   bool Pattern::add_notes(const NoteCollection& notes, const SongTime& start,
 			  int key, NoteSelection* selection) {
     
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     assert(start < m_sd->length);
     assert(key < 128);
 
@@ -519,6 +514,9 @@ namespace Dino {
     }
     
     return true;
+    */
+    
+    return false;
   }
 
 
@@ -530,11 +528,16 @@ namespace Dino {
   void Pattern::delete_note(NoteIterator iterator) {
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
-    delete_note(iterator.m_note);
+    delete_note(iterator.m_node);
   }
 
 
-  void Pattern::delete_note(Note* note) {
+  void Pattern::delete_note(EventList<4, 4>::Node* note) {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
+    
     NoteEvent* previous;
     NoteEvent* next;
     
@@ -565,10 +568,15 @@ namespace Dino {
     Deleter::queue(note->m_note_on);
     Deleter::queue(note->m_note_off);
     Deleter::queue(note);
+    */
   }
 
 
   int Pattern::resize_note(NoteIterator iterator, int length) {
+    
+    // XXX This needs IMPLEMENTATION
+    /*
+    
     assert(iterator != notes_end());
     assert(iterator.m_pattern == this);
     
@@ -576,10 +584,17 @@ namespace Dino {
       length = m_sd->length.get_beat() * m_sd->steps - iterator->get_step();
     
     return resize_note(iterator.m_note, length);
+    */
+    
+    return 0;
   }
 
 
   int Pattern::resize_note(Note* note, int length) {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     
     // check if there is room for a note of the wanted length or if
     // it has to be shortened
@@ -613,6 +628,9 @@ namespace Dino {
     m_signal_note_changed(*note);
     
     return note->get_length();
+    */
+    
+    return 0;
   }
 
 
@@ -621,7 +639,7 @@ namespace Dino {
     assert(iterator.m_pattern == this);
     assert(velocity < 128);
     
-    iterator.m_note->m_note_on->set_velocity(velocity);
+    iterator->set_velocity(velocity);
     
     m_signal_note_changed(*iterator);
   }
@@ -692,26 +710,41 @@ namespace Dino {
   
   void Pattern::add_curve_point(CurveIterator iter, const SongTime& step, 
 				int value) {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     assert(step <= m_sd->length);
     (*iter.m_iterator)->add_point(step.get_beat(), value);
     //m_signal_cc_added((*iter.m_iterator)->get_info().get_number(), step, value);
+    */
   }
 
 
   void Pattern::remove_curve_point(CurveIterator iter, const SongTime& step) {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     assert(step < m_sd->length);
     (*iter.m_iterator)->remove_point(step.get_beat());
     //m_signal_cc_removed((*iter.m_iterator)->get_info().get_number(), step);
+    */
   }
 
   
   unsigned int Pattern::get_steps() const {
-    return m_sd->steps;
+    return 0;
   }
 
 
   const SongTime& Pattern::get_length() const {
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     return m_sd->length;
+    */
+    return SongTime(0, 0);
   }
   
 
@@ -729,10 +762,15 @@ namespace Dino {
   
   
   void Pattern::reset_dirty_rect() const {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     m_min_step = m_sd->length.get_beat() * m_sd->steps;
     m_max_step = -1;
     m_min_note = 128;
     m_max_note = -1;
+    */
   }
 
   
@@ -757,11 +795,14 @@ namespace Dino {
     NoteIterator iter;
     for (iter = notes_begin(); iter != notes_end(); ++iter) {
       Element* note_elt = elt->add_child("note");
+      // XXX This needs IMPLEMENTATION
+      /*
       sprintf(tmp_txt, "%d", iter->get_step());
       note_elt->set_attribute("step", tmp_txt);
+      */
       sprintf(tmp_txt, "%d", iter->get_key());
       note_elt->set_attribute("value", tmp_txt);
-      sprintf(tmp_txt, "%d", iter->get_length());
+      sprintf(tmp_txt, "%d", iter->get_length().get_beat());
       note_elt->set_attribute("length", tmp_txt);
       sprintf(tmp_txt, "%d", iter->get_velocity());
       note_elt->set_attribute("velocity", tmp_txt);
@@ -1030,6 +1071,10 @@ namespace Dino {
 
 
   Pattern::CurveIterator Pattern::add_curve(const ControllerInfo& info) {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
 
     // make a copy of the curve vector and add the new curve
     vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
@@ -1045,10 +1090,17 @@ namespace Dino {
     
     m_signal_curve_added(info.get_number());
     return CurveIterator(new_vector->begin() + (new_vector->size() - 1));
+    */
+    
+    return curves_end();
   }
 
 
   Pattern::CurveIterator Pattern::add_curve(Curve* curve) {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     
     // XXX need to check that there isn't a curve with this parameter number
     // already
@@ -1071,6 +1123,9 @@ namespace Dino {
     
     m_signal_curve_added(curve->get_info().get_number());
     return CurveIterator(new_vector->begin() + (new_vector->size() - 1));
+    */
+    
+    return curves_end();
   }
   
 
@@ -1084,6 +1139,10 @@ namespace Dino {
 
 
   Curve* Pattern::disown_curve(Pattern::CurveIterator iter) {
+    
+    // XXX This needs IMPLEMENTATION
+    
+    /*
    
     // find the element to erase
     unsigned i;
@@ -1111,81 +1170,95 @@ namespace Dino {
     m_signal_curve_removed(ci.get_number());    
     
     return curve;
+    
+    */
+    
+    return 0;
   }
 
   
   Pattern::ConstCurveIterator Pattern::curves_begin() const {
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     return ConstCurveIterator(m_sd->curves->begin());
+    */
+    
+    return curves_end();
   }
   
   
   Pattern::ConstCurveIterator Pattern::curves_end() const {
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     return ConstCurveIterator(m_sd->curves->end());
+    */
+    return ConstCurveIterator();
   }
   
   
   Pattern::ConstCurveIterator Pattern::curves_find(long param) const {
+    // XXX This needs IMPLEMENTATION
+    
+    /*
+
     for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
       if ((*m_sd->curves)[i]->get_info().get_number() == param)
         return ConstCurveIterator(m_sd->curves->begin() + i);
     }
+    */
     return curves_end();
   }
 
   
   Pattern::CurveIterator Pattern::curves_begin() {
-    return CurveIterator(m_sd->curves->begin());
+    // XXX This needs IMPLEMENTATION
+    
+    /*
+      return CurveIterator(m_sd->curves->begin());
+    */
+    return curves_end();
   }
   
   
   Pattern::CurveIterator Pattern::curves_end() {
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     return CurveIterator(m_sd->curves->end());
+    */
+    return CurveIterator();
   }
   
   
   Pattern::CurveIterator Pattern::curves_find(long param) {
+    // XXX This needs IMPLEMENTATION
+    
+    /*
     for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
       if ((*m_sd->curves)[i]->get_info().get_number() == param)
         return CurveIterator(m_sd->curves->begin() + i);
     }
+    */
     return curves_end();
   }
 
   
   Pattern::NoteIterator Pattern::find_note_on(unsigned start, unsigned end, 
                                               unsigned char key) {
-    for (unsigned i = start; i < end; ++i) {
+    // XXX This needs IMPLEMENTATION
+    
+    /*for (unsigned i = start; i < end; ++i) {
       NoteEvent* note_on = (*m_sd->ons)[i];
       while (note_on) {
         if (note_on->get_key() == key)
           return NoteIterator(this, note_on->get_note());
         note_on = note_on->get_next();
       }
-    }
+      }*/
     
     return NoteIterator(this, 0);
-  }
-
-
-  Pattern::SeqData::SeqData(NoteEventList* note_ons, NoteEventList* note_offs, 
-                            std::vector<Curve*>* controllers,
-                            const SongTime& l, unsigned int s)
-    : ons(note_ons), offs(note_offs), curves(controllers),
-      length(l), steps(s) {
-    assert(ons != 0);
-    assert(offs != 0);
-    assert(curves != 0);
-    assert(length > SongTime(0, 0));
-    assert(steps > 0);
-  }
-
-  
-  Pattern::SeqData::~SeqData() {
-    delete ons;
-    delete offs;
-    for (unsigned i = 0; i < curves->size(); ++i)
-      delete (*curves)[i];
-    delete curves;
   }
 
 
@@ -1204,17 +1277,17 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, Note const&>& Pattern::signal_note_added() const {
+  sigc::signal<void, Event const&>& Pattern::signal_note_added() const {
     return m_signal_note_added;
   }
 
 
-  sigc::signal<void, Note const&>& Pattern::signal_note_changed() const {
+  sigc::signal<void, Event const&>& Pattern::signal_note_changed() const {
     return m_signal_note_changed;
   }
 
 
-  sigc::signal<void, Note const&>& Pattern::signal_note_removed() const {
+  sigc::signal<void, Event const&>& Pattern::signal_note_removed() const {
     return m_signal_note_removed;
   }
 

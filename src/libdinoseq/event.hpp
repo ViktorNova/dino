@@ -21,6 +21,8 @@
 #ifndef EVENT_HPP
 #define EVENT_HPP
 
+#include "songtime.hpp"
+
 
 namespace Dino {
 
@@ -32,10 +34,21 @@ namespace Dino {
     
     const unsigned char* get_data() const { return m_data; }
     
+    const SongTime& get_time() const { return m_time; }
+    
     unsigned char* get_data() { return m_data; }
+    
+    unsigned char get_key() { return 64; }
+    
+    unsigned char get_velocity() { return 64; }
+    
+    const SongTime& get_length() { static SongTime st(0, 0); return st; }
+    
+    bool set_velocity(unsigned char velocity) { return false; }
     
   private:
     
+    SongTime m_time;
     uint32_t m_type;
     unsigned char m_data[4];
 

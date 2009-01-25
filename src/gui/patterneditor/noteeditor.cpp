@@ -193,10 +193,11 @@ void NoteEditor::copy_selection() {
   for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
     int row = key2row(iter->get_key());
     if (row < m_rows) {
-      m_clipboard.add_note(iter->get_step(), iter->get_length(), 
+      m_clipboard.add_note(iter->get_time().get_beat(), 
+			   iter->get_length().get_beat(), 
 			   row, iter->get_velocity());
-      if (iter->get_step() < minstep)
-	minstep = iter->get_step();
+      if (iter->get_time().get_beat() < minstep)
+	minstep = iter->get_time().get_beat();
       if (row < minrow)
 	minrow = row;
     }
@@ -250,7 +251,8 @@ void NoteEditor::delete_selection() {
     m_proxy.start_atomic("Delete selected notes");
     while (iter2 != m_selection.end()) {
       ++iter1;
-      m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), iter2->get_step(),
+      m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), 
+			  iter2->get_time().get_beat(),
 			  iter2->get_key());
       iter2 = iter1;
     }
@@ -367,13 +369,16 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	    for (iter = m_selection.begin(); iter != m_selection.end();++iter) {
 	      int krow = key2row(iter->get_key());
 	      if (krow < 128) {
-		m_moved_notes.add_note(iter->get_step(), iter->get_length(),
+		m_moved_notes.add_note(iter->get_time().get_beat(), 
+				       iter->get_length().get_beat(),
 				       krow, iter->get_velocity());
-		if (step - int(iter->get_step()) > m_drag_step_min)
-		  m_drag_step_min = step - int(iter->get_step());
-		if (int(iter->get_step() + iter->get_length()) - 1 - step > 
+		if (step - int(iter->get_time().get_beat()) > m_drag_step_min)
+		  m_drag_step_min = step - int(iter->get_time().get_beat());
+		if (int(iter->get_time().get_beat() + 
+			iter->get_length().get_beat()) - 1 - step > 
 		    m_drag_step_max) {
-		  m_drag_step_max = int(iter->get_step() + iter->get_length()) -
+		  m_drag_step_max = int(iter->get_time().get_beat() + 
+					iter->get_length().get_beat()) -
 		    1 - step;
 		}
 		if (row - key2row(iter->get_key()) > m_drag_row_min)
@@ -427,9 +432,10 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	}
 	else {
 	  NoteSelection::Iterator iter;
-	  unsigned new_size = step - iterator->get_step() + 1;
+	  unsigned new_size = step - iterator->get_time().get_beat() + 1;
 	  m_last_note_length = new_size;
-	  m_added_note = make_pair(iterator->get_step(), row2key(row));
+	  m_added_note = make_pair(iterator->get_time().get_beat(), 
+				   row2key(row));
 	  m_drag_operation = DragChangingNoteLength;
 	}
       }
@@ -442,8 +448,8 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	int minstep = std::numeric_limits<int>::max();
 	int maxrow = 0;
 	for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
-	  if (iter->get_step() < minstep)
-	    minstep = iter->get_step();
+	  if (iter->get_time().get_beat() < minstep)
+	    minstep = iter->get_time().get_beat();
 	  int r = key2row(iter->get_key());
 	  if (r < 128 && r > maxrow)
 	    maxrow = r;
@@ -451,10 +457,11 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
 	m_proxy.start_atomic("Inserting notes");
 	for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
 	  m_proxy.add_note(m_trk->get_id(), m_pat->get_id(), 
-			   SongTime(iter->get_step() + (step - minstep), 0),
+			   SongTime(iter->get_time().get_beat() + 
+				    (step - minstep), 0),
 			   row2key(key2row(iter->get_key()) + (row - maxrow)),
 			   iter->get_velocity(), 
-			   SongTime(iter->get_length(), 0));
+			   iter->get_length());
 	}
 	m_proxy.end_atomic();
       }
@@ -505,7 +512,7 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       m_proxy.start_atomic("Resize notes");
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
 	m_proxy.set_note_size(m_trk->get_id(), m_pat->get_id(), 
-			      iter->get_step(), iter->get_key(), 
+			      iter->get_time().get_beat(), iter->get_key(), 
 			      m_last_note_length);
       m_proxy.end_atomic();
       m_added_note = make_pair(-1, -1);
@@ -545,8 +552,9 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
     unsigned int minrow = m_drag_row < m_sb_row ? m_drag_row : m_sb_row;
     unsigned int maxrow = m_drag_row > m_sb_row ? m_drag_row : m_sb_row;
     for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter) {
-      if (iter->get_step() <= maxstep && 
-	  iter->get_step() + iter->get_length() >= minstep &&
+      if (iter->get_time().get_beat() <= maxstep && 
+	  iter->get_time().get_beat() + iter->get_length().get_beat() >= 
+	  minstep &&
 	  key2row(iter->get_key()) < 128 &&
 	  key2row(iter->get_key()) >= minrow && 
 	  key2row(iter->get_key()) <= maxrow) {
@@ -579,7 +587,8 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
     m_proxy.start_atomic("Change note velocities");
     for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
       m_proxy.set_note_velocity(m_trk->get_id(), m_pat->get_id(), 
-				iter->get_step(), iter->get_key(), velocity);
+				iter->get_time().get_beat(), 
+				iter->get_key(), velocity);
     m_proxy.end_atomic();
     //m_pat->set_velocity(iter, velocity);
     queue_draw();
@@ -614,8 +623,8 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
       Pattern::NoteIterator iter = m_pat->find_note(SongTime(step, 0),
 						    row2key(row));
       if (iter != m_pat->notes_end())
-	m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), iter->get_step(),
-			    iter->get_key());
+	m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), 
+			    iter->get_time().get_beat(), iter->get_key());
       m_drag_step = step;
       m_drag_row = row;
     }
@@ -762,7 +771,7 @@ void NoteEditor::draw_note(Pattern::NoteIterator iterator, bool selected) {
   
   RefPtr<Gdk::Window> win = get_window();
   
-  int i = iterator->get_step();
+  int i = iterator->get_time().get_beat();
   if (!selected)
     m_gc->set_foreground(m_note_colors[int(iterator->get_velocity() / 8)]);
   else
@@ -770,11 +779,13 @@ void NoteEditor::draw_note(Pattern::NoteIterator iterator, bool selected) {
 						    8)]);
   win->draw_rectangle(m_gc, true, i * m_col_width + 1, 
 		      (m_rows - row - 1) * m_row_height + 1, 
-		      iterator->get_length() * m_col_width, m_row_height - 1);
+		      iterator->get_length().get_beat() * m_col_width, 
+		      m_row_height - 1);
   m_gc->set_foreground(m_edge_color);
   win->draw_rectangle(m_gc, false, i * m_col_width, 
 		      (m_rows - row - 1) * m_row_height, 
-		      iterator->get_length() * m_col_width, m_row_height);
+		      iterator->get_length().get_beat() * 
+		      m_col_width, m_row_height);
 }
 
 
@@ -784,10 +795,11 @@ void NoteEditor::draw_velocity_box(Pattern::NoteIterator iterator,
   m_gc->set_foreground(m_edge_color);
   int box_height = m_layout->get_pixel_logical_extents().get_height() + 6;
   box_height = (box_height < m_row_height * 2 ? m_row_height * 2 : box_height);
-  int box_width = m_col_width * iterator->get_length() + 4;
+  int box_width = m_col_width * iterator->get_length().get_beat() + 4;
   int l_width = m_layout->get_pixel_logical_extents().get_width();
   box_width = (box_width < l_width + 6 ? l_width + 6 : box_width);
-  win->draw_rectangle(m_gc, false, iterator->get_step() * m_col_width - 2,
+  win->draw_rectangle(m_gc, false, iterator->get_time().get_beat() * 
+		      m_col_width - 2,
 		      int((m_rows - iterator->get_key() - 0.5) * 
 			  m_row_height - box_height / 2), 
 		      box_width, box_height);
@@ -795,7 +807,8 @@ void NoteEditor::draw_velocity_box(Pattern::NoteIterator iterator,
     m_gc->set_foreground(m_note_colors[iterator->get_velocity() / 8]);
   else
     m_gc->set_foreground(m_selected_note_colors[iterator->get_velocity() / 8]);
-  win->draw_rectangle(m_gc, true, iterator->get_step() * m_col_width - 1, 
+  win->draw_rectangle(m_gc, true, 
+		      iterator->get_time().get_beat() * m_col_width - 1, 
 		      int((m_rows - iterator->get_key() - 0.5) * 
 			  m_row_height - box_height / 2) + 1, 
 		      box_width - 1, box_height - 1);
@@ -803,7 +816,7 @@ void NoteEditor::draw_velocity_box(Pattern::NoteIterator iterator,
   sprintf(buffer, "%d", iterator->get_velocity());
   m_layout->set_text(buffer);
   m_gc->set_foreground(m_edge_color);
-  win->draw_layout(m_gc, iterator->get_step() * m_col_width + 2,
+  win->draw_layout(m_gc, iterator->get_time().get_beat() * m_col_width + 2,
 		   int((m_rows - iterator->get_key() - 0.5) * 
 		       m_row_height - box_height / 2) + 3, m_layout);
 }
@@ -988,13 +1001,13 @@ void NoteEditor::draw_resize_outline(Glib::RefPtr<Gdk::Window> win,
   m_resize_ok = true;
   NoteSelection::Iterator iter;
   for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
-    if (m_last_note_length <= iter->get_length())
+    if (m_last_note_length <= iter->get_length().get_beat())
       continue;
-    if (!m_pat->check_free_space(SongTime(iter->get_step() + 
-					  iter->get_length(), 0),
+    if (!m_pat->check_free_space(SongTime(iter->get_time().get_beat() + 
+					  iter->get_length().get_beat(), 0),
 				 iter->get_key(), 
 				 SongTime(m_last_note_length - 
-					  iter->get_length(), 0))) {
+					  iter->get_length().get_beat(), 0))) {
       m_resize_ok = false;
     }
   }
@@ -1009,9 +1022,11 @@ void NoteEditor::draw_resize_outline(Glib::RefPtr<Gdk::Window> win,
     if (row >= 128)
       continue;
     int length = m_last_note_length;
-    if (iter->get_step() + length >= m_pat->get_length().get_beat() * m_pat->get_steps())
-      length = m_pat->get_length().get_beat() * m_pat->get_steps() - iter->get_step();
-    win->draw_rectangle(m_gc, false, step2pixel(iter->get_step()),
+    if (iter->get_time().get_beat() + length >= 
+	m_pat->get_length().get_beat() * m_pat->get_steps())
+      length = m_pat->get_length().get_beat() * m_pat->get_steps() - 
+	iter->get_time().get_beat();
+    win->draw_rectangle(m_gc, false, step2pixel(iter->get_time().get_beat()),
 			row2pixel(row), length * m_col_width, m_row_height);
   }
 }

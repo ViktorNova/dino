@@ -340,14 +340,16 @@ namespace Dino {
   }
 
 
-  bool CommandProxy::set_note_size(int track, int pattern, int step, int key, 
-				   int size) {
+  bool CommandProxy::set_note_size(int track, int pattern, 
+				   const SongTime& step, int key, 
+				   const SongTime& size) {
     return push_and_do(new SetNoteSize(m_song, track, pattern, step, key, 
 				       size));
   }
 
   
-  bool CommandProxy::delete_note(int track, int pattern, int step, int key) {
+  bool CommandProxy::delete_note(int track, int pattern, 
+				 const SongTime& step, int key) {
     return push_and_do(new DeleteNote(m_song, track, pattern, step, key));
   }
 

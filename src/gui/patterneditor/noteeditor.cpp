@@ -252,8 +252,7 @@ void NoteEditor::delete_selection() {
     while (iter2 != m_selection.end()) {
       ++iter1;
       m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), 
-			  iter2->get_time().get_beat(),
-			  iter2->get_key());
+			  iter2->get_time(), iter2->get_key());
       iter2 = iter1;
     }
     m_proxy.end_atomic();
@@ -512,8 +511,8 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
       m_proxy.start_atomic("Resize notes");
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
 	m_proxy.set_note_size(m_trk->get_id(), m_pat->get_id(), 
-			      iter->get_time().get_beat(), iter->get_key(), 
-			      m_last_note_length);
+			      iter->get_time(), iter->get_key(), 
+			      SongTime(m_last_note_length, 0));
       m_proxy.end_atomic();
       m_added_note = make_pair(-1, -1);
     }
@@ -624,7 +623,7 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
 						    row2key(row));
       if (iter != m_pat->notes_end())
 	m_proxy.delete_note(m_trk->get_id(), m_pat->get_id(), 
-			    iter->get_time().get_beat(), iter->get_key());
+			    iter->get_time(), iter->get_key());
       m_drag_step = step;
       m_drag_row = row;
     }

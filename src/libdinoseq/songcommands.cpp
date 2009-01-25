@@ -1255,14 +1255,13 @@ namespace Dino {
 	   niter != piter->notes_end(); ++niter) {
 	if (niter->get_time() >= m_beats) {
 	  append(new DeleteNote(m_song, m_track, m_pattern, 
-				niter->get_time().get_beat(), 
-				niter->get_key()));
+				niter->get_time(), niter->get_key()));
 	}
 	else if (niter->get_time() + niter->get_length() > m_beats) {
 	  append(new SetNoteSize(m_song, m_track, m_pattern, 
-				 niter->get_time().get_beat(),
+				 niter->get_time(),
 				 niter->get_key(), 
-				 (m_beats - niter->get_time()).get_beat()));
+				 m_beats - niter->get_time()));
 	}
       }
     }
@@ -1485,7 +1484,7 @@ namespace Dino {
 
 
   SetNoteSize::SetNoteSize(Song& song, int track, int pattern, 
-				   int step, int key, int size)
+			   const SongTime& step, int key, const SongTime& size)
     : Command("Resize note"),
       m_song(song),
       m_track(track),
@@ -1504,10 +1503,10 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
     if (niter == piter->notes_end())
       return false;
-    m_oldsize = niter->get_length().get_beat();
+    m_oldsize = niter->get_length();
     piter->resize_note(niter, m_size);
     return true;
   }
@@ -1520,7 +1519,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
     if (niter == piter->notes_end())
       return false;
     piter->resize_note(niter, m_oldsize);
@@ -1528,7 +1527,8 @@ namespace Dino {
   }
 
 
-  DeleteNote::DeleteNote(Song& song, int track, int pattern, int step, int key)
+  DeleteNote::DeleteNote(Song& song, int track, int pattern, 
+			 const SongTime& step, int key)
     : Command("Delete note"),
       m_song(song),
       m_track(track),
@@ -1546,12 +1546,12 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    Pattern::NoteIterator niter = piter->find_note(SongTime(m_step, 0), m_key);
+    Pattern::NoteIterator niter = piter->find_note(m_step, m_key);
     if (niter == piter->notes_end())
       return false;
-    m_step = niter->get_time().get_beat();
+    m_step = niter->get_time();
     m_velocity = niter->get_velocity();
-    m_length = niter->get_length().get_beat();
+    m_length = niter->get_length();
     piter->delete_note(niter);
     return true;
   }
@@ -1564,8 +1564,7 @@ namespace Dino {
     Track::PatternIterator piter = titer->pat_find(m_pattern);
     if (piter == titer->pat_end())
       return false;
-    piter->add_note(SongTime(m_step, 0), m_key, m_velocity, 
-		    SongTime(m_length, 0));
+    piter->add_note(m_step, m_key, m_velocity, m_length);
     return true;
   }
 

@@ -332,7 +332,8 @@ bool DinoDBusObject::set_note_size(int argc, DBus::Argument* argv) {
 
 
 bool DinoDBusObject::delete_note(int argc, DBus::Argument* argv) {
-  return m_proxy.delete_note(argv[0].i, argv[1].i, argv[2].i, argv[3].i);
+  return m_proxy.delete_note(argv[0].i, argv[1].i, 
+			     Dino::SongTime(argv[2].i, 0), argv[3].i);
 }
 
 

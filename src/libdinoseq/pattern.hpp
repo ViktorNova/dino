@@ -259,7 +259,7 @@ namespace Dino {
     /** Delete a note. */
     void delete_note(NoteIterator note);
     /** Change the length of a note. */
-    int resize_note(NoteIterator note, int length);
+    int resize_note(NoteIterator note, const SongTime& length);
     /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
     /** Add a new parameter curve. */

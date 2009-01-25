@@ -572,7 +572,7 @@ namespace Dino {
   }
 
 
-  int Pattern::resize_note(NoteIterator iterator, int length) {
+  int Pattern::resize_note(NoteIterator iterator, const SongTime& length) {
     
     // XXX This needs IMPLEMENTATION
     /*
@@ -1253,7 +1253,7 @@ namespace Dino {
       NoteEvent* note_on = (*m_sd->ons)[i];
       while (note_on) {
         if (note_on->get_key() == key)
-          return NoteIterator(this, note_on->get_note());
+	  return NoteIterator(this, note_on->get_note());
         note_on = note_on->get_next();
       }
       }*/

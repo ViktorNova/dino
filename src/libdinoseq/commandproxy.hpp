@@ -168,10 +168,10 @@ namespace Dino {
     bool set_note_velocity(int track, int pattern, int step, int key, 
 			   int velocity);
     /** Resize a note. */
-    bool set_note_size(int track, int pattern, const SongTime& step, 
+    bool set_note_size(int track, int pattern, const SongTime& time, 
 		       int key, const SongTime& size);
     /** Delete a note. */
-    bool delete_note(int track, int pattern, const SongTime& step, int key);
+    bool delete_note(int track, int pattern, const SongTime& time, int key);
     /** Add a point to a pattern curve. */
     bool add_curve_point(int track, int pattern, long number, 
 			 const SongTime& step, int value);

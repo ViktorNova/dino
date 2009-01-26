@@ -85,7 +85,7 @@ namespace Dino {
     }
     
     bool operator!=(const SongTime& st) const {
-      return (m_value == st.m_value);
+      return (m_value != st.m_value);
     }
     
     bool operator<(const SongTime& st) const {

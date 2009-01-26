@@ -22,13 +22,14 @@
 #define EVENTLIST_HPP
 
 #include <cstdlib>
+#include <iostream>
 
 #include "event.hpp"
 #include "songtime.hpp"
 
 
 namespace Dino {
-
+  
   
   class EventList {
   public:
@@ -44,7 +45,9 @@ namespace Dino {
     
     /** Return the first element in the list. */
     Event* get_start();
-
+    
+    std::ostream& pretty_print(std::ostream& os);
+    
   private:
     
     Event m_head;

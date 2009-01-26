@@ -144,9 +144,9 @@ namespace Dino {
 
     static uint32_t note_off() { return 0; }
     
-    static bool is_note_on(uint32_t type) { return (type == 0); }
+    static bool is_note_on(const Event& e) { return (e.get_type() == 1); }
 
-    static bool is_note_off(uint32_t type) { return (type == 1); }
+    static bool is_note_off(const Event& e) { return (e.get_type() == 0); }
     
   public:
 

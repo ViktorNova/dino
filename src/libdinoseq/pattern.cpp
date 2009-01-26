@@ -90,12 +90,10 @@ namespace Dino {
 
 
   Pattern::NoteIterator& Pattern::NoteIterator::operator++() {
-    
-    for ( ; m_event; m_event = m_event->m_next[0]) {
-      if (Event::is_note_on(m_event->get_type()))
+    for (m_event = m_event->m_next[0]; m_event; m_event = m_event->m_next[0]) {
+      if (Event::is_note_on(*m_event))
 	break;
     }
-
     return *this;
   }
 
@@ -198,7 +196,7 @@ namespace Dino {
   Pattern::NoteIterator Pattern::notes_begin() const {
     // XXX clean this up!
     Event* e = const_cast<EventList&>(m_events).get_start();
-    while (e && Event::is_note_on(e->get_type()))
+    while (e && !Event::is_note_on(*e))
       e = e->m_next[0];
     return NoteIterator(this, e);
   }
@@ -349,6 +347,10 @@ namespace Dino {
     Event* node = m_events.insert(note_off);
     if (node)
       node = m_events.insert(note_on);
+    
+    m_events.pretty_print(cerr);
+    
+    m_signal_note_added(*note_on);
     
     return NoteIterator(this, node);
   }
@@ -832,8 +834,12 @@ namespace Dino {
     for ( ; iter != notes_end() && iter->get_time() < start + limit; ++iter) {
       if (iter->get_key() != key)
 	continue;
-      if (iter->get_time() <= start)
-	return iter->get_time() - start;
+      if (iter->get_time() <= start) {
+	if (iter->get_time() + iter->get_length() <= start)
+	  continue;
+	return SongTime(0, 0);
+      }
+      return iter->get_time() - start;
     }
     
     SongTime result = m_length - start;

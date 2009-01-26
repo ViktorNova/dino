@@ -18,8 +18,13 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <iostream>
+
 #include "event.hpp"
 #include "eventlist.hpp"
+
+
+using namespace std;
 
 
 namespace Dino {
@@ -106,6 +111,19 @@ namespace Dino {
   Event* EventList::get_start() {
     return m_head.m_next[0];
   }
-  
+
+
+  std::ostream& EventList::pretty_print(std::ostream& os) {
+    os<<"EVENT LIST:"<<endl;
+    Event* e = m_head.m_next[0];
+    for (Event* e = m_head.m_next[0]; e; e = e->m_next[0]) {
+      os<<e<<":";
+      for (unsigned i = 0; i < Event::Levels; ++i)
+	os<<"\t"<<(e->m_next[i]);
+      os<<endl;
+    }
+    return os;
+  }
+ 
 
 }

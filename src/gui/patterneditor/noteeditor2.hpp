@@ -72,11 +72,7 @@ private:
       button release event. */
   enum DragOperation {
     DragNoOperation,
-    DragChangingNoteLength,
-    DragChangingNoteVelocity,
-    DragDeletingNotes,
-    DragMovingNotes,
-    DragSelectBox
+    DragResizeNotes,
   } m_drag_operation;
   
   /** This is used to figure out what to do when a pointer motion event is 
@@ -88,6 +84,19 @@ private:
   
   
   void draw_background(Glib::RefPtr<Gdk::Window>& win);
+  void draw_note(Glib::RefPtr<Gdk::Window>& win, 
+		 const Dino::Pattern::NoteIterator& iter);
+  void draw_outline(Glib::RefPtr<Gdk::Window>& win,
+		    const Dino::SongTime& start, unsigned char key,
+		    const Dino::SongTime& length, bool good);
+  void end_drag(const Dino::SongTime& time, unsigned char key);
+  int key2pixel(unsigned char key);
+  unsigned char pixel2key(int y);
+  Dino::SongTime pixel2time(int x);
+  Dino::SongTime snap(const Dino::SongTime& time);
+  void start_adding_note(const Dino::SongTime& time, unsigned char key);
+  void start_selecting(const Dino::SongTime& time, unsigned char key, 
+		       bool clear);
   int time2pixel(const Dino::SongTime& time);
   
   Dino::NoteSelection& get_selection() {
@@ -105,6 +114,15 @@ private:
   int m_row_height;
   int m_ticks_per_pixel;
   int m_rows;
+  Dino::SongTime::Tick m_snap;
+  
+  Dino::SongTime m_note_length;
+  
+  Dino::SongTime m_drag_start_time;
+  unsigned char m_drag_start_key;
+  Dino::SongTime m_drag_time;
+  unsigned char m_drag_key;
+  Dino::SongTime m_drag_max_time;
   
   Dino::NoteSelection m_selection;
   Dino::NoteCollection m_clipboard;

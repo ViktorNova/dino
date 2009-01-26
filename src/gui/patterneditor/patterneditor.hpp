@@ -26,7 +26,7 @@
 #include "curveeditor.hpp"
 #include "debug.hpp"
 #include "octavelabel.hpp"
-#include "noteeditor.hpp"
+#include "noteeditor2.hpp"
 #include "plugininterface.hpp"
 #include "ruler.hpp"
 #include "singletextcombo.hpp"
@@ -80,7 +80,7 @@ protected:
   PatternRuler m_pattern_ruler;
   OctaveLabel m_octave_label;
 
-  NoteEditor m_ne;
+  NoteEditor2 m_ne;
   CurveEditor m_cce;
 
   PatternDialog* m_dlg_pattern;

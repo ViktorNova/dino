@@ -189,7 +189,7 @@ void PatternEditor::reset_gui() {
   update_track_combo();
   update_pattern_combo();
   update_controller_combo();
-  slot<void> update_menu = bind(mem_fun(m_ne, &NoteEditor::update_menu), 
+  slot<void> update_menu = bind(mem_fun(m_ne, &NoteEditor2::update_menu), 
 				ref(*m_plif));
   m_plif->signal_action_added().connect(sigc::hide(update_menu));
   m_plif->signal_action_removed().connect(sigc::hide(update_menu));
@@ -343,30 +343,29 @@ void PatternEditor::set_active_pattern(int pattern) {
     return;
   
   m_active_pattern = pattern;
-  const Track* tptr = 0;
-  const Pattern* pptr = 0;
+  
+  m_conn_cont_added.disconnect();
+  m_conn_cont_removed.disconnect();
   
   Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
-  if (t != m_song.tracks_end()) {
-    tptr = &*t;
+  if (t == m_song.tracks_end())
+    m_ne.unset_pattern();
+  else {
     Track::ConstPatternIterator p = t->pat_find(m_active_pattern);
-    
-    // update connections
-    m_conn_cont_added.disconnect();
-    m_conn_cont_removed.disconnect();
-    if (p != t->pat_end()) {
+    if (p == t->pat_end())
+      m_ne.unset_pattern();
+    else {
       slot<void> uslot = mem_fun(*this, 
 				 &PatternEditor::update_controller_combo);
       m_conn_cont_added = p->signal_curve_added().connect(sigc::hide(uslot));
       m_conn_cont_removed = p->signal_curve_removed().
 	connect(sigc::hide(uslot));
-      pptr = &*p;
       m_cce.set_alternation(p->get_steps());
+      m_ne.set_pattern(*t, *p);
     }
   }
   
   update_controller_combo();
-  m_ne.set_pattern(tptr, pptr);
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);
 
   bool active = (m_active_pattern != -1);

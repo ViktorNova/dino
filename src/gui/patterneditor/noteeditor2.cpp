@@ -197,6 +197,9 @@ bool NoteEditor2::on_button_press_event(GdkEventButton* event) {
   
   else if (event->button == 3) {
     
+    // button 3 + ctrl - remove notes
+    if (event->state & GDK_CONTROL_MASK)
+      start_removing_notes(time, key);
     
   }
   
@@ -482,6 +485,30 @@ void NoteEditor2::start_adding_note(const SongTime& time, unsigned char key) {
     m_drag_time = t + length;
     m_drag_key = key;
     m_drag_max_time = t + max;
+  }
+}
+
+
+void NoteEditor2::start_removing_notes(const Dino::SongTime& time, 
+				      unsigned char key) {
+  // check if we hit a note
+  Pattern::NoteIterator iter = m_pattern->find_note(time, key);
+  if (iter == m_pattern->notes_end())
+    return;
+  
+  // if the note is selected, remove the entire selection
+  if (m_selection.find(iter) != m_selection.end()) {
+    NoteSelection::Iterator s_iter;
+    m_proxy.start_atomic("Remove notes");
+    for (s_iter = m_selection.begin(); s_iter != m_selection.end(); ++s_iter) {
+      m_proxy.delete_note(m_track->get_id(), m_pattern->get_id(),
+			  s_iter->get_time(), s_iter->get_key());
+    }
+    m_proxy.end_atomic();
+  }
+  else {
+    m_proxy.delete_note(m_track->get_id(), m_pattern->get_id(), 
+			iter->get_time(), iter->get_key());
   }
 }
 

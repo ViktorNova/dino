@@ -96,6 +96,7 @@ private:
   Dino::SongTime pixel2time(int x);
   Dino::SongTime snap(const Dino::SongTime& time);
   void start_adding_note(const Dino::SongTime& time, unsigned char key);
+  void start_removing_notes(const Dino::SongTime& time, unsigned char key);
   void start_selecting(const Dino::SongTime& time, unsigned char key, 
 		       bool clear);
   int time2pixel(const Dino::SongTime& time);

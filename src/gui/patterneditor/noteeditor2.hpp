@@ -103,7 +103,7 @@ private:
   Gdk::Color m_selected_note_colors[16];
   
   int m_row_height;
-  int m_time_scale;
+  int m_ticks_per_pixel;
   int m_rows;
   
   Dino::NoteSelection m_selection;

@@ -768,6 +768,11 @@ namespace Dino {
   Track::PatternIterator Track::add_pattern(const string& name, 
 					    const SongTime& length, 
 					    int steps) {
+    
+    cerr<<__PRETTY_FUNCTION__<<": "
+	<<name<<", "
+	<<length.get_beat()<<":"<<length.get_tick()<<", "<<steps<<endl;
+    
     /* This does not actually need to be threadsafe since the sequencer
        never accesses the patterns through the map, only through the 
        sequence entries. */

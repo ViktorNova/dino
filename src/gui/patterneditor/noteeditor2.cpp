@@ -18,6 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <iostream>
+
 #include "noteeditor2.hpp"
 
 
@@ -33,7 +35,10 @@ using namespace std;
 NoteEditor2::NoteEditor2(CommandProxy& proxy)
   : m_track(0),
     m_pattern(0),
-    m_proxy(proxy) {
+    m_proxy(proxy),
+    m_row_height(8),
+    m_ticks_per_pixel(SongTime::ticks_per_beat() / 64),
+    m_rows(0) {
 
   // initialise colours
   m_colormap = Colormap::get_system();
@@ -86,15 +91,18 @@ NoteEditor2::NoteEditor2(CommandProxy& proxy)
 void NoteEditor2::set_pattern(const Track& track, const Pattern& pattern) {
   m_track = &track;
   m_pattern = &pattern;
+  m_rows = (m_track->get_mode() == Track::DrumMode ? 
+	    m_track->get_keys().size() : 128);
+  cerr<<__PRETTY_FUNCTION__<<": "<<time2pixel(m_pattern->get_length())<<endl;
   set_size_request(time2pixel(m_pattern->get_length()) + 1, 
 		   m_rows * m_row_height + 1);
-
 }
 
 
 void NoteEditor2::unset_pattern() {
   m_track = 0;
-  m_pattern = 0 ;
+  m_pattern = 0;
+  set_size_request(0, 0);
 }
 
 
@@ -180,22 +188,33 @@ void NoteEditor2::on_realize() {
 
 
 void NoteEditor2::draw_background(Glib::RefPtr<Gdk::Window>& win) {
+
+  // draw the background and the vertical grid
   bool bg = true;
   int beat_width = time2pixel(SongTime(1, 0));
   SongTime::Beat b;
   for (b = 0; b < m_pattern->get_length().get_beat(); ++b) {
-    if (bg)
-      m_gc->set_foreground(m_bg_color);
-    else
-      m_gc->set_foreground(m_bg_color2);
-    win->draw_rectangle(m_gc, true, time2pixel(SongTime(b, 0)),
-			0, beat_width, 128 * m_row_height);
+    int x = time2pixel(SongTime(b, 0));
+    m_gc->set_foreground( bg ? m_bg_color : m_bg_color2);
     bg = !bg;
+    win->draw_rectangle(m_gc, true, x, 0, beat_width, m_rows * m_row_height);
+    m_gc->set_foreground(m_grid_color);
+    win->draw_line(m_gc, x, 0, x, m_rows * m_row_height);
   }
   SongTime::Tick t = m_pattern->get_length().get_tick();
   if (t > 0) {
+    m_gc->set_foreground( bg ? m_bg_color : m_bg_color2);
     win->draw_rectangle(m_gc, true, time2pixel(SongTime(b, 0)),
-			0, time2pixel(SongTime(0, t)), 128 * m_row_height);
+			0, time2pixel(SongTime(0, t)), m_rows * m_row_height);
+  }
+  int x = time2pixel(m_pattern->get_length());
+  m_gc->set_foreground(m_grid_color);
+  win->draw_line(m_gc, x, 0, x, m_rows * m_row_height);
+  
+  // draw the horizontal grid
+  for (unsigned i = 0; i < m_rows + 1; ++i) {
+    int y = i * m_row_height;
+    win->draw_line(m_gc, 0, y, x, y);
   }
 }
 
@@ -204,9 +223,9 @@ void NoteEditor2::draw_background(Glib::RefPtr<Gdk::Window>& win) {
 //SongTime pixel2time(int x);
 //int row2pixel(int row);
 int NoteEditor2::time2pixel(const SongTime& time) {
-  int64_t value = time.get_beat() * SongTime::ticks_per_beat() + 
+  int64_t value = int64_t(time.get_beat()) * SongTime::ticks_per_beat() + 
     time.get_tick();
-  return int(m_time_scale * (value / double(SongTime::ticks_per_beat())));
+  return int(value / m_ticks_per_pixel);
 }
 
 

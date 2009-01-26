@@ -360,7 +360,7 @@ void PatternEditor::set_active_pattern(int pattern) {
       m_conn_cont_added = p->signal_curve_added().connect(sigc::hide(uslot));
       m_conn_cont_removed = p->signal_curve_removed().
 	connect(sigc::hide(uslot));
-      m_cce.set_alternation(p->get_steps());
+      m_cce.set_alternation(1);
       m_ne.set_pattern(*t, *p);
     }
   }

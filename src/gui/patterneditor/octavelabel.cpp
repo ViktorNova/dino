@@ -31,7 +31,8 @@ using namespace Gdk;
 OctaveLabel::OctaveLabel(int width, int note_height)
   : m_width(width), 
     m_note_height(note_height),
-    m_drum_height(20) {
+    m_drum_height(20),
+    m_track(0) {
   m_bg_color.set_rgb(60000, 60000, 65535);
   m_fg_color.set_rgb(40000, 40000, 40000);
   m_colormap = Colormap::get_system();
@@ -51,17 +52,21 @@ void OctaveLabel::on_realize() {
 
 bool OctaveLabel::on_expose_event(GdkEventExpose* event) {
   
-  Dino::Track::Mode mode = 
-    m_track ? m_track->get_mode() : Dino::Track::DrumMode;
-
   Glib::RefPtr<Gdk::Window> win = get_window();
   win->clear();
+
+  if (!m_track)
+    return true;
+  
+  Dino::Track::Mode mode = m_track->get_mode();
+
   m_gc->set_foreground(m_bg_color);
   Pango::FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
   char tmp[100];
   Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
-
+  
+  // in drum mode - only show the named keys
   if (mode == Dino::Track::DrumMode) {
     const vector<Dino::KeyInfo*>& keys = m_track->get_keys();
     win->draw_rectangle(m_gc, true, 0, 0, get_width(), 
@@ -78,6 +83,7 @@ bool OctaveLabel::on_expose_event(GdkEventExpose* event) {
     }
   }
   
+  // in normal mode - show all possible keys
   else {
     win->draw_rectangle(m_gc, true, 0, 0, get_width(), 128 * m_note_height);
     m_gc->set_foreground(m_fg_color);

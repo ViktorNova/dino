@@ -130,7 +130,7 @@ namespace Dino {
     : m_id(id),
       m_name(pat.get_name()),
       m_dirty(false),
-      m_length(pat.m_length) {
+      m_length(pat.get_length()) {
 
     dbg1<<"Duplicating pattern \""<<pat.get_name()<<"\""<<endl;
     

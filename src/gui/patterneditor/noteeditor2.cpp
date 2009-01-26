@@ -51,7 +51,7 @@ NoteEditor2::NoteEditor2(CommandProxy& proxy)
   m_grid_color.set_rgb(40000, 40000, 40000);
   m_edge_color.set_rgb(0, 0, 0);
   m_bad_hl_color.set_rgb(65535, 0, 0);
-  m_good_hl_color.set_rgb(0, 65535, 0);
+  m_good_hl_color.set_rgb(0, 50000, 0);
   m_selbox_color.set_rgb(20000, 20000, 40000);
   
   // initialise note colours for different velocities
@@ -195,6 +195,11 @@ bool NoteEditor2::on_button_press_event(GdkEventButton* event) {
       start_selecting(time, key, true);
   }
   
+  else if (event->button == 3) {
+    
+    
+  }
+  
   return true;
 }
 
@@ -207,9 +212,8 @@ bool NoteEditor2::on_button_release_event(GdkEventButton* event) {
   SongTime time = snap(pixel2time(event->x));
   unsigned char key = pixel2key(event->y);
   
-  if (m_drag_operation != DragNoOperation) {
+  if (m_drag_operation != DragNoOperation)
     end_drag(time > m_drag_max_time ? m_drag_max_time : time, key);
-  }
   
   return true;
 }
@@ -240,8 +244,6 @@ bool NoteEditor2::on_motion_notify_event(GdkEventMotion* event) {
 
 bool NoteEditor2::on_expose_event(GdkEventExpose* event) {
   
-  cerr<<__PRETTY_FUNCTION__<<endl;
-  
   RefPtr<Gdk::Window> win = get_window();
   win->clear();
   if (!m_pattern)
@@ -249,18 +251,45 @@ bool NoteEditor2::on_expose_event(GdkEventExpose* event) {
   
   draw_background(win);
   
+  // draw notes
   Pattern::NoteIterator iter;
-  for (iter = m_pattern->notes_begin(); iter != m_pattern->notes_end(); ++iter)
-    draw_note(win, iter);
+  NoteSelection::Iterator s_iter = m_selection.begin();
+  for (iter = m_pattern->notes_begin(); 
+       iter != m_pattern->notes_end(); ++iter) {
+    bool selected = false;
+    if (&*iter == &*s_iter) {
+      selected = true;
+      ++s_iter;
+    }
+    draw_note(win, iter, selected);
+  }
   
+  // draw resizing outlines
   if (m_drag_operation == DragResizeNotes) {
-    cerr<<"*** DRAW OUTLINES ***"<<endl;
     if (m_drag_time > m_drag_start_time) {
       SongTime length = m_drag_time - m_drag_start_time;
       NoteSelection::Iterator iter;
       for (iter = m_selection.begin(); iter != m_selection.end(); ++iter)
 	draw_outline(win, iter->get_time(), iter->get_key(), length, true);
     }
+  }
+  
+  // draw selection box
+  else if (m_drag_operation == DragSelectBox) {
+    SongTime time_a = (m_drag_time < m_drag_start_time ? 
+		       m_drag_time : m_drag_start_time);
+    SongTime time_b = (m_drag_time < m_drag_start_time ? 
+		       m_drag_start_time : m_drag_time);
+    unsigned char key_a = (m_drag_key < m_drag_start_key ?
+			   m_drag_key : m_drag_start_key);
+    unsigned char key_b = (m_drag_key < m_drag_start_key ?
+			   m_drag_start_key : m_drag_key);
+    m_gc->set_foreground(m_selbox_color);
+    int x = time2pixel(time_a);
+    int w = time2pixel(time_b) - x;
+    int y = key2pixel(key_b);
+    int h = key2pixel(key_a) + m_row_height - y;
+    win->draw_rectangle(m_gc, false, x, y, w, h);
   }
 
   
@@ -319,12 +348,14 @@ void NoteEditor2::draw_background(Glib::RefPtr<Gdk::Window>& win) {
 
 
 void NoteEditor2::draw_note(Glib::RefPtr<Gdk::Window>& win, 
-			    const Pattern::NoteIterator& iter) {
+			    const Pattern::NoteIterator& iter, bool selected) {
 
   int x = time2pixel(iter->get_time());
   int l = time2pixel(iter->get_time() + iter->get_length()) - x;
-
-  m_gc->set_foreground(m_note_colors[int(iter->get_velocity() / 8)]);
+  
+  m_gc->set_foreground(selected ?
+		       m_selected_note_colors[int(iter->get_velocity() / 8)] :
+		       m_note_colors[int(iter->get_velocity() / 8)]);
   win->draw_rectangle(m_gc, true, x, key2pixel(iter->get_key()), 
 		      l, m_row_height);
   m_gc->set_foreground(m_edge_color);
@@ -356,6 +387,26 @@ void NoteEditor2::end_drag(const SongTime& time, unsigned char key) {
 			      m_drag_start_time, m_drag_start_key,
 			      m_note_length);
       }
+    }
+  }
+  
+  else if (m_drag_operation == DragSelectBox) {
+    SongTime time_a = (m_drag_time < m_drag_start_time ? 
+		       m_drag_time : m_drag_start_time);
+    SongTime time_b = (m_drag_time < m_drag_start_time ? 
+		       m_drag_start_time : m_drag_time);
+    unsigned char key_a = (m_drag_key < m_drag_start_key ?
+			   m_drag_key : m_drag_start_key);
+    unsigned char key_b = (m_drag_key < m_drag_start_key ?
+			   m_drag_start_key : m_drag_key);
+    Pattern::NoteIterator iter;
+    for (iter = m_pattern->notes_begin(); 
+	 iter != m_pattern->notes_end(); ++iter) {
+      unsigned char k = iter->get_key();
+      const SongTime& t = iter->get_time();
+      const SongTime& l = iter->get_length();
+      if (k >= key_a && k <= key_b && t < time_b && t + l > time_a)
+	m_selection.add_note(iter);
     }
   }
   
@@ -437,7 +488,29 @@ void NoteEditor2::start_adding_note(const SongTime& time, unsigned char key) {
 
 void NoteEditor2::start_selecting(const SongTime& time, unsigned char key,
 				  bool clear) {
-
+  if (clear)
+    m_selection.clear();
+  
+  // if the click is inside a note, just add or remove that note
+  Pattern::NoteIterator iter = m_pattern->find_note(time, key);
+  if (iter != m_pattern->notes_end()) {
+    if (m_selection.find(iter) != m_selection.end())
+      m_selection.remove_note(iter);
+    else
+      m_selection.add_note(iter);
+    queue_draw();
+    return;
+  }
+  
+  // if not, start dragging a rectangle to select other notes
+  SongTime t = snap(time);
+  m_drag_operation = DragSelectBox;
+  m_drag_start_time = t;
+  m_drag_start_key = key;
+  m_drag_time = t;
+  m_drag_key = key;
+  m_drag_max_time = m_pattern->get_length();
+  queue_draw();
 }
 
 

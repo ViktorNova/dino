@@ -73,6 +73,7 @@ private:
   enum DragOperation {
     DragNoOperation,
     DragResizeNotes,
+    DragSelectBox,
   } m_drag_operation;
   
   /** This is used to figure out what to do when a pointer motion event is 
@@ -85,7 +86,7 @@ private:
   
   void draw_background(Glib::RefPtr<Gdk::Window>& win);
   void draw_note(Glib::RefPtr<Gdk::Window>& win, 
-		 const Dino::Pattern::NoteIterator& iter);
+		 const Dino::Pattern::NoteIterator& iter, bool selected);
   void draw_outline(Glib::RefPtr<Gdk::Window>& win,
 		    const Dino::SongTime& start, unsigned char key,
 		    const Dino::SongTime& length, bool good);

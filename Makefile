@@ -152,6 +152,7 @@ tracklabel_cpp_CFLAGS = -DDATA_DIR=\"$(pkgdatadir)\"
 
 # The pattern editor
 patterneditor_so_SOURCES = \
+	curveeditor2.cpp curveeditor2.hpp \
 	noteeditor.cpp noteeditor.hpp \
 	noteeditor2.cpp noteeditor2.hpp \
 	octavelabel.cpp octavelabel.hpp \

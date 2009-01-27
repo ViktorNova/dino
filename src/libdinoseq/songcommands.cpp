@@ -1585,6 +1585,9 @@ namespace Dino {
   
   
   bool AddPatternCurvePoint::do_command() {
+    
+    // XXX This needs IMPLEMENTATION
+    /*
     cerr<<__PRETTY_FUNCTION__<<endl;
     Song::TrackIterator titer = m_song.tracks_find(m_track);
     if (titer == m_song.tracks_end())
@@ -1619,11 +1622,15 @@ namespace Dino {
       }
     }
     piter->add_curve_point(citer, m_step, m_value);
+    */
     return true;
   }
   
   
   bool AddPatternCurvePoint::undo_command() {
+    
+    // XXX This needs IMPLEMENTATION
+    /*
     Song::TrackIterator titer = m_song.tracks_find(m_track);
     if (titer == m_song.tracks_end())
       return false;
@@ -1637,6 +1644,9 @@ namespace Dino {
       piter->add_curve_point(citer, m_step, m_oldvalue);
     else
       piter->remove_curve_point(citer, m_step);
+    */
+    
+    return true;
   }
 
 
@@ -1710,6 +1720,9 @@ namespace Dino {
   
   
   bool RemovePatternCurvePoint::do_command() {
+    
+    // XXX This needs IMPLEMENTATION
+    /*
     Song::TrackIterator titer = m_song.tracks_find(m_track);
     if (titer == m_song.tracks_end())
       return false;
@@ -1728,10 +1741,15 @@ namespace Dino {
     m_oldvalue = e->get_start();
     piter->remove_curve_point(citer, m_step);
     return true;
+    */
+    
+    return true;
   }
   
   
   bool RemovePatternCurvePoint::undo_command() {
+    // XXX This needs IMPLEMENTATION
+    /*
     Song::TrackIterator titer = m_song.tracks_find(m_track);
     if (titer == m_song.tracks_end())
       return false;
@@ -1742,6 +1760,8 @@ namespace Dino {
     if (citer == piter->curves_end())
       return false;
     piter->add_curve_point(citer, m_step, m_oldvalue);
+    */
+    return true;
   }
 
 

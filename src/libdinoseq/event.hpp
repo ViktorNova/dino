@@ -140,13 +140,19 @@ namespace Dino {
     
   public:
     
+    static uint32_t note_off() { return 0; }
+    
     static uint32_t note_on() { return 1; }
 
-    static uint32_t note_off() { return 0; }
+    static uint32_t controller(uint8_t param) { return 2 | (param << 8); }
     
     static bool is_note_on(const Event& e) { return (e.get_type() == 1); }
 
     static bool is_note_off(const Event& e) { return (e.get_type() == 0); }
+    
+    static bool is_controller(uint8_t param, const Event& e) { 
+      return e.get_type() == controller(param);
+    }
     
   public:
 

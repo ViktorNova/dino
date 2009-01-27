@@ -280,6 +280,9 @@ void PatternEditor::update_pattern_combo() {
 
 
 void PatternEditor::update_controller_combo() {
+  
+  // XXX This needs implementation
+  /*
   m_cmb_controller.clear();
   long new_active = m_active_controller;
   Song::ConstTrackIterator t_iter = m_song.tracks_find(m_active_track);
@@ -305,10 +308,12 @@ void PatternEditor::update_controller_combo() {
       }
     }
   }
+
   if (new_active == -1)
     m_cmb_controller.append_text("No controllers");
   m_cmb_controller.set_sensitive(new_active != -1);
   m_cmb_controller.set_active_id(new_active);
+  */
 }
 
 
@@ -376,6 +381,9 @@ void PatternEditor::set_active_pattern(int pattern) {
 
 
 void PatternEditor::set_active_controller(long controller) {
+  
+  // XXX This needs IMPLEMENTATION
+  /*
   m_active_controller = controller;
   
   Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
@@ -399,6 +407,7 @@ void PatternEditor::set_active_controller(long controller) {
   m_cce.set_curve(m_active_track, m_active_pattern, &*c);
   
   bool active = controller_is_set(m_active_controller);
+  */
 }
 
 

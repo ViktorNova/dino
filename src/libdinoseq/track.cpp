@@ -397,15 +397,8 @@ namespace Dino {
     ci->set_global(global);
     m_controllers.push_back(ci);
     
-    // if this is not a global controller, add curves to all patterns
-    if (!global) {
-      PatternIterator pi;
-      for (pi = pat_begin(); pi != pat_end(); ++pi)
-	pi->add_curve(*ci);
-    }
-    
-    // else (if it is a global controller), add a curve to the track
-    else {
+    // if it is a global controller, add a curve to the track
+    if (global) {
       m_curves->push_back(new Curve(*ci, get_length().get_beat()));
       m_signal_curve_added(number);
     }
@@ -429,23 +422,8 @@ namespace Dino {
 	<<m_name<<"\""<<endl;
     m_controllers.push_back(info);
     
-    // if this is not a global controller, add curves to all patterns
-    if (!info->get_global()) {
-      PatternIterator pi;
-      for (pi = pat_begin(); pi != pat_end(); ++pi) {
-	map<int, Curve*>::iterator citer = curves.find(pi->get_id());
-	if (citer == curves.end())
-	  pi->add_curve(*info);
-	else {
-	  assert(citer->second->get_size() == 
-		 (pi->get_length().get_beat() * pi->get_steps()));
-	  pi->add_curve(citer->second);
-	}
-      }
-    }
-    
-    // else (if it is a global controller), add a curve to the track
-    else {
+    // if it is a global controller, add a curve to the track
+    if (info->get_global()) {
       map<int, Curve*>::iterator citer = curves.find(-1);
       if (citer == curves.end())
 	m_curves->push_back(new Curve(*info, get_length().get_beat()));
@@ -487,19 +465,8 @@ namespace Dino {
     for (int i = 0; i < m_controllers.size(); ++i) {
       if (m_controllers[i]->get_number() == number) {
 	
-	// if this is not a global controller, remove all curves from patterns
-	if (!m_controllers[i]->get_global()) {
-	  PatternIterator pi;
-	  for (pi = pat_begin(); pi != pat_end(); ++pi) {
-	    Curve* c = pi->disown_curve(pi->curves_find(m_controllers[i]->
-							get_number()));
-	    if (c)
-	      curves[pi->get_id()] = c;
-	  }
-	}
-	
-	// else (if it is a global controller), remove the curve from the track
-	else {
+	// if it is a global controller, remove the curve from the track
+	if (m_controllers[i]->get_global()) {
 	  unsigned j;
 	  for (j = 0; i < m_curves->size(); ++i) {
 	    if ((*m_curves)[j]->get_info().get_number() == number)
@@ -661,20 +628,10 @@ namespace Dino {
 	Deleter::queue(tmp_curve);
 	m_signal_curve_removed(number);
       }	
-      
-      // add pattern curves
-      PatternIterator pi;
-      for (pi = pat_begin(); pi != pat_end(); ++pi)
-	pi->add_curve(*m_controllers[i]);
     }
     
     // it was non-global, will now be global
     else {
-      
-      // remove all pattern curves
-      PatternIterator pi;
-      for (pi = pat_begin(); pi != pat_end(); ++pi)
-	pi->remove_curve(pi->curves_find(number));
       
       // add global curve
       // XXX should add a private add_curve() function
@@ -792,13 +749,6 @@ namespace Dino {
       return pat_end();
     m_patterns[id] = pattern;
     m_signal_pattern_added(id);
-    
-    // add curves for all non-global controllers
-    for (unsigned i = 0; i < m_controllers.size(); ++i) {
-      if (!m_controllers[i]->get_global())
-	m_patterns[id]->add_curve(*m_controllers[i]);
-    }
-    
     return PatternIterator(m_patterns.find(id));
   }
 

@@ -105,77 +105,36 @@ namespace Dino {
     
     /** A CurveIterator is a iterator type that can be used to
         access and modify data from curves in the pattern. */
-    class CurveIterator : 
-      public std::iterator<std::forward_iterator_tag, Curve> {
+    class CurveIterator {
     public:
       
       /** Create an invalid iterator. */
-      CurveIterator() { }
+      CurveIterator();
       
-      /** Dereference the iterator to get a constant Controller reference. */
-      Curve& operator*() { return **m_iterator; }
-      /** Dereference the iterator to get a constant Controller pointer. */
-      Curve* operator->() { return *m_iterator; }
-      /** Dereference the iterator to get a constant Controller reference. */
-      const Curve& operator*() const { return **m_iterator; }
-      /** Dereference the iterator to get a constant Controller pointer. */
-      const Curve* operator->() const { return *m_iterator; }
-      /** Returns @c true if the two iterators refer to the same Curve. */
-      bool operator==(const CurveIterator& iter) const {
-        return (m_iterator == iter.m_iterator);
-      }
-      /** Returns @c false if the two iterators refer to the same Controller. */
-      bool operator!=(const CurveIterator& iter) const {
-        return (m_iterator != iter.m_iterator);
-      }
-      /** Advances the iterator to the next controller. */
-      CurveIterator& operator++() { ++m_iterator; return *this; }
+      /** Dereference the iterator to get an Event reference. */
+      Event& operator*();
+      /** Dereference the iterator to get an Event pointer. */
+      Event* operator->();
+      /** Dereference the iterator to get a constant Event reference. */
+      const Event& operator*() const;
+      /** Dereference the iterator to get a constant Event pointer. */
+      const Event* operator->() const;
+      /** Returns @c true if the two iterators refer to the same Event. */
+      bool operator==(const CurveIterator& iter) const;
+      /** Returns @c false if the two iterators refer to the same Event. */
+      bool operator!=(const CurveIterator& iter) const;
+      /** Advances the iterator to the next curve point Event. */
+      CurveIterator& operator++();
       
     private:
       
       friend class Pattern;
+      
+      CurveIterator(const Pattern* pat, Event* event);
+      
+      const Pattern* m_pattern;
+      Event* m_event;
 
-      CurveIterator(const std::vector<Curve*>::iterator& iter) 
-        : m_iterator(iter) { 
-      }
-      
-      std::vector<Curve*>::iterator m_iterator;
-    };
-
-
-    /** A CurveIterator is a const_iterator type that can be used to
-        access data from curves in the pattern. */
-    class ConstCurveIterator : 
-      public std::iterator<std::forward_iterator_tag, Curve> {
-    public:
-      
-      /** Create an invalid iterator. */
-      ConstCurveIterator() { }
-      
-      /** Dereference the iterator to get a constant Controller reference. */
-      const Curve& operator*() const { return **m_iterator; }
-      /** Dereference the iterator to get a constant Controller pointer. */
-      const Curve* operator->() const { return *m_iterator; }
-      /** Returns @c true if the two iterators refer to the same Curve. */
-      bool operator==(const ConstCurveIterator& iter) const {
-        return (m_iterator == iter.m_iterator);
-      }
-      /** Returns @c false if the two iterators refer to the same Controller. */
-      bool operator!=(const ConstCurveIterator& iter) const {
-        return (m_iterator != iter.m_iterator);
-      }
-      /** Advances the iterator to the next controller. */
-      ConstCurveIterator& operator++() { ++m_iterator; return *this; }
-      
-    private:
-      
-      friend class Pattern;
-
-      ConstCurveIterator(const std::vector<Curve*>::iterator& iter) 
-        : m_iterator(iter) { 
-      }
-      
-      std::vector<Curve*>::iterator m_iterator;
     };
 
 
@@ -201,22 +160,17 @@ namespace Dino {
     /** Return an iterator for the note with key @c value that is playing at
         step @c step, or an invalid iterator if there is no such note. */
     NoteIterator find_note(const SongTime& step, int value) const;
-    /** Return an iterator that refers to the first controller in the pattern.*/
-    ConstCurveIterator curves_begin() const;
+    /** Return an iterator that refers to the first curve point with 
+	controller ID @c param in the pattern.*/
+    CurveIterator curves_begin(uint8_t param) const;
     /** Return an invalid iterator that can be used to check when an iterator
-        has passed the last controller in the pattern. */
-    ConstCurveIterator curves_end() const;
-    /** Return an iterator for the controller with parameter @c param, or an
-        invalid iterator if no such controller exists. */
-    ConstCurveIterator curves_find(long param) const;
-    /** Return an iterator that refers to the first controller in the pattern.*/
-    CurveIterator curves_begin();
-    /** Return an invalid iterator that can be used to check when an iterator
-        has passed the last controller in the pattern. */
-    CurveIterator curves_end();
-    /** Return an iterator for the controller with parameter @c param, or an
-        invalid iterator if no such controller exists. */
-    CurveIterator curves_find(long param);
+        has passed the last curve point with parameter @c param in the 
+	pattern. */
+    CurveIterator curves_end(uint8_t param) const;
+    /** Return an iterator for the last curve point with parameter @c param
+	before the given time, or an invalid iterator if no such curve 
+	point exists. */
+    CurveIterator curves_find(uint8_t param, const SongTime& time) const;
     /** Return the number of steps per beat. */
     unsigned int get_steps() const;
     /** Return the length in beats. */
@@ -262,17 +216,6 @@ namespace Dino {
     SongTime resize_note(NoteIterator note, const SongTime& length);
     /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
-    /** Add a new parameter curve. */
-    CurveIterator add_curve(const ControllerInfo& info);
-    /** Add a parameter curve object. The length must match the number of
-	steps in the pattern. */
-    CurveIterator add_curve(Curve* curve);
-    /** Remove a parameter curve. */
-    bool remove_curve(CurveIterator iter);
-    /** Remove a parameter curve from the pattern, but return a pointer to
-	it instead of deleting it. The caller is responsible for deallocating
-	the Curve object. */
-    Curve* disown_curve(CurveIterator iter);
     /** Add a CC event to the given controller. */
     void add_curve_point(CurveIterator iter, const SongTime& step, int value);
     /** Remove a CC event. */

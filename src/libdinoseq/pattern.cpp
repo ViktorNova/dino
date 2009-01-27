@@ -104,6 +104,60 @@ namespace Dino {
     return result;
   }
 
+
+  Pattern::CurveIterator::CurveIterator()
+    : m_pattern(0),
+      m_event(0) {
+
+  }
+
+  
+  Event& Pattern::CurveIterator::operator*() {
+    return *m_event;
+  }
+  
+  
+  Event* Pattern::CurveIterator::operator->() {
+    return m_event;
+  }
+  
+  
+  const Event& Pattern::CurveIterator::operator*() const {
+    return *m_event;
+  }
+  
+
+  const Event* Pattern::CurveIterator::operator->() const {
+    return m_event;
+  }
+  
+
+  bool Pattern::CurveIterator::operator==(const CurveIterator& iter) const {
+    return (m_pattern == iter.m_pattern && m_event == iter.m_event);
+  }
+  
+
+  bool Pattern::CurveIterator::operator!=(const CurveIterator& iter) const {
+    return (m_pattern != iter.m_pattern || m_event != iter.m_event);
+  }
+  
+
+  Pattern::CurveIterator& Pattern::CurveIterator::operator++() {
+    uint32_t type = m_event->get_type();
+    for (m_event = m_event->m_next[0]; m_event; m_event = m_event->m_next[0]) {
+      if (m_event->get_type() == type)
+	break;
+    }
+    return *this;
+  }
+  
+  
+  Pattern::CurveIterator::CurveIterator(const Pattern* pat, Event* event)
+    : m_pattern(pat),
+      m_event(event) {
+
+  }
+  
   
   Pattern::Pattern(int id, const string& name, 
 		   const SongTime& length, int steps) 
@@ -639,7 +693,9 @@ namespace Dino {
       note_elt->set_attribute("velocity", tmp_txt);
     }
     
-    ConstCurveIterator citer;
+    // XXX This needs IMPLEMENTATION
+    /*
+    CurveIterator citer;
     for (citer = curves_begin(); citer != curves_end(); ++citer) {
       Element* ctrl_elt = elt->add_child("controller");
       ctrl_elt->set_attribute("name", citer->get_info().get_name());
@@ -668,6 +724,7 @@ namespace Dino {
         pt_elt->set_attribute("value", tmp_txt);
       }
     }
+    */
     
     return true;
   }
@@ -875,179 +932,34 @@ namespace Dino {
     return true;
   }
 
-
-  Pattern::CurveIterator Pattern::add_curve(const ControllerInfo& info) {
-    
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-
-    // make a copy of the curve vector and add the new curve
-    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
-    new_vector->push_back(new Curve(info, m_sd->steps * m_sd->length.get_beat()));
-    
-    // delete the old vector
-    vector<Curve*>* tmp = m_sd->curves;
-    m_sd->curves = new_vector;
-    Deleter::queue(tmp);
-    
-    dbg1<<"Added curve \""<<info.get_name()<<"\" with parameter "
-	<<info.get_number()<<endl;
-    
-    m_signal_curve_added(info.get_number());
-    return CurveIterator(new_vector->begin() + (new_vector->size() - 1));
-    */
-    
-    return curves_end();
-  }
-
-
-  Pattern::CurveIterator Pattern::add_curve(Curve* curve) {
-    
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    
-    // XXX need to check that there isn't a curve with this parameter number
-    // already
-    
-    // check that the lengths match
-    if (curve->get_size() != get_length().get_beat() * get_steps())
-      return curves_end();
-    
-    // make a copy of the curve vector and add the new curve
-    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
-    new_vector->push_back(curve);
-    
-    // delete the old vector
-    vector<Curve*>* tmp = m_sd->curves;
-    m_sd->curves = new_vector;
-    Deleter::queue(tmp);
-    
-    dbg1<<"Added curve \""<<curve->get_info().get_name()<<"\" with parameter "
-	<<curve->get_info().get_number()<<endl;
-    
-    m_signal_curve_added(curve->get_info().get_number());
-    return CurveIterator(new_vector->begin() + (new_vector->size() - 1));
-    */
-    
-    return curves_end();
+  
+  Pattern::CurveIterator Pattern::curves_begin(uint8_t param) const {
+    // XXX This needs cleaning up
+    Event* e = const_cast<EventList&>(m_events).get_start();
+    while (e && !Event::is_controller(param, *e))
+      e = e->m_next[0];
+    return CurveIterator(this, e);
   }
   
-
-  bool Pattern::remove_curve(Pattern::CurveIterator iter) {
-    Curve* curve = disown_curve(iter);
-    if (!curve)
-      return false;
-    Deleter::queue(curve);
-    return curve;
+  
+  Pattern::CurveIterator Pattern::curves_end(uint8_t param) const {
+    return CurveIterator(this, 0);
   }
-
-
-  Curve* Pattern::disown_curve(Pattern::CurveIterator iter) {
+  
+  
+  Pattern::CurveIterator Pattern::curves_find(uint8_t param, 
+					      const SongTime& time) const {
+    if (time >= get_length())
+      return curves_end(param);
     
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-   
-    // find the element to erase
-    unsigned i;
-    for (i = 0; i < m_sd->curves->size(); ++i) {
-      if ((*m_sd->curves)[i] == &*iter)
-        break;
+    CurveIterator iter = curves_begin(param);
+    for ( ; iter != curves_end(param) && iter->get_time() <= time; ++iter) {
+      if (iter->get_time() <= time && 
+	  iter->get_time() + iter->get_length() > time)
+	break;
     }
-    if (i >= m_sd->curves->size())
-      return 0;
     
-    // make a copy of the old vector
-    Curve* curve = (*m_sd->curves)[i];
-    vector<Curve*>* new_vector = new vector<Curve*>(*m_sd->curves);
-    const ControllerInfo& ci = (*m_sd->curves)[i]->get_info();
-    new_vector->erase(new_vector->begin() + i);
-    
-    // delete the old vector
-    vector<Curve*>* tmp = m_sd->curves;
-    m_sd->curves = new_vector;
-    Deleter::queue(tmp);
-    
-    dbg1<<"Removed curve \""<<ci.get_name()<<"\" with parameter \""
-	<<ci.get_number()<<"\""<<endl;
-
-    m_signal_curve_removed(ci.get_number());    
-    
-    return curve;
-    
-    */
-    
-    return 0;
-  }
-
-  
-  Pattern::ConstCurveIterator Pattern::curves_begin() const {
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    return ConstCurveIterator(m_sd->curves->begin());
-    */
-    
-    return curves_end();
-  }
-  
-  
-  Pattern::ConstCurveIterator Pattern::curves_end() const {
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    return ConstCurveIterator(m_sd->curves->end());
-    */
-    return ConstCurveIterator();
-  }
-  
-  
-  Pattern::ConstCurveIterator Pattern::curves_find(long param) const {
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-
-    for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
-      if ((*m_sd->curves)[i]->get_info().get_number() == param)
-        return ConstCurveIterator(m_sd->curves->begin() + i);
-    }
-    */
-    return curves_end();
-  }
-
-  
-  Pattern::CurveIterator Pattern::curves_begin() {
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-      return CurveIterator(m_sd->curves->begin());
-    */
-    return curves_end();
-  }
-  
-  
-  Pattern::CurveIterator Pattern::curves_end() {
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    return CurveIterator(m_sd->curves->end());
-    */
-    return CurveIterator();
-  }
-  
-  
-  Pattern::CurveIterator Pattern::curves_find(long param) {
-    // XXX This needs IMPLEMENTATION
-    
-    /*
-    for (unsigned i = 0; i < m_sd->curves->size(); ++i) {
-      if ((*m_sd->curves)[i]->get_info().get_number() == param)
-        return CurveIterator(m_sd->curves->begin() + i);
-    }
-    */
-    return curves_end();
+    return iter;
   }
 
   

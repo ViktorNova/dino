@@ -395,6 +395,10 @@ namespace Dino {
                                  unsigned long step, int value) {
     cerr<<"adding "<<step<<", "<<value<<endl;
     
+    // XXX This needs IMPLEMENTATION
+    
+    /*
+    
     const InterpolatedEvent* ev;
 
     // check if we actually need to do anything
@@ -418,6 +422,8 @@ namespace Dino {
     
     // add the actual point
     pat.add_curve_point(citer, SongTime(step, 0), value);
+    
+    */
   }
   
 

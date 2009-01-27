@@ -61,15 +61,6 @@ public:
 };
 
 
-class CurveAction : public Action {
-public:
-  virtual void run(Dino::CommandProxy& proxy,
-		   const Dino::Song::ConstTrackIterator& titer,
-		   const Dino::Track::ConstPatternIterator& piter,
-		   const Dino::Pattern::ConstCurveIterator& citer) = 0;
-};
-
-
 class PatternAction : public Action {
 public:
   virtual void run(Dino::CommandProxy& proxy,

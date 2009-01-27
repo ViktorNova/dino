@@ -102,7 +102,8 @@ public:
   virtual action_iterator actions_end() = 0;
   
   /** Sets the string in the statusbar. */
-  virtual unsigned set_status(const std::string& status, int timeout = 3000) = 0;
+  virtual unsigned set_status(const std::string& status, 
+			      int timeout = 3000) = 0;
   
   virtual sigc::signal<void, ::Action&>& signal_action_added() = 0;
   virtual sigc::signal<void, ::Action&>& signal_action_removed() = 0;

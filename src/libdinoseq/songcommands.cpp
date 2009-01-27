@@ -1405,7 +1405,7 @@ namespace Dino {
   
   
   bool AddNotes::do_command() {
-    if (m_key >= 128 || m_key < 0)
+    if (m_key >= 128 || m_key < -127)
       return false;
     Song::TrackIterator titer = m_song.tracks_find(m_track);
     if (titer == m_song.tracks_end())

@@ -326,7 +326,7 @@ namespace Dino {
 					  int velocity, 
 					  const SongTime& length) {
     // sanity checks
-    assert(start > SongTime(0, 0));
+    assert(start >= SongTime(0, 0));
     assert(start < m_length);
     assert(length > SongTime(0, 0));
     assert(start + length <= m_length);
@@ -347,8 +347,6 @@ namespace Dino {
     Event* node = m_events.insert(note_off);
     if (node)
       node = m_events.insert(note_on);
-    
-    m_events.pretty_print(cerr);
     
     m_signal_note_added(*note_on);
     
@@ -371,7 +369,7 @@ namespace Dino {
     // try to add any of them
     NoteCollection::ConstIterator iter;
     for (iter = notes.begin(); iter != notes.end(); ++iter) {
-      if (int(iter->key) + int(key) > 127)
+      if (int(iter->key) + int(key) > 127 || int(iter->key) + int(key) < 0)
 	return false;
       if (!check_free_space(start + iter->start, iter->key + key,
 			    iter->length))

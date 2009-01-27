@@ -490,7 +490,6 @@ void NoteEditor2::draw_outline(Glib::RefPtr<Gdk::Window>& win,
 			       const SongTime& start, unsigned char key,
 			       const SongTime& length, bool good) {
   
-  cerr<<__PRETTY_FUNCTION__<<endl;
   cerr<<start.get_beat()<<":"<<start.get_tick()<<" - "
       <<length.get_beat()<<":"<<length.get_tick()<<", "<<int(key)<<endl;
   
@@ -552,6 +551,7 @@ void NoteEditor2::finish_paste(const SongTime& time, unsigned char key) {
 		      m_clipboard, t + m_paste_offset_time, 
 		      int(key) - m_paste_offset_key, &m_selection);
     m_motion_operation = MotionNoOperation;
+    queue_draw();
   }
 }
 

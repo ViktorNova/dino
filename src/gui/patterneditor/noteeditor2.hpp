@@ -80,10 +80,11 @@ private:
       received. For the moment it's only used to paste things. */
   enum MotionOperation {
     MotionNoOperation,
-    MotionPaste
+    MotionPaste,
   } m_motion_operation;
   
   
+  void check_paste(const Dino::SongTime& time, unsigned char key);
   void draw_background(Glib::RefPtr<Gdk::Window>& win);
   void draw_note(Glib::RefPtr<Gdk::Window>& win, 
 		 const Dino::Pattern::NoteIterator& iter, bool selected);
@@ -91,6 +92,7 @@ private:
 		    const Dino::SongTime& start, unsigned char key,
 		    const Dino::SongTime& length, bool good);
   void end_drag(const Dino::SongTime& time, unsigned char key);
+  void finish_paste(const Dino::SongTime& time, unsigned char key);
   int key2pixel(unsigned char key);
   unsigned char pixel2key(int y);
   Dino::SongTime pixel2time(int x);
@@ -125,6 +127,10 @@ private:
   Dino::SongTime m_drag_time;
   unsigned char m_drag_key;
   Dino::SongTime m_drag_max_time;
+  unsigned char m_drag_min_key;
+  Dino::SongTime m_paste_offset_time;
+  unsigned char m_paste_offset_key;
+  bool m_can_paste;
   
   Dino::NoteSelection m_selection;
   Dino::NoteCollection m_clipboard;

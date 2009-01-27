@@ -34,7 +34,8 @@ using namespace std;
 
 
 NoteEditor2::NoteEditor2(CommandProxy& proxy)
-  : m_track(0),
+  : m_motion_operation(MotionNoOperation),
+    m_track(0),
     m_pattern(0),
     m_proxy(proxy),
     m_row_height(8),
@@ -90,7 +91,7 @@ NoteEditor2::NoteEditor2(CommandProxy& proxy)
 	     BUTTON_MOTION_MASK | SCROLL_MASK | POINTER_MOTION_MASK);
 }
 
-  
+
 void NoteEditor2::set_pattern(const Track& track, const Pattern& pattern) {
   m_track = &track;
   m_pattern = &pattern;
@@ -136,27 +137,112 @@ void NoteEditor2::set_vadjustment(Gtk::Adjustment* adj) {
 
 
 void NoteEditor2::cut_selection() {
-
+  
+  if (!m_pattern)
+    return;
+  
+  // copy all note information to the clipboard
+  m_clipboard = NoteCollection(m_selection);
+  
+  // remove all selected notes
+  m_proxy.start_atomic("Remove notes");
+  NoteSelection::Iterator iter;
+  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
+    m_proxy.delete_note(m_track->get_id(), m_pattern->get_id(),
+			iter->get_time(), iter->get_key());
+  }
+  m_proxy.end_atomic();
 }
 
 
 void NoteEditor2::copy_selection() {
-
+  
+  if (!m_pattern)
+    return;
+  
+  m_clipboard = NoteCollection(m_selection);
 }
 
 
 void NoteEditor2::paste() {
+  
+  if (!m_pattern)
+    return;
+  
+  if (m_clipboard.begin() == m_clipboard.end())
+    return;
+  
+  // find the bounds of the collection
+  SongTime min_time(numeric_limits<SongTime::Beat>::max(), 
+		    SongTime::ticks_per_beat());
+  SongTime max_time(0, 0);
+  unsigned char min_key = 127;
+  unsigned char max_key = 0;
+  NoteCollection::Iterator iter;
+  for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
+    min_time = iter->start < min_time ? iter->start : min_time;
+    max_time = (iter->start + iter->length > max_time ? 
+		iter->start + iter->length : min_time);
+    min_key = iter->key < min_key ? iter->key : min_key;
+    max_key = iter->key > max_key ? iter->key : max_key;
+  }
+  
+  // if the selection is too big to fit in this pattern, abort
+  if (max_time - min_time > m_pattern->get_length())
+    return;
+  
+  // set the motion offset
+  m_paste_offset_time = SongTime(0, 0) - min_time;
+  m_paste_offset_key = max_key;
+  m_drag_max_time = m_pattern->get_length() - (max_time - min_time);
+  m_drag_min_key = max_key - min_key;
 
+  // get the current pointer position
+  int x, y;
+  ModifierType mt;
+  get_window()->get_pointer(x, y, mt);
+  m_drag_time = snap(pixel2time(x));
+  m_drag_time = m_drag_time > m_drag_max_time ? m_drag_max_time : m_drag_time;
+  m_drag_key = pixel2key(y);
+  m_drag_key = m_drag_key > 127 ? 127 : m_drag_key;
+  m_drag_key = m_drag_key < m_drag_min_key ? m_drag_min_key : m_drag_key;
+
+  m_drag_operation = DragNoOperation;
+  m_motion_operation = MotionPaste;
+  
+  check_paste(m_drag_time, m_drag_key);
+  
+  queue_draw();
 }
 
 
 void NoteEditor2::delete_selection() {
+  
+  if (!m_pattern)
+    return;
+  
+  // remove all selected notes
+  m_proxy.start_atomic("Remove notes");
+  NoteSelection::Iterator iter;
+  for (iter = m_selection.begin(); iter != m_selection.end(); ++iter) {
+    m_proxy.delete_note(m_track->get_id(), m_pattern->get_id(),
+			iter->get_time(), iter->get_key());
+  }
+  m_proxy.end_atomic();
 
 }
 
 
 void NoteEditor2::select_all() {
-
+  
+  if (!m_pattern)
+    return;
+  
+  Pattern::NoteIterator iter;
+  for (iter = m_pattern->notes_begin(); iter != m_pattern->notes_end(); ++iter)
+    m_selection.add_note(iter);
+  
+  queue_draw();
 }
 
 
@@ -182,8 +268,12 @@ bool NoteEditor2::on_button_press_event(GdkEventButton* event) {
   
   if (event->button == 1) {
     
+    // if we are pasting a clipboard, finish it
+    if (m_motion_operation == MotionPaste)
+      finish_paste(time, key);
+    
     // button 1 + ctrl - add a new note
-    if (event->state & GDK_CONTROL_MASK)
+    else if (event->state & GDK_CONTROL_MASK)
       start_adding_note(time, key);
     
     // button 1 + shift - add to or remove from selection
@@ -223,21 +313,27 @@ bool NoteEditor2::on_button_release_event(GdkEventButton* event) {
 
 
 bool NoteEditor2::on_motion_notify_event(GdkEventMotion* event) {
-
+  
   if (!m_pattern)
     return true;
   
-  if (m_drag_operation == DragNoOperation)
+  if (m_drag_operation == DragNoOperation && 
+      m_motion_operation == MotionNoOperation)
     return true;
   
   SongTime time = snap(pixel2time(event->x));
   unsigned char key = pixel2key(event->y);
   
   time = time > m_drag_max_time ? m_drag_max_time : time;
+  key = key < m_drag_min_key ? m_drag_min_key : key;
   
   if (time != m_drag_time || key != m_drag_key) {
     m_drag_time = time;
     m_drag_key = key;
+    
+    if (m_motion_operation == MotionPaste)
+      check_paste(m_drag_time, m_drag_key);
+    
     queue_draw();
   }
   
@@ -294,7 +390,16 @@ bool NoteEditor2::on_expose_event(GdkEventExpose* event) {
     int h = key2pixel(key_a) + m_row_height - y;
     win->draw_rectangle(m_gc, false, x, y, w, h);
   }
-
+  
+  // draw paste outlines
+  else if (m_motion_operation == MotionPaste) {
+    NoteCollection::Iterator iter;
+    for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
+      draw_outline(win, iter->start + m_drag_time + m_paste_offset_time,
+		   (iter->key + m_drag_key) - m_paste_offset_key, 
+		   iter->length, m_can_paste);
+    }
+  }
   
   return true;
 }
@@ -315,6 +420,20 @@ void NoteEditor2::on_realize() {
   FontDescription fd("helvetica bold 9");
   get_pango_context()->set_font_description(fd);
   win->clear();
+}
+
+
+void NoteEditor2::check_paste(const SongTime& time, unsigned char key) {
+  NoteCollection::Iterator iter;
+  for (iter = m_clipboard.begin(); iter != m_clipboard.end(); ++iter) {
+    if (!m_pattern->check_free_space(iter->start + time + m_paste_offset_time,
+				     (iter->key + key) - m_paste_offset_key,
+				     iter->length)) {
+      m_can_paste = false;
+      return;
+    }
+  }
+  m_can_paste = true;
 }
 
 
@@ -371,6 +490,10 @@ void NoteEditor2::draw_outline(Glib::RefPtr<Gdk::Window>& win,
 			       const SongTime& start, unsigned char key,
 			       const SongTime& length, bool good) {
   
+  cerr<<__PRETTY_FUNCTION__<<endl;
+  cerr<<start.get_beat()<<":"<<start.get_tick()<<" - "
+      <<length.get_beat()<<":"<<length.get_tick()<<", "<<int(key)<<endl;
+  
   int x = time2pixel(start);
   int l = time2pixel(start + length) - x;
 
@@ -415,6 +538,21 @@ void NoteEditor2::end_drag(const SongTime& time, unsigned char key) {
   
   m_drag_operation = DragNoOperation;
   queue_draw();
+}
+
+
+void NoteEditor2::finish_paste(const SongTime& time, unsigned char key) {
+  SongTime t = snap(time);
+  t = t > m_drag_max_time ? m_drag_max_time : t;
+  key = key < m_drag_min_key ? m_drag_min_key : key;
+  check_paste(t, key);
+
+  if (m_can_paste) {
+    m_proxy.add_notes(m_track->get_id(), m_pattern->get_id(),
+		      m_clipboard, t + m_paste_offset_time, 
+		      int(key) - m_paste_offset_key, &m_selection);
+    m_motion_operation = MotionNoOperation;
+  }
 }
 
 
@@ -485,6 +623,7 @@ void NoteEditor2::start_adding_note(const SongTime& time, unsigned char key) {
     m_drag_time = t + length;
     m_drag_key = key;
     m_drag_max_time = t + max;
+    m_drag_min_key = 0;
   }
 }
 
@@ -506,6 +645,8 @@ void NoteEditor2::start_removing_notes(const Dino::SongTime& time,
     }
     m_proxy.end_atomic();
   }
+  
+  // if not, just remove this one
   else {
     m_proxy.delete_note(m_track->get_id(), m_pattern->get_id(), 
 			iter->get_time(), iter->get_key());
@@ -537,6 +678,7 @@ void NoteEditor2::start_selecting(const SongTime& time, unsigned char key,
   m_drag_time = t;
   m_drag_key = key;
   m_drag_max_time = m_pattern->get_length();
+  m_drag_min_key = 0;
   queue_draw();
 }
 

@@ -81,6 +81,8 @@ const ControllerInfo& ControllerDialog::get_info() const {
     m_info.set_max(127);
   }
   m_info.set_global(m_chk_global.get_active());
+  
+  return m_info;
 }
 
 

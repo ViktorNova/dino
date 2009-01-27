@@ -45,25 +45,25 @@ namespace Dino {
   
   class SetLoopStart : public Command {
   public:
-    SetLoopStart(Song& song, int beat);
+    SetLoopStart(Song& song, const SongTime& time);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
-    int m_beat;
-    int m_oldbeat;
+    SongTime m_time;
+    SongTime m_oldtime;
   };
   
   
   class SetLoopEnd : public Command {
   public:
-    SetLoopEnd(Song& song, int beat);
+    SetLoopEnd(Song& song, const SongTime& time);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
-    int m_beat;
-    int m_oldbeat;
+    SongTime m_time;
+    SongTime m_oldtime;
   };
 
 

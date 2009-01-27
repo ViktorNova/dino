@@ -94,7 +94,7 @@ namespace Dino {
     dbg1<<"Destroying sequencer"<<endl;
     if (m_valid) {
       stop();
-      go_to_beat(0);
+      go_to_beat(SongTime(0, 0));
       m_valid = false;
       if (m_jack_client)
         jack_client_close(m_jack_client);
@@ -114,10 +114,10 @@ namespace Dino {
   }
  
 
-  void Sequencer::go_to_beat(double beat) {
-    if (m_valid) {
-      jack_transport_locate(m_jack_client, m_song.bt2frame(beat));
-    }
+  void Sequencer::go_to_beat(const SongTime& beat) {
+    // XXX fix this to take ticks into account
+    if (m_valid)
+      jack_transport_locate(m_jack_client, m_song.bt2frame(beat.get_beat()));
   }
   
  

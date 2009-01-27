@@ -71,14 +71,15 @@ extern "C" {
 
 
 ArrangementEditor::ArrangementEditor(PluginInterface& plif)
-  : m_sequence_ruler(32, 1, 4, 20, 20),
-    m_vbx_track_editor(false, 0),
-    m_vbx_track_labels(false, 0),
-    m_active_track(-1),
-    m_plif(plif),
+  : m_plif(plif),
     m_seq(plif.get_sequencer()),
     m_proxy(plif.get_command_proxy()),
-    m_song(m_proxy.get_song()) {
+    m_song(m_proxy.get_song()),
+    m_sequence_ruler(m_song.get_length(), 1, 4, 
+		     SongTime::ticks_per_beat() / 16, 20),
+    m_vbx_track_editor(false, 0),
+    m_vbx_track_labels(false, 0),
+    m_active_track(-1) {
   
   VBox* v = manage(new VBox);
   
@@ -178,8 +179,9 @@ ArrangementEditor::ArrangementEditor(PluginInterface& plif)
     connect(mem_fun(*this, &ArrangementEditor::track_added));
   m_song.signal_track_removed().
     connect(mem_fun(*this, &ArrangementEditor::track_removed));
-  m_song.signal_length_changed().
-    connect(mem_fun(m_spb_song_length, &SpinButton::set_value));
+  // XXX This needs fixing.
+  //m_song.signal_length_changed().
+  //  connect(mem_fun(m_spb_song_length, &SpinButton::set_value));
   m_song.signal_length_changed().
     connect(mem_fun(m_sequence_ruler, &::Ruler::set_length));
   m_song.signal_loop_start_changed().
@@ -246,7 +248,7 @@ void ArrangementEditor::stop() {
 
 
 void ArrangementEditor::go_to_start() {
-  m_seq.go_to_beat(0);
+  m_seq.go_to_beat(SongTime(0, 0));
 }
 
 
@@ -262,13 +264,13 @@ void ArrangementEditor::set_active_track(int track) {
 }
 
 
-void ArrangementEditor::ruler_clicked(double beat, int button) {
+void ArrangementEditor::ruler_clicked(const SongTime& time, int button) {
   if (button == 2)
-    m_seq.go_to_beat(beat);
+    m_seq.go_to_beat(time);
   else if (button == 1)
-    m_proxy.set_loop_start(int(beat));
+    m_proxy.set_loop_start(time);
   else if (button == 3)
-    m_proxy.set_loop_end(int(ceil(beat)));
+    m_proxy.set_loop_end(time);
 }
 
 

@@ -287,7 +287,7 @@ namespace Dino {
       map<int, Track*>::iterator iter;
       for (iter = m_tracks->begin(); iter != m_tracks->end(); ++iter)
 	iter->second->set_length(length);
-      m_signal_length_changed(length.get_beat());
+      m_signal_length_changed(length);
     }
   }
 
@@ -379,15 +379,15 @@ namespace Dino {
   }
   
   
-  void Song::set_loop_start(int start) {
-    m_loop_start = SongTime(start, 0);
-    m_signal_loop_start_changed(m_loop_start.get_beat());
+  void Song::set_loop_start(const SongTime& start) {
+    m_loop_start = start;
+    m_signal_loop_start_changed(m_loop_start);
   }
   
   
-  void Song::set_loop_end(int end) {
-    m_loop_end = SongTime(end, 0);
-    m_signal_loop_end_changed(m_loop_end.get_beat());
+  void Song::set_loop_end(const SongTime& end) {
+    m_loop_end = end;
+    m_signal_loop_end_changed(m_loop_end);
   }
   
 
@@ -552,7 +552,7 @@ namespace Dino {
       if (elt) {
         int beat;
         sscanf(elt->get_attribute("beat")->get_value().c_str(), "%d", &beat);
-        set_loop_start(beat);
+        set_loop_start(SongTime(beat, 0));
       }
     }
     nodes = dino_elt->get_children("loop_end");
@@ -561,7 +561,7 @@ namespace Dino {
       if (elt) {
         int beat;
         sscanf(elt->get_attribute("beat")->get_value().c_str(), "%d", &beat);
-        set_loop_end(beat);
+        set_loop_end(SongTime(beat, 0));
       }
     }
     
@@ -638,7 +638,7 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, int>& Song::signal_length_changed() const {
+  sigc::signal<void, const SongTime&>& Song::signal_length_changed() const {
     return m_signal_length_changed;
   }
 
@@ -658,12 +658,13 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, int>& Song::signal_loop_start_changed() const {
+  sigc::signal<void, const SongTime&>& 
+  Song::signal_loop_start_changed() const {
     return m_signal_loop_start_changed;
   }
 
 
-  sigc::signal<void, int>& Song::signal_loop_end_changed() const {
+  sigc::signal<void, const SongTime&>& Song::signal_loop_end_changed() const {
     return m_signal_loop_end_changed;
   }
 

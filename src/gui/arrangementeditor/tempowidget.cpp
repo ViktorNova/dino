@@ -40,7 +40,8 @@ using namespace std;
 TempoWidget::TempoWidget(CommandProxy& proxy, const Song* song) 
   : m_proxy(proxy),
     m_song(song), 
-    m_col_width(20), 
+    m_col_width(16),
+    m_height(20),
     m_drag_beat(-1), 
     m_active_tempo(0) {
 
@@ -68,7 +69,7 @@ TempoWidget::TempoWidget(CommandProxy& proxy, const Song* song)
     connect(mem_fun(*this, &TempoWidget::length_changed));
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
-  set_size_request(m_col_width * m_song->get_length().get_beat(), m_col_width);
+  set_size_request(m_col_width * m_song->get_length().get_beat(), m_height);
 }
   
 
@@ -88,7 +89,7 @@ bool TempoWidget::on_expose_event(GdkEventExpose* event) {
   win->clear();
   
   int width = m_col_width * m_song->get_length().get_beat();
-  int height = m_col_width;
+  int height = m_height;
   Rectangle bounds(0, 0, width + 1, height);
   m_gc->set_clip_rectangle(bounds);
   
@@ -119,16 +120,15 @@ bool TempoWidget::on_expose_event(GdkEventExpose* event) {
     if (&(*iter) == m_active_tempo)
       continue;
     Rectangle bounds(int(iter->get_beat() * m_col_width), 0, 
-		     int(m_col_width * 1.5) + 1, height);
+		     int(m_height * 1.5) + 1, height);
     m_gc->set_clip_rectangle(bounds);
     vector<Point> points;
-    points.push_back(Point(int(iter->get_beat() * m_col_width), 0));
-    points.push_back(Point(int((iter->get_beat() + 1) * m_col_width), 0));
-    points.push_back(Point(int((iter->get_beat() + 1.5) * m_col_width), 
-			   height / 2));
-    points.push_back(Point(int((iter->get_beat() + 1.5) * m_col_width), 
-			   height-1));
-    points.push_back(Point(int(iter->get_beat() * m_col_width), height-1));
+    int x = int(iter->get_beat() * m_col_width);
+    points.push_back(Point(x, 0));
+    points.push_back(Point(x + height, 0));
+    points.push_back(Point(x + 1.5 * height, height / 2));
+    points.push_back(Point(x + 1.5 * height, height-1));
+    points.push_back(Point(x, height-1));
     m_gc->set_foreground(m_fg_color);
     win->draw_polygon(m_gc, true, points);
     m_gc->set_foreground(m_edge_color);
@@ -253,8 +253,8 @@ void TempoWidget::update() {
 }
 
 
-void TempoWidget::length_changed(int length) {
-  set_size_request(m_col_width * length, m_col_width);
+void TempoWidget::length_changed(const SongTime& length) {
+  set_size_request(m_col_width * length.get_beat(), m_height);
 }
 
 

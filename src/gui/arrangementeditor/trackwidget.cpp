@@ -33,7 +33,7 @@ TrackWidget::TrackWidget(CommandProxy& proxy)
   : m_swdg(proxy),
     m_cce(proxy) {
   
-  m_cce.set_step_width(20);
+  m_cce.set_step_width(16);
   m_cce.set_alternation(4);
   pack_start(m_swdg);
   show_all();

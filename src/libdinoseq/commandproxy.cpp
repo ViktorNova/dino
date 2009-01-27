@@ -142,13 +142,13 @@ namespace Dino {
   }
 
 
-  bool CommandProxy::set_loop_start(int beat) {
-    return push_and_do(new SetLoopStart(m_song, beat));
+  bool CommandProxy::set_loop_start(const SongTime& time) {
+    return push_and_do(new SetLoopStart(m_song, time));
   }
 
 
-  bool CommandProxy::set_loop_end(int beat) {
-    return push_and_do(new SetLoopEnd(m_song, beat));
+  bool CommandProxy::set_loop_end(const SongTime& time) {
+    return push_and_do(new SetLoopEnd(m_song, time));
   }
   
 

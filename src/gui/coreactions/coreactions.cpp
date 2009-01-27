@@ -43,8 +43,8 @@ namespace {
     std::string get_name() const { return "Clear loop"; }
     void run(CommandProxy& proxy) {
       proxy.start_atomic("Clear loop");
-      proxy.set_loop_end(-1);
-      proxy.set_loop_start(-1);
+      proxy.set_loop_end(SongTime(-1, 0));
+      proxy.set_loop_start(SongTime(-1, 0));
       proxy.end_atomic();
     }
   }* clearloop;

@@ -136,7 +136,10 @@ bool DinoDBusObject::stop(int argc, DBus::Argument* argv) {
 
 
 bool DinoDBusObject::go_to_beat(int argc, DBus::Argument* argv) {
-  m_seq.go_to_beat(argv[0].d);
+  double d = argv[0].d;
+  m_seq.go_to_beat(Dino::SongTime(d, 
+				  (d - Dino::SongTime::Tick(d)) * 
+				  Dino::SongTime::ticks_per_beat()));
   return true;
 }
 
@@ -162,12 +165,12 @@ bool DinoDBusObject::set_song_length(int argc, DBus::Argument* argv) {
 
 
 bool DinoDBusObject::set_loop_start(int argc, DBus::Argument* argv) {
-  return m_proxy.set_loop_start(argv[0].i);
+  return m_proxy.set_loop_start(Dino::SongTime(argv[0].i, 0));
 }
 
 
 bool DinoDBusObject::set_loop_end(int argc, DBus::Argument* argv) {
-  return m_proxy.set_loop_end(argv[0].i);
+  return m_proxy.set_loop_end(Dino::SongTime(argv[0].i, 0));
 }
 
 

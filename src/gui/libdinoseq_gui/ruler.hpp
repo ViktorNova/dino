@@ -23,6 +23,8 @@
 
 #include <gtkmm.h>
 
+#include "songtime.hpp"
+
 
 namespace Dino {
   class Song;
@@ -31,14 +33,15 @@ namespace Dino {
 
 class Ruler : public Gtk::DrawingArea {
 public:
-  Ruler(int length, int subs, int interval, int size, int height);
+  Ruler(const Dino::SongTime& length, int subs, int interval, 
+	Dino::SongTime::Tick ticks_per_pixel, int height);
   
-  void set_length(int length);
-  void set_subdivisions(int subs);
+  void set_length(const Dino::SongTime& length);
+  void set_subdivisions(int subdivisions);
   void set_interval(int interval);
-  void set_division_size(int size);
-  void set_loop_start(int start);
-  void set_loop_end(int end);
+  void set_ticks_per_pixel(Dino::SongTime::Tick ticks_per_pixel);
+  void set_loop_start(const Dino::SongTime& start);
+  void set_loop_end(const Dino::SongTime& end);
   
   virtual void on_realize();
   virtual bool on_expose_event(GdkEventExpose* event);
@@ -46,17 +49,21 @@ public:
 
 public:
   
-  sigc::signal<void, double, int> signal_clicked;
+  sigc::signal<void, const Dino::SongTime&, int> signal_clicked;
   
 private:
   
-  int m_length;
+  Dino::SongTime pixel2time(int x);
+  int time2pixel(const Dino::SongTime& time);
+
+  
+  Dino::SongTime m_length;
   int m_subs;
   int m_interval;
-  int m_div_size;
+  Dino::SongTime::Tick m_ticks_per_pixel;
   int m_height;
-  int m_loop_start;
-  int m_loop_end;
+  Dino::SongTime m_loop_start;
+  Dino::SongTime m_loop_end;
   
   Gdk::Color m_fg, m_loop_bg, m_loop_marker;
   

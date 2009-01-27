@@ -63,7 +63,7 @@ protected:
   void play();
   void stop();
   void go_to_start();
-  void ruler_clicked(double beat, int button);
+  void ruler_clicked(const Dino::SongTime& time, int button);
   void track_added(int track);
   void track_removed(int track);
   
@@ -77,6 +77,12 @@ protected:
   
   sigc::signal<void, int> signal_active_track_changed_internal;
 
+  // external references
+  PluginInterface& m_plif;
+  Dino::Sequencer& m_seq;
+  Dino::CommandProxy& m_proxy;
+  const Dino::Song& m_song;
+  
   // GUI components
   Ruler m_sequence_ruler;
   Gtk::VBox m_vbx_track_editor;
@@ -90,12 +96,6 @@ protected:
   Gtk::SpinButton m_spb_song_length;
   Gtk::Tooltips m_tooltips;
   TrackDialog m_dlg_track;
-  
-  // external references
-  PluginInterface& m_plif;
-  Dino::Sequencer& m_seq;
-  Dino::CommandProxy& m_proxy;
-  const Dino::Song& m_song;
   
   // state
   std::map<int, SingleTrackGUI> m_track_map;

@@ -143,9 +143,9 @@ namespace Dino {
       
       // remove or change the loop
       if (m_song.get_loop_start().get_beat() > m_length)
-	append(new SetLoopStart(m_song, -1));
+	append(new SetLoopStart(m_song, SongTime(-1, 0)));
       if (m_song.get_loop_end().get_beat() > m_length)
-	append(new SetLoopEnd(m_song, m_length));
+	append(new SetLoopEnd(m_song, SongTime(m_length, 0)));
       
       // remove all tempochanges after the new length
       Song::TempoIterator tmpiter = m_song.tempo_find(m_length);
@@ -180,54 +180,54 @@ namespace Dino {
   }
   
 
-  SetLoopStart::SetLoopStart(Song& song, int beat) 
+  SetLoopStart::SetLoopStart(Song& song, const SongTime& time) 
     : Command("Set loop start"),
       m_song(song),
-      m_beat(beat),
-      m_oldbeat(-1) {
+      m_time(time),
+      m_oldtime(-1, 0) {
 
   }
   
   
   bool SetLoopStart::do_command() {
-    m_oldbeat = m_song.get_loop_start().get_beat();
-    if (m_beat == m_oldbeat || m_beat > m_song.get_length().get_beat())
+    m_oldtime = m_song.get_loop_start();
+    if (m_time == m_oldtime || m_time > m_song.get_length())
       return false;
-    m_song.set_loop_start(m_beat);
+    m_song.set_loop_start(m_time);
     return true;
   }
   
   
   bool SetLoopStart::undo_command() {
-    if (m_oldbeat > m_song.get_length().get_beat())
+    if (m_oldtime > m_song.get_length())
       return false;
-    m_song.set_loop_start(m_oldbeat);
+    m_song.set_loop_start(m_oldtime);
     return true;
   }
 
   
-  SetLoopEnd::SetLoopEnd(Song& song, int beat) 
+  SetLoopEnd::SetLoopEnd(Song& song, const SongTime& time) 
     : Command("Set loop start"),
       m_song(song),
-      m_beat(beat),
-      m_oldbeat(-1) {
+      m_time(time),
+      m_oldtime(-1, 0) {
 
   }
   
   
   bool SetLoopEnd::do_command() {
-    m_oldbeat = m_song.get_loop_end().get_beat();
-    if (m_beat == m_oldbeat || m_beat > m_song.get_length().get_beat())
+    m_oldtime = m_song.get_loop_end();
+    if (m_time == m_oldtime || m_time > m_song.get_length())
       return false;
-    m_song.set_loop_end(m_beat);
+    m_song.set_loop_end(m_time);
     return true;
   }
   
   
   bool SetLoopEnd::undo_command() {
-    if (m_oldbeat > m_song.get_length().get_beat())
+    if (m_oldtime > m_song.get_length())
       return false;
-    m_song.set_loop_end(m_oldbeat);
+    m_song.set_loop_end(m_oldtime);
     return true;
   }
 

@@ -66,6 +66,7 @@ private:
   Dino::CommandProxy& m_proxy;
   const Dino::Track* m_track;
   int m_col_width;
+  int m_height;
 
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;

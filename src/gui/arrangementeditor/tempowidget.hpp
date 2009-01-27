@@ -50,11 +50,12 @@ public:
   
 private:
   
-  void length_changed(int length);
+  void length_changed(const Dino::SongTime& length);
   
   Dino::CommandProxy& m_proxy;
   const Dino::Song* m_song;
   int m_col_width;
+  int m_height;
 
   Glib::RefPtr<Gdk::GC> m_gc;
   Glib::RefPtr<Gdk::Colormap> m_colormap;

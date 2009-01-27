@@ -61,7 +61,7 @@ namespace Dino {
     /** This stops the MIDI playback. */
     void stop();
     /** This seeks to the given beat in the song. */
-    void go_to_beat(double beat);
+    void go_to_beat(const SongTime& beat);
     /** This starts recording the given track. */
     void record_to_track(Song::ConstTrackIterator iter);
     //@}

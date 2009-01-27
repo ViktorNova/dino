@@ -44,7 +44,8 @@ using namespace std;
 SequenceWidget::SequenceWidget(CommandProxy& proxy) 
   : m_proxy(proxy),
     m_track(0),
-    m_col_width(20), 
+    m_col_width(16),
+    m_height(20),
     //m_drag_beat(-1), 
     //m_drag_pattern(-1),
     m_drag_seqid(-1),
@@ -65,7 +66,7 @@ SequenceWidget::SequenceWidget(CommandProxy& proxy)
   m_colormap->alloc_color(m_hl_color);
   
   add_events(BUTTON_PRESS_MASK | BUTTON_RELEASE_MASK | BUTTON_MOTION_MASK);
-  set_size_request(0, m_col_width + 4);
+  set_size_request(0, m_height + 4);
   
 }
   
@@ -84,7 +85,7 @@ void SequenceWidget::set_track(const Track* track) {
   const SongTime& track_length = m_track->get_length();
   double width = m_col_width * track_length.get_beat() + 
     double(track_length.get_tick()) / SongTime::ticks_per_beat();
-  set_size_request(int(width), m_col_width + 4);
+  set_size_request(int(width), m_height + 4);
 }
 
 
@@ -111,7 +112,7 @@ bool SequenceWidget::on_expose_event(GdkEventExpose* event) {
     double(track_length.get_tick()) / SongTime::ticks_per_beat();
 
   int width = int(dwidth);
-  int height = m_col_width;
+  int height = m_height;
   
   // draw current beat
   if (m_current_beat < m_track->get_length().get_beat()) {
@@ -255,7 +256,7 @@ void SequenceWidget::slot_length_changed(const SongTime& length) {
   const SongTime& track_length = m_track->get_length();
   double width = m_col_width * track_length.get_beat() + 
     double(track_length.get_tick()) / SongTime::ticks_per_beat();
-  set_size_request(int(width), m_col_width + 4);
+  set_size_request(int(width), m_height + 4);
 }
 
 

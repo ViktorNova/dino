@@ -479,7 +479,7 @@ void DinoGUI::remove_page(int pagenum) {
 
 void DinoGUI::slot_file_open() {
   m_seq.stop();
-  m_seq.go_to_beat(0);
+  m_seq.go_to_beat(SongTime(0, 0));
   m_song.load_file("output.dino");
   reset_gui();
   m_seq.reset_ports();
@@ -498,7 +498,7 @@ void DinoGUI::slot_file_save_as() {
 
 void DinoGUI::slot_file_clear_all() {
   m_seq.stop();
-  m_seq.go_to_beat(0);
+  m_seq.go_to_beat(SongTime(0, 0));
   m_song.clear();
   m_song.set_length(SongTime(32, 0));
   reset_gui();
@@ -568,7 +568,7 @@ void DinoGUI::slot_transport_stop() {
 
 
 void DinoGUI::slot_transport_go_to_start() {
-  m_seq.go_to_beat(0);
+  m_seq.go_to_beat(SongTime(0, 0));
 }
 
 

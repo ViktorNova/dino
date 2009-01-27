@@ -116,7 +116,7 @@ private:
   Gdk::Color m_selected_note_colors[16];
   
   int m_row_height;
-  int m_ticks_per_pixel;
+  Dino::SongTime::Tick m_ticks_per_pixel;
   int m_rows;
   Dino::SongTime::Tick m_snap;
   

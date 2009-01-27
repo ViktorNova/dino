@@ -89,9 +89,9 @@ namespace Dino {
     /** Set the song length. */
     bool set_song_length(int length);
     /** Set the loop start. */
-    bool set_loop_start(int beat);
+    bool set_loop_start(const SongTime& time);
     /** Set the loop end. */
-    bool set_loop_end(int beat);
+    bool set_loop_end(const SongTime& time);
     /** Add a new track and optionally store its iterator in @c iter. */
     bool add_track(const std::string& name, Song::TrackIterator* iter = 0);
     /** Remove a track. */

@@ -159,8 +159,8 @@ namespace Dino {
     Track* disown_track(const TrackIterator& iterator);
     TempoIterator add_tempo_change(int beat, double bpm);
     void remove_tempo_change(TempoIterator& iter);
-    void set_loop_start(int start);
-    void set_loop_end(int end);
+    void set_loop_start(const SongTime& start);
+    void set_loop_end(const SongTime& end);
     //@}
     
     /// @name Sequencing
@@ -187,12 +187,12 @@ namespace Dino {
     sigc::signal<void, const std::string&>& signal_title_changed() const;
     sigc::signal<void, const std::string&>& signal_author_changed() const;
     sigc::signal<void, const std::string&>& signal_info_changed() const;
-    sigc::signal<void, int>& signal_length_changed() const;
+    sigc::signal<void, const SongTime&>& signal_length_changed() const;
     sigc::signal<void, int>& signal_track_added() const;
     sigc::signal<void, int>& signal_track_removed() const;
     sigc::signal<void>& signal_tempo_changed() const;
-    sigc::signal<void, int>& signal_loop_start_changed() const;
-    sigc::signal<void, int>& signal_loop_end_changed() const;
+    sigc::signal<void, const SongTime&>& signal_loop_start_changed() const;
+    sigc::signal<void, const SongTime&>& signal_loop_end_changed() const;
     //@}
     
   private:
@@ -217,12 +217,12 @@ namespace Dino {
     mutable sigc::signal<void, const std::string&> m_signal_title_changed;
     mutable sigc::signal<void, const std::string&> m_signal_author_changed;
     mutable sigc::signal<void, const std::string&> m_signal_info_changed;
-    mutable sigc::signal<void, int> m_signal_length_changed;
+    mutable sigc::signal<void, const SongTime&> m_signal_length_changed;
     mutable sigc::signal<void, int> m_signal_track_added;
     mutable sigc::signal<void, int> m_signal_track_removed;
     mutable sigc::signal<void> m_signal_tempo_changed;
-    mutable sigc::signal<void, int> m_signal_loop_start_changed;
-    mutable sigc::signal<void, int> m_signal_loop_end_changed;
+    mutable sigc::signal<void, const SongTime&> m_signal_loop_start_changed;
+    mutable sigc::signal<void, const SongTime&> m_signal_loop_end_changed;
     
   };
 

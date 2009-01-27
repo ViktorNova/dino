@@ -461,6 +461,7 @@ Gtk::Window& DinoGUI::get_window() {
 
 int DinoGUI::add_page(const std::string& label, GUIPage& page) {
   int result = m_nb.append_page(page, label);
+  m_nb.set_tab_reorderable(page, true);
   m_window.show_all();
   return result;
 }

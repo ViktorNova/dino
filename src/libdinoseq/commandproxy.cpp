@@ -387,20 +387,13 @@ namespace Dino {
     }
     
     if (m_atomic) {
-      //dbg1<<"Appending \""<<cmd->get_name()<<"\" to atomic command \""
-      //    <<m_atomic->get_name()<<"\""<<std::endl;
       m_atomic->append(cmd);
       return true;
     }
     
     m_active = true;
     if (cmd->do_command()) {
-      //dbg1<<"Command '"<<cmd->get_name()<<"' was successful"<<std::endl;
       m_stack.push(cmd);
-      //dbg1<<"Pushed '"<<m_stack.top()->get_name()
-      //    <<"' onto the stack"<<std::endl;
-      //dbg1<<"The stack top is now "<<m_stack.top()<<std::endl;
-      //dbg1<<"The stack size is now "<<m_stack.size()<<std::endl;
       m_signal_stack_changed();
       m_active = false;
       return true;

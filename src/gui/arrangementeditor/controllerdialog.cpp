@@ -19,10 +19,11 @@
 ****************************************************************************/
 
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 
-#include "controller_numbers.hpp"
 #include "controllerdialog.hpp"
+#include "event.hpp"
 
 
 using namespace Dino;
@@ -33,16 +34,16 @@ using namespace std;
 
 ControllerDialog::ControllerDialog()
   : m_chk_global("Global controller"),
-    m_info(make_pbend(), "Pitchbend") {
+    m_info(Event::pitchbend(), "Pitchbend") {
 
   set_title("Controller properties");
   
-  m_cmb_controller.append_text("Pitchbend", Dino::make_pbend());
+  m_cmb_controller.append_text("Pitchbend", Event::pitchbend());
 
   ostringstream oss;
-  for (unsigned i = 0; i < 128; ++i) {
-    oss<<"CC"<<setw(3)<<setfill('0')<<i<<": "<<m_cc_desc[i];
-    m_cmb_controller.append_text(oss.str(), Dino::make_cc(i));
+  for (unsigned char i = 0; i < 128; ++i) {
+    oss<<"CC"<<setw(3)<<setfill('0')<<int(i)<<": "<<m_cc_desc[i];
+    m_cmb_controller.append_text(oss.str(), Event::controller(i));
     oss.str("");
   }
   
@@ -72,7 +73,7 @@ const ControllerInfo& ControllerDialog::get_info() const {
   m_info.set_name(m_ent_name.get_text());
   m_info.set_number(m_cmb_controller.get_active_id());
   m_info.set_min(0);
-  if (is_pbend(m_info.get_number())) {
+  if (m_info.get_number() == Event::pitchbend()) {
     m_info.set_default(8192);
     m_info.set_max(16383);
   }
@@ -101,7 +102,7 @@ void ControllerDialog::refocus() {
 
 
 void ControllerDialog::reset() {
-  set_info(ControllerInfo(make_pbend(), "Pitchbend"));
+  set_info(ControllerInfo(Event::pitchbend(), "Pitchbend"));
 }
 
 
@@ -109,11 +110,13 @@ void ControllerDialog::update_entry() {
   int a, b;
   m_ent_name.get_selection_bounds(a, b);
   if (a == 0 && b == (int)m_ent_name.get_text().size()) {
-    if (Dino::is_cc(m_cmb_controller.get_active_id()))
-      m_ent_name.
-	set_text(m_cc_desc[Dino::cc_number(m_cmb_controller.get_active_id())]);
-    else if (Dino::is_pbend(m_cmb_controller.get_active_id()))
+    long id = m_cmb_controller.get_active_id();
+    if (id == -1)
+      m_ent_name.set_text("");
+    else if (id == Event::pitchbend())
       m_ent_name.set_text("Pitchbend");
+    else
+      m_ent_name.set_text(m_cc_desc[Event::get_cc_number(id)]);
     m_ent_name.select_region(0, -1);
   }
 }

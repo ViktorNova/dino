@@ -45,7 +45,7 @@ namespace Dino {
 
     
     Event(uint32_t type, const SongTime& time, 
-	  unsigned char data1, unsigned char data2 = 0,
+	  unsigned char data1, unsigned char data2,
 	  unsigned char data3 = 0, unsigned char data4 = 0)
       : m_type(type),
 	m_time(time),
@@ -56,6 +56,17 @@ namespace Dino {
       m_data[1] = data2;
       m_data[2] = data3;
       m_data[3] = data4;
+      for (unsigned l = 0; l < Levels; ++l)
+	m_prev[l] = m_next[l] = 0;
+    }
+    
+    Event(uint32_t type, const SongTime& time, uint32_t data)
+      : m_type(type),
+	m_time(time),
+	m_buddy(0),
+	m_prev_similar(0),
+	m_next_similar(0) {
+      m_int_data = data;
       for (unsigned l = 0; l < Levels; ++l)
 	m_prev[l] = m_next[l] = 0;
     }
@@ -122,6 +133,8 @@ namespace Dino {
     
     unsigned char get_velocity() { return m_data[1]; }
     
+    uint32_t get_controller_value() { return m_int_data; }
+    
     SongTime get_length() { 
       if (!m_buddy)
 	return SongTime(0, 0);
@@ -143,16 +156,28 @@ namespace Dino {
     static uint32_t note_off() { return 0; }
     
     static uint32_t note_on() { return 1; }
-
+    
     static uint32_t controller(uint8_t param) { return 2 | (param << 8); }
+
+    static uint32_t pitchbend() { return 3; }
     
     static bool is_note_on(const Event& e) { return (e.get_type() == 1); }
 
     static bool is_note_off(const Event& e) { return (e.get_type() == 0); }
     
+    static bool is_controller(const Event& e) { 
+      return (e.get_type() & 0xFF) == 2;
+    }
+    
     static bool is_controller(uint8_t param, const Event& e) { 
       return e.get_type() == controller(param);
     }
+
+    static unsigned char get_cc_number(uint32_t type) { 
+      return (type >> 8) & 0xFF;
+    }
+    
+    static bool is_pitchbend(const Event& e) { return e.get_type() == 3; }
     
   public:
 
@@ -166,7 +191,10 @@ namespace Dino {
     
     uint32_t m_type;
     SongTime m_time;
-    unsigned char m_data[4];
+    union {
+      unsigned char m_data[4];
+      uint32_t m_int_data;
+    };
 
     Event* m_prev[Levels];
     Event* m_next[Levels];

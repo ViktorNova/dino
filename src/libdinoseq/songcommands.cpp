@@ -703,7 +703,7 @@ namespace Dino {
   }
 
 
-  AddController::AddController(Song& song, int track, long number, 
+  AddController::AddController(Song& song, int track, uint32_t number, 
 			       const std::string& name, int default_v, 
 			       int min, int max, bool global)
     : Command("Add controller"),
@@ -720,8 +720,6 @@ namespace Dino {
   
   
   bool AddController::do_command() {
-    if (!is_cc(m_number) && !is_pbend(m_number))
-      return false;
     Song::TrackIterator titer = m_song.tracks_find(m_track);
     if (titer == m_song.tracks_end())
       return false;
@@ -1570,7 +1568,7 @@ namespace Dino {
 
   
   AddPatternCurvePoint::AddPatternCurvePoint(Song& song, int track, 
-					     int pattern, long number,
+					     int pattern, uint32_t number,
 					     const SongTime& step, int value)
     : Command("Add curve point"),
       m_song(song),
@@ -1650,7 +1648,8 @@ namespace Dino {
   }
 
 
-  AddTrackCurvePoint::AddTrackCurvePoint(Song& song, int track, long number,
+  AddTrackCurvePoint::AddTrackCurvePoint(Song& song, int track, 
+					 uint32_t number,
 					 const SongTime& step, int value)
     : Command("Add curve point"),
       m_song(song),
@@ -1707,7 +1706,8 @@ namespace Dino {
 
 
   RemovePatternCurvePoint::RemovePatternCurvePoint(Song& song, int track, 
-						   int pattern, long number,
+						   int pattern, 
+						   uint32_t number,
 						   const SongTime& step)
     : Command("Remove curve point"),
       m_song(song),

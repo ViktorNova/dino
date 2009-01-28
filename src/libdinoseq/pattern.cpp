@@ -598,20 +598,25 @@ namespace Dino {
   */
   
   
-  void Pattern::add_curve_point(CurveIterator iter, const SongTime& step, 
+  void Pattern::add_curve_point(uint32_t number, const SongTime& time, 
 				int value) {
     
-    // XXX This needs IMPLEMENTATION
+    dbg1<<__PRETTY_FUNCTION__<<": "<<number
+	<<", "<<time.get_beat()<<":"<<time.get_tick()
+	<<", "<<value<<endl;
     
-    /*
-    assert(step <= m_sd->length);
-    (*iter.m_iterator)->add_point(step.get_beat(), value);
-    //m_signal_cc_added((*iter.m_iterator)->get_info().get_number(), step, value);
-    */
+    if (time < SongTime(0, 0) && time >= m_length)
+      return;
+    
+    remove_curve_point(number, time);
+    Event* e = new Event(number, time, value);
+    m_events.insert(e);
+    
+    m_signal_curvepoint_added(number, time, value);
   }
 
 
-  void Pattern::remove_curve_point(CurveIterator iter, const SongTime& step) {
+  void Pattern::remove_curve_point(uint32_t number, const SongTime& step) {
     
     // XXX This needs IMPLEMENTATION
     
@@ -933,21 +938,21 @@ namespace Dino {
   }
 
   
-  Pattern::CurveIterator Pattern::curves_begin(uint8_t param) const {
+  Pattern::CurveIterator Pattern::curves_begin(uint32_t param) const {
     // XXX This needs cleaning up
     Event* e = const_cast<EventList&>(m_events).get_start();
-    while (e && !Event::is_controller(param, *e))
+    while (e && e->get_type() != param)
       e = e->m_next[0];
     return CurveIterator(this, e);
   }
   
   
-  Pattern::CurveIterator Pattern::curves_end(uint8_t param) const {
+  Pattern::CurveIterator Pattern::curves_end(uint32_t param) const {
     return CurveIterator(this, 0);
   }
   
   
-  Pattern::CurveIterator Pattern::curves_find(uint8_t param, 
+  Pattern::CurveIterator Pattern::curves_find(uint32_t param, 
 					      const SongTime& time) const {
     if (time >= get_length())
       return curves_end(param);
@@ -993,13 +998,15 @@ namespace Dino {
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_curve_added() const {
-    return m_signal_curve_added;
+  sigc::signal<void, uint32_t, const SongTime&, int>& 
+  Pattern::signal_curvepoint_added() const {
+    return m_signal_curvepoint_added;
   }
 
 
-  sigc::signal<void, int>& Pattern::signal_curve_removed() const {
-    return m_signal_curve_removed;
+  sigc::signal<void, uint32_t, const SongTime&>& 
+  Pattern::signal_curvepoint_removed() const {
+    return m_signal_curvepoint_removed;
   }
 
 

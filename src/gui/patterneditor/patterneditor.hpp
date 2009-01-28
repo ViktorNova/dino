@@ -104,7 +104,7 @@ protected:
   long m_active_controller;
 
   Dino::CommandProxy& m_proxy;
-  const Dino::Song& m_song;
+  Dino::Song& m_song;
 
 };
 

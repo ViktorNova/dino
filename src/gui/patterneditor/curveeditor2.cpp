@@ -20,6 +20,7 @@
 
 #include <iostream>
 
+#include "controllerinfo.hpp"
 #include "curveeditor2.hpp"
 #include "pattern.hpp"
 
@@ -117,6 +118,23 @@ void CurveEditor2::draw_background(Glib::RefPtr<Gdk::Window>& win) {
 
 
 bool CurveEditor2::on_button_press_event(GdkEventButton* event) {
+  
+  if (!m_pattern)
+    return true;
+  
+  SongTime time = pixel2time(event->x);
+  int value = pixel2value(event->y);
+  
+  cerr<<"Press: "<<time.get_beat()<<":"<<time.get_tick()<<", "<<value<<endl;
+  
+  if (time < SongTime(0, 0) && time >= m_pattern->get_length() &&
+      value < m_curve->get_min() && value > m_curve->get_max())
+    return true;
+  
+  m_pattern->add_curve_point(m_curve->get_number(), time, value);
+  
+  queue_draw();
+  
   return true;
 }
 
@@ -151,18 +169,38 @@ bool CurveEditor2::on_expose_event(GdkEventExpose* event) {
     return true;
   
   draw_background(win);
-
+  
+  Pattern::CurveIterator iter;
+  uint32_t number = m_curve->get_number();
+  for (iter = m_pattern->curves_begin(number); 
+       iter != m_pattern->curves_end(number); ++iter) {
+    
+    cerr<<"event at "
+	<<iter->get_time().get_beat()<<":"<<iter->get_time().get_tick()
+	<<", "<<iter->get_controller_value()<<endl;
+    
+    int x = time2pixel(iter->get_time());
+    int y = value2pixel(iter->get_controller_value());
+    m_gc->set_foreground(m_fg_colour);
+    win->draw_rectangle(m_gc, true, x - 2, y - 2, 5, 5);
+    m_gc->set_foreground(m_edge_colour);
+    win->draw_rectangle(m_gc, false, x - 2, y - 2, 5, 5);
+  }
+  
   return true;
 }
   
 
 int CurveEditor2::value2pixel(int value) {
-  return 0;
+  int d = m_curve->get_max() - m_curve->get_min();
+  int v = value - m_curve->get_min();
+  return m_height - 2 - int(v / (double(d) / (m_height - 4)));
 }
 
 
 int CurveEditor2::pixel2value(int y) {
-  return 0;
+  int d = m_curve->get_max() - m_curve->get_min();
+  return m_curve->get_max() - int((y - 2) * (double(d) / (m_height - 4)));
 }
 
 

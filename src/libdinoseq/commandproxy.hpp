@@ -124,7 +124,7 @@ namespace Dino {
     /** Set the MIDI channel of a track. */
     bool set_track_midi_channel(int track, int channel);
     /** Add a controller for a track. */
-    bool add_controller(int track, long number, const std::string& name,
+    bool add_controller(int track, uint32_t number, const std::string& name,
 			int default_v, int min, int max, bool global);
     /** Remove a controller for a track. */
     bool remove_controller(int track, long number);
@@ -173,10 +173,10 @@ namespace Dino {
     /** Delete a note. */
     bool delete_note(int track, int pattern, const SongTime& time, int key);
     /** Add a point to a pattern curve. */
-    bool add_curve_point(int track, int pattern, long number, 
+    bool add_curve_point(int track, int pattern, uint32_t number, 
 			 const SongTime& step, int value);
     /** Remove a point from a pattern curve. */
-    bool remove_curve_point(int track, int pattern, long number, 
+    bool remove_curve_point(int track, int pattern, uint32_t number, 
 			    const SongTime& step);
     
     //@}

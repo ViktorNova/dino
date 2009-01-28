@@ -358,8 +358,8 @@ namespace Dino {
     /** Set the MIDI channel that the track writes its events to. */
     void set_channel(int channel);
     /** Add a new controller to the track with the given parameters. */
-    bool add_controller(long number, const std::string& name, int default_v,
-			int min, int max, bool global);
+    bool add_controller(uint32_t number, const std::string& name, 
+			int default_v, int min, int max, bool global);
     /** Add a new controller to the track using the given ControllerInfo object
 	and Curve map. The lengths of the Curve objects must be equal to the
 	number of steps in the patterns they are associated with. */

@@ -221,7 +221,7 @@ namespace Dino {
   }
 
 
-  bool CommandProxy::add_controller(int track, long number, 
+  bool CommandProxy::add_controller(int track, uint32_t number, 
 				    const std::string& name,
 				    int default_v, int min, int max, 
 				    bool global) {
@@ -355,7 +355,7 @@ namespace Dino {
 
 
   bool CommandProxy::add_curve_point(int track, int pattern, 
-				     long number, const SongTime& step, 
+				     uint32_t number, const SongTime& step, 
 				     int value) {
     if (pattern != -1) {
       return push_and_do(new AddPatternCurvePoint(m_song, track, pattern, 
@@ -367,7 +367,8 @@ namespace Dino {
   
   
   bool CommandProxy::remove_curve_point(int track, int pattern, 
-					long number, const SongTime& step) {
+					uint32_t number, 
+					const SongTime& step) {
     push_and_do(new RemovePatternCurvePoint(m_song, track, pattern,
 					    number, step));
   }

@@ -23,7 +23,6 @@
 #include "commandproxy.hpp"
 #include "sequencer.hpp"
 #include "trackdialog.hpp"
-#include "controller_numbers.hpp"
 #include "track.hpp"
 
 
@@ -269,7 +268,8 @@ void TrackDialog::refocus() {
 
 
 bool TrackDialog::add_controller(const ControllerInfo& info) {
-  cerr<<"Adding "<<info.get_number()<<" ("<<info.get_name()<<")"<<endl;
+  cerr<<"Adding "<<hex<<info.get_number()<<dec
+      <<" ("<<info.get_name()<<")"<<endl;
   for (unsigned i = 0; i < m_ctrls.size(); ++i) {
     if (info.get_number() == m_ctrls[i].ci.get_number())
       return false;
@@ -298,12 +298,8 @@ void TrackDialog::add_controller_clicked() {
   m_cdlg.show_all();
   while (m_cdlg.run() == RESPONSE_OK) {
     const ControllerInfo& info = m_cdlg.get_info();
-    if (!is_pbend(info.get_number()) && !is_cc(info.get_number())) {
-      cerr<<"Invalid controller!"<<endl;
-    }
-    else if (!add_controller(info)) {
+    if (!add_controller(info))
       cerr<<"Could not add controller!"<<endl;
-    }
     else {
       m_cmb_ctrls.set_active_id(info.get_number());
       break;
@@ -355,22 +351,17 @@ void TrackDialog::modify_controller_clicked() {
   m_cdlg.show_all();
   while (m_cdlg.run() == RESPONSE_OK) {
     const ControllerInfo& info = m_cdlg.get_info();
-    if (!is_pbend(info.get_number()) && !is_cc(info.get_number())) {
-      cerr<<"Invalid controller!"<<endl;
-    }
-    else {
-      unsigned j;
-      for (j = 0; j < m_ctrls.size(); ++j) {
-	if (j == i)
-	  continue;
-	if (m_ctrls[j].ci.get_number() == info.get_number())
-	  break;
-      }
-      if (j < m_ctrls.size())
-	cerr<<"That controller number is already used!"<<endl;
-      else
+    unsigned j;
+    for (j = 0; j < m_ctrls.size(); ++j) {
+      if (j == i)
+	continue;
+      if (m_ctrls[j].ci.get_number() == info.get_number())
 	break;
     }
+    if (j < m_ctrls.size())
+      cerr<<"That controller number is already used!"<<endl;
+    else
+      break;
   }
   
   m_cmb_ctrls.remove_id(m_ctrls[i].ci.get_number());

@@ -20,12 +20,13 @@
 
 #include "controllerinfo.hpp"
 #include "controller_numbers.hpp"
+#include "event.hpp"
 
 
 namespace Dino {
   
   
-  ControllerInfo::ControllerInfo(long number,
+  ControllerInfo::ControllerInfo(uint32_t number,
                                  const std::string& name)
     : m_number(number),
       m_default(64),
@@ -34,7 +35,7 @@ namespace Dino {
       m_name(name),
       m_global(false) {
     
-    if (is_pbend(m_number)) {
+    if (m_number == Event::pitchbend()) {
       m_default = 8192;
       m_max = 16383;
     }
@@ -42,7 +43,7 @@ namespace Dino {
   }
     
 
-  long ControllerInfo::get_number() const {
+  uint32_t ControllerInfo::get_number() const {
     return m_number;
   }
   
@@ -72,7 +73,7 @@ namespace Dino {
   }
   
     
-  void ControllerInfo::set_number(long number) {
+  void ControllerInfo::set_number(uint32_t number) {
     m_number = number;
   }
   

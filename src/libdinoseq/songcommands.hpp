@@ -235,14 +235,15 @@ namespace Dino {
   
   class AddController : public Command {
   public:
-    AddController(Song& song, int track, long number, const std::string& name,
+    AddController(Song& song, int track, uint32_t number, 
+		  const std::string& name,
 		  int default_v, int min, int max, bool global);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
-    long m_number;
+    uint32_t m_number;
     const std::string& m_name;
     int m_default;
     int m_min;
@@ -553,7 +554,7 @@ namespace Dino {
 
   class AddPatternCurvePoint : public Command {
   public:
-    AddPatternCurvePoint(Song& song, int track, int pattern, long number,
+    AddPatternCurvePoint(Song& song, int track, int pattern, uint32_t number,
 			 const SongTime& step, int value);
     bool do_command();
     bool undo_command();
@@ -561,7 +562,7 @@ namespace Dino {
     Song& m_song;
     int m_track;
     int m_pattern;
-    long m_number;
+    uint32_t m_number;
     SongTime m_step;
     int m_value;
     int m_oldvalue;
@@ -571,14 +572,14 @@ namespace Dino {
 
   class AddTrackCurvePoint : public Command {
   public:
-    AddTrackCurvePoint(Song& song, int track, long number,
+    AddTrackCurvePoint(Song& song, int track, uint32_t number,
 		       const SongTime& step, int value);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
-    long m_number;
+    uint32_t m_number;
     SongTime m_step;
     int m_value;
     int m_oldvalue;
@@ -588,15 +589,15 @@ namespace Dino {
 
   class RemovePatternCurvePoint : public Command {
   public:
-    RemovePatternCurvePoint(Song& song, int track, int pattern, long number,
-			    const SongTime& step);
+    RemovePatternCurvePoint(Song& song, int track, int pattern, 
+			    uint32_t number, const SongTime& step);
     bool do_command();
     bool undo_command();
   protected:
     Song& m_song;
     int m_track;
     int m_pattern;
-    long m_number;
+    uint32_t m_number;
     const SongTime& m_step;
     int m_oldvalue;
   };

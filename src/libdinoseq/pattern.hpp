@@ -162,15 +162,15 @@ namespace Dino {
     NoteIterator find_note(const SongTime& step, int value) const;
     /** Return an iterator that refers to the first curve point with 
 	controller ID @c param in the pattern.*/
-    CurveIterator curves_begin(uint8_t param) const;
+    CurveIterator curves_begin(uint32_t param) const;
     /** Return an invalid iterator that can be used to check when an iterator
         has passed the last curve point with parameter @c param in the 
 	pattern. */
-    CurveIterator curves_end(uint8_t param) const;
+    CurveIterator curves_end(uint32_t param) const;
     /** Return an iterator for the last curve point with parameter @c param
 	before the given time, or an invalid iterator if no such curve 
 	point exists. */
-    CurveIterator curves_find(uint8_t param, const SongTime& time) const;
+    CurveIterator curves_find(uint32_t param, const SongTime& time) const;
     /** Return the number of steps per beat. */
     unsigned int get_steps() const;
     /** Return the length in beats. */
@@ -217,9 +217,9 @@ namespace Dino {
     /** Set the velocity of a note. */
     void set_velocity(NoteIterator note, unsigned char velocity);
     /** Add a CC event to the given controller. */
-    void add_curve_point(CurveIterator iter, const SongTime& step, int value);
+    void add_curve_point(uint32_t number, const SongTime& step, int value);
     /** Remove a CC event. */
-    void remove_curve_point(CurveIterator iter, const SongTime& step);
+    void remove_curve_point(uint32_t number, const SongTime& step);
     /** Reset the "dirty rect".
         @see get_dirty_rect(). */
     void reset_dirty_rect() const; // XXX the "dirty rect" functions need to go
@@ -256,9 +256,11 @@ namespace Dino {
     /** Emitted when a note has been removed. */
     sigc::signal<void, Event const&>& signal_note_removed() const;
     /** Emitted when a whole controller has been added. */
-    sigc::signal<void, int>& signal_curve_added() const;
+    sigc::signal<void, uint32_t, const SongTime&, int>& 
+    signal_curvepoint_added() const;
     /** Emitted when a whole controller has been removed. */
-    sigc::signal<void, int>& signal_curve_removed() const;
+    sigc::signal<void, uint32_t, const SongTime&>& 
+    signal_curvepoint_removed() const;
     //@}
     
   private:
@@ -319,8 +321,10 @@ namespace Dino {
     mutable sigc::signal<void, Event const&> m_signal_note_added;
     mutable sigc::signal<void, Event const&> m_signal_note_changed;
     mutable sigc::signal<void, Event const&> m_signal_note_removed;
-    mutable sigc::signal<void, int> m_signal_curve_added;
-    mutable sigc::signal<void, int> m_signal_curve_removed;
+    mutable sigc::signal<void, uint32_t, const SongTime&, int> 
+    m_signal_curvepoint_added;
+    mutable sigc::signal<void, uint32_t, const SongTime&> 
+    m_signal_curvepoint_removed;
     
   };
 

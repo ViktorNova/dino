@@ -70,7 +70,8 @@ PatternEditor::PatternEditor(CommandProxy& proxy)
     m_active_pattern(-1),
     m_active_controller(-1),
     m_proxy(proxy),
-    m_song(m_proxy.get_song()) {
+    // XXX yuck!
+    m_song(const_cast<Song&>(m_proxy.get_song())) {
   
   VBox* v = manage(new VBox);
   
@@ -281,39 +282,34 @@ void PatternEditor::update_pattern_combo() {
 
 void PatternEditor::update_controller_combo() {
   
-  // XXX This needs implementation
-  /*
   m_cmb_controller.clear();
+  
   long new_active = m_active_controller;
   Song::ConstTrackIterator t_iter = m_song.tracks_find(m_active_track);
   if (t_iter != m_song.tracks_end()) {
-    Track::ConstPatternIterator p_iter = t_iter->pat_find(m_active_pattern);
-    if (p_iter != t_iter->pat_end()) {
-      Pattern::ConstCurveIterator iter;
-      if (p_iter->curves_find(new_active) == p_iter->curves_end())
-	new_active = -1;
-      char tmp[10];
-      for (iter = p_iter->curves_begin(); iter != p_iter->curves_end(); ++iter) {
-	long param = iter->get_info().get_number();
-	string name = iter->get_info().get_name();
-	if (is_cc(param))
-	  sprintf(tmp, "CC%03ld: ", cc_number(param));
-	else if (is_nrpn(param))
-	  sprintf(tmp, "NRPN%03ld: ", nrpn_number(param));
-	else if (is_pbend(param))
-	  tmp[0] = '\0';
-	m_cmb_controller.append_text(string(tmp) + name, param);
-	if (new_active == -1)
-	  new_active = param;
-      }
+    const vector<ControllerInfo*>& ctrls = t_iter->get_controllers();
+    char tmp[10];
+    for (unsigned i = 0; i < ctrls.size(); ++i) {
+      if (ctrls[i]->get_global())
+	continue;
+      long param = ctrls[i]->get_number();
+      const string& name = ctrls[i]->get_name();
+      if (is_cc(param))
+	sprintf(tmp, "CC%03ld: ", cc_number(param));
+      else if (is_nrpn(param))
+	sprintf(tmp, "NRPN%03ld: ", nrpn_number(param));
+      else if (is_pbend(param))
+	tmp[0] = '\0';
+      m_cmb_controller.append_text(string(tmp) + name, i);
+      if (new_active == -1)
+	new_active = param;
     }
   }
-
+  
   if (new_active == -1)
     m_cmb_controller.append_text("No controllers");
   m_cmb_controller.set_sensitive(new_active != -1);
   m_cmb_controller.set_active_id(new_active);
-  */
 }
 
 
@@ -362,9 +358,9 @@ void PatternEditor::set_active_pattern(int pattern) {
     else {
       slot<void> uslot = mem_fun(*this, 
 				 &PatternEditor::update_controller_combo);
-      m_conn_cont_added = p->signal_curve_added().connect(sigc::hide(uslot));
-      m_conn_cont_removed = p->signal_curve_removed().
-	connect(sigc::hide(uslot));
+      //m_conn_cont_added = p->signal_curve_added().connect(sigc::hide(uslot));
+      //m_conn_cont_removed = p->signal_curve_removed().
+      //  connect(sigc::hide(uslot));
       m_cce.set_alternation(1);
       m_ne.set_pattern(*t, *p);
     }
@@ -382,32 +378,21 @@ void PatternEditor::set_active_pattern(int pattern) {
 
 void PatternEditor::set_active_controller(long controller) {
   
-  // XXX This needs IMPLEMENTATION
-  /*
   m_active_controller = controller;
   
-  Song::ConstTrackIterator t = m_song.tracks_find(m_active_track);
-  if (t == m_song.tracks_end()) {
-    m_cce.set_curve(-1, -1, 0);
-    return;
+  Song::TrackIterator t = m_song.tracks_find(m_active_track);
+  if (t != m_song.tracks_end()) {
+    Track::PatternIterator p = t->pat_find(m_active_pattern);
+    if (p != t->pat_end()) {
+      if (controller >= 0 && controller < t->get_controllers().size() &&
+	  !t->get_controllers()[controller]->get_global()) {
+	m_cce.set_curve(*t, *p, *(t->get_controllers()[controller]));
+	return;
+      }
+    }
   }
   
-  Track::ConstPatternIterator p = t->pat_find(m_active_pattern);
-  if (p == t->pat_end()) {
-    m_cce.set_curve(-1, -1, 0);
-    return;
-  }
-  
-  Pattern::ConstCurveIterator c = p->curves_find(m_active_controller);
-  if (c == p->curves_end()) {
-    m_cce.set_curve(-1, -1, 0);
-    return;
-  }
-    
-  m_cce.set_curve(m_active_track, m_active_pattern, &*c);
-  
-  bool active = controller_is_set(m_active_controller);
-  */
+  m_cce.unset_curve();
 }
 
 

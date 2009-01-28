@@ -379,7 +379,7 @@ namespace Dino {
   }
 
 
-  bool Track::add_controller(long number, const std::string& name, 
+  bool Track::add_controller(uint32_t number, const std::string& name, 
 			     int default_v, int min, int max, bool global) {
     
     // check if we already have this controller, if so return false

@@ -58,17 +58,14 @@ namespace Dino {
       return *this;
     }
     
-    /** Cast operator to std::string, for convenience. */
-    operator std::string() {
+    /** Cast operator to any type that can be automatically casted from a
+	std::string, for convenience. */
+    template <typename T>
+    operator T() {
       return m_oss.str();
     }
     
-    /** Cast operator to Glib::ustring, for convenience. */
-    operator Glib::ustring() {
-      return m_oss.str();
-    }
-    
-    /** Cast operator to const char*, for convenience. */
+    /** Cast operator to const char*. */
     operator const char*() {
       return m_oss.str().c_str();
     }

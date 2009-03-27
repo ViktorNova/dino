@@ -36,13 +36,6 @@ If you write anything interesting I of course want to hear about it!
 IF YOU HAVE GIT WRITE ACCESS
 ============================
 
-PUSHING
-=======
-When pushing commits and tags to the central repository, please use the 
-./dpush script instead of 'git push'. It sends a message describing the
-commits to CIA (see http://cia.vc/stats/project/dino) which then distributes
-it to anyone else who is interested.
-
 BRANCH POLICY
 =============
 Feel free to create as many branches in the central repository as you like!

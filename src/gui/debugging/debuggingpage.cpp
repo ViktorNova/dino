@@ -18,6 +18,8 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ****************************************************************************/
 
+#include <gtkmm/box.h>
+
 #include "command.hpp"
 #include "commandproxy.hpp"
 #include "debuggingpage.hpp"
@@ -29,18 +31,49 @@ using namespace std;
 
 DebuggingPage::DebuggingPage(CommandProxy& proxy)
   : m_proxy(proxy),
-    m_list(1, false) {
-  m_list.get_column(0)->set_title("Command");
-  add(m_list);
+    m_stacklist(1, false),
+    m_dbglist(4, false) {
+  
+  m_stacklist.get_column(0)->set_title("Undoable commands");
+  
+  m_dbglist.get_column(0)->set_title("Level");
+  m_dbglist.get_column(1)->set_title("Source file");
+  m_dbglist.get_column(2)->set_title("Code line");
+  m_dbglist.get_column(3)->set_title("Message");
+  
+  Gtk::VBox* vbox = manage(new Gtk::VBox);
+  add(*vbox);
+  
+  Gtk::ScrolledWindow* stackscrw = manage(new Gtk::ScrolledWindow);
+  stackscrw->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+  vbox->pack_start(*stackscrw);
+  stackscrw->add(m_stacklist);
+
+  Gtk::ScrolledWindow* dbgscrw = manage(new Gtk::ScrolledWindow);
+  dbgscrw->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+  vbox->pack_start(*dbgscrw);
+  dbgscrw->add(m_dbglist);
+  
+  signal_debug.connect(sigc::mem_fun(*this, &DebuggingPage::add_debug_msg));
+  
   reset_gui();
 }
  
 
 void DebuggingPage::reset_gui() {
-  m_list.clear_items();
+  m_stacklist.clear_items();
   deque<Command*>::const_iterator iter;
   for (iter = m_proxy.get_undo_stack().begin(); 
        iter != m_proxy.get_undo_stack().end(); ++iter) {
-    m_list.append_text((*iter)->get_name());
+    m_stacklist.append_text((*iter)->get_name());
   }
+}
+
+
+void DebuggingPage::add_debug_msg(unsigned level, const std::string& file,
+				  unsigned line, const std::string& msg) {
+  guint row = m_dbglist.append_text(cc+ level);
+  m_dbglist.set_text(row, 1, file);
+  m_dbglist.set_text(row, 2, cc+ line);
+  m_dbglist.set_text(row, 3, msg);
 }

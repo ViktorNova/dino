@@ -26,8 +26,11 @@
 #include <sstream>
 #include <string>
 #include <typeinfo>
+
 #include <cxxabi.h>
+
 #include <sigc++/signal.h>
+#include <glibmm/ustring.h>
 
 
 namespace Dino {
@@ -57,6 +60,11 @@ namespace Dino {
     
     /** Cast operator to std::string, for convenience. */
     operator std::string() {
+      return m_oss.str();
+    }
+    
+    /** Cast operator to Glib::ustring, for convenience. */
+    operator Glib::ustring() {
       return m_oss.str();
     }
     

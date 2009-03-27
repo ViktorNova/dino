@@ -37,9 +37,13 @@ public:
   
 protected:
   
+  void add_debug_msg(unsigned level, const std::string& file,
+		      unsigned line, const std::string& msg);
+  
   Dino::CommandProxy& m_proxy;
 
-  Gtk::ListViewText m_list;
+  Gtk::ListViewText m_stacklist;
+  Gtk::ListViewText m_dbglist;
   
 };
 

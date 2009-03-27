@@ -56,17 +56,18 @@ PluginLibrary::PluginLibrary(PluginInterface& plif)
           m_plugins[name] = PluginInfo(name, *iter);
         }
         else {
-          dbg0<<"Shared module \""<<(*iter)
-              <<"\" has no dino_plugin() callback"<<endl;
+          dbg(0, cc+ "Shared module \"" + (*iter) + 
+              "\" has no dino_plugin() callback");
         }
         dlclose(mod);
       }
       else
-        dbg0<<"Could not load module \""<<(*iter)<<"\": "<<dlerror()<<endl;
+        dbg(0, cc+ "Could not load module \"" + (*iter) + 
+	    "\": " + dlerror());
     }
   }
   catch (...) {
-    dbg0<<"Could not open plugin directory"<<endl;
+    dbg(0, "Could not open plugin directory");
     m_plugins.clear();
   }
 }
@@ -85,13 +86,13 @@ void PluginLibrary::refresh_list() {
   
 void PluginLibrary::load_plugin(iterator& iter) {
   if (!iter->second.loaded) {
-    dbg1<<"Loading plugin \""<<iter->second.name<<'"'<<endl;
+    dbg(1, cc+ "Loading plugin \"" + iter->second.name + '"');
     if (!iter->second.module) {
       string filename = string(PLUGIN_DIR) + "/" + iter->second.filename;
       iter->second.module = dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     }
     if (!iter->second.module) {
-      dbg0<<"Could not load module \""<<iter->second.filename<<"\""<<endl;
+      dbg(0, cc+ "Could not load module \"" + iter->second.filename + "\"");
       m_plif.set_status(string("Could not load module ") +
                         iter->second.filename);
     }
@@ -100,8 +101,8 @@ void PluginLibrary::load_plugin(iterator& iter) {
       if (!(plug = dlsym(iter->second.module, "dino_load_plugin"))) {
         dlclose(iter->second.module);
         iter->second.module = 0;
-        dbg0<<"Could not load plugin from file \""
-            <<iter->second.filename<<"\""<<endl;
+        dbg(0, cc+ "Could not load plugin from file \"" +
+            iter->second.filename + "\"");
         m_plif.set_status(string("Could not load plugin from file ") + 
                           iter->second.filename);
       }
@@ -118,11 +119,11 @@ void PluginLibrary::load_plugin(iterator& iter) {
  
 void PluginLibrary::unload_plugin(iterator& iter) {
   if (iter->second.loaded) {
-    dbg1<<"Unloading plugin \""<<iter->second.name<<"\""<<endl;
+    dbg(1, cc+ "Unloading plugin \"" + iter->second.name + "\"");
     void* plug;
     if (!(plug = dlsym(iter->second.module, "dino_unload_plugin"))) {
-      dbg0<<"Could not unload plugin \""<<iter->second.name
-          <<"\" - it has no unload function!"<<endl;
+      dbg(0, cc+ "Could not unload plugin \"" + iter->second.name +
+          "\" - it has no unload function!");
       m_plif.set_status(string("Could not unload ") + iter->second.name + "!");
     }
     else {

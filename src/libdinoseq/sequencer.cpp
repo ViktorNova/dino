@@ -59,11 +59,11 @@ namespace Dino {
       m_rec(song),
       m_sqbls(0) {
   
-    dbg1<<"Initialising sequencer"<<endl;
+    dbg(1, "Initialising sequencer");
   
     if (!init_jack(m_client_name)) {
-      dbg0<<"Could not initialise JACK!"<<endl;
-      dbg0<<"Could not initialise sequencer!"<<endl;
+      dbg(0, "Could not initialise JACK!");
+      dbg(0, "Could not initialise sequencer!");
       return;
     }
 
@@ -91,7 +91,7 @@ namespace Dino {
 
 
   Sequencer::~Sequencer() {
-    dbg1<<"Destroying sequencer"<<endl;
+    dbg(1, "Destroying sequencer");
     if (m_valid) {
       stop();
       go_to_beat(SongTime(0, 0));
@@ -174,8 +174,8 @@ namespace Dino {
     
       map<int, jack_port_t*>::const_iterator iter = m_output_ports.find(track);
       if (iter == m_output_ports.end()) {
-        dbg0<<"Trying to connect nonexistant output port "<<track
-            <<" to instrument "<<instrument<<endl;
+        dbg(0, cc+ "Trying to connect nonexistant output port " + track +
+            " to instrument " + instrument);
         return;
       }
       
@@ -224,7 +224,7 @@ namespace Dino {
   
   bool Sequencer::init_jack(const string& client_name) {
   
-    dbg1<<"Initialising JACK client"<<endl;
+    dbg(1, "Initialising JACK client");
     
     jack_set_error_function(&Sequencer::jack_error_function);
     m_jack_client = jack_client_open(client_name.c_str(), JackNullOption, 0);
@@ -233,23 +233,23 @@ namespace Dino {
     m_client_name = jack_get_client_name(m_jack_client);
     
     int err;
-    dbg1<<"Registering JACK timebase callback"<<endl;
+    dbg(1, "Registering JACK timebase callback");
     if ((err = jack_set_timebase_callback(m_jack_client, 0, 
                                           &Sequencer::jack_timebase_callback_,
                                           this)) != 0)
       return false;
-    dbg1<<"Registering JACK process callback"<<endl;
+    dbg(1, "Registering JACK process callback");
     if ((err = jack_set_process_callback(m_jack_client,
                                          &Sequencer::jack_process_callback_,
                                          this)) != 0)
       return false;
-    dbg1<<"Registering JACK port registration callback"<<endl;
+    dbg(1, "Registering JACK port registration callback");
     if ((err = jack_set_port_registration_callback(m_jack_client,
                                                    &Sequencer::jack_port_registration_callback_,
                                                    this)) != 0)
       return false;
     
-    dbg1<<"Registering JACK shutdown callback"<<endl;
+    dbg(1, "Registering JACK shutdown callback");
     jack_on_shutdown(m_jack_client, &Sequencer::jack_shutdown_handler_, this);
     
     m_input_port = jack_port_register(m_jack_client, "MIDI input", 
@@ -302,7 +302,7 @@ namespace Dino {
       sl = sl->m_next;
     }
     
-    dbg0<<"Sequencable list is broken"<<endl;
+    dbg(0, "Sequencable list is broken");
     return false;
   }
   
@@ -422,7 +422,7 @@ namespace Dino {
   
   void Sequencer::jack_shutdown_handler() {
     // XXX do something useful here
-    dbg0<<"JACK has shut down!"<<endl;
+    dbg(0, "JACK has shut down!");
   }
   
   

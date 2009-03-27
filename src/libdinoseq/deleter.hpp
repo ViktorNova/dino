@@ -61,14 +61,14 @@ namespace Dino {
     /** This constructor initialises the two ringbuffers and sets up a cleanup
 	function to delete objects every 100 milliseconds. */
     Deleter() : m_objects_not_used(1000), m_objects_to_delete(1000) {
-      dbg1<<"Initialising threadsafe deallocator"<<endl;
+      dbg(1, "Initialising threadsafe deallocator");
       m_connection = Glib::signal_timeout().
 	connect(sigc::bind_return(sigc::mem_fun(*this, &Deleter::do_delete), 
 				  true), 100);
     }
     
     ~Deleter() {
-      dbg1<<"Destroying threadsafe deallocator"<<endl;
+      dbg(1, "Destroying threadsafe deallocator");
       m_connection.disconnect();
     }
     

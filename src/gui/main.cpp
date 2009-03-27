@@ -59,7 +59,7 @@ static void signal_handler(int signal) {
 
 static bool signal_checker() {
   if (do_quit) {
-    dbg0<<"Caught signal "<<signum<<endl;
+    dbg(0, cc+ "Caught signal " + signum);
     Main::quit();
   }
   return true;
@@ -74,12 +74,12 @@ int main(int argc, char** argv) {
     return 0;
   }
   
-  dbg1<<"Dino "<<VERSION<<" starting"<<endl;
+  dbg(1, cc+ "Dino " + VERSION + " starting");
   
   // create the GUI
-  dbg1<<"Initialising gtkmm"<<endl;
+  dbg(1, "Initialising gtkmm");
   Main kit(argc, argv);
-  dbg1<<"Creating GUI"<<endl;
+  dbg(1, "Creating GUI");
   DinoGUI dino(argc, argv);
 
   if (dino.is_valid()) {
@@ -96,12 +96,12 @@ int main(int argc, char** argv) {
     signal_timeout().connect(&signal_checker, 300);
     
     // run
-    dbg1<<"Starting GUI"<<endl;
+    dbg(1, "Starting GUI");
     dino.get_window().show_all();
     Main::run(dino.get_window());
   }
   
-  dbg1<<"Dino "<<VERSION<<" exiting"<<endl;
+  dbg(1, cc+ "Dino " + VERSION + " exiting");
   
   return 0;
 }

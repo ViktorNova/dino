@@ -196,7 +196,7 @@ namespace Dino {
       m_loop_end(),
       m_dirty(false) {
   
-    dbg1<<"Initialising song"<<endl;
+    dbg(1, "Initialising song");
   
     m_tempo_map.signal_tempochange_added.
       connect(hide(signal_tempo_changed()));
@@ -209,7 +209,7 @@ namespace Dino {
 
 
   Song::~Song() {
-    dbg1<<"Destroying song"<<endl;
+    dbg(1, "Destroying song");
     map<int, Track*>* tracks = m_tracks;
     map<int, Track*>::iterator iter;
     for (iter = tracks->begin(); iter != tracks->end(); ++iter)
@@ -254,7 +254,7 @@ namespace Dino {
   
   void Song::set_title(const string& title) {
     if (title != m_title) {
-      dbg1<<"Changing song title to \""<<title<<"\""<<endl;
+      dbg(1, cc+ "Changing song title to \"" + title + "\"");
       m_title = title;
       m_dirty = true;
       m_signal_title_changed(m_title);
@@ -264,7 +264,7 @@ namespace Dino {
 
   void Song::set_author(const string& author) {
     if (author != m_author) {
-      dbg1<<"Changing song author to \""<<author<<"\""<<endl;
+      dbg(1, cc+ "Changing song author to \"" + author + "\"");
       m_author = author;
       m_dirty = true;
       m_signal_author_changed(m_author);

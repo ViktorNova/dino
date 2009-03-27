@@ -23,52 +23,87 @@
 
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <string>
 #include <typeinfo>
 #include <cxxabi.h>
+#include <sigc++/signal.h>
 
 
 namespace Dino {
+  
+  
+  /** A class that helps concatenate different objects into strings,
+      as long as they have a stream output operator. */
+  class Concatenator {
+  public:
+    
+    /** Default constructor does nothing. */
+    Concatenator() {
 
+    }
+    
+    /** This is needed because ostringstreams can't be copied. */
+    Concatenator(const Concatenator& cnc) {
+      m_oss.str(cnc.m_oss.str());
+    }
+    
+    /** Add @c obj to the concatenated string. */
+    template <typename T>
+    Concatenator& operator+(const T& obj) {
+      m_oss<<obj;
+      return *this;
+    }
+    
+    /** Cast operator to std::string, for convenience. */
+    operator std::string() {
+      return m_oss.str();
+    }
+    
+    /** Cast operator to const char*, for convenience. */
+    operator const char*() {
+      return m_oss.str().c_str();
+    }
 
+    
+    std::ostringstream m_oss;
+
+  };
+  
+  
+  /** A class that creates a Concatenator object. */
+  class ConcatenatorFactory {
+  public:
+    
+    template <typename T>
+    Concatenator operator+(const T& obj) {
+      Concatenator cnc;
+      cnc + obj;
+      return cnc;
+    }
+
+  };
+  
+  
+  extern ConcatenatorFactory cc;
+  
+  extern sigc::signal<void, int, std::string&, int, std::string&> signal_debug;
+  
+  
 #ifndef NDEBUG
 
-  extern std::ostream& dbg0_real;
-  extern std::ostream& dbg1_real;
-  
-  
+  void dbg_real(unsigned level, const std::string& file, 
+		unsigned line, const std::string& msg);
+
   /* Macros are ugly, but in this case they are the only way to get the 
      __FILE__ and __LINE__ from the caller. */
-#define dbg0 dbg0_real<<"\033[31;1m"<<'['<<std::setw(16)<<std::setfill(' ') \
-    <<__FILE__<<':'<<std::setw(3)<<std::setfill('0')<<__LINE__<<"] "<<"\033[0m"
-#define dbg1 dbg1_real<<"\033[32;1m"<<'['<<std::setw(16)<<std::setfill(' ') \
-    <<__FILE__<<':'<<std::setw(3)<<std::setfill('0')<<__LINE__<<"] "<<"\033[0m"
+#define dbg(LEVEL, MSG) dbg_real(LEVEL, __FILE__, __LINE__, MSG)
 
 #else
 
-
-  /** If NDEBUG is defined @c dbg0 will simply be a reference to @c std::cerr. */
-  extern ostream& dbg0;
-
-  struct NoOpStream {
-
-  };
-
-  extern NoOpStream dbg1;
-
-
-  /** This function will just return a reference to the parameter @c a. It is
-      used to turn off debug printing when @c NDEBUG is defined. */
-  template <class T>
-  inline NoOpStream& operator<<(NoOpStream& a, const T&) { 
-    return a;
-  }
-
-  /** This function will just return a reference to the parameter @c a. It is
-      used to turn off debug printing when @c NDEBUG is defined. */
-  inline NoOpStream& operator<<(NoOpStream& a, ostream& (*__pf)(ostream&)) { 
-    return a;
-  }
+  /** If NDEBUG is defined @c dbg will simply print to std::cerr if the level
+      is 0. */
+#define dbg(LEVEL, MSG) do { if (!LEVEL) std::cerr<<MSG<<std::endl; } while (false)
 
 #endif
 

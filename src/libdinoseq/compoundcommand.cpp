@@ -44,8 +44,8 @@ namespace Dino {
     m_used = true;
     for (int i = 0; i < static_cast<int>(m_commands.size()); ++i) {
       if (!m_commands[i]->do_command()) {
-	dbg0<<"Compound command member '"<<m_commands[i]->get_name()
-	    <<"' failed!"<<std::endl;
+	dbg(0, "Compound command member '" + m_commands[i]->get_name() +
+	    "' failed!");
 	for (--i; i >= 0; --i)
 	  m_commands[i]->undo_command();
 	return false;

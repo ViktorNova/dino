@@ -687,7 +687,7 @@ MenuItem* DinoGUI::create_menu_item(Gtk::Menu& menu, const StockID& id,
 
 
 bool DinoGUI::init_lash(int argc, char** argv, const std::string& jack_name) {
-  dbg1<<"Initialising LASH client"<<endl;
+  dbg(1, "Initialising LASH client");
   m_lash_client = lash_init(lash_extract_args(&argc, &argv), "dino", 
                             LASH_Config_File, LASH_PROTOCOL(2, 0));
   
@@ -700,7 +700,7 @@ bool DinoGUI::init_lash(int argc, char** argv, const std::string& jack_name) {
       connect(mem_fun(*this, &DinoGUI::slot_check_ladcca_events), 500);
   }
   else
-    dbg0<<"Could not initialise LASH!"<<endl;
+    dbg(0, "Could not initialise LASH!");
   return (m_lash_client != 0);
 }
 

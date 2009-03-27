@@ -47,11 +47,11 @@ namespace Dino {
   
   std::string CommandProxy::get_next_undo_name() const {
     if (m_stack.empty()) {
-      dbg1<<"The stack is now empty"<<std::endl;
+      dbg(1, "The stack is now empty");
       return "";
     }
-    dbg1<<"The stack top is now "<<m_stack.front()<<std::endl;
-    dbg1<<"The stack size is now "<<m_stack.size()<<std::endl;
+    dbg(1, cc + "The stack top is now " + m_stack.front());
+    dbg(1, cc + "The stack size is now " + m_stack.size());
     return m_stack.front()->get_name();
   }
   
@@ -66,8 +66,7 @@ namespace Dino {
       return false;
     
     if (m_atomic_count > 0) {
-      dbg1<<"undo() called while an atomic command was being queued!"
-	  <<std::endl;
+      dbg(1, "undo() called while an atomic command was being queued!");
       delete m_atomic;
       m_atomic = 0;
       m_atomic_count = 0;
@@ -387,7 +386,7 @@ namespace Dino {
   bool CommandProxy::push_and_do(Command* cmd) {
     
     if (m_active) {
-      dbg0<<"A command is already running!"<<std::endl;
+      dbg(0, "A command is already running!");
       delete cmd;
       return false;
     }
@@ -405,7 +404,7 @@ namespace Dino {
       return true;
     }
     else {
-      dbg0<<"Command '"<<cmd->get_name()<<"' failed!"<<std::endl;
+      dbg(0, cc+ "Command '" + cmd->get_name() + "' failed!");
       delete cmd;
     }
     m_active = false;

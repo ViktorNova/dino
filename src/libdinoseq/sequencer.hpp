@@ -167,7 +167,7 @@ namespace Dino {
       static_cast<Sequencer*>(arg)->jack_port_registration_callback(port, m);
     }
     static void jack_error_function(const char* msg) {
-      Dino::dbg0<<"JACK: "<<msg<<std::endl;
+      Dino::dbg(0, cc+ "JACK: " + msg);
     }
     //@}
     

@@ -21,19 +21,24 @@
 #include "debug.hpp"
 
 
+using namespace std;
+
+
 namespace Dino {
 
+  ConcatenatorFactory cc;
+
+  sigc::signal<void, int, std::string&, int, std::string&> signal_debug;
 
 #ifndef NDEBUG 
 
-  std::ostream& dbg0_real(std::cerr);
-  std::ostream& dbg1_real(std::cerr);
-  
-#else
-
-  std::ostream& dbg0(std::cerr);
-  
-  NoOpStream dbg1;
+  void dbg_real(unsigned level, const std::string& file, 
+		unsigned line, const std::string& msg) {
+    cerr<<(level ? "\033[32;1m" : "\033[31;1m")
+	<<'['<<std::setw(16)<<std::setfill(' ')<<file<<':'
+	<<setw(3)<<std::setfill('0')<<__LINE__<<"] "
+	<<"\033[0m"<<msg<<endl;
+  }
   
 #endif
 

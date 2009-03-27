@@ -207,12 +207,12 @@ namespace Dino {
       m_length(length),
       m_dirty(false) {
   
-    dbg1<<"Creating track \""<<name<<"\""<<endl;
+    dbg(1, cc+ "Creating track \"" + name + "\"");
   }
 
 
   Track::~Track() {
-    dbg1<<"Destroying track \""<<m_name<<"\""<<endl;
+    dbg(1, cc+ "Destroying track \"" + m_name + "\"");
     map<int, Pattern*>::iterator iter;
     for (iter = m_patterns.begin(); iter != m_patterns.end(); ++iter)
       delete iter->second;
@@ -388,7 +388,8 @@ namespace Dino {
     }
     
     // add the ControllerInfo object
-    dbg1<<"Adding controller \""<<name<<"\" in track \""<<m_name<<"\""<<endl;
+    dbg(1, cc+ "Adding controller \"" + name + "\" in track \"" + 
+	m_name +"\"");
     ControllerInfo* ci = new ControllerInfo(number, name);
     ci->set_default(default_v);
     ci->set_min(min);
@@ -417,8 +418,8 @@ namespace Dino {
     }
     
     // add the ControllerInfo object
-    dbg1<<"Adding controller \""<<info->get_name()<<"\" in track \""
-	<<m_name<<"\""<<endl;
+    dbg(1, cc+ "Adding controller \"" + info->get_name() + 
+	"\" in track \""  + m_name + "\"");
     m_controllers.push_back(info);
     
     // if it is a global controller, add a curve to the track
@@ -481,8 +482,8 @@ namespace Dino {
 	}
 
 	ControllerInfo* tmp = m_controllers[i];
-	dbg1<<"Removing controller \""<<tmp->get_name()<<"\" from track \""
-	    <<m_name<<"\""<<endl;
+	dbg(1, cc+ "Removing controller \"" + tmp->get_name() + 
+	    "\" from track \"" + m_name + "\"");
 	m_controllers.erase(m_controllers.begin() + i);
 	m_signal_controller_removed(number);
 
@@ -713,7 +714,8 @@ namespace Dino {
   /** Sets the name of this track. */
   void Track::set_name(const string& name) {
     if (name != m_name) {
-      dbg1<<"Changing track name from \""<<m_name<<"\" to \""<<name<<"\""<<endl;
+      dbg(1, cc+ "Changing track name from \"" + m_name + "\" to \"" +
+	  name + "\"");
       m_name = name;
       m_signal_name_changed(m_name);
     }
@@ -947,7 +949,8 @@ namespace Dino {
 
   /** Set the MIDI channel for this track. */
   void Track::set_channel(int channel) {
-    dbg1<<"Setting MIDI channel for track \""<<m_name<<"\" to "<<channel<<endl;
+    dbg(1, cc+ "Setting MIDI channel for track \"" + m_name + 
+	"\" to " + channel);
     m_channel = channel;
   }
   
@@ -957,7 +960,7 @@ namespace Dino {
     if (m_mode == mode)
       return;
     m_mode = mode;
-    dbg1<<"Setting new track mode: "<<mode<<endl;
+    dbg(1, cc+ "Setting new track mode: " + mode);
     m_signal_mode_changed(mode);
   }
 

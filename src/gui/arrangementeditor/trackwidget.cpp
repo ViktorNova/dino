@@ -38,21 +38,21 @@ TrackWidget::TrackWidget(CommandProxy& proxy)
   pack_start(m_swdg);
   show_all();
   
-  dbg1<<"Created TrackWidget 0x"<<hex<<this<<dec<<endl;
+  dbg(1, cc+ "Created TrackWidget 0x" + hex + this + dec);
   
   m_cce.signal_status().connect(signal_status);
 }
 
 
 TrackWidget::~TrackWidget() {
-  dbg1<<"Destroyed TrackWidget 0x"<<hex<<this<<dec<<endl;
+  dbg(1, cc+ "Destroyed TrackWidget 0x" + hex + this + dec);
 }
 
 
 void TrackWidget::set_track(const Dino::Track* track) {
   
-  dbg1<<"set_track(0x"<<hex<<track<<dec<<") for TrackWidget 0x"
-      <<hex<<this<<dec<<endl;
+  dbg(1, cc+ "set_track(0x" + hex + track + dec + ") for TrackWidget 0x" +
+      hex + this + dec);
   
   m_ctrl_added_connection.disconnect();
   m_ctrl_removed_connection.disconnect();

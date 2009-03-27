@@ -38,7 +38,7 @@ namespace Dino {
       m_frame2tc(new CDTree<TempoChange*>(400000000)),
       m_frame_rate(frame_rate) {
   
-    dbg1<<"Initialising tempo map"<<endl;
+    dbg(1, "Initialising tempo map");
   
     const_cast<CDTree<TempoChange*>*>(m_frame2tc)->fill(0, 400000000, m_tc_list);
   }

@@ -72,8 +72,9 @@ void PluginDialog::set_library(PluginLibrary& plib) {
 void PluginDialog::row_changed(const TreeModel::iterator& iter) {
   PluginLibrary::iterator piter = m_plib->find((*iter)[m_columns.name]);
   if (piter == m_plib->end()) {
-    dbg0<<"Trying to load or unload \""<<string((*iter)[m_columns.name])<<"\", "
-        <<"which doesn't exist"<<endl;
+    dbg(0, cc+ "Trying to load or unload \"" + 
+	string((*iter)[m_columns.name]) + "\", " +
+        "which doesn't exist");
     return;
   }
   if ((*iter)[m_columns.loaded])

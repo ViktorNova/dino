@@ -166,7 +166,7 @@ namespace Dino {
       m_dirty(false),
       m_length(length) {
     
-    dbg1<<"Creating pattern \""<<m_name<<"\""<<endl;
+    dbg(1, cc+ "Creating pattern \"" + m_name + "\"");
     
     assert(steps > 0);
     assert(length > SongTime(0, 0));
@@ -184,7 +184,7 @@ namespace Dino {
       m_dirty(false),
       m_length(pat.get_length()) {
 
-    dbg1<<"Duplicating pattern \""<<pat.get_name()<<"\""<<endl;
+    dbg(1, cc+ "Duplicating pattern \"" + pat.get_name() + "\"");
     
     m_min_step = 9999999;
     m_max_step = -1;
@@ -220,7 +220,7 @@ namespace Dino {
 
 
   Pattern::~Pattern() {
-    dbg1<<"Destroying pattern \""<<m_name<<"\""<<endl;
+    dbg(1, cc+ "Destroying pattern \"" + m_name + "\"");
     NoteEventList::iterator iter;
     
     // delete all note on events
@@ -263,8 +263,8 @@ namespace Dino {
   
   void Pattern::set_name(const string& name) {
     if (name != m_name) {
-      dbg1<<"Changing pattern name from \""<<m_name<<"\" to \""
-          <<name<<"\""<<endl;
+      dbg(1, cc+ "Changing pattern name from \"" + m_name + "\" to \"" +
+          name + "\"");
       m_name = name;
       m_signal_name_changed(m_name);
     }
@@ -601,9 +601,9 @@ namespace Dino {
   void Pattern::add_curve_point(uint32_t number, const SongTime& time, 
 				int value) {
     
-    dbg1<<__PRETTY_FUNCTION__<<": "<<number
-	<<", "<<time.get_beat()<<":"<<time.get_tick()
-	<<", "<<value<<endl;
+    dbg(1, cc+ __PRETTY_FUNCTION__ + ": " + number +
+	", " + time.get_beat() + ":" + time.get_tick() +
+	", " + value);
     
     if (time < SongTime(0, 0) && time >= m_length)
       return;

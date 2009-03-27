@@ -2,6 +2,66 @@ This file contains some information that may be useful if you want to modify
 Dino.
 
 
+WHAT DO YOU WANT TO DO?
+=======================
+Dino is divided into 4 major parts:
+
+ * libdinoseq - a shared library that contains all the data structures and
+                algorithms for storing, modifying and sequencing
+                pattern-based songs and provides a framework for undoable
+                commands. It depends on libxml++, libglibmm and libjack, 
+                but has no GUI code. If you for example want to write a
+                KDE or curses version of Dino, this is the library that
+                you want to link to.
+
+ * Dino -       a Gtkmm-based GUI program that creates a main window and
+                sets up the song and sequencer structures from libdinoseq.
+                It does not provide any way to edit or view the song data
+                on its own, but it acts as a host for plugins which do that.
+
+ * Plugins -    these are the components that provide the actual editing
+                tools, such as the piano roll editor and the arrangement
+                editor. They have access to the sequencer and the song data
+                through the plugin interface. There are two main ways for 
+                plugins to interact with the user:
+
+                  * by providing GUI pages, which are Gtkmm widgets added
+                    as pages in the main Notebook widget. These GUI pages
+                    can display whatever GUI elements they need in order to
+                    interact with the user. All the tabs you see when you
+                    start Dino are GUIPages from different plugins. The
+                    info editor is a nice and simple example of a plugin
+                    with a GUI page.
+
+                  * by providing actions, which basically are bits of code
+                    that modify certain types of data in the song. They are
+                    registered with the plugin interface and sorted by the
+                    type of data they act on, so other plugins with GUI pages
+                    can display them in context menus for that data type.
+                    All the actions that are available by default are
+                    implemented in the core actions plugin.
+
+ * libdinoseq_gui - a small library of widgets that are used by plugins and
+                    the main program.
+
+For most hacking purposes writing a plugin should be enough; that is after
+all the whole point of having a plugin system. If you want to create a
+different pattern editor, for example one that displays the MIDI data in 
+classical notation, you can write a plugin that does that and load it instead
+of the default pattern editor plugin. Or have both loaded at the same time - 
+if they are written properly they should sync automatically.
+
+If you want to do something that requires access to the song data in a way
+that isn't available in libdinoseq, or extend the actual data model as opposed
+to just the way it's presented and edited, or change something in the 
+sequencer, you will have to hack libdinoseq. If you do that, any plugin which
+uses the new functions in libdinoseq will obviously not work with the old
+version. In this case you should consider sending your changes upstream to the
+maintainer of the official Dino repository so they can be merged with the
+standard version of libdinoseq. The same goes for Dino and changes to the
+plugin system or GUI framework.
+
+
 ABOUT VERSION NAMES
 ===================
 Dino version names normally consist of 3 numbers separated by points, 
@@ -20,7 +80,7 @@ even minor version numbers (releases), the patch level is changed for
 bugfix releases.
 
 If you want to create your own version of Dino you can of course use any
-version name you like, but if you want to minimise confusion you should use
+version name you like, but if you want to minimise confusion you could use
 the name of the official version you are basing your version on, followed by
 a point, a short alphanumerical name, another point and a patch level, like
 this:

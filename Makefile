@@ -131,7 +131,7 @@ scriptinterpreters_INSTALLDIR = $(pkgdatadir)/interpreters
 
 
 # The GUI plugins
-MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so scriptinterface.so
+MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so scriptinterface.so debugging.so
 
 # The sequence editor
 arrangementeditor_so_SOURCES = \
@@ -184,6 +184,16 @@ scriptinterface_so_SOURCEDIR = src/gui/scriptinterface
 scriptinterface_so_LDFLAGS = `pkg-config --libs gtkmm-2.4 vte`
 scriptinterface_so_LIBRARIES = src/libdinoseq/libdinoseq.so
 scriptinterface_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0 vte` -Isrc/libdinoseq -Isrc/gui -DINTERPRETERDIR=\"$(pkgdatadir)/interpreters\"
+
+# Debugging
+debugging_so_SOURCES = \
+	debugging.cpp \
+	debuggingpage.cpp debuggingpage.hpp
+debugging_so_SOURCEDIR = src/gui/debugging
+debugging_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
+debugging_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
+debugging_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui -Isrc/gui/libdinoseq_gui
+
 
 
 # Do the magic

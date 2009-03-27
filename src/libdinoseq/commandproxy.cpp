@@ -50,13 +50,13 @@ namespace Dino {
       dbg1<<"The stack is now empty"<<std::endl;
       return "";
     }
-    dbg1<<"The stack top is now "<<m_stack.top()<<std::endl;
+    dbg1<<"The stack top is now "<<m_stack.front()<<std::endl;
     dbg1<<"The stack size is now "<<m_stack.size()<<std::endl;
-    return m_stack.top()->get_name();
+    return m_stack.front()->get_name();
   }
   
 
-  const std::stack<Command*>& CommandProxy::get_undo_stack() const {
+  const std::deque<Command*>& CommandProxy::get_undo_stack() const {
     return m_stack;
   }
   
@@ -78,8 +78,8 @@ namespace Dino {
     std::cerr<<__PRETTY_FUNCTION__<<std::endl;
     if (m_stack.empty())
       return false;
-    Command* cmd = m_stack.top();
-    m_stack.pop();
+    Command* cmd = m_stack.front();
+    m_stack.pop_front();
     cmd->undo_command();
     delete cmd;
     if (m_stack.empty())
@@ -399,7 +399,7 @@ namespace Dino {
     
     m_active = true;
     if (cmd->do_command()) {
-      m_stack.push(cmd);
+      m_stack.push_front(cmd);
       m_signal_stack_changed();
       m_active = false;
       return true;

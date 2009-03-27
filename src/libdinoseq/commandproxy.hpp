@@ -19,7 +19,7 @@
 ****************************************************************************/
 
 #include <string>
-#include <stack>
+#include <deque>
 
 #include <sigc++/signal.h>
 
@@ -60,7 +60,7 @@ namespace Dino {
     std::string get_next_undo_name() const;
     
     /** Return the undo stack (for debugging purposes). */
-    const std::stack<Command*>& get_undo_stack() const;
+    const std::deque<Command*>& get_undo_stack() const;
     
     /** Undo the last command, if possible. */
     bool undo();
@@ -198,7 +198,7 @@ namespace Dino {
     Song& m_song;
     
     /** The stack of undoable commands. */
-    std::stack<Command*> m_stack;
+    std::deque<Command*> m_stack;
     
     /** A signal that is activated whenever the stack changes. */
     sigc::signal<void> m_signal_stack_changed;

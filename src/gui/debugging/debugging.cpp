@@ -43,13 +43,11 @@ extern "C" {
   
   void dino_load_plugin(PluginInterface& plif) {
     g_plif = &plif;
-    cout<<"Loaded the debugging plugin!"<<endl;
     g_dbp = manage(new DebuggingPage(g_plif->get_command_proxy()));
     g_plif->add_page("Debugging", *g_dbp);
   }
   
   void dino_unload_plugin() {
-    cout<<"Unloaded the debugging plugin!"<<endl;
     g_plif->remove_page(*g_dbp);
   }
   

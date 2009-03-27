@@ -20,7 +20,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <cstdio>
 #include <cstring>
 #include <iostream>
 
@@ -1125,89 +1124,89 @@ namespace Dino {
   }
 
 
-  signal<void, const string&>& Track::signal_name_changed() const {
+  sigc::signal<void, const string&>& Track::signal_name_changed() const {
     return m_signal_name_changed;
   }
 
 
-  signal<void, int>& Track::signal_pattern_added() const {
+  sigc::signal<void, int>& Track::signal_pattern_added() const {
     return m_signal_pattern_added;
   }
 
 
-  signal<void, int>& Track::signal_pattern_removed() const {
+  sigc::signal<void, int>& Track::signal_pattern_removed() const {
     return m_signal_pattern_removed;
   }
 
 
-  signal<void, const SongTime&, int, const SongTime&>& 
+  sigc::signal<void, const SongTime&, int, const SongTime&>& 
   Track::signal_sequence_entry_added() const {
     return m_signal_sequence_entry_added;
   }
 
 
-  signal<void, const SongTime&, int, const SongTime&>&
+  sigc::signal<void, const SongTime&, int, const SongTime&>&
   Track::signal_sequence_entry_changed() const {
     return m_signal_sequence_entry_changed;
   }
 
 
-  signal<void, const SongTime&>& Track::signal_sequence_entry_removed() const {
+  sigc::signal<void, const SongTime&>& Track::signal_sequence_entry_removed() const {
     return m_signal_sequence_entry_removed;
   }
 
 
-  signal<void, const SongTime&>& Track::signal_length_changed() const {
+  sigc::signal<void, const SongTime&>& Track::signal_length_changed() const {
     return m_signal_length_changed;
   }
 
 
-  signal<void, long>& Track::signal_controller_added() const {
+  sigc::signal<void, long>& Track::signal_controller_added() const {
     return m_signal_controller_added;
   }
 
   
-  signal<void, long>& Track::signal_controller_removed() const {
+  sigc::signal<void, long>& Track::signal_controller_removed() const {
     return m_signal_controller_removed;
   }
   
   
-  signal<void, long>& Track::signal_controller_changed() const {
+  sigc::signal<void, long>& Track::signal_controller_changed() const {
     return m_signal_controller_changed;
   }
   
   
-  signal<void, long>& Track::signal_curve_added() const {
+  sigc::signal<void, long>& Track::signal_curve_added() const {
     return m_signal_curve_added;
   }
   
   
-  signal<void, long>& Track::signal_curve_removed() const {
+  sigc::signal<void, long>& Track::signal_curve_removed() const {
     return m_signal_curve_removed;
   }
 
 
-  signal<void, unsigned char>& Track::signal_key_added() const {
+  sigc::signal<void, unsigned char>& Track::signal_key_added() const {
     return m_signal_key_added;
   }
 
 
-  signal<void, unsigned char>& Track::signal_key_removed() const {
+  sigc::signal<void, unsigned char>& Track::signal_key_removed() const {
     return m_signal_key_removed;
   }
 
 
-  signal<void, unsigned char>& Track::signal_key_changed() const {
+  sigc::signal<void, unsigned char>& Track::signal_key_changed() const {
     return m_signal_key_changed;
   }
 
 
-  signal<void, unsigned char, unsigned char>& Track::signal_key_moved() const {
+  sigc::signal<void, unsigned char, unsigned char>& Track::signal_key_moved() const {
     return m_signal_key_moved;
   }
 
 
-  signal<void, Track::Mode>& Track::signal_mode_changed() const {
+  sigc::signal<void, Track::Mode>& Track::signal_mode_changed() const {
     return m_signal_mode_changed;
   }
 

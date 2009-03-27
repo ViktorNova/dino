@@ -28,12 +28,14 @@ namespace Dino {
 
   ConcatenatorFactory cc;
 
-  sigc::signal<void, int, std::string&, int, std::string&> signal_debug;
+  sigc::signal<void, int, const std::string&, 
+	       int, const std::string&> signal_debug;
 
 #ifndef NDEBUG 
 
   void dbg_real(unsigned level, const std::string& file, 
 		unsigned line, const std::string& msg) {
+    signal_debug(level, file, line, msg);
     cerr<<(level ? "\033[32;1m" : "\033[31;1m")
 	<<'['<<std::setw(16)<<std::setfill(' ')<<file<<':'
 	<<setw(3)<<std::setfill('0')<<__LINE__<<"] "

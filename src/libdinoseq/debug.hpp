@@ -87,7 +87,8 @@ namespace Dino {
   
   extern ConcatenatorFactory cc;
   
-  extern sigc::signal<void, int, std::string&, int, std::string&> signal_debug;
+  extern sigc::signal<void, int, const std::string&, 
+		      int, const std::string&> signal_debug;
   
   
 #ifndef NDEBUG

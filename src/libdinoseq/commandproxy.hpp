@@ -59,6 +59,9 @@ namespace Dino {
 	is none). */
     std::string get_next_undo_name() const;
     
+    /** Return the undo stack (for debugging purposes). */
+    const std::stack<Command*>& get_undo_stack() const;
+    
     /** Undo the last command, if possible. */
     bool undo();
 

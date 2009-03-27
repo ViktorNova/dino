@@ -56,6 +56,11 @@ namespace Dino {
   }
   
 
+  const std::stack<Command*>& CommandProxy::get_undo_stack() const {
+    return m_stack;
+  }
+  
+
   bool CommandProxy::undo() {
     if (m_active)
       return false;

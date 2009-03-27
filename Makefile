@@ -1,5 +1,5 @@
 PACKAGE_NAME = dino
-PACKAGE_VERSION = $(shell git describe --match 'Version_*' | sed 's/Version_//' | sed 's/-/ /g' | awk '{ print $$1 " " $$2}' | sed -r 's/\.([0-9]+) / \1 /' | awk '{ print $$1 "." $$2+$$3 }')$(shell if test $$(git ls-files --modified | wc -l) -gt 0 ; then echo .EDITED; fi)
+PACKAGE_VERSION = $(shell ./VERSION)
 PKG_DEPS = \
 	gtkmm-2.4>=2.10 \
 	libxml++-2.6>=2.6.1 \
@@ -11,7 +11,7 @@ PKG_DEPS = \
 
 # Data files
 DATA = src/gui/pixmaps/midisaurus.png src/gui/pixmaps/head.png src/gui/pixmaps/tinykeyboard.png
-DOCS = AUTHORS COPYING README TODO ChangeLog
+DOCS = AUTHORS COPYING HACKING README TODO ChangeLog
 
 
 # The main program (we need to link it with -Wl,-E to allow RTTI with plugins)

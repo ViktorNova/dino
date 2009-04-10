@@ -31,7 +31,6 @@
 
 
 using namespace Glib;
-using namespace sigc;
 using namespace std;
 using namespace xmlpp;
 
@@ -194,13 +193,13 @@ namespace Dino {
     
     /// @name Signals
     //@{
-    signal<void, const string&> signal_name_changed;
-    signal<void, int> signal_pattern_added; 
-    signal<void, int> signal_pattern_removed;
-    signal<void, int, int, int> signal_sequence_entry_added;
-    signal<void, int, int, int> signal_sequence_entry_changed;
-    signal<void, int> signal_sequence_entry_removed;
-    signal<void, int> signal_length_changed;
+    sigc::signal<void, const string&> signal_name_changed;
+    sigc::signal<void, int> signal_pattern_added; 
+    sigc::signal<void, int> signal_pattern_removed;
+    sigc::signal<void, int, int, int> signal_sequence_entry_added;
+    sigc::signal<void, int, int, int> signal_sequence_entry_changed;
+    sigc::signal<void, int> signal_sequence_entry_removed;
+    sigc::signal<void, int> signal_length_changed;
     //@}
     
   private:

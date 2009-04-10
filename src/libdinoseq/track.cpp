@@ -30,6 +30,9 @@
 #include "track.hpp"
 
 
+using namespace sigc;
+
+
 namespace Dino {
 
 

@@ -240,10 +240,13 @@ namespace Dino {
     pos->ticks_per_beat = 10000;
     
     
+    // can't pass references to pos-> members directly since it's packed
     int32_t beat, tick;
+    double bpm, frame_offset;
     m_song.get_timebase_info(pos->frame, pos->frame_rate, pos->ticks_per_beat,
-			     pos->beats_per_minute, beat, tick, 
-			     pos->bar_start_tick);
+			     bpm, beat, tick, frame_offset);
+    pos->beats_per_minute = bpm;
+    pos->bar_start_tick = frame_offset;
 
     // if we are standing still or if we just relocated, calculate 
     // the new position

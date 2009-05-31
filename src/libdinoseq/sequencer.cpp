@@ -211,7 +211,7 @@ namespace Dino {
   
   Dino::Song::TrackIterator Sequencer::get_recording_track() {
     int trk;
-    if (trk = m_rec.get_track())
+    if ((trk = m_rec.get_track()))
       return m_song.tracks_find(trk);
     return m_song.tracks_end();
   }
@@ -505,13 +505,11 @@ namespace Dino {
     // record MIDI
     void* input_buf = jack_port_get_buffer(m_input_port, nframes);
     jack_midi_event_t input_event;
-    jack_nframes_t input_event_index = 0;
     jack_nframes_t input_event_count = jack_midi_get_event_count(input_buf);
-    jack_nframes_t timestamp;
-    double bpf = pos.beats_per_minute / (60 * pos.frame_rate);
+    //double bpf = pos.beats_per_minute / (60 * pos.frame_rate);
     for (unsigned int i = 0; i < input_event_count; ++i) {
       jack_midi_event_get(&input_event, input_buf, i);
-      double beat = start + input_event.time * bpf;
+      //double beat = start + input_event.time * bpf;
       //m_rec.record_event(beat, input_event.size, input_event.buffer);
     }
 

@@ -163,8 +163,8 @@ namespace Dino {
 		   const SongTime& length, int steps) 
     : m_id(id),
       m_name(name),
-      m_dirty(false),
-      m_length(length) {
+      m_length(length),
+      m_dirty(false) {
     
     dbg(1, cc+ "Creating pattern \"" + m_name + "\"");
     
@@ -181,8 +181,8 @@ namespace Dino {
   Pattern::Pattern(int id, const Pattern& pat) 
     : m_id(id),
       m_name(pat.get_name()),
-      m_dirty(false),
-      m_length(pat.get_length()) {
+      m_length(pat.get_length()),
+      m_dirty(false) {
 
     dbg(1, cc+ "Duplicating pattern \"" + pat.get_name() + "\"");
     
@@ -299,6 +299,8 @@ namespace Dino {
     
     m_length = length;
     m_signal_length_changed(m_length);
+    
+    return true;
   }
 
 

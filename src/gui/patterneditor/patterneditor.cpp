@@ -384,7 +384,7 @@ void PatternEditor::set_active_controller(long controller) {
   if (t != m_song.tracks_end()) {
     Track::PatternIterator p = t->pat_find(m_active_pattern);
     if (p != t->pat_end()) {
-      if (controller >= 0 && controller < t->get_controllers().size() &&
+      if (controller >= 0 && static_cast<unsigned long>(controller) < t->get_controllers().size() &&
 	  !t->get_controllers()[controller]->get_global()) {
 	m_cce.set_curve(*t, *p, *(t->get_controllers()[controller]));
 	return;
@@ -452,7 +452,7 @@ void PatternEditor::edit_pattern_properties() {
 	m_proxy.set_pattern_length(m_active_track, m_active_pattern,
 				   SongTime(m_dlg_pattern->get_length(), 0));
       }
-      if (m_dlg_pattern->get_steps() != pat->get_steps()) {
+      if (static_cast<unsigned>(m_dlg_pattern->get_steps()) != pat->get_steps()) {
 	m_proxy.set_pattern_steps(m_active_track, m_active_pattern,
 				  m_dlg_pattern->get_steps());
       }

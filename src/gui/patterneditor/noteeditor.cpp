@@ -279,7 +279,7 @@ bool NoteEditor::on_button_press_event(GdkEventButton* event) {
   
   // check that we're on the editor surface
   if (step >= 0 && 
-      step < m_pat->get_length().get_beat() * m_pat->get_steps() && 
+      step < static_cast<int>(m_pat->get_length().get_beat() * m_pat->get_steps()) && 
       row >= 0 && row < m_rows) {
     
     m_drag_y = int(event->y);
@@ -544,10 +544,10 @@ bool NoteEditor::on_button_release_event(GdkEventButton* event) {
   if (m_drag_operation == DragSelectBox) {
     m_drag_operation = DragNoOperation;
     Pattern::NoteIterator iter;
-    unsigned int minstep = m_drag_step < m_sb_step ? m_drag_step : m_sb_step;
-    unsigned int maxstep = m_drag_step > m_sb_step ? m_drag_step : m_sb_step;
-    unsigned int minrow = m_drag_row < m_sb_row ? m_drag_row : m_sb_row;
-    unsigned int maxrow = m_drag_row > m_sb_row ? m_drag_row : m_sb_row;
+    int minstep = m_drag_step < m_sb_step ? m_drag_step : m_sb_step;
+    int maxstep = m_drag_step > m_sb_step ? m_drag_step : m_sb_step;
+    int minrow = m_drag_row < m_sb_row ? m_drag_row : m_sb_row;
+    int maxrow = m_drag_row > m_sb_row ? m_drag_row : m_sb_row;
     for (iter = m_pat->notes_begin(); iter != m_pat->notes_end(); ++iter) {
       if (iter->get_time().get_beat() <= maxstep && 
 	  iter->get_time().get_beat() + iter->get_length().get_beat() >= 
@@ -602,7 +602,6 @@ bool NoteEditor::on_motion_notify_event(GdkEventMotion* event) {
       step = m_pat->get_length().get_beat() * m_pat->get_steps() - 1;
     Pattern::NoteIterator iterator = 
       m_pat->find_note(SongTime(m_added_note.first, 0), m_added_note.second);
-    unsigned new_size = step - m_added_note.first + 1;
     NoteSelection::Iterator iter;
     m_last_note_length = step - m_added_note.first + 1;
     m_drag_step = step;
@@ -844,14 +843,14 @@ void NoteEditor::draw_outline(const Dino::NoteCollection& notes,
     m_gc->set_foreground(m_bad_hl_color);
   NoteCollection::ConstIterator iter;
   for (iter = notes.begin(); iter != notes.end(); ++iter) {
-    if (step + iter->start.get_beat() >= 
+    if (static_cast<unsigned>(step + iter->start.get_beat()) >= 
 	m_pat->get_length().get_beat() * m_pat->get_steps())
       continue;
     int r = iter->key + row;
     if (r >= m_rows)
       continue;
     int length = iter->length.get_beat();
-    if (step + (iter->start + iter->length).get_beat() >= 
+    if (static_cast<unsigned>(step + (iter->start + iter->length).get_beat()) >= 
 	m_pat->get_length().get_beat() * m_pat->get_steps())
       length = m_pat->get_length().get_beat() * m_pat->get_steps() - step - iter->start.get_beat();
     win->draw_rectangle(m_gc, false, step2pixel(step + iter->start.get_beat()),
@@ -910,7 +909,7 @@ void NoteEditor::mode_changed(Track::Mode mode) {
 
 void NoteEditor::draw_background(RefPtr<Gdk::Window> win, 
 				 int width, int height) {
-  for (unsigned int b = 0; b < m_pat->get_length().get_beat(); ++b) {
+  for (int b = 0; b < m_pat->get_length().get_beat(); ++b) {
     if (b % 2 == 0)
       m_gc->set_foreground(m_bg_color);
     else
@@ -1020,7 +1019,7 @@ void NoteEditor::draw_resize_outline(Glib::RefPtr<Gdk::Window> win,
     if (row >= 128)
       continue;
     int length = m_last_note_length;
-    if (iter->get_time().get_beat() + length >= 
+    if (static_cast<unsigned>(iter->get_time().get_beat() + length) >= 
 	m_pat->get_length().get_beat() * m_pat->get_steps())
       length = m_pat->get_length().get_beat() * m_pat->get_steps() - 
 	iter->get_time().get_beat();
@@ -1052,7 +1051,7 @@ int NoteEditor::step2pixel(int step) {
 
 int NoteEditor::row2key(int row) {
   if (m_trk->get_mode() == Track::DrumMode) {
-    if (row >= m_trk->get_keys().size())
+    if (static_cast<unsigned>(row) >= m_trk->get_keys().size())
       return 255;
     else
       return m_trk->get_keys()[row]->get_number();

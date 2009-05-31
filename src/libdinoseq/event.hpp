@@ -36,9 +36,9 @@ namespace Dino {
     Event()
       : m_type(0),
 	m_time(0, 0),
-	m_buddy(0),
 	m_prev_similar(0),
-	m_next_similar(0) {
+	m_next_similar(0),
+    	m_buddy(0) {
       for (unsigned l = 0; l < Levels; ++l)
 	m_prev[l] = m_next[l] = 0;
     }
@@ -49,9 +49,9 @@ namespace Dino {
 	  unsigned char data3 = 0, unsigned char data4 = 0)
       : m_type(type),
 	m_time(time),
-	m_buddy(0),
 	m_prev_similar(0),
-	m_next_similar(0) {
+	m_next_similar(0),
+	m_buddy(0) {
       m_data[0] = data1;
       m_data[1] = data2;
       m_data[2] = data3;
@@ -63,9 +63,9 @@ namespace Dino {
     Event(uint32_t type, const SongTime& time, uint32_t data)
       : m_type(type),
 	m_time(time),
-	m_buddy(0),
 	m_prev_similar(0),
-	m_next_similar(0) {
+	m_next_similar(0),
+	m_buddy(0) {
       m_int_data = data;
       for (unsigned l = 0; l < Levels; ++l)
 	m_prev[l] = m_next[l] = 0;

@@ -263,7 +263,6 @@ void TempoWidget::update_menu(PluginInterface& plif) {
   m_menu.items().clear();
   PluginInterface::action_iterator iter;
   SongAction* sa;
-  const Song& song = m_proxy.get_song();
   for (iter = plif.actions_begin(); iter != plif.actions_end(); ++iter) {
     if ((sa = dynamic_cast<SongAction*>(*iter))) {
       slot<void> aslot = bind(mem_fun(*sa, &SongAction::run), ref(m_proxy));

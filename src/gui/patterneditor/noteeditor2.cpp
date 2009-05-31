@@ -35,14 +35,14 @@ using namespace std;
 
 NoteEditor2::NoteEditor2(CommandProxy& proxy)
   : m_motion_operation(MotionNoOperation),
-    m_track(0),
-    m_pattern(0),
-    m_proxy(proxy),
     m_row_height(8),
     m_ticks_per_pixel(SongTime::ticks_per_beat() / 64),
     m_rows(0),
     m_snap(4),
-    m_note_length(1, 0) {
+    m_note_length(1, 0),
+    m_track(0),
+    m_pattern(0),
+    m_proxy(proxy) {
 
   // initialise colours
   m_colormap = Colormap::get_system();
@@ -462,7 +462,7 @@ void NoteEditor2::draw_background(Glib::RefPtr<Gdk::Window>& win) {
   win->draw_line(m_gc, x, 0, x, m_rows * m_row_height);
   
   // draw the horizontal grid
-  for (unsigned i = 0; i < m_rows + 1; ++i) {
+  for (int i = 0; i < m_rows + 1; ++i) {
     int y = i * m_row_height;
     win->draw_line(m_gc, 0, y, x, y);
   }

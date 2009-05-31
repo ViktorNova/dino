@@ -373,8 +373,8 @@ namespace Dino {
   bool CommandProxy::remove_curve_point(int track, int pattern, 
 					uint32_t number, 
 					const SongTime& step) {
-    push_and_do(new RemovePatternCurvePoint(m_song, track, pattern,
-					    number, step));
+    return push_and_do(new RemovePatternCurvePoint(m_song, track, pattern,
+						   number, step));
   }
   
 

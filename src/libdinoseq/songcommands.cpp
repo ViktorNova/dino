@@ -150,7 +150,7 @@ namespace Dino {
       // remove all tempochanges after the new length
       Song::TempoIterator tmpiter = m_song.tempo_find(m_length);
       for ( ; tmpiter != m_song.tempo_end(); ++tmpiter) {
-	if (tmpiter->get_beat() >= m_length)
+	if (static_cast<int>(tmpiter->get_beat()) >= m_length)
 	  append(new RemoveTempoChange(m_song, tmpiter->get_beat()));
       }
       
@@ -176,7 +176,7 @@ namespace Dino {
     
     append(new _SetSongLength(m_song, m_length));
     
-    CompoundCommand::do_command();
+    return CompoundCommand::do_command();
   }
   
 
@@ -319,7 +319,7 @@ namespace Dino {
     }
     m_oldbpm = -1;
     Song::TempoIterator iter = m_song.tempo_find(m_beat);
-    if (iter->get_beat() == m_beat) {
+    if (static_cast<int>(iter->get_beat()) == m_beat) {
       if (iter->get_bpm() == m_bpm) {
 	if (m_iter_store) {
 	  *m_iter_store = m_song.tempo_end();
@@ -762,6 +762,7 @@ namespace Dino {
     m_info = titer->disown_controller(m_number, m_curves);
     if (!m_info)
       return false;
+    return true;
   }
   
 
@@ -969,7 +970,7 @@ namespace Dino {
     const std::vector<ControllerInfo*>& ctrls = titer->get_controllers();
     unsigned i;
     for (i = 0; i < ctrls.size(); ++i) {
-      if (ctrls[i]->get_number() == m_newnumber)
+      if (static_cast<long>(ctrls[i]->get_number()) == m_newnumber)
 	return false;
     }
     for (i = 0; i < ctrls.size(); ++i) {
@@ -993,7 +994,7 @@ namespace Dino {
 	return false;
     }
     for (i = 0; i < ctrls.size(); ++i) {
-      if (ctrls[i]->get_number() == m_newnumber) {
+      if (static_cast<long>(ctrls[i]->get_number()) == m_newnumber) {
 	titer->set_controller_number(m_newnumber, m_number);
 	return true;
       }
@@ -1310,7 +1311,7 @@ namespace Dino {
     m_key = 0;
     Pattern::NoteIterator niter;
     for (niter = piter->notes_begin(); niter != piter->notes_end(); ++niter) {
-      if (niter->get_time().get_beat() < m_step)
+      if (niter->get_time().get_beat() < static_cast<int>(m_step))
 	m_step = niter->get_time().get_beat();
       if (niter->get_key() > m_key)
 	m_key = niter->get_key();
@@ -1702,6 +1703,7 @@ namespace Dino {
       citer->add_point(m_step.get_beat(), m_oldvalue);
     else
       citer->remove_point(m_step.get_beat());
+    return true;
   }
 
 

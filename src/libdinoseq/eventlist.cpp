@@ -54,7 +54,7 @@ namespace Dino {
     // insert it
     int r = std::rand();
     int t = RAND_MAX / Event::Scale;
-    for (int level = 0; level < Event::Levels; ++level) {
+    for (unsigned level = 0; level < Event::Levels; ++level) {
       event->m_next[level] = next[level];
       event->m_prev[level] = prev[level];
       if (next[level])
@@ -71,7 +71,7 @@ namespace Dino {
   
   /** Remove a event from the list, but don't delete it. */
   void EventList::erase(Event* event) {
-    for (int level = 0; level < Event::Levels; ++level) {
+    for (unsigned level = 0; level < Event::Levels; ++level) {
       if (!event->m_prev[level])
 	break;
       event->m_prev[level]->m_next[level] = event->m_next[level];
@@ -115,7 +115,6 @@ namespace Dino {
 
   std::ostream& EventList::pretty_print(std::ostream& os) {
     os<<"EVENT LIST:"<<endl;
-    Event* e = m_head.m_next[0];
     for (Event* e = m_head.m_next[0]; e; e = e->m_next[0]) {
       os<<e<<":";
       for (unsigned i = 0; i < Event::Levels; ++i)

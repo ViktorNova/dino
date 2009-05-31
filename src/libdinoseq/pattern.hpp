@@ -310,11 +310,11 @@ namespace Dino {
     EventList m_events;
     SongTime m_length;
     
-    mutable bool m_dirty;
-  
     // dirty rect
     mutable int m_min_step, m_min_note, m_max_step, m_max_note;
 
+    mutable bool m_dirty;
+  
     mutable sigc::signal<void, std::string> m_signal_name_changed;
     mutable sigc::signal<void, SongTime const&> m_signal_length_changed;
     mutable sigc::signal<void, int> m_signal_steps_changed;

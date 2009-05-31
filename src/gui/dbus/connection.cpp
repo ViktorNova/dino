@@ -70,7 +70,7 @@ namespace DBus {
     }
     cerr<<"Registered object \""<<path<<"\""<<endl;
     TreeNode* node = &m_root;
-    int s = 1;
+    unsigned s = 1;
     while (s < path.size()) {
       int e = path.find('/', s);
       e = e < 0 ? path.size() : e;
@@ -156,7 +156,7 @@ namespace DBus {
 
     cerr<<"Introspect call received for "<<path<<endl;
     
-    int s = 1;
+    unsigned s = 1;
     while (s < path.size()) {
       int e = path.find('/', s);
       e = e < 0 ? path.size() : e;

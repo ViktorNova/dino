@@ -520,8 +520,9 @@ namespace Dino {
     // get attributes
     set_title(dino_elt->get_attribute("title")->get_value());
     set_author(dino_elt->get_attribute("author")->get_value());
-    sscanf(dino_elt->get_attribute("length")->get_value().c_str(), 
-	   "%d", &m_length);
+    // XXX load the song length
+    //sscanf(dino_elt->get_attribute("length")->get_value().c_str(), 
+    //"%d", &m_length);
   
     // get info
     Node::NodeList nodes = dino_elt->get_children("info");

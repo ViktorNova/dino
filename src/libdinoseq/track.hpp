@@ -246,7 +246,7 @@ namespace Dino {
       NormalMode,
       
       /** Drum mode - play only named keys, show only named keys. */
-      DrumMode,
+      DrumMode
       
     };
     

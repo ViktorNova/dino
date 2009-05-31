@@ -73,14 +73,14 @@ private:
   enum DragOperation {
     DragNoOperation,
     DragResizeNotes,
-    DragSelectBox,
+    DragSelectBox
   } m_drag_operation;
   
   /** This is used to figure out what to do when a pointer motion event is 
       received. For the moment it's only used to paste things. */
   enum MotionOperation {
     MotionNoOperation,
-    MotionPaste,
+    MotionPaste
   } m_motion_operation;
   
   

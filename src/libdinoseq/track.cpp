@@ -382,7 +382,7 @@ namespace Dino {
 			     int default_v, int min, int max, bool global) {
     
     // check if we already have this controller, if so return false
-    for (int i = 0; i < m_controllers.size(); ++i) {
+    for (unsigned i = 0; i < m_controllers.size(); ++i) {
       if (m_controllers[i]->get_number() == number)
 	return false;
     }
@@ -412,7 +412,7 @@ namespace Dino {
   bool Track::add_controller(ControllerInfo* info, map<int, Curve*>& curves) {
 
     // check if we already have this controller, if so return false
-    for (int i = 0; i < m_controllers.size(); ++i) {
+    for (unsigned i = 0; i < m_controllers.size(); ++i) {
       if (m_controllers[i]->get_number() == info->get_number())
 	return false;
     }
@@ -428,7 +428,8 @@ namespace Dino {
       if (citer == curves.end())
 	m_curves->push_back(new Curve(*info, get_length().get_beat()));
       else {
-	assert(citer->second->get_size() == get_length().get_beat());
+	assert(citer->second->get_size() == 
+	       static_cast<unsigned>(get_length().get_beat()));
 	m_curves->push_back(citer->second);
       }
       m_signal_curve_added(info->get_number());
@@ -462,7 +463,7 @@ namespace Dino {
 					   map<int, Curve*>& curves) {
 
     // check if it exists
-    for (int i = 0; i < m_controllers.size(); ++i) {
+    for (unsigned i = 0; i < m_controllers.size(); ++i) {
       if (m_controllers[i]->get_number() == number) {
 	
 	// if it is a global controller, remove the curve from the track

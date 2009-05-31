@@ -402,8 +402,8 @@ namespace Dino {
   protected:
     Song& m_song;
     int m_track;
-    unsigned char m_newnumber;
     unsigned char m_oldnumber;
+    unsigned char m_newnumber;
   };
 
 

@@ -57,7 +57,7 @@ namespace Dino {
 
   bool CompoundCommand::undo_command() {
     m_used = true;
-    for (int i = static_cast<int>(m_commands.size() - 1); i >= 0; --i) {
+    for (unsigned i = m_commands.size() - 1; i >= 0; --i) {
       if (!m_commands[i]->undo_command()) {
 	for (++i; i < m_commands.size(); ++i)
 	  m_commands[i]->do_command();
@@ -76,6 +76,7 @@ namespace Dino {
 	return false;
     }
     m_commands.push_back(cmd);
+    return true;
   }
   
 

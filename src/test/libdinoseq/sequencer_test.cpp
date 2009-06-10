@@ -14,8 +14,8 @@ BOOST_AUTO_TEST_SUITE(SequencerTest)
 
 
 BOOST_AUTO_TEST_CASE(constructor) {
-  // Just make sure that it doesn't throw.
-  Sequencer seq(make_shared<TempoMap>());
+  BOOST_CHECK_NO_THROW(Sequencer seq(make_shared<TempoMap>()));
+  BOOST_CHECK_THROW(Sequencer(shared_ptr<TempoMap>()), domain_error);
 }
 
 

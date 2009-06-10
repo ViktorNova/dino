@@ -13,7 +13,7 @@ namespace Dino {
 
   Sequencer::Sequencer(shared_ptr<TempoMap const> tmap)
     : m_tmap(tmap) {
-    if (tmap == 0)
+    if (!tmap)
       throw domain_error("Invalid TempoMap pointer!");
   }
   
@@ -88,7 +88,7 @@ namespace Dino {
   
   
   void Sequencer::set_tempomap(shared_ptr<TempoMap const> tmap) {
-    if (tmap == 0)
+    if (!tmap)
       throw domain_error("Invalid TempoMap pointer!");
     m_tmap = tmap;
   }

@@ -1,11 +1,11 @@
-#ifndef TEMPOMAP_HPP
-#define TEMPOMAP_HPP
+#ifndef INSTRUMENT_HPP
+#define INSTRUMENT_HPP
 
 
 namespace Dino {
-  
-  
-  class TempoMap {
+
+
+  class Instrument {
   public:
     
     

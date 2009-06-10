@@ -17,8 +17,9 @@
 \#*\#
 .\#*
 
-# The Program
+# The Programs
 src/gui/dino
+src/test/libdinoseq/libdinoseq_test
 
 # Doxygen docs
 doxygen/

@@ -10,12 +10,12 @@ PKG_DEPS = \
 
 
 # Data files
-DATA = src/gui/pixmaps/midisaurus.png src/gui/pixmaps/head.png src/gui/pixmaps/tinykeyboard.png
+#DATA = src/gui/pixmaps/midisaurus.png src/gui/pixmaps/head.png src/gui/pixmaps/tinykeyboard.png
 DOCS = AUTHORS COPYING HACKING README TODO ChangeLog
 
 
 # The main program (we need to link it with -Wl,-E to allow RTTI with plugins)
-PROGRAMS = dino
+PROGRAMS = libdinoseq_test #dino
 dino_SOURCES = \
 	action.hpp \
 	main.cpp \
@@ -40,76 +40,19 @@ pluginlibrary_cpp_CFLAGS = -DPLUGIN_DIR=\"$(pkglibdir)\"
 
 
 # Shared libraries
-LIBRARIES = libdinoseq.so libdinoseq_gui.so
+LIBRARIES = libdinoseq.so #libdinoseq_gui.so
 
 
 # The library with the sequencer and the song structures
 libdinoseq_so_SOURCES = \
-	cdtree.hpp \
-	command.cpp command.hpp \
-	commandproxy.cpp commandproxy.hpp \
-	compoundcommand.cpp compoundcommand.hpp \
-	controllerinfo.cpp controllerinfo.hpp \
-	controller_numbers.hpp \
-	curve.cpp curve.hpp \
-	debug.cpp debug.hpp \
-	deleter.hpp \
-	eventlist.cpp eventlist.hpp \
-	genericcommands.hpp \
-	instrumentinfo.cpp instrumentinfo.hpp \
-	interpolatedevent.cpp interpolatedevent.hpp \
-	keyinfo.cpp keyinfo.hpp \
-	midibuffer.cpp midibuffer.hpp \
-	note.cpp note.hpp \
-	notecollection.cpp notecollection.hpp \
-	noteevent.cpp noteevent.hpp \
-	noteselection.cpp noteselection.hpp \
-	pattern.cpp pattern.hpp \
-	recorder.cpp recorder.hpp \
-	ringbuffer.hpp \
-	sequencable.hpp \
-	sequencer.cpp sequencer.hpp \
-	song.cpp song.hpp \
-	songcommands.cpp songcommands.hpp \
-	songtime.hpp \
-	tempomap.cpp tempomap.hpp \
-	track.cpp track.hpp \
-	xmlserialisable.hpp
-libdinoseq_so_HEADERS = \
-	cdtree.hpp \
-	command.hpp \
-	commandproxy.hpp \
-	compoundcommand.hpp \
-	controllerinfo.hpp \
-	controller_numbers.hpp \
-	curve.hpp \
-	debug.hpp \
-	deleter.hpp \
-	genericcommands.hpp \
-	instrumentinfo.hpp \
-	interpolatedevent.hpp \
-	midibuffer.hpp \
-	note.hpp \
-	notecollection.hpp \
-	noteevent.hpp \
-	pattern.hpp \
-	noteselection.hpp \
-	recorder.hpp \
-	ringbuffer.hpp \
-	sequencable.hpp \
-	sequencer.hpp \
-	song.hpp \
-	songcommands.hpp \
-	songtime.hpp \
-	tempomap.hpp \
-	track.hpp \
-	xmlserialisable.hpp
+	sequencer.cpp sequencer.hpp
+libdinoseq_so_HEADERS = 
 libdinoseq_so_SOURCEDIR = src/libdinoseq
-libdinoseq_so_CFLAGS = `pkg-config --cflags libxml++-2.6 jack`
+libdinoseq_so_CFLAGS = -std=c++0x `pkg-config --cflags libxml++-2.6 jack`
 libdinoseq_so_LDFLAGS = `pkg-config --libs libxml++-2.6 jack`
 
 # pkg-config file for libdinoseq.so
-PCFILES = dino.pc
+#PCFILES = dino.pc
 
 # A GUI support library for core plugins
 libdinoseq_gui_so_SOURCES = \
@@ -124,14 +67,14 @@ libdinoseq_gui_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6` -Isrc/li
 
 
 # Script interpreters and related files
-DATAPACKS = scriptinterpreters
+#DATAPACKS = scriptinterpreters
 scriptinterpreters_FILES = Python.interpreter dino_dbus_wrapper.py
 scriptinterpreters_SOURCEDIR = scripts/interpreters
 scriptinterpreters_INSTALLDIR = $(pkgdatadir)/interpreters
 
 
 # The GUI plugins
-MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so scriptinterface.so debugging.so
+#MODULES = arrangementeditor.so patterneditor.so infoeditor.so coreactions.so scriptinterface.so debugging.so
 
 # The sequence editor
 arrangementeditor_so_SOURCES = \
@@ -193,6 +136,17 @@ debugging_so_SOURCEDIR = src/gui/debugging
 debugging_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
 debugging_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
 debugging_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui -Isrc/gui/libdinoseq_gui
+
+
+# Test modules
+
+libdinoseq_test_SOURCES = \
+	libdinoseq_test.cpp \
+	sequencer_test.cpp
+libdinoseq_test_SOURCEDIR = src/test/libdinoseq
+libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq
+libdinoseq_test_LDFLAGS = -Wl,-E
+libdinoseq_test_LIBRARIES = src/libdinoseq/libdinoseq.so
 
 
 

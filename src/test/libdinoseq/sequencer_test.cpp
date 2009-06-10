@@ -24,6 +24,10 @@ BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
   shared_ptr<Sequencable> sqbl2 = make_shared<Sequencable>();
   Sequencer seq(make_shared<TempoMap>());
   
+  BOOST_CHECK_THROW(seq.add_sequencable(shared_ptr<Sequencable>()), 
+		    domain_error);
+  BOOST_CHECK(seq.sqbl_begin() == seq.sqbl_end());
+  
   seq.add_sequencable(sqbl1);
   seq.add_sequencable(sqbl2);
   seq.add_sequencable(sqbl1);

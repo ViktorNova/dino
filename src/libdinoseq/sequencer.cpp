@@ -20,6 +20,8 @@ namespace Dino {
   
   Sequencer::Iterator 
   Sequencer::add_sequencable(shared_ptr<Sequencable const> sqbl) {
+    if (!sqbl)
+      throw domain_error("Invalid Sequencable pointer!");
     return Iterator(m_sqbls.insert(m_sqbls.end(), 
 				   make_pair(sqbl, shared_ptr<Instrument>())));
   }

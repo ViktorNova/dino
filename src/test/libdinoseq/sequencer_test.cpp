@@ -20,8 +20,8 @@ BOOST_AUTO_TEST_CASE(constructor) {
 
 
 BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
-  shared_ptr<Sequencable> sqbl1 = make_shared<Sequencable>();
-  shared_ptr<Sequencable> sqbl2 = make_shared<Sequencable>();
+  auto sqbl1 = make_shared<Sequencable>();
+  auto sqbl2 = make_shared<Sequencable>();
   Sequencer seq(make_shared<TempoMap>());
   
   BOOST_CHECK_THROW(seq.add_sequencable(shared_ptr<Sequencable>()), 
@@ -34,8 +34,8 @@ BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
   
   BOOST_CHECK_EQUAL(distance(seq.sqbl_begin(), seq.sqbl_end()), 3);
   
-  shared_ptr<Sequencable> min = sqbl1 < sqbl2 ? sqbl1 : sqbl2;
-  shared_ptr<Sequencable> max = sqbl1 < sqbl2 ? sqbl2 : sqbl1;
+  auto min = sqbl1 < sqbl2 ? sqbl1 : sqbl2;
+  auto max = sqbl1 < sqbl2 ? sqbl2 : sqbl1;
   
   BOOST_CHECK_EQUAL(min, *seq.sqbl_begin());
   BOOST_CHECK_EQUAL(max, *(++++seq.sqbl_begin()));
@@ -49,8 +49,8 @@ BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
 
 
 BOOST_AUTO_TEST_CASE(get_set_instrument) {
-  shared_ptr<Sequencable> sqbl = make_shared<Sequencable>();
-  shared_ptr<Instrument> instr = make_shared<Instrument>();
+  auto sqbl = make_shared<Sequencable>();
+  auto instr = make_shared<Instrument>();
   Sequencer seq(make_shared<TempoMap>());
   
   seq.add_sequencable(sqbl);
@@ -70,8 +70,8 @@ BOOST_AUTO_TEST_CASE(get_set_instrument) {
 
 
 BOOST_AUTO_TEST_CASE(get_set_tempomap) {
-  shared_ptr<TempoMap> tmap = make_shared<TempoMap>();
-  shared_ptr<TempoMap> tmap2 = make_shared<TempoMap>();
+  auto tmap = make_shared<TempoMap>();
+  auto tmap2 = make_shared<TempoMap>();
   shared_ptr<TempoMap> tmap3;
   Sequencer seq(tmap);
   

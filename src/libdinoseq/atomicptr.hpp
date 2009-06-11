@@ -41,7 +41,7 @@ namespace Dino {
     
     /** Return the value of the atomic pointer as a normal pointer. This is
 	an atomic and lock-free operation, and it's also a memory barrier. */
-    T* get() { return g_atomic_pointer_get(&m_pointer); }
+    T* get() { return static_cast<T*>(g_atomic_pointer_get(&m_pointer)); }
     
     /** Set the value of the atomic pointer. This is an atomic and lock-free
 	operation and also a memory barrier. */

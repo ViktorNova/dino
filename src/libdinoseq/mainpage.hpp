@@ -30,10 +30,10 @@
     Most of the classes in libdinoseq deal with one of the following 4 
     subjects:
     
-    @li MIDI data structures
-    @li instrument abstractions
-    @li a sequencer engine
-    @li an undo-capable command system
+    @li @link mididata MIDI data structures @endlink
+    @li @link instruments instrument abstractions @endlink
+    @li @link seqengine a sequencer engine @endlink
+    @li @link commands an undo-capable command system @endlink
     
     There are also some utility classes and functions that don't fit in either
     of those 4 categories, but most do.
@@ -73,4 +73,38 @@
     that for example generate MIDI data on the fly, or new Instrument types
     to handle instrument plugins or other types of MIDI-driven instruments.
  
+*/
+
+
+/** @defgroup mididata MIDI data structures
+    Classes that store and organise MIDI data.
+    These classes are used to store and organise different kinds of MIDI
+    data such as notes and control events.
+*/
+
+
+/** @defgroup instruments Instrument abstractions
+    Classes that represent different types of instruments.
+    The classes in this module represent the different types of instruments
+    that are available to the sequencer.
+*/
+
+
+/** @defgroup seqengine Sequencer engine
+    Classes that do the actual sequencing.
+    These classes manage the actual sequencing of MIDI data from 
+    Sequencable objects to Instrument objects.
+*/
+
+
+/** @defgroup commands Command system
+    Classes that provide an undo stack.
+    This module provides a CommandProxy with a stack of undoable commands,
+    as well as Command subclasses that perform many different undoable
+    operations.
+*/
+
+
+/** @namespace Dino
+    The namespace that all classes in libdinoseq belong to.
 */

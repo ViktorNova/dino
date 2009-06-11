@@ -22,7 +22,8 @@
 
 namespace Dino {
 
-
+  
+  /** @ingroup mididata */
   class Sequencable {
   public:
     

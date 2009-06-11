@@ -22,7 +22,8 @@
 
 namespace Dino {
 
-
+  
+  /** @ingroup instruments */
   class Instrument {
   public:
     

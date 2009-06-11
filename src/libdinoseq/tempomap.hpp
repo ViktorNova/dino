@@ -23,6 +23,7 @@
 namespace Dino {
   
   
+  /** @ingroup mididata */
   class TempoMap {
   public:
     

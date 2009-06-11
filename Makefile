@@ -51,8 +51,8 @@ libdinoseq_so_SOURCES = \
 	sequencer.cpp sequencer.hpp
 libdinoseq_so_HEADERS = 
 libdinoseq_so_SOURCEDIR = src/libdinoseq
-libdinoseq_so_CFLAGS = -std=c++0x `pkg-config --cflags libxml++-2.6 jack`
-libdinoseq_so_LDFLAGS = `pkg-config --libs libxml++-2.6 jack`
+libdinoseq_so_CFLAGS = -std=c++0x `pkg-config --cflags glib-2.0`
+libdinoseq_so_LDFLAGS = `pkg-config --libs glib-2.0`
 
 # pkg-config file for libdinoseq.so
 #PCFILES = dino.pc
@@ -147,15 +147,16 @@ libdinoseq_test_SOURCES = \
 	libdinoseq_test.cpp \
 	sequencer_test.cpp
 libdinoseq_test_SOURCEDIR = src/test/libdinoseq
-libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq
-libdinoseq_test_LDFLAGS = -Wl,-E
+libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq `pkg-config --cflags glib-2.0`
+libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0`
 libdinoseq_test_LIBRARIES = src/libdinoseq/libdinoseq.so
 
+
+# Do the magic
+include Makefile.template
 
 dox:
 	cat Doxyfile | sed s@VERSION_SUBST@`./VERSION`@ > Doxyfile.subst
 	doxygen Doxyfile.subst
 	rm Doxyfile.subst
 
-# Do the magic
-include Makefile.template

@@ -30,8 +30,15 @@ namespace Dino {
   */
   template <typename K, typename V>
   struct GetFirst {
+    
+    /** The return type of the operator() functions, without reference or
+	cv-qualifiers. */
     typedef K result_type;
+    
+    /** Return the first part of a std::pair, non-const version. */
     K& operator()(std::pair<K, V>& p) const { return p.first; }
+    
+    /** Return the first part of a std::pair, const version. */
     const K& operator()(const std::pair<K, V>& p) const { return p.first; }
   };
 

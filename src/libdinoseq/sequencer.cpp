@@ -29,7 +29,7 @@ using namespace std;
 namespace Dino {
   
 
-  Sequencer::Sequencer(shared_ptr<TempoMap const> tmap)
+  Sequencer::Sequencer(std::shared_ptr<TempoMap const> tmap)
     : m_tmap(tmap ? tmap : throw domain_error("Invalid TempoMap pointer!")) {
 
   }

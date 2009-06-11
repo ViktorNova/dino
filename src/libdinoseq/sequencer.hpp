@@ -47,7 +47,7 @@ namespace Dino {
 	exposed in the public interface to the Sequencer class, it's just here
 	to make the typedefs for Iterator and ConstIterator easier to read. */
     typedef std::multimap<std::shared_ptr<Sequencable const>,
-			  std::shared_ptr<Instrument>> SequencableMap;
+			  std::shared_ptr<Instrument> > SequencableMap;
     
     /** The iterator type for iterating over Sequencables. */
     typedef boost::transform_iterator<GetFirst<SequencableMap::key_type,
@@ -64,27 +64,41 @@ namespace Dino {
 	and song time. */
     Sequencer(std::shared_ptr<TempoMap const> tmap);
 
-    /** Return the instrument that the Sequencable that @iter refers to will be
-	sequenced to. */
+    /** Return the instrument that the Sequencable that @c iter refers to will 
+	be sequenced to. */
     std::shared_ptr<Instrument> get_instrument(Iterator iter);
     
-    /** Return the instrument that the Sequencable that @iter refers to will be
-	sequenced to, const version. */
+    /** Return the instrument that the Sequencable that @c iter refers to will
+	be sequenced to, const version. */
     std::shared_ptr<Instrument const> get_instrument(Iterator iter) const;
     
     /** Return the current TempoMap. */
     std::shared_ptr<TempoMap const> get_tempomap() const;
     
+    /** Return an Iterator to the first Sequencable that is sequenced by
+	this object. */
     Iterator sqbl_begin();
     
+    /** Return an Iterator to the end of the list of Sequencables that are
+	sequenced by this object. */
     Iterator sqbl_end();
     
+    /** If @c match is in the list of Sequencables that are sequenced by
+	this object, return an Iterator to the first occurance of it.
+	Otherwise, return sqbl_end(). */
     Iterator sqbl_find(std::shared_ptr<Sequencable const> match);
     
+    /** Return a ConstIterator to the first Sequencable that is sequenced by
+	this object. */
     ConstIterator sqbl_begin() const;
     
+    /** Return a ConstIterator to the end of the list of Sequencables that are
+	sequenced by this object. */
     ConstIterator sqbl_end() const;
     
+    /** If @c match is in the list of Sequencables that are sequenced by
+	this object, return a ConstIterator to the first occurance of it.
+	Otherwise, return sqbl_end(). */
     ConstIterator sqbl_find(std::shared_ptr<Sequencable const> match) const;
     
     /** Add an object to the list of sequenced objects. */
@@ -94,7 +108,7 @@ namespace Dino {
 	the list, which means that it will not be sequenced any more. */
     void remove_sequencable(Iterator iter);
     
-    /** Set the instrument that the Sequencable that @iter refers to will be
+    /** Set the instrument that the Sequencable that @c iter refers to will be
 	sequenced to. */
     void set_instrument(Iterator iter, std::shared_ptr<Instrument> instr);
 

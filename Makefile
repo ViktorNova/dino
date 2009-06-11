@@ -152,6 +152,10 @@ libdinoseq_test_LDFLAGS = -Wl,-E
 libdinoseq_test_LIBRARIES = src/libdinoseq/libdinoseq.so
 
 
+dox:
+	cat Doxyfile | sed s@VERSION_SUBST@`./VERSION`@ > Doxyfile.subst
+	doxygen Doxyfile.subst
+	rm Doxyfile.subst
 
 # Do the magic
 include Makefile.template

@@ -49,4 +49,13 @@ BOOST_AUTO_TEST_CASE(get_set) {
 }
 
 
+BOOST_AUTO_TEST_CASE(increase) {
+  AtomicInt::Type a = 42;
+  AtomicInt ai = a;
+  ai.increase();
+  
+  BOOST_CHECK_EQUAL(++a, ai.get());
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()

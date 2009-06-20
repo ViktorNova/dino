@@ -28,7 +28,7 @@ namespace Dino {
   }
     
   
-  AtomicInt::Type AtomicInt::get() { 
+  AtomicInt::Type AtomicInt::get() const { 
     return g_atomic_int_get(&m_data); 
   }
     
@@ -38,5 +38,10 @@ namespace Dino {
   }
   
   
+  void AtomicInt::increase() {
+    g_atomic_int_inc(&m_data);
+  }
+
+
 }
 

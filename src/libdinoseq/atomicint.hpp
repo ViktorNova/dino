@@ -44,11 +44,15 @@ namespace Dino {
     
     /** Return the value of the atomic integer as a normal pinteger. This is
 	an atomic and lock-free operation, and it's also a memory barrier. */
-    Type get();
+    Type get() const;
     
     /** Set the value of the atomic integer. This is an atomic and lock-free
 	operation and also a memory barrier. */
     void set(Type new_value);
+    
+    /** Increase the atomic integer by 1. This is an atomic and lock-free 
+	operation and also a memory barrier. */
+    void increase();
     
   private:
     

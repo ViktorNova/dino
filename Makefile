@@ -48,6 +48,7 @@ LIBRARIES = libdinoseq.so #libdinoseq_gui.so
 
 # The library with the sequencer and the song structures
 libdinoseq_so_SOURCES = \
+	atomicint.cpp atomicint.hpp \
 	sequencer.cpp sequencer.hpp
 libdinoseq_so_HEADERS = 
 libdinoseq_so_SOURCEDIR = src/libdinoseq
@@ -145,7 +146,9 @@ debugging_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0`
 
 libdinoseq_test_SOURCES = \
 	libdinoseq_test.cpp \
+	atomicint_test.cpp \
 	atomicptr_test.cpp \
+	linkedlist_test.cpp \
 	sequencer_test.cpp
 libdinoseq_test_SOURCEDIR = src/test/libdinoseq
 libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq `pkg-config --cflags glib-2.0`

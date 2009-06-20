@@ -47,6 +47,10 @@ BOOST_AUTO_TEST_CASE(get_set) {
   ap.set(&b);
   
   BOOST_CHECK_EQUAL(&b, ap.get());
+  
+  AtomicPtr<int> const ap_c = &b;
+
+  BOOST_CHECK_EQUAL(&b, ap_c.get());
 }
 
 

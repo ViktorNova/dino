@@ -109,7 +109,7 @@ namespace Dino {
       }
       
       /** Inequality operator, negation of the equality operator. */
-      bool operator!=(C const& iter) throw() {
+      bool operator!=(C const& iter) const throw() {
 	return !operator==(iter);
       }
       

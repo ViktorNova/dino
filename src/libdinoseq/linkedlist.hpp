@@ -275,6 +275,22 @@ namespace Dino {
 
     }
     
+    /** Release all memory used by the list. */
+    ~LinkedList() throw() {
+      NodeBase* nb = m_head.get();
+      while (nb != &m_end) {
+	Node* n = static_cast<Node*>(nb);
+	nb = static_cast<Node*>(nb)->m_next.get();
+	delete n;
+      }
+      Node* n = m_erased_list;
+      while (n != 0) {
+	Node* n2 = n;
+	n = static_cast<Node*>(n->m_prev);
+	delete n2;
+      }
+    }
+    
     /** Returns a ConstIterator to the beginning of the list. */
     ConstIterator begin() const throw() {
       return ConstIterator(m_head.get());
@@ -362,6 +378,7 @@ namespace Dino {
       else
 	m_head.set(next);
       node->m_prev = m_erased_list;
+      m_erased_list = node;
       ++m_erased_list_size;
       m_erase_counter.increase();
       --m_size;
@@ -375,8 +392,8 @@ namespace Dino {
       if (m_erase_counter.get() == m_delete_ok.get()) {
 	Node* node;
 	while ((node = m_erased_list)) {
-	  delete m_erased_list;
 	  m_erased_list = static_cast<Node*>(node->m_prev);
+	  delete node;
 	}
 	AtomicInt::Type result = m_erased_list_size;
 	m_erased_list_size = 0;

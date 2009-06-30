@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(constructor) {
 class PhonySequencable : public Sequencable {
 public:
   PhonySequencable() : Sequencable("Phony") {}
-  bool sequence(Position& pos, SongTime const& to, EventBuffer& buf) const { 
+  bool sequence(Position&, SongTime const&, EventBuffer&) const { 
     return true; 
   }
 };
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
 
 class PhonyEventBuffer : public EventBuffer {
 public:
-  bool write_event(SongTime const&, size_t bytes, unsigned char const* data) { 
+  bool write_event(SongTime const&, size_t, unsigned char const*) { 
     return false; 
   }
 };

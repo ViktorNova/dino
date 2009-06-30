@@ -29,9 +29,7 @@ using namespace std;
 namespace Dino {
   
 
-  Sequencer::Sequencer(shared_ptr<TempoMap const> tmap)
-    : m_tmap(tmap ? tmap : throw domain_error("Invalid TempoMap pointer!")) {
-
+  Sequencer::Sequencer() {
   }
   
   
@@ -39,27 +37,25 @@ namespace Dino {
   Sequencer::add_sequencable(shared_ptr<Sequencable const> sqbl) {
     if (!sqbl)
       throw domain_error("Invalid Sequencable pointer!");
-    return Iterator(m_sqbls.insert(m_sqbls.end(), 
-				   make_pair(sqbl, shared_ptr<Instrument>())));
+    SeqData sd;
+    sd.seq = sqbl;
+    sd.pos = sqbl->create_position(SongTime());
+    sd.buf = shared_ptr<EventBuffer>();
+    return Iterator(m_sqbls.insert(m_sqbls.end(), move(sd)));
   }
   
   
-  shared_ptr<Instrument> Sequencer::get_instrument(Iterator iter) {
-    return iter.base()->second;
+  shared_ptr<EventBuffer> Sequencer::get_event_buffer(Iterator iter) {
+    return iter.base()->buf;
   }
   
   
-  shared_ptr<Instrument const> 
-  Sequencer::get_instrument(Iterator iter) const {
-    return shared_ptr<Instrument const>(iter.base()->second);
+  shared_ptr<EventBuffer const> 
+  Sequencer::get_event_buffer(Iterator iter) const {
+    return shared_ptr<EventBuffer const>(iter.base()->buf);
   }
   
   
-  shared_ptr<TempoMap const> Sequencer::get_tempomap() const {
-    return m_tmap;
-  }
-  
-    
   Sequencer::Iterator 
   Sequencer::sqbl_begin() {
     return Iterator(m_sqbls.begin());
@@ -73,7 +69,11 @@ namespace Dino {
   
   Sequencer::Iterator 
   Sequencer::sqbl_find(shared_ptr<Sequencable const> match) {
-    return Iterator(m_sqbls.find(match));
+    for (auto i = m_sqbls.begin(); i != m_sqbls.end(); ++i) {
+      if (i->seq == match)
+	return Iterator(i);
+    }
+    return sqbl_end();
   }
   
   
@@ -91,7 +91,11 @@ namespace Dino {
   
   Sequencer::ConstIterator 
   Sequencer::sqbl_find(shared_ptr<Sequencable const> match) const {
-    return ConstIterator(m_sqbls.find(match));
+    for (auto i = m_sqbls.begin(); i != m_sqbls.end(); ++i) {
+      if (i->seq == match)
+	return ConstIterator(i);
+    }
+    return sqbl_end();
   }
   
   
@@ -100,31 +104,28 @@ namespace Dino {
   }
   
   
-  void Sequencer::set_instrument(Iterator iter, 
-				 shared_ptr<Instrument> instr) {
-    iter.base()->second = instr;
+  void Sequencer::set_event_buffer(Iterator iter, 
+				   shared_ptr<EventBuffer> buf) {
+    iter.base()->buf = buf;
   }
   
   
-  void Sequencer::set_tempomap(shared_ptr<TempoMap const> tmap) {
-    if (!tmap)
-      throw domain_error("Invalid TempoMap pointer!");
-    m_tmap = tmap;
-  }
+  void Sequencer::run(SongTime const& from, SongTime const& to) {
     
-  
-  void Sequencer::play() {
-    throw logic_error(string(__PRETTY_FUNCTION__) + " is not implemented!");
-  }
+    // let the list deallocate unused nodes we're no longer touching
+    m_sqbls.reader_holds_no_iterator();
     
-  
-  void Sequencer::stop() {
-    throw logic_error(string(__PRETTY_FUNCTION__) + " is not implemented!");
-  }
+    // if the start time isn't the same as last call's end time, update
+    if (m_next_start != from) {
+      for (auto iter = m_sqbls.begin(); iter != m_sqbls.end(); ++iter)
+	iter->seq->update_position(*iter->pos, from);
+    }
     
-  
-  void Sequencer::go_to_time(const SongTime& st) {
-    throw logic_error(string(__PRETTY_FUNCTION__) + " is not implemented!");
+    // sequence all the objects
+    for (auto iter = m_sqbls.begin(); iter != m_sqbls.end(); ++iter)
+      iter->seq->sequence(*iter->pos, to, *iter->buf);
+    
+    m_next_start = to;
   }
   
   

@@ -49,7 +49,10 @@ LIBRARIES = libdinoseq.so #libdinoseq_gui.so
 # The library with the sequencer and the song structures
 libdinoseq_so_SOURCES = \
 	atomicint.cpp atomicint.hpp \
-	sequencer.cpp sequencer.hpp
+	ostreambuffer.cpp ostreambuffer.hpp \
+	sequencable.cpp sequencable.hpp \
+	sequencer.cpp sequencer.hpp \
+	songtime.cpp songtime.hpp
 libdinoseq_so_HEADERS = 
 libdinoseq_so_SOURCEDIR = src/libdinoseq
 libdinoseq_so_CFLAGS = -std=c++0x `pkg-config --cflags glib-2.0`
@@ -149,7 +152,9 @@ libdinoseq_test_SOURCES = \
 	atomicint_test.cpp \
 	atomicptr_test.cpp \
 	linkedlist_test.cpp \
-	sequencer_test.cpp
+	ostreambuffer_test.cpp \
+	sequencer_test.cpp \
+	songtime_test.cpp
 libdinoseq_test_SOURCEDIR = src/test/libdinoseq
 libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq `pkg-config --cflags glib-2.0`
 libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0`

@@ -16,9 +16,13 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
+#include <limits>
+#include <sstream>
+
 #include <boost/test/unit_test.hpp>
 
-#include "instrument.hpp"
+#include "eventbuffer.hpp"
+#include "ostreambuffer.hpp"
 #include "sequencable.hpp"
 #include "sequencer.hpp"
 #include "tempomap.hpp"
@@ -32,17 +36,25 @@ BOOST_AUTO_TEST_SUITE(SequencerTest)
 
 
 BOOST_AUTO_TEST_CASE(constructor) {
-  BOOST_CHECK_NO_THROW(Sequencer seq(make_shared<TempoMap>()));
-  BOOST_CHECK_THROW(Sequencer(shared_ptr<TempoMap>()), domain_error);
+  BOOST_CHECK_NO_THROW(Sequencer seq());
 }
 
 
+class PhonySequencable : public Sequencable {
+public:
+  PhonySequencable() : Sequencable("Phony") {}
+  bool sequence(Position& pos, SongTime const& to, EventBuffer& buf) const { 
+    return true; 
+  }
+};
+
+
 BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
-  auto sqbl1 = make_shared<Sequencable>();
-  auto sqbl2 = make_shared<Sequencable>();
-  Sequencer seq(make_shared<TempoMap>());
+  auto sqbl1 = make_shared<PhonySequencable>();
+  auto sqbl2 = make_shared<PhonySequencable>();
+  Sequencer seq;
   
-  BOOST_CHECK_THROW(seq.add_sequencable(shared_ptr<Sequencable>()), 
+  BOOST_CHECK_THROW(seq.add_sequencable(shared_ptr<PhonySequencable>()), 
 		    domain_error);
   BOOST_CHECK(seq.sqbl_begin() == seq.sqbl_end());
   
@@ -52,11 +64,9 @@ BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
   
   BOOST_CHECK_EQUAL(distance(seq.sqbl_begin(), seq.sqbl_end()), 3);
   
-  auto min = sqbl1 < sqbl2 ? sqbl1 : sqbl2;
-  auto max = sqbl1 < sqbl2 ? sqbl2 : sqbl1;
-  
-  BOOST_CHECK_EQUAL(min, *seq.sqbl_begin());
-  BOOST_CHECK_EQUAL(max, *(++++seq.sqbl_begin()));
+  BOOST_CHECK(sqbl1 == *seq.sqbl_begin());
+  BOOST_CHECK(sqbl2 == *(++seq.sqbl_begin()));
+  BOOST_CHECK(sqbl1 == *(++++seq.sqbl_begin()));
   
   seq.remove_sequencable(seq.sqbl_find(sqbl1));
   
@@ -66,40 +76,100 @@ BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
 }
 
 
-BOOST_AUTO_TEST_CASE(get_set_instrument) {
-  auto sqbl = make_shared<Sequencable>();
-  auto instr = make_shared<Instrument>();
-  Sequencer seq(make_shared<TempoMap>());
+class PhonyEventBuffer : public EventBuffer {
+public:
+  bool write_event(SongTime const&, size_t bytes, unsigned char const* data) { 
+    return false; 
+  }
+};
+
+
+BOOST_AUTO_TEST_CASE(get_set_event_buffer) {
+  auto sqbl = make_shared<PhonySequencable>();
+  auto buf = make_shared<PhonyEventBuffer>();
+  Sequencer seq;
   
   seq.add_sequencable(sqbl);
   
-  BOOST_CHECK_EQUAL(seq.get_instrument(seq.sqbl_find(sqbl)),
-		    shared_ptr<Instrument>());
+  BOOST_CHECK_EQUAL(seq.get_event_buffer(seq.sqbl_find(sqbl)),
+		    shared_ptr<EventBuffer>());
 
-  seq.set_instrument(seq.sqbl_find(sqbl), instr);
+  seq.set_event_buffer(seq.sqbl_find(sqbl), buf);
   
-  BOOST_CHECK_EQUAL(seq.get_instrument(seq.sqbl_find(sqbl)), instr);
+  BOOST_CHECK_EQUAL(seq.get_event_buffer(seq.sqbl_find(sqbl)), buf);
   
-  seq.set_instrument(seq.sqbl_find(sqbl), shared_ptr<Instrument>());
+  seq.set_event_buffer(seq.sqbl_find(sqbl), shared_ptr<EventBuffer>());
   
-  BOOST_CHECK_EQUAL(seq.get_instrument(seq.sqbl_find(sqbl)),
-		    shared_ptr<Instrument>());
+  BOOST_CHECK_EQUAL(seq.get_event_buffer(seq.sqbl_find(sqbl)),
+		    shared_ptr<EventBuffer>());
 }
 
 
-BOOST_AUTO_TEST_CASE(get_set_tempomap) {
-  auto tmap = make_shared<TempoMap>();
-  auto tmap2 = make_shared<TempoMap>();
-  shared_ptr<TempoMap> tmap3;
-  Sequencer seq(tmap);
+class BeatSequence : public Sequencable {
+public:
   
-  seq.set_tempomap(tmap2);
+  BeatSequence() : Sequencable("foo") { }
   
-  BOOST_CHECK_EQUAL(seq.get_tempomap(), tmap2);
+  bool sequence(Sequencable::Position& pos, 
+		SongTime const& to, EventBuffer& buf) const {
+    SongTime::Beat b = pos.get_time().get_beat();
+    if (pos.get_time().get_tick() > 0)
+      ++b;
+    SongTime::Beat end = to.get_beat();
+    if (to.get_tick() > 0)
+      ++end;
+    for ( ; b < end; ++b) {
+      unsigned char data = b % 0xFF;
+      if (!buf.write_event(SongTime(b, 0), 1, &data)) {
+	update_position(pos, SongTime(b, 0));
+	return false;
+      }
+    }
+    
+    update_position(pos, to);
+    return true;
+  }
   
-  BOOST_CHECK_THROW(seq.set_tempomap(tmap3), domain_error);
+};
+
+
+
+BOOST_AUTO_TEST_CASE(run) {
+  ostringstream os1;
+  ostringstream os2;
+  auto sqbl = make_shared<BeatSequence>();
+  auto buf1 = make_shared<OStreamBuffer>(os1);
+  auto buf2 = make_shared<OStreamBuffer>(os2);
+  Sequencer seq;
   
-  BOOST_CHECK_EQUAL(seq.get_tempomap(), tmap2);
+  seq.set_event_buffer(seq.add_sequencable(sqbl), buf1);
+  seq.set_event_buffer(seq.add_sequencable(sqbl), buf2);
+  
+  seq.run(SongTime(0, 0), SongTime(5, 0x838382));
+  seq.run(SongTime(0, 0), SongTime(5, 0x838382));
+  seq.run(SongTime(89, 1), SongTime(90, 0));
+  seq.run(SongTime(90, 0), SongTime(90, 0));
+  
+  os1<<flush;
+  os2<<flush;
+  
+  string expected_result = 
+    "0:00000000: 00\n"
+    "1:00000000: 01\n"
+    "2:00000000: 02\n"
+    "3:00000000: 03\n"
+    "4:00000000: 04\n"
+    "5:00000000: 05\n"
+    "0:00000000: 00\n"
+    "1:00000000: 01\n"
+    "2:00000000: 02\n"
+    "3:00000000: 03\n"
+    "4:00000000: 04\n"
+    "5:00000000: 05\n";
+  
+  BOOST_CHECK(os1.str() == expected_result);
+  
+  BOOST_CHECK(os2.str() == expected_result);
 }
 
 

@@ -48,7 +48,7 @@ namespace Dino {
       not be called from a realtime thread. 
   
       The only requirement for the datatype T is that is should be 
-      CopyConstructable. */
+      CopyConstructable or MoveConstructable. */
   template <typename T>
   class LinkedList {
   private:
@@ -76,6 +76,11 @@ namespace Dino {
 	  data member. */
       Node(NodeBase* prev, NodeBase* next, T const& data) 
 	: NodeBase(prev), m_next(next), m_data(data) { }
+      
+      /** Constructs a new node with the given previous node, next node and
+	  data member, which may be moved. */
+      Node(NodeBase* prev, NodeBase* next, T&& data) 
+	: NodeBase(prev), m_next(next), m_data(std::move(data)) { }
       
       /** A pointer to the next node in the list. It is an AtomicPtr instead
 	  of a regular pointer to ensure that the list works with two threads
@@ -290,7 +295,7 @@ namespace Dino {
       return Iterator(&m_end);
     }
     
-    /** Insert @c data in the list before the element pointed to by
+    /** Copy @c data into the list before the element pointed to by
 	@c pos.
 	
 	@throw std::bad_alloc if the memory for the list node can't be 
@@ -312,6 +317,31 @@ namespace Dino {
       ++m_size;
       return Iterator(node);
     }
+    
+
+    /** Move @c data into the list before the element pointed to by
+	@c pos.
+	
+	@throw std::bad_alloc if the memory for the list node can't be 
+	                      allocated
+	@throw std::overflow_error if the list already has the maximal number
+	                           of elements. */
+    Iterator insert(Iterator pos, T&& data) throw(std::bad_alloc,
+						  std::overflow_error) {
+      delete_erased_nodes();
+      if (m_size == std::numeric_limits<AtomicInt::Type>::max())
+	throw std::overflow_error("The list is full");
+      Node* prev = static_cast<Node*>(pos.m_node->m_prev);
+      Node* node = new Node(prev, pos.m_node, std::move(data));
+      pos.m_node->m_prev = node;
+      if (prev)
+	prev->m_next.set(node);
+      else
+	m_head.set(node);
+      ++m_size;
+      return Iterator(node);
+    }
+
     
     /** Erase the element pointed to by @c pos from the list.
 	@throw std::overflow_error if there are too many erased elements that

@@ -19,61 +19,67 @@
 #ifndef SEQUENCER_HPP
 #define SEQUENCER_HPP
 
-#include <map>
 #include <memory>
+#include <utility>
 
 #include <boost/iterator/transform_iterator.hpp>
 
-#include "getfirst.hpp"
+#include "linkedlist.hpp"
+#include "sequencable.hpp"
+#include "songtime.hpp"
 
 
 namespace Dino {
   
 
-  class Instrument;
-  class Sequencable;
-  class SongTime;
-  class TempoMap;
+  class EventBuffer;
   
   
   /** This is the sequencer engine. It holds references to a collection
-      of Sequencable objects and Instrument objects, and sequences data from
+      of Sequencable objects and EventBuffer objects, and sequences data from
       the former into the latter. */
   class Sequencer {
+    
+    struct SeqData {
+      SeqData() {}
+      SeqData(SeqData&& sd) 
+	: seq(sd.seq), pos(std::move(sd.pos)), buf(sd.buf) {}
+      SeqData(SeqData const&) = delete;
+      std::shared_ptr<Sequencable const> seq;
+      std::unique_ptr<Sequencable::Position> pos;
+      std::shared_ptr<EventBuffer> buf;
+    };
+    
+    struct GetSqbl {
+      std::shared_ptr<Sequencable const> const& 
+      operator()(SeqData const& wrp) const {
+	return wrp.seq;
+      }
+    };
+    
   public:
     
-    /** The type of the data structure that contains the pointers to the
-	Sequencable and Instrument objects. No objects of this type will be
-	exposed in the public interface to the Sequencer class, it's just here
-	to make the typedefs for Iterator and ConstIterator easier to read. */
-    typedef std::multimap<std::shared_ptr<Sequencable const>,
-			  std::shared_ptr<Instrument> > SequencableMap;
-    
     /** The iterator type for iterating over Sequencables. */
-    typedef boost::transform_iterator<GetFirst<SequencableMap::key_type,
-					       SequencableMap::mapped_type>,
-				      SequencableMap::iterator> Iterator;
+    typedef boost::transform_iterator<GetSqbl,
+				      LinkedList<SeqData>::Iterator,
+				      std::shared_ptr<Sequencable const>const&>
+    Iterator;
 
     /** The const iterator type for iterating over Sequencables. */
-    typedef boost::transform_iterator<GetFirst<SequencableMap::key_type,
-					       SequencableMap::mapped_type>,
-				      SequencableMap::const_iterator> 
-				      ConstIterator;
+    typedef boost::transform_iterator<GetSqbl,
+				      LinkedList<SeqData>::ConstIterator, 
+				      std::shared_ptr<Sequencable const> const&>
+  ConstIterator;
     
-    /** The TempoMap pointed to by tmap will be used to map between frame time
-	and song time. */
-    Sequencer(std::shared_ptr<TempoMap const> tmap);
+    Sequencer();
 
-    /** Return the instrument that the Sequencable that @c iter refers to will 
-	be sequenced to. */
-    std::shared_ptr<Instrument> get_instrument(Iterator iter);
+    /** Return the event buffer that the Sequencable that @c iter refers to 
+	will be sequenced to. */
+    std::shared_ptr<EventBuffer> get_event_buffer(Iterator iter);
     
-    /** Return the instrument that the Sequencable that @c iter refers to will
+    /** Return the EventBuffer that the Sequencable that @c iter refers to will
 	be sequenced to, const version. */
-    std::shared_ptr<Instrument const> get_instrument(Iterator iter) const;
-    
-    /** Return the current TempoMap. */
-    std::shared_ptr<TempoMap const> get_tempomap() const;
+    std::shared_ptr<EventBuffer const> get_event_buffer(Iterator iter) const;
     
     /** Return an Iterator to the first Sequencable that is sequenced by
 	this object. */
@@ -108,28 +114,18 @@ namespace Dino {
 	the list, which means that it will not be sequenced any more. */
     void remove_sequencable(Iterator iter);
     
-    /** Set the instrument that the Sequencable that @c iter refers to will be
+    /** Set the buffer that the Sequencable that @c iter refers to will be
 	sequenced to. */
-    void set_instrument(Iterator iter, std::shared_ptr<Instrument> instr);
-
-    /** The TempoMap pointed to by tmap will be used to map between frame time
-	and song time. */
-    void set_tempomap(std::shared_ptr<TempoMap const> tmap);
+    void set_event_buffer(Iterator iter, std::shared_ptr<EventBuffer> instr);
     
-    /** Start playing at the current time. */
-    void play();
-    
-    /** Stop playing, stay at the current time. */
-    void stop();
-    
-    /** Go to the given time, don't change the playing/paused state. */
-    void go_to_time(const SongTime& st);
+    /** This is the function that does the actual sequencing. */
+    void run(SongTime const& from, SongTime const& to);
     
   private:
     
-    std::shared_ptr<TempoMap const> m_tmap;
+    LinkedList<SeqData> m_sqbls;
     
-    SequencableMap m_sqbls;
+    SongTime m_next_start;
     
   };
 

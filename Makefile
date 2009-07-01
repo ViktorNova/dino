@@ -53,7 +53,10 @@ libdinoseq_so_SOURCES = \
 	sequencable.cpp sequencable.hpp \
 	sequencer.cpp sequencer.hpp \
 	songtime.cpp songtime.hpp
-libdinoseq_so_HEADERS = 
+libdinoseq_so_HEADERS = \
+	atomicptr.hpp \
+	linkedlist.hpp \
+	nodequeue.hpp
 libdinoseq_so_SOURCEDIR = src/libdinoseq
 libdinoseq_so_CFLAGS = -std=c++0x `pkg-config --cflags glib-2.0`
 libdinoseq_so_LDFLAGS = `pkg-config --libs glib-2.0`
@@ -152,6 +155,7 @@ libdinoseq_test_SOURCES = \
 	atomicint_test.cpp \
 	atomicptr_test.cpp \
 	linkedlist_test.cpp \
+	nodequeue_test.cpp \
 	ostreambuffer_test.cpp \
 	sequencer_test.cpp \
 	songtime_test.cpp

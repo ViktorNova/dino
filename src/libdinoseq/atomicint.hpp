@@ -40,7 +40,7 @@ namespace Dino {
     
     /** Initialise the atomic integer to the value of @c t. This operation is
 	@b not atomic. */
-    AtomicInt(Type value);
+    AtomicInt(Type value = 0);
     
     /** Return the value of the atomic integer as a normal pinteger. This is
 	an atomic and lock-free operation, and it's also a memory barrier. */

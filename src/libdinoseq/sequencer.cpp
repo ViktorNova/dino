@@ -23,10 +23,12 @@
 #include "sequencer.hpp"
 
 
-using namespace std;
-
-
 namespace Dino {
+  
+
+  using std::invalid_argument;
+  using std::move;
+  using std::shared_ptr;
   
 
   Sequencer::Sequencer() {
@@ -36,7 +38,7 @@ namespace Dino {
   Sequencer::Iterator 
   Sequencer::add_sequencable(shared_ptr<Sequencable const> sqbl) {
     if (!sqbl)
-      throw domain_error("Invalid Sequencable pointer!");
+      throw invalid_argument("Invalid Sequencable pointer!");
     SeqData sd;
     sd.seq = sqbl;
     sd.pos = sqbl->create_position(SongTime());

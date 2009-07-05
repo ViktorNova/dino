@@ -25,7 +25,11 @@
 namespace Dino {
 
   
-  using namespace std;
+  using std::hex;
+  using std::ostream;
+  using std::setfill;
+  using std::setw;
+  using std::uppercase;
   
   
   OStreamBuffer::OStreamBuffer(ostream& stream)

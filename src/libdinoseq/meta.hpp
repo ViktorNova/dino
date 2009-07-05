@@ -34,7 +34,10 @@ namespace Dino {
   */
   template <typename S, typename T>
   struct is_same {
+    
+    /** This is true if @c S and c T are the same type. */
     static const bool value = false;
+
   };
   
   
@@ -44,7 +47,10 @@ namespace Dino {
   */
   template <typename T>
   struct is_same<T, T> {
+
+    /** This is true if @c S and c T are the same type. */
     static const bool value = true;
+
   };
   
   
@@ -58,7 +64,10 @@ namespace Dino {
   */
   template <typename T, bool B>
   struct const_if { 
+    
+    /** This is @c T @c const if @c B is @c true, otherwise it's just @c T. */
     typedef T type; 
+
   };
   
   
@@ -68,7 +77,10 @@ namespace Dino {
   */
   template <typename T> 
   struct const_if<T, true> {
+
+    /** This is @c T @c const if @c B is @c true, otherwise it's just @c T. */
     typedef T const type;
+
   };
   
   
@@ -82,7 +94,11 @@ namespace Dino {
   */
   template <typename S, typename T> 
   struct copy_const { 
+    
+    /** This is @c T @c const if @c S is a @c const type, otherwise it's just
+	@c T. */
     typedef typename const_if<T, is_same<S, S const>::value>::type type;
+
   };
   
   

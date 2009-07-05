@@ -26,10 +26,15 @@ namespace Dino {
   class SongTime;
   
   
-  /** @ingroup sequencing */
+  /** An abstract base class for MIDI event buffers.
+      All non-abstract derived classes must implement write_event().
+      
+      @ingroup sequencing */
   class EventBuffer {
   public:
     
+    /** This function is called by Sequencable::sequence() to write events
+	to the buffer. */
     virtual bool write_event(SongTime const& st, 
 			     size_t bytes, unsigned char const* data) = 0;
     

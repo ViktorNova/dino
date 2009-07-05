@@ -191,6 +191,7 @@ namespace Dino {
     };
     
     
+    /** XXX This should be moved somewhere else! */
     typedef unsigned ControllerID;
     
     

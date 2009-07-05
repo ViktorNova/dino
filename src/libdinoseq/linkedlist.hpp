@@ -138,6 +138,7 @@ namespace Dino {
     class BiIterator : public ForwardIterator<Derived, Compare, V> {
     protected:
       
+      /** The NodeBase type. It's either NodeBase or NodeBase c const. */
       typedef typename ForwardIterator<Derived, Compare, V>::NB NB;
       
       /** LinkedList<T> needs to call the private constructor. */

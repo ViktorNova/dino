@@ -30,10 +30,21 @@ namespace Dino {
   class SongTime;
 
   
-  /** @ingroup sequencing */
+  /** An EventBuffer that prints the events it receives to an ostream.
+      It can be useful for debugging. 
+  
+      @ingroup sequencing 
+  */
   class OStreamBuffer : public EventBuffer {
   public:
     
+    /** Create a new OStreamBuffer for a given @c ostream. You can for
+	example do
+	@code
+	OStreamBuffer osb(std::cout);
+	@endcode
+	to create an OStreamBuffer that will print all events to stdout. 
+    */
     OStreamBuffer(std::ostream& stream);
     
     bool write_event(SongTime const& st, size_t bytes, 

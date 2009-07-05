@@ -27,43 +27,63 @@
 namespace Dino {
   
   
+  /** A type that represents time in a Sequencable or a Song. */
   class SongTime {
   public:
     
+    /** The type that is used to count beats. */
     typedef int32_t Beat;
     
+    /** The type that is used to count ticks within beats. One beat consists
+	of @c std::numeric_limit<Tick>::max() ticks. */
     typedef uint32_t Tick;
     
+    /** Create a SongTime at beat 0 and tick 0. */
     SongTime() throw();
     
+    /** Create a SongTime with the given beat and tick. */
     SongTime(Beat beat, Tick tick) throw();
     
+    /** Compare for equality. */
     bool operator==(SongTime const& st) const throw();
 
+    /** Compare for inequality. */
     bool operator!=(SongTime const& st) const throw();
     
+    /** Return true if this SongTime is earlier than another. */
     bool operator<(SongTime const& st) const throw();
 
+    /** Return true if this SongTime is later than another. */
     bool operator>(SongTime const& st) const throw();
 
+    /** Return true if this SongTime is not later than another. */
     bool operator<=(SongTime const& st) const throw();
 
+    /** Return true if this SongTime is not earlier than another. */
     bool operator>=(SongTime const& st) const throw();
-
+    
+    /** Add one SongTime to another, return the result by value. */
     SongTime operator+(SongTime const& st) const throw();
-
+    
+    /** Subtract one SongTime from another, return the result by value. */
     SongTime operator-(SongTime const& st) const throw();
     
+    /** Add SongTime objects in place. */
     SongTime& operator+=(SongTime const& st) throw();
 
+    /** Subtract SongTime objects in place. */
     SongTime& operator-=(SongTime const& st) throw();
     
+    /** Get the beat. */
     Beat get_beat() const throw();
     
+    /** Get the tick. */
     Tick get_tick() const throw();
     
+    /** Set the beat. */
     void set_beat(Beat b) throw();
-
+    
+    /** Set the tick. */
     void set_tick(Tick t) throw();
     
   private:
@@ -74,7 +94,8 @@ namespace Dino {
     
   };
 
-
+  
+  /** An ostream operator for SongTime. */
   std::ostream& operator<<(std::ostream& os, SongTime const& st);
   
   

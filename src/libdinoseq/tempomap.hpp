@@ -23,7 +23,11 @@
 namespace Dino {
   
   
-  /** @ingroup mididata */
+  /** A class that manages tempo changes and maps real time to song time,
+      in both directions.
+      
+      @ingroup mididata
+  */
   class TempoMap {
   public:
     

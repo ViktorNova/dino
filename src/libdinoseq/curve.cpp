@@ -235,7 +235,7 @@ namespace Dino {
   
   unique_ptr<Sequencable::Position> 
   Curve::create_position(SongTime const& st) const {
-    return unique_ptr<Sequencable::Position>(new Sequencable::Position(st));
+    return Sequencable::create_position(st);
   }
     
   

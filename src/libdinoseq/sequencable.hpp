@@ -49,11 +49,13 @@ namespace Dino {
     class Position {
     public:
       
-      /** Create a new Position with the given time. */
-      Position(SongTime const& st);
-      
       /** Return the time this position is at. */
       SongTime const& get_time() const throw();
+      
+    protected:
+    
+      /** Create a new Position with the given time. */
+      Position(SongTime const& st);
       
     private:
       

@@ -23,8 +23,9 @@
 #include <stdexcept>
 
 #include "atomicint.hpp"
-#include "nodelist.hpp"
 #include "atomicptr.hpp"
+#include "meta.hpp"
+#include "nodelist.hpp"
 
 
 namespace Dino {
@@ -60,9 +61,24 @@ namespace Dino {
     
 
     /** A class template that implements all the operations of a
-	ForwardIterator for the list. */
-    template <typename S, typename C, typename V, typename N, typename NB>
+	ForwardIterator for the list.
+	
+	@tparam Derived the concrete iterator type that inherits this one,
+	                will be returned from operator++()
+	@tparam Compare the concrete iterator type that this will be compared
+	                to
+	@tparam V the value type.
+    */
+    template <typename Derived, typename Compare, typename V>
     class ForwardIterator {
+    public:
+      
+      /** The Node type, either Node or Node @c const. */
+      typedef typename copy_const<V, Node>::type N;
+      
+      /** The NodeBase type, either NodeBase or NodeBase @c const. */
+      typedef typename copy_const<V, NodeBase>::type NB;
+      
     protected:
       
       /** The constructor that creates an iterator from a list node. */
@@ -75,12 +91,12 @@ namespace Dino {
       
       /** Equality operator. Returns true if @c *this and @c iter point
 	  to the same list element. */
-      bool operator==(C const& iter) const throw() {
+      bool operator==(Compare const& iter) const throw() {
 	return m_node == iter.m_node;
       }
       
       /** Inequality operator, negation of the equality operator. */
-      bool operator!=(C const& iter) const throw() {
+      bool operator!=(Compare const& iter) const throw() {
 	return !operator==(iter);
       }
       
@@ -95,15 +111,15 @@ namespace Dino {
       }
       
       /** Make the iterator point to the next element in the list. */
-      S& operator++() throw() {
+      Derived& operator++() throw() {
 	m_node = static_cast<N*>(m_node)->m_next.get();
-	return static_cast<S&>(*this);
+	return static_cast<Derived&>(*this);
       }
       
       /** Make the iterator point to the next element in the list, 
 	  postfix version. */
-      S operator++(int) throw() {
-	S tmp(m_node);
+      Derived operator++(int) throw() {
+	Derived tmp(m_node);
 	operator++();
 	return tmp;
       }
@@ -118,16 +134,18 @@ namespace Dino {
     
     /** This class template inherits ForwardIterator and adds decrement 
 	operators. */
-    template <typename S, typename C, typename V, typename N, typename NB>
-    class BiIterator : public ForwardIterator<S, C, V, N, NB> {
+    template <typename Derived, typename Compare, typename V>
+    class BiIterator : public ForwardIterator<Derived, Compare, V> {
     protected:
+      
+      typedef typename ForwardIterator<Derived, Compare, V>::NB NB;
       
       /** LinkedList<T> needs to call the private constructor. */
       friend class LinkedList<T>;
       
       /** The constructor that creates an iterator from a list node. */
       explicit BiIterator(NB* node) throw() 
-	: ForwardIterator<S, C, V, N, NB>(node) { 
+	: ForwardIterator<Derived, Compare, V>(node) { 
       }
       
     public:
@@ -136,15 +154,15 @@ namespace Dino {
       BiIterator() throw() { }
       
       /** Make the iterator point to the previous element in the list. */
-      S& operator--() throw() {
+      Derived& operator--() throw() {
 	this->m_node = this->m_node->m_prev;
-	return static_cast<S&>(*this);
+	return static_cast<Derived&>(*this);
       }
       
       /** Make the iterator point to the previous element in the list,
 	  postfix version. */
-      S operator--(int) throw() {
-	S tmp(this->m_node);
+      Derived operator--(int) throw() {
+	Derived tmp(this->m_node);
 	operator--();
 	return tmp;
       }
@@ -156,8 +174,7 @@ namespace Dino {
     /** A bidirectional non-mutable iterator for the list. Should only be used
 	in the RW thread. */
     class ConstIterator 
-      : public BiIterator<ConstIterator, ConstIterator, T const, 
-			  Node const, NodeBase const>,
+      : public BiIterator<ConstIterator, ConstIterator, T const>,
 	public std::iterator<std::bidirectional_iterator_tag, 
 			     T const, AtomicInt::Type> {
 
@@ -166,8 +183,7 @@ namespace Dino {
       
       /** The constructor that creates an iterator from a list node. */
       explicit ConstIterator(NodeBase const* node) throw() 
-	: BiIterator<ConstIterator, ConstIterator, T const, 
-		     Node const, NodeBase const>(node) { 
+	: BiIterator<ConstIterator, ConstIterator, T const>(node) { 
       }
       
     public:
@@ -181,7 +197,7 @@ namespace Dino {
     /** A bidirectional mutable iterator for the list. Should only be used
 	in the RW thread. */
     class Iterator 
-      : public BiIterator<Iterator, ConstIterator, T, Node, NodeBase>, 
+      : public BiIterator<Iterator, ConstIterator, T>, 
 	public std::iterator<std::bidirectional_iterator_tag, 
 			     T, AtomicInt::Type> {
       
@@ -190,7 +206,7 @@ namespace Dino {
       
       /** The constructor that creates an iterator from a list node. */
       explicit Iterator(NodeBase* node) throw() 
-	: BiIterator<Iterator, ConstIterator, T, Node, NodeBase>(node) { 
+	: BiIterator<Iterator, ConstIterator, T>(node) { 
       }
       
     public:
@@ -209,8 +225,7 @@ namespace Dino {
     /** A non-mutable forward iterator for the list. This may be used in both
 	the reader thread and the RW thread. */
     class ReaderIterator
-      : public ForwardIterator<ReaderIterator, ReaderIterator, T const, 
-			       Node const, NodeBase const>,
+      : public ForwardIterator<ReaderIterator, ReaderIterator, T const>,
 	public std::iterator<std::forward_iterator_tag, T, AtomicInt::Type> {
 
       /** LinkedList<T> needs to call the private constructor. */
@@ -218,8 +233,7 @@ namespace Dino {
       
       /** The constructor that creates an iterator from a list node. */
       explicit ReaderIterator(NodeBase const* node) throw() 
-	: ForwardIterator<ReaderIterator, ReaderIterator, T const, 
-			  Node const, NodeBase const>(node) {
+	: ForwardIterator<ReaderIterator, ReaderIterator, T const>(node) {
       }
       
     public:

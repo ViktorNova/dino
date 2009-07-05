@@ -75,7 +75,7 @@ namespace Dino {
   /** A struct template that defines a new type with or without a @c const
       qualifier.
       
-      @c copy_const<T, S>::type is @c S @c const if @c T is a @c const type and
+      @c copy_const<S, T>::type is @c S @c const if @c T is a @c const type and
       @c S if it is not. 
       
       @ingroup meta

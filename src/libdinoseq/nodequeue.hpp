@@ -28,8 +28,8 @@ namespace Dino {
   /** This is a very basic lock-free realtime-safe queue for one pusher
       and one popper. It does not allocate and deallocate the list nodes
       itself since that would not be realtime-safe, the caller has to do that
-      using the ordinary @c new and @c delete operators (not @c malloc(), 
-      placement @c new or something else - the destructor deallocates all
+      using the ordinary @c new and @c delete operators; @b not @c malloc(), 
+      placement @c new or something else, the destructor deallocates all
       remaining nodes using @c delete so they all must be allocated using
       @c new.
       
@@ -72,7 +72,9 @@ namespace Dino {
     /** Destroy the queue and delete any elements still in it. This function
 	is neither thread-safe nor realtime-safe, so you must make sure that
 	no other thread is still pushing or popping when the queue gets 
-	destroyed. */
+	destroyed. 
+    
+	This function will not throw any exceptions unless @b ~T() does. */
     ~NodeQueue() {
       NodeBase* nb = m_head.next.get();
       while (nb != 0) {
@@ -97,7 +99,8 @@ namespace Dino {
     /** Pop a node from the beginning of the queue. This function may only be
 	called from one single thread. It will return 0 if there are less than
 	2 nodes in the queue, the last node will not be popped until more
-	nodes have been pushed.
+	nodes have been pushed. Once you have popped a node you are responisble
+	for deallocating it using @c delete.
 	
 	This function is realtime-safe. */
     Node* pop_node() {

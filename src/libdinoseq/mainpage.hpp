@@ -105,6 +105,13 @@
 */
 
 
+/** @defgroup meta Metaprogramming
+    Class templates for compile-time trickery.
+    This module provides some tools that are useful when dealing
+    with templates and metaprogramming algorithms.
+*/
+
+
 /** @namespace Dino
     The namespace that all classes in libdinoseq belong to.
 */

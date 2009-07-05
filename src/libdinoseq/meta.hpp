@@ -28,14 +28,20 @@ namespace Dino {
       no need to add that dependency for a small thing like this.
       
       @c is_same<S, T>::value is @c true if and only if @c S and @c T are the
-      same type. */
+      same type. 
+  
+      @ingroup meta 
+  */
   template <typename S, typename T>
   struct is_same {
     static const bool value = false;
   };
   
   
-  /** A specialisation of is_same. */
+  /** A specialisation of is_same. 
+      
+      @ingroup meta
+  */
   template <typename T>
   struct is_same<T, T> {
     static const bool value = true;
@@ -46,14 +52,20 @@ namespace Dino {
       qualifier.
       
       @c const_if<T, B>::type is @c T @c const if @c B is @c true and @c T if
-      @c B is @c false. */
+      @c B is @c false. 
+      
+      @ingroup meta
+  */
   template <typename T, bool B>
   struct const_if { 
     typedef T type; 
   };
   
   
-  /** A specialisation of const_if. */
+  /** A specialisation of const_if.       
+
+      @ingroup meta
+  */
   template <typename T> 
   struct const_if<T, true> {
     typedef T const type;
@@ -64,7 +76,10 @@ namespace Dino {
       qualifier.
       
       @c copy_const<T, S>::type is @c S @c const if @c T is a @c const type and
-      @c S if it is not. */
+      @c S if it is not. 
+      
+      @ingroup meta
+  */
   template <typename S, typename T> 
   struct copy_const { 
     typedef typename const_if<T, is_same<S, S const>::value>::type type;

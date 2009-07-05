@@ -23,6 +23,7 @@
 #include <stdexcept>
 
 #include "atomicint.hpp"
+#include "nodelist.hpp"
 #include "atomicptr.hpp"
 
 
@@ -53,44 +54,9 @@ namespace Dino {
   class LinkedList {
   private:
     
-    
-    /** A base struct for Node. This struct has only a back link and is used 
-	for the end marker so we don't have to use Node with its
-	potentially expensive data member for that. */
-    struct NodeBase {
-      
-      /** Constructs a new NodeBase. */
-      NodeBase(NodeBase* prev = 0) throw() : m_prev(prev) { }
-      
-      /** A link to the previous node in the list. */
-      NodeBase* m_prev;
-      
-    };
-    
-    
-    /** The node type of LinkedList. It inherits NodeBase and adds the data
-	member and an AtomicPtr to the next node in the list. */
-    struct Node : NodeBase {
-      
-      /** Constructs a new node with the given previous node, next node and
-	  data member. */
-      Node(NodeBase* prev, NodeBase* next, T const& data) 
-	: NodeBase(prev), m_next(next), m_data(data) { }
-      
-      /** Constructs a new node with the given previous node, next node and
-	  data member, which may be moved. */
-      Node(NodeBase* prev, NodeBase* next, T&& data) 
-	: NodeBase(prev), m_next(next), m_data(std::move(data)) { }
-      
-      /** A pointer to the next node in the list. It is an AtomicPtr instead
-	  of a regular pointer to ensure that the list works with two threads
-	  without requiring locks. */
-      AtomicPtr<NodeBase> m_next;
-      
-      /** The data element of this list node. */
-      T m_data;
-      
-    };
+    typedef typename NodeList<T>::NodeBase NodeBase;
+
+    typedef typename NodeList<T>::Node Node;
     
 
     /** A class template that implements all the operations of a
@@ -266,8 +232,7 @@ namespace Dino {
     
     /** Construct an empty list. */
     LinkedList() throw() 
-      : m_head(&m_end), 
-	m_erased_list(0),
+      : m_erased_list(0),
 	m_erase_counter(0),
 	m_delete_ok(std::numeric_limits<decltype(m_delete_ok)>::max()),
 	m_size(0),
@@ -277,12 +242,6 @@ namespace Dino {
     
     /** Release all memory used by the list. */
     ~LinkedList() throw() {
-      NodeBase* nb = m_head.get();
-      while (nb != &m_end) {
-	Node* n = static_cast<Node*>(nb);
-	nb = static_cast<Node*>(nb)->m_next.get();
-	delete n;
-      }
       Node* n = m_erased_list;
       while (n != 0) {
 	Node* n2 = n;
@@ -293,22 +252,22 @@ namespace Dino {
     
     /** Returns a ConstIterator to the beginning of the list. */
     ConstIterator begin() const throw() {
-      return ConstIterator(m_head.get());
+      return ConstIterator(m_data.first_node());
     }
     
     /** Returns a ConstIterator to the end of the list. */
     ConstIterator end() const throw() {
-      return ConstIterator(&m_end);
+      return ConstIterator(m_data.end_marker());
     }
     
     /** Returns an Iterator to the beginning of the list. */
     Iterator begin() throw() {
-      return Iterator(m_head.get());
+      return Iterator(m_data.first_node());
     }
     
     /** Returns an Iterator to the end of the list. */
     Iterator end() throw() {
-      return Iterator(&m_end);
+      return Iterator(m_data.end_marker());
     }
     
     /** Copy @c data into the list before the element pointed to by
@@ -323,13 +282,8 @@ namespace Dino {
       delete_erased_nodes();
       if (m_size == std::numeric_limits<AtomicInt::Type>::max())
 	throw std::overflow_error("The list is full");
-      Node* prev = static_cast<Node*>(pos.m_node->m_prev);
-      Node* node = new Node(prev, pos.m_node, data);
-      pos.m_node->m_prev = node;
-      if (prev)
-	prev->m_next.set(node);
-      else
-	m_head.set(node);
+      Node* node = new Node(data);
+      m_data.insert(pos.m_node, node);
       ++m_size;
       return Iterator(node);
     }
@@ -347,13 +301,8 @@ namespace Dino {
       delete_erased_nodes();
       if (m_size == std::numeric_limits<AtomicInt::Type>::max())
 	throw std::overflow_error("The list is full");
-      Node* prev = static_cast<Node*>(pos.m_node->m_prev);
-      Node* node = new Node(prev, pos.m_node, std::move(data));
-      pos.m_node->m_prev = node;
-      if (prev)
-	prev->m_next.set(node);
-      else
-	m_head.set(node);
+      Node* node = new Node(std::move(data));
+      m_data.insert(pos.m_node, node);
       ++m_size;
       return Iterator(node);
     }
@@ -370,13 +319,7 @@ namespace Dino {
       Iterator result = pos;
       ++result;
       Node* node = static_cast<Node*>(pos.m_node);
-      Node* prev = static_cast<Node*>(node->m_prev);
-      NodeBase* next = node->m_next.get();
-      next->m_prev = prev;
-      if (prev)
-	prev->m_next.set(next);
-      else
-	m_head.set(next);
+      m_data.remove(node);
       node->m_prev = m_erased_list;
       m_erased_list = node;
       ++m_erased_list_size;
@@ -416,12 +359,12 @@ namespace Dino {
     
     /** Returns a ReaderIterator to the beginning of the list. */
     ReaderIterator reader_begin() const throw() {
-      return ReaderIterator(m_head.get());
+      return ReaderIterator(m_data.first_node());
     }
     
     /** Returns a ReaderIterator to the end of the list. */
     ReaderIterator reader_end() const throw() {
-      return ReaderIterator(&m_end);
+      return ReaderIterator(m_data.end_marker());
     }
     
     /** Tell the list that it's OK to deallocate all erased nodes.
@@ -444,11 +387,7 @@ namespace Dino {
     
   private:
     
-    /** The end marker. */
-    NodeBase m_end;
-    
-    /** A pointer to the head of the list. */
-    AtomicPtr<NodeBase> m_head;
+    NodeList<T> m_data;
     
     /** A list of erased nodes waiting for deallocation, linked through the
 	@c m_prev link to save atomic calls. */

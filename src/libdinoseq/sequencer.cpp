@@ -39,7 +39,7 @@ namespace Dino {
   
   Sequencer::Iterator 
   Sequencer::add_sequencable(shared_ptr<Sequencable const> sqbl) 
-    throw(bad_alloc, overflow_error) {
+    throw(bad_alloc, overflow_error, invalid_argument) {
     if (!sqbl)
       throw invalid_argument("Invalid Sequencable pointer!");
     SeqData sd;

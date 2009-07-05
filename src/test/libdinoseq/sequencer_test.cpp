@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(add_remove_sequencable) {
   Sequencer seq;
   
   BOOST_CHECK_THROW(seq.add_sequencable(shared_ptr<PhonySequencable>()), 
-		    domain_error);
+		    std::invalid_argument);
   BOOST_CHECK(seq.sqbl_begin() == seq.sqbl_end());
   
   seq.add_sequencable(sqbl1);

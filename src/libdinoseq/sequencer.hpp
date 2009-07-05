@@ -112,7 +112,7 @@ namespace Dino {
     
     /** Add an object to the list of sequenced objects. */
     Iterator add_sequencable(std::shared_ptr<Sequencable const> sqbl) 
-      throw(std::bad_alloc, std::overflow_error);
+      throw(std::bad_alloc, std::overflow_error, std::invalid_argument);
     
     /** Remove the reference to the Sequencable that @c iter refers to from
 	the list, which means that it will not be sequenced any more. */

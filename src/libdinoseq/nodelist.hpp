@@ -62,12 +62,16 @@ namespace Dino {
 	member and an AtomicPtr to the next node in the list. */
     struct Node : NodeBase {
       
-      /** Constructs a new node with the given data. */
+      /** Constructs a new node with the given data. This function will
+	  not throw any exceptions unless the copy constructor for @c T
+	  does. */
       Node(T const& data, NodeBase* prev = 0, NodeBase* next = 0) 
 	: NodeBase(prev), m_next(next), m_data(data) {
       }
       
-      /** Constructs a new node with the given data, which may be moved. */
+      /** Constructs a new node with the given data, which may be moved.
+	  This function will not throw any exceptions unless the move
+	  constructor for @c T does. */
       Node(T&& data, NodeBase* prev = 0, NodeBase* next = 0) 
 	: NodeBase(prev), m_next(next), m_data(std::move(data)) {
       }
@@ -107,7 +111,7 @@ namespace Dino {
 	safe to use @c static_cast to cast it to a Node pointer.
 	
 	This function is atomic and a memory barrier. */
-    NodeBase* first_node() {
+    NodeBase* first_node() throw() {
       return m_head.get();
     }
     
@@ -119,21 +123,21 @@ namespace Dino {
 	safe to use @c static_cast to cast it to a Node pointer. 
     
 	This function is atomic and a memory barrier. */
-    NodeBase const* first_node() const {
+    NodeBase const* first_node() const throw() {
       return m_head.get();
     }
     
     /** Returns a pointer to the end marker of the list. You can use it
 	to insert nodes at the end using 
 	list.insert(list.end_marker(), my_node). */
-    NodeBase* end_marker() {
+    NodeBase* end_marker() throw() {
       return &m_end;
     }
     
     /** Returns a pointer to the end marker of the list. You can use it
 	to insert nodes at the end using 
 	list.insert(list.end_marker(), my_node). */
-    NodeBase const* end_marker() const {
+    NodeBase const* end_marker() const throw() {
       return &m_end;
     }
     
@@ -146,7 +150,7 @@ namespace Dino {
 	the Node object @b must be allocated using @c new unless you are 
 	completely sure that it will be removed before the list destructor 
 	is called. */
-    void insert(NodeBase* before, Node* node) {
+    void insert(NodeBase* before, Node* node) throw() {
       node->m_next.set(before);
       Node* prev = static_cast<Node*>(before->m_prev);
       node->m_prev = prev;
@@ -159,7 +163,7 @@ namespace Dino {
     
     /** Remove the given node from the list. The caller assumes ownership
 	of the node. */
-    void remove(Node* node) {
+    void remove(Node* node) throw() {
       Node* prev = static_cast<Node*>(node->m_prev);
       NodeBase* next = node->m_next.get();
       next->m_prev = prev;

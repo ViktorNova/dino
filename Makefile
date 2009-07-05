@@ -156,6 +156,7 @@ libdinoseq_test_SOURCES = \
 	atomicint_test.cpp \
 	atomicptr_test.cpp \
 	linkedlist_test.cpp \
+	meta_test.cpp \
 	nodelist_test.cpp \
 	nodequeue_test.cpp \
 	ostreambuffer_test.cpp \

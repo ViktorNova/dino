@@ -20,6 +20,7 @@
 #define SEQUENCER_HPP
 
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include <boost/iterator/transform_iterator.hpp>
@@ -31,7 +32,7 @@
 
 namespace Dino {
   
-
+  
   class EventBuffer;
   
   
@@ -41,8 +42,8 @@ namespace Dino {
   class Sequencer {
     
     struct SeqData {
-      SeqData() {}
-      SeqData(SeqData&& sd) 
+      SeqData() throw() {}
+      SeqData(SeqData&& sd) throw()
 	: seq(sd.seq), pos(std::move(sd.pos)), buf(sd.buf) {}
       SeqData(SeqData const&) = delete;
       std::shared_ptr<Sequencable const> seq;
@@ -52,7 +53,7 @@ namespace Dino {
     
     struct GetSqbl {
       std::shared_ptr<Sequencable const> const& 
-      operator()(SeqData const& wrp) const {
+      operator()(SeqData const& wrp) const throw() {
 	return wrp.seq;
       }
     };
@@ -75,48 +76,52 @@ namespace Dino {
 
     /** Return the event buffer that the Sequencable that @c iter refers to 
 	will be sequenced to. */
-    std::shared_ptr<EventBuffer> get_event_buffer(Iterator iter);
+    std::shared_ptr<EventBuffer> get_event_buffer(Iterator iter) throw();
     
     /** Return the EventBuffer that the Sequencable that @c iter refers to will
 	be sequenced to, const version. */
-    std::shared_ptr<EventBuffer const> get_event_buffer(Iterator iter) const;
+    std::shared_ptr<EventBuffer const> get_event_buffer(Iterator iter) const
+      throw();
     
     /** Return an Iterator to the first Sequencable that is sequenced by
 	this object. */
-    Iterator sqbl_begin();
+    Iterator sqbl_begin() throw();
     
     /** Return an Iterator to the end of the list of Sequencables that are
 	sequenced by this object. */
-    Iterator sqbl_end();
+    Iterator sqbl_end() throw();
     
     /** If @c match is in the list of Sequencables that are sequenced by
 	this object, return an Iterator to the first occurance of it.
 	Otherwise, return sqbl_end(). */
-    Iterator sqbl_find(std::shared_ptr<Sequencable const> match);
+    Iterator sqbl_find(std::shared_ptr<Sequencable const> match) throw();
     
     /** Return a ConstIterator to the first Sequencable that is sequenced by
 	this object. */
-    ConstIterator sqbl_begin() const;
+    ConstIterator sqbl_begin() const throw();
     
     /** Return a ConstIterator to the end of the list of Sequencables that are
 	sequenced by this object. */
-    ConstIterator sqbl_end() const;
+    ConstIterator sqbl_end() const throw();
     
     /** If @c match is in the list of Sequencables that are sequenced by
 	this object, return a ConstIterator to the first occurance of it.
 	Otherwise, return sqbl_end(). */
-    ConstIterator sqbl_find(std::shared_ptr<Sequencable const> match) const;
+    ConstIterator 
+    sqbl_find(std::shared_ptr<Sequencable const> match) const throw();
     
     /** Add an object to the list of sequenced objects. */
-    Iterator add_sequencable(std::shared_ptr<Sequencable const> sqbl);
+    Iterator add_sequencable(std::shared_ptr<Sequencable const> sqbl) 
+      throw(std::bad_alloc, std::overflow_error);
     
     /** Remove the reference to the Sequencable that @c iter refers to from
 	the list, which means that it will not be sequenced any more. */
-    void remove_sequencable(Iterator iter);
+    void remove_sequencable(Iterator iter) throw(std::overflow_error);
     
     /** Set the buffer that the Sequencable that @c iter refers to will be
 	sequenced to. */
-    void set_event_buffer(Iterator iter, std::shared_ptr<EventBuffer> instr);
+    void set_event_buffer(Iterator iter, std::shared_ptr<EventBuffer> instr)
+      throw();
     
     /** This is the function that does the actual sequencing. */
     void run(SongTime const& from, SongTime const& to);

@@ -29,6 +29,8 @@ namespace Dino {
   using std::invalid_argument;
   using std::move;
   using std::shared_ptr;
+  using std::bad_alloc;
+  using std::overflow_error;
   
 
   Sequencer::Sequencer() {
@@ -36,7 +38,8 @@ namespace Dino {
   
   
   Sequencer::Iterator 
-  Sequencer::add_sequencable(shared_ptr<Sequencable const> sqbl) {
+  Sequencer::add_sequencable(shared_ptr<Sequencable const> sqbl) 
+    throw(bad_alloc, overflow_error) {
     if (!sqbl)
       throw invalid_argument("Invalid Sequencable pointer!");
     SeqData sd;
@@ -47,30 +50,28 @@ namespace Dino {
   }
   
   
-  shared_ptr<EventBuffer> Sequencer::get_event_buffer(Iterator iter) {
+  shared_ptr<EventBuffer> Sequencer::get_event_buffer(Iterator iter) throw() {
     return iter.base()->buf;
   }
   
   
   shared_ptr<EventBuffer const> 
-  Sequencer::get_event_buffer(Iterator iter) const {
+  Sequencer::get_event_buffer(Iterator iter) const throw() {
     return shared_ptr<EventBuffer const>(iter.base()->buf);
   }
   
   
-  Sequencer::Iterator 
-  Sequencer::sqbl_begin() {
+  Sequencer::Iterator Sequencer::sqbl_begin() throw() {
     return Iterator(m_sqbls.begin());
   }
   
-  Sequencer::Iterator 
-  Sequencer::sqbl_end() {
+  Sequencer::Iterator Sequencer::sqbl_end() throw() {
     return Iterator(m_sqbls.end());
   }
   
   
   Sequencer::Iterator 
-  Sequencer::sqbl_find(shared_ptr<Sequencable const> match) {
+  Sequencer::sqbl_find(shared_ptr<Sequencable const> match) throw() {
     for (auto i = m_sqbls.begin(); i != m_sqbls.end(); ++i) {
       if (i->seq == match)
 	return Iterator(i);
@@ -79,20 +80,18 @@ namespace Dino {
   }
   
   
-  Sequencer::ConstIterator 
-  Sequencer::sqbl_begin() const {
+  Sequencer::ConstIterator Sequencer::sqbl_begin() const throw() {
     return ConstIterator(m_sqbls.begin());
   }
   
   
-  Sequencer::ConstIterator 
-  Sequencer::sqbl_end() const {
+  Sequencer::ConstIterator Sequencer::sqbl_end() const throw() {
     return ConstIterator(m_sqbls.end());
   }
   
   
   Sequencer::ConstIterator 
-  Sequencer::sqbl_find(shared_ptr<Sequencable const> match) const {
+  Sequencer::sqbl_find(shared_ptr<Sequencable const> match) const throw() {
     for (auto i = m_sqbls.begin(); i != m_sqbls.end(); ++i) {
       if (i->seq == match)
 	return ConstIterator(i);
@@ -101,13 +100,13 @@ namespace Dino {
   }
   
   
-  void Sequencer::remove_sequencable(Iterator iter) {
+  void Sequencer::remove_sequencable(Iterator iter) throw(overflow_error) {
     m_sqbls.erase(iter.base());
   }
   
   
   void Sequencer::set_event_buffer(Iterator iter, 
-				   shared_ptr<EventBuffer> buf) {
+				   shared_ptr<EventBuffer> buf) throw() {
     iter.base()->buf = buf;
   }
   

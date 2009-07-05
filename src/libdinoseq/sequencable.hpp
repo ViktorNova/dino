@@ -49,6 +49,15 @@ namespace Dino {
     class Position {
     public:
       
+      /** A virtual destructor is needed to delete safely. */
+      virtual ~Position();
+      
+      /** Copying is not allowed. */
+      Position(Position const&) = delete;
+      
+      /** Assignment is not allowed. */
+      Position& operator=(Position const&) = delete;
+      
       /** Return the time this position is at. */
       SongTime const& get_time() const throw();
       

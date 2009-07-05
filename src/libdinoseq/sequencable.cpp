@@ -26,6 +26,9 @@ namespace Dino {
   using std::unique_ptr;
   
   
+  Sequencable::Position::~Position() {}
+  
+  
   Sequencable::Position::Position(SongTime const& st)
     : m_time(st) {
   }

@@ -133,7 +133,6 @@ public:
 };
 
 
-
 BOOST_AUTO_TEST_CASE(run) {
   ostringstream os1;
   ostringstream os2;

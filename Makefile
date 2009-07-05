@@ -50,6 +50,7 @@ LIBRARIES = libdinoseq.so #libdinoseq_gui.so
 # The library with the sequencer and the song structures
 libdinoseq_so_SOURCES = \
 	atomicint.cpp atomicint.hpp \
+	curve.cpp curve.hpp \
 	ostreambuffer.cpp ostreambuffer.hpp \
 	sequencable.cpp sequencable.hpp \
 	sequencer.cpp sequencer.hpp \
@@ -156,6 +157,7 @@ libdinoseq_test_SOURCES = \
 	libdinoseq_test.cpp \
 	atomicint_test.cpp \
 	atomicptr_test.cpp \
+	curve_test.cpp \
 	linkedlist_test.cpp \
 	meta_test.cpp \
 	nodelist_test.cpp \

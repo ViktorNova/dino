@@ -162,6 +162,7 @@ libdinoseq_test_SOURCES = \
 	meta_test.cpp \
 	nodelist_test.cpp \
 	nodequeue_test.cpp \
+	nodeskiplist_test.cpp \
 	ostreambuffer_test.cpp \
 	sequencer_test.cpp \
 	songtime_test.cpp

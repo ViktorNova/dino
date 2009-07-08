@@ -48,8 +48,8 @@ namespace Dino {
     struct Point {
       
       /** Create a new Point. */
-      Point(SongTime const& st = SongTime(), 
-	    AtomicInt::Type v = AtomicInt::Type()) throw();
+      explicit Point(SongTime const& st = SongTime(), 
+		     AtomicInt::Type v = AtomicInt::Type()) throw();
       
       /** A comparison operator so we can use this as the payload type
 	  in a NodeSkipList. */
@@ -73,6 +73,15 @@ namespace Dino {
     typedef NodeSkipList<Point>::Node Node;
     
     
+    /** This is the Position subclass for Curve. It holds a NodeBase pointer
+	to the last sequenced node (or the skiplist head, if no node in the
+	list has been played yet). */
+    struct CurvePosition : Position {
+      CurvePosition() throw() : Position(SongTime(0, 0)), node(0) {}
+      NodeBase const* node;
+    };
+    
+
     /** A base class template for Iterator and ConstIterator that
 	implements all the common operations.
 	@tparam T the Node type (either Node or  Node @c const)
@@ -168,7 +177,7 @@ namespace Dino {
       friend class Curve;
       
       /** Create a new ConstIterator from a NodeBase pointer. */
-      ConstIterator(NodeBase const* node) throw();
+      explicit ConstIterator(NodeBase const* node) throw();
 
     };
     
@@ -190,7 +199,7 @@ namespace Dino {
       friend class Curve;
       
       /** Create a new Iterator from a NodeBase pointer. */
-      Iterator(NodeBase* node) throw();
+      explicit Iterator(NodeBase* node) throw();
       
     };
     

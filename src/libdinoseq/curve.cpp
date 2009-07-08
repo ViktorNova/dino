@@ -181,24 +181,12 @@ namespace Dino {
     
   
   Curve::Iterator Curve::lower_bound(SongTime const& time) throw() {
-    Iterator iter = begin();
-    while (true) {
-      if (iter == end() || iter->m_time >= time)
-	break;
-      ++iter;
-    }
-    return iter;
+    return Iterator(m_data.lower_bound(Point(time)));
   }
   
 
   Curve::Iterator Curve::upper_bound(SongTime const& time) throw() {
-    Iterator iter = begin();
-    while (true) {
-      if (iter == end() || iter->m_time > time)
-	break;
-      ++iter;
-    }
-    return iter;
+    return Iterator(m_data.upper_bound(Point(time)));
   }
     
    
@@ -213,40 +201,27 @@ namespace Dino {
     
   
   Curve::ConstIterator Curve::lower_bound(SongTime const& time) const throw() {
-    // XXX This is a duplication of the non-const version, it could be moved
-    // to a single function.
-    ConstIterator iter = begin();
-    while (true) {
-      if (iter == end() || iter->m_time >= time)
-	break;
-      ++iter;
-    }
-    return iter;
+    return ConstIterator(m_data.lower_bound(Point(time)));
   }
   
   
   Curve::ConstIterator Curve::upper_bound(SongTime const& time) const throw() {
-    // XXX This is a duplication of the non-const version, it could be moved
-    // to a single function.
-    ConstIterator iter = begin();
-    while (true) {
-      if (iter == end() || iter->m_time > time)
-	break;
-      ++iter;
-    }
-    return iter;
+    return ConstIterator(m_data.upper_bound(Point(time)));
   }
   
   
   unique_ptr<Sequencable::Position> 
   Curve::create_position(SongTime const& st) const {
-    return Sequencable::create_position(st);
+    auto pos = unique_ptr<CurvePosition>(new CurvePosition());
+    update_position(*pos, st);
+    return move(pos);
   }
     
   
   void Curve::update_position(Sequencable::Position& pos, 
 			      SongTime const& st) const {
     Sequencable::update_position(pos, st);
+    static_cast<CurvePosition&>(pos).node = m_data.find_less(Point(st));
   }
   
   

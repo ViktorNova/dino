@@ -24,7 +24,7 @@
 
 #include "atomicint.hpp"
 #include "meta.hpp"
-#include "nodelist.hpp"
+#include "nodeskiplist.hpp"
 #include "sequencable.hpp"
 #include "songtime.hpp"
 
@@ -51,6 +51,10 @@ namespace Dino {
       Point(SongTime const& st = SongTime(), 
 	    AtomicInt::Type v = AtomicInt::Type()) throw();
       
+      /** A comparison operator so we can use this as the payload type
+	  in a NodeSkipList. */
+      bool operator<(Point const& p) const throw();
+      
       /** The time of this point, from the start of the curve. */
       SongTime m_time;
       
@@ -63,10 +67,10 @@ namespace Dino {
   private:
     
     /** The NodeBase type used internally. */
-    typedef NodeList<Point>::NodeBase NodeBase;
+    typedef NodeSkipList<Point>::NodeBase NodeBase;
     
     /** The Node type used internally. */
-    typedef NodeList<Point>::Node Node;
+    typedef NodeSkipList<Point>::Node Node;
     
     
     /** A base class template for Iterator and ConstIterator that
@@ -98,17 +102,17 @@ namespace Dino {
       
       /** Return a proper pointer to the curve point. */
       Point const* operator->() const throw() {
-	return &static_cast<N*>(m_node)->m_data;
+	return &static_cast<N*>(m_node)->data;
       }
       
       /** Return a reference to the curve point. */
       Point const& operator*() const throw() {
-	return static_cast<N*>(m_node)->m_data;
+	return static_cast<N*>(m_node)->data;
       }
       
       /** Make the iterator point to the next curve point. */
       Derived& operator++() throw() {
-	m_node = static_cast<N*>(m_node)->m_next.get();
+	m_node = static_cast<N*>(m_node)->links[0].next.get();
 	return static_cast<Derived&>(*this);
       }
       
@@ -122,7 +126,7 @@ namespace Dino {
       
       /** Make the iterator point to the previous curve point. */
       Derived& operator--() throw() {
-	m_node = m_node->m_prev;
+	m_node = m_node->links[0].prev;
 	return static_cast<Derived&>(*this);
       }
       
@@ -205,7 +209,7 @@ namespace Dino {
     /** Set the controller ID. */
     void set_controller_id(ControllerID cid) throw();
     
-    /** Add a curve point at the first position that keeps the order
+    /** Add a curve point at the last position that keeps the order
 	of points consistent. Return an iterator for the new point. 
     
 	@throw std::bad_alloc if there isn't enough memory to add the point
@@ -300,7 +304,7 @@ namespace Dino {
   private:
     
     /** The list of curve points. */
-    NodeList<Point> m_data;
+    NodeSkipList<Point> m_data;
     
     /** The ID of the controller this curve is for. */
     ControllerID m_cid;

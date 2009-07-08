@@ -33,6 +33,11 @@ namespace Dino {
     : m_time(st),
       m_value(v) {
   }
+
+
+  bool Curve::Point::operator<(Point const& p) const throw() {
+    return m_time < p.m_time;
+  }
   
   
   Curve::ConstIterator::ConstIterator() throw() 
@@ -150,7 +155,7 @@ namespace Dino {
     }
     
     // If not we can just tweak the value.
-    static_cast<Node*>(iter.m_node)->m_data.m_value.set(value);
+    static_cast<Node*>(iter.m_node)->data.m_value.set(value);
     return iter;
   }
   

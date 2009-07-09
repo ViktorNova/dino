@@ -103,7 +103,7 @@ namespace Dino {
 	for deallocating it using @c delete.
 	
 	This function is realtime-safe. */
-    Node* pop_node() {
+    Node* pop_node() throw() {
       // if this is 0 the queue is empty
       NodeBase* nb = m_head.next.get();
       if (nb == 0)

@@ -1,4 +1,4 @@
-AM_CPPFLAGS = @LIBXMLPP_CFLAGS@ @JACK_CFLAGS@ @DEBUG_CFLAGS@
+AM_CPPFLAGS = @LIBXMLPP_CFLAGS@ @LIBSIGPP_CFLAGS@ @JACK_CFLAGS@ @DEBUG_CFLAGS@
 
 noinst_LTLIBRARIES = libdinoseq.la
 
@@ -22,4 +22,4 @@ libdinoseq_la_SOURCES = \
 	debug.hpp debug.cpp \
 	xmlserialisable.hpp
 
-libdinoseq_la_LIBADD = @LIBXMLPP_LIBS@ @JACK_LIBS@
+libdinoseq_la_LIBADD = @LIBXMLPP_LIBS@ @LIBSIGPP_LIBS@ @JACK_LIBS@

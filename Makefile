@@ -167,8 +167,8 @@ libdinoseq_test_SOURCES = \
 	sequencer_test.cpp \
 	songtime_test.cpp
 libdinoseq_test_SOURCEDIR = src/test/libdinoseq
-libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq `pkg-config --cflags glib-2.0`
-libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0`
+libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq `pkg-config --cflags glib-2.0` -DBOOST_TEST_DYN_LINK
+libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0` -lboost_unit_test_framework
 libdinoseq_test_LIBRARIES = src/libdinoseq/libdinoseq.so
 
 

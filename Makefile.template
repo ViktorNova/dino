@@ -301,7 +301,7 @@ really-all: $(if $(PKG_DEPS),check-pkg-deps) $(ARCHIVES_REAL) $(LIBRARIES_REAL) 
 # DEPENDENCY COMPUTATION
 DEP_SOURCES = $(filter %.c,$(ALL_SOURCES)) $(filter %.cpp,$(ALL_SOURCES))
 DEP_FILES = $(patsubst %,%.dep,$(DEP_SOURCES))
-DEPDIRS = $(shell for i in . */ */*/ */*/*/ */*/*/*/; do echo -n " -I$$i"; done)
+DEPDIRS = $(shell for i in . */ */*/ */*/*/ */*/*/*/; do echo -n " -I\"$$i\""; done)
 %.dep: %
 	@echo -n Generating dependencies for $<...
 	@echo -n .

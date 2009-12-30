@@ -35,7 +35,7 @@ namespace Dino {
     typedef int32_t Beat;
     
     /** The type that is used to count ticks within beats. One beat consists
-	of @c std::numeric_limit<Tick>::max() ticks. */
+	of ticks_per_beat() ticks. */
     typedef uint32_t Tick;
     
     /** Create a SongTime at beat 0 and tick 0. */
@@ -86,10 +86,22 @@ namespace Dino {
     /** Set the tick. */
     void set_tick(Tick t) throw();
     
+    /** Return the number of ticks per beat. */
+    static Tick ticks_per_beat() throw();
+
+    /** Return the number of bits of overhead that is available. */
+    static unsigned overhead_bits() throw();
+
+    /** Return the maximal length of a song. Because of the overhead this is
+	not the maximal value representable by a SongTime. */
+    static SongTime max_valid() throw();
+
   private:
     
+    /** Initialise a SongTime object from a single 64 bit integer. */
     SongTime(int64_t data) throw();
     
+    /** The actual data. */
     int64_t m_data;
     
   };

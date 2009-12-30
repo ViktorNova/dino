@@ -120,4 +120,18 @@ namespace Dino {
   }
 
 
+  SongTime::Tick SongTime::ticks_per_beat() throw() {
+    return (1 << 24) - 1;
+  }
+
+
+  unsigned SongTime::overhead_bits() throw() {
+    return 16;
+  }
+
+
+  SongTime SongTime::max_valid() throw() {
+    return SongTime(int64_t(1) << 47);
+  }
+
 }

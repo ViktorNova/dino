@@ -1,6 +1,6 @@
-CXX=g++-4.4
-CC=gcc-4.4
-
+CXX = g++-4.4
+CC = gcc-4.4
+CXXFLAGS = -std=c++0x
 
 PACKAGE_NAME = dino
 PACKAGE_VERSION = $(shell ./VERSION)
@@ -61,7 +61,7 @@ libdinoseq_so_HEADERS = \
 	nodelist.hpp \
 	nodequeue.hpp
 libdinoseq_so_SOURCEDIR = src/libdinoseq
-libdinoseq_so_CFLAGS = -std=c++0x `pkg-config --cflags glib-2.0`
+libdinoseq_so_CFLAGS = `pkg-config --cflags glib-2.0`
 libdinoseq_so_LDFLAGS = `pkg-config --libs glib-2.0`
 
 # pkg-config file for libdinoseq.so
@@ -167,7 +167,7 @@ libdinoseq_test_SOURCES = \
 	sequencer_test.cpp \
 	songtime_test.cpp
 libdinoseq_test_SOURCEDIR = src/test/libdinoseq
-libdinoseq_test_CFLAGS = -std=c++0x -Isrc/libdinoseq `pkg-config --cflags glib-2.0` -DBOOST_TEST_DYN_LINK
+libdinoseq_test_CFLAGS = -Isrc/libdinoseq `pkg-config --cflags glib-2.0` -DBOOST_TEST_DYN_LINK
 libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0` -lboost_unit_test_framework
 libdinoseq_test_LIBRARIES = $(BUILDPREFIX)src/libdinoseq/libdinoseq.so
 

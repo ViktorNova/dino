@@ -55,6 +55,7 @@ namespace Dino {
     
   private:
     
+    /** The actual underlying pointer. */
     gpointer m_pointer;
     
   };

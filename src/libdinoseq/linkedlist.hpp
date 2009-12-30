@@ -55,8 +55,10 @@ namespace Dino {
   class LinkedList {
   private:
     
+    /** The base type of Node. It is used for the end marker. */
     typedef typename NodeList<T>::NodeBase NodeBase;
 
+    /** The type of all nodes in the list, except the end marker. */
     typedef typename NodeList<T>::Node Node;
     
 
@@ -402,6 +404,7 @@ namespace Dino {
     
   private:
     
+    /** The NodeList that holds the actual nodes. */
     NodeList<T> m_data;
     
     /** A list of erased nodes waiting for deallocation, linked through the

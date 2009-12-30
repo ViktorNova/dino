@@ -52,6 +52,7 @@ namespace Dino {
     
   private:
     
+    /** The @c ostream that events will be written to. */
     std::ostream& m_stream;
     
   };

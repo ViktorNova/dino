@@ -56,6 +56,7 @@ namespace Dino {
     
   private:
     
+    /** The actual underlying integral variable. */
     Type m_data;
     
   };

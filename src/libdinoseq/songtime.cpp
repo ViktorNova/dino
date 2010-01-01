@@ -30,7 +30,7 @@ namespace Dino {
   
   
   SongTime::SongTime(Beat beat, Tick tick) throw()
-    : m_data((static_cast<int64_t>(beat) << 32) | tick) {
+    : m_data((static_cast<int64_t>(beat) * (1 << 24)) | (tick & 0xFFFFFF)) {
   }
   
   
@@ -87,22 +87,22 @@ namespace Dino {
   
   
   SongTime::Beat SongTime::get_beat() const throw() {
-    return m_data >> 32;
+    return m_data / (1 << 24);
   }
   
   
   SongTime::Tick SongTime::get_tick() const throw() {
-    return m_data & 0xFFFFFFFF;
+    return m_data & 0xFFFFFF;
   }
 
 
   void SongTime::set_beat(Beat b) throw() {
-    m_data = (static_cast<int64_t>(b) << 32) | (m_data & 0xFFFFFFFF);
+    m_data = (static_cast<int64_t>(b) * (1 << 24)) | get_tick();
   }
 
   
   void SongTime::set_tick(Tick t) throw() {
-    m_data = (static_cast<int64_t>(get_beat()) << 32) | t;
+    m_data = (get_beat() * (1 << 24)) | (t & 0xFFFFFF);
   }
 
 
@@ -114,7 +114,7 @@ namespace Dino {
   std::ostream& operator<<(std::ostream& os, SongTime const& st) {
     auto f = os.flags();
     os<<std::hex<<std::uppercase<<st.get_beat()<<':'
-      <<std::setw(8)<<std::setfill('0')<<st.get_tick();
+      <<std::setw(6)<<std::setfill('0')<<st.get_tick();
     os.flags(f);
     return os;
   }

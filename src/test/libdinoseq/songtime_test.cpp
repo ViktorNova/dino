@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(addition_subtraction) {
   BOOST_CHECK(st1 - st1 == st1);
   
   BOOST_CHECK(st1 - SongTime(34, 2) == 
-	      SongTime(-35, numeric_limits<SongTime::Tick>::max() - 1));
+	      SongTime(-35, SongTime::ticks_per_beat() - 1));
   
   st1 += SongTime(45, 3);
   
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(ostream) {
   
   os<<st<<flush;
   
-  BOOST_CHECK(os.str() == "29A:00449783");
+  BOOST_CHECK(os.str() == "29A:449783");
 }
 
 

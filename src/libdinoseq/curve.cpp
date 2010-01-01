@@ -225,8 +225,8 @@ namespace Dino {
   }
   
   
-  bool Curve::sequence(Sequencable::Position& pos, SongTime const& to, 
-		       EventBuffer& buf) const {
+  bool Curve::sequence(Sequencable::Position& /*pos*/, SongTime const& /*to*/, 
+		       EventBuffer& /*buf*/) const {
     return true;
   }
 

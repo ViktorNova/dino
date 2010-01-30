@@ -25,6 +25,7 @@ namespace Dino {
   using std::bad_alloc;
   using std::invalid_argument;
   using std::out_of_range;
+  using std::shared_ptr;
   using std::string;
   using std::unique_ptr;
   
@@ -68,6 +69,12 @@ namespace Dino {
     : Sequencable(label, length),
       m_cid(cid) {
   }
+  
+  
+  Curve::~Curve() throw() {
+    for (auto i = m_positions.begin(); i != m_positions.end(); ++i)
+      (*i)->curve = 0;
+  }
     
   
   Curve::ControllerID Curve::get_controller_id() const throw() {
@@ -98,6 +105,9 @@ namespace Dino {
 				   Iterator before)
     throw(bad_alloc, out_of_range, invalid_argument) {
     
+    // First, delete any old nodes that should be deleted.
+    delete_queued_nodes();
+    
     // check that the time given isn't out of range
     if (time > get_length() || time < SongTime(0, 0))
       throw out_of_range("Time for curve point is out of range");
@@ -118,6 +128,8 @@ namespace Dino {
   Curve::Iterator Curve::move_point(Iterator iter, SongTime const& time, 
 				    AtomicInt::Type value)
     throw(bad_alloc, out_of_range) {
+    // First, remove any old nodes that need to be deleted.
+    delete_queued_nodes();
     
     /* We could use remove_point(iter); add_point(time, value, ++iter) here,
        but then we would have to re-add the old point if the new time was out
@@ -148,9 +160,13 @@ namespace Dino {
       Node* n = new Node(Point(time, value));
       Iterator before = iter;
       m_data.insert((++before).m_node, n);
-      m_data.remove(static_cast<Node*>(iter.m_node));
-      // XXX Not thread-safe, needs to be queued!
-      delete static_cast<Node*>(iter.m_node);
+      Node* old = static_cast<Node*>(iter.m_node);
+      m_data.remove(old);
+      shared_ptr<Node> sp = shared_ptr<Node>(old);
+      for (auto i = m_positions.begin(); i != m_positions.end(); ++i) {
+	(*i)->to_be_confirmed.
+	  push_node(new NodeQueue<shared_ptr<Node>>::Node(sp));
+      }
       return Iterator(n);
     }
     
@@ -161,11 +177,19 @@ namespace Dino {
   
   
   Curve::Iterator Curve::remove_point(Iterator iter) throw() {
+    // First, delete any old nodes that should be deleted.
+    delete_queued_nodes();
+    
+    // Then, remove this node.
     Iterator next = iter;
     ++next;
-    m_data.remove(static_cast<Node*>(iter.m_node));
-    // XXX Not thread-safe, needs to be queued!
-    delete static_cast<Node*>(iter.m_node);
+    Node* node = static_cast<Node*>(iter.m_node);
+    m_data.remove(node);
+    shared_ptr<Node> sp = shared_ptr<Node>(node);
+    for (auto i = m_positions.begin(); i != m_positions.end(); ++i) {
+      (*i)->to_be_confirmed.
+	push_node(new NodeQueue<shared_ptr<Node>>::Node(sp));
+    }
     return next;
   }
     
@@ -225,9 +249,55 @@ namespace Dino {
   }
   
   
-  bool Curve::sequence(Sequencable::Position& /*pos*/, SongTime const& /*to*/, 
+  bool Curve::sequence(Sequencable::Position& pos, SongTime const& to, 
 		       EventBuffer& /*buf*/) const {
+    // check if the position needs to be updated
+    CurvePosition& cp = static_cast<CurvePosition&>(pos);
+    NodeQueue<shared_ptr<Node>>::Node* n;
+    bool needs_update = false;
+    while ((n = cp.to_be_confirmed.pop_node())) {
+      if (n->data.get() == cp.node)
+	needs_update = true;
+      cp.to_be_deleted.push_node(n);
+    }
+    if (needs_update)
+      update_position(pos, pos.get_time());
+    
+    // for each curve point with time < to:
+    NodeBase* nb = cp.node->links[0].next.get();
+    NodeBase* last_sequenced = nb;
+    while (nb != m_data.end_marker()) {
+      Node* node = static_cast<Node*>(node);
+      if (node->data.m_time >= to)
+	break;
+      last_sequenced = node;
+      if (node->data.m_time >= cp.get_time()) {
+	//   interpolate events until to and write to buf
+      }
+      nb = node->links[0].next.get();
+    }
+    
+    // update pos with time to and the last node before it
+    Sequencable::update_position(pos, to);
+    cp.node = last_sequenced;
+    
     return true;
+  }
+
+
+  void Curve::remove_curve_position(CurvePosition* c) {
+    auto iter = m_positions.find(c);
+    if (iter != m_positions.end())
+      m_positions.erase(iter);
+  }
+
+
+  void Curve::delete_queued_nodes() throw() {
+    for (auto i = m_positions.begin(); i != m_positions.end(); ++i) {
+      NodeQueue<shared_ptr<Node>>::Node* n;
+      while ((n = (*i)->to_be_deleted.pop_node()))
+	delete n;
+    }
   }
 
 

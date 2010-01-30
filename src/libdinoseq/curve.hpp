@@ -20,10 +20,13 @@
 #define CURVE_HPP
 
 #include <iterator>
+#include <memory>
+#include <set>
 #include <stdexcept>
 
 #include "atomicint.hpp"
 #include "meta.hpp"
+#include "nodequeue.hpp"
 #include "nodeskiplist.hpp"
 #include "sequencable.hpp"
 #include "songtime.hpp"
@@ -78,7 +81,21 @@ namespace Dino {
 	list has been played yet). */
     struct CurvePosition : Position {
       CurvePosition() throw() : Position(SongTime(0, 0)), node(0) {}
+      
+      /** The last sequenced node, or the head of the curve if no node in
+	  it has been sequenced yet. */
       NodeBase const* node;
+      
+      /** The nodes that have been removed from the curve and need to be
+	  confirmed by the sequencing thread (moved to to_be_deleted). */
+      NodeQueue<std::shared_ptr<Node>> to_be_confirmed;
+      
+      /** The nodes that have been confirmed by the sequencing thread as
+	  OK to delete. */
+      NodeQueue<std::shared_ptr<Node>> to_be_deleted;
+      
+      /** The Curve that this position is used with. */
+      Curve* curve;
     };
     
 
@@ -212,6 +229,9 @@ namespace Dino {
     Curve(std::string const& label, 
 	  SongTime const& length, ControllerID cid = 0) throw();
     
+    /** Destroy the curve. */
+    ~Curve() throw();
+    
     /** Return the controller ID. */
     ControllerID get_controller_id() const throw();
     
@@ -312,11 +332,22 @@ namespace Dino {
     
   private:
     
+    /** Called by the CurvePosition destructor to remove itself. */
+    void remove_curve_position(CurvePosition* c);
+    
+    /** Used internally to actually delete removed nodes once the 
+	CurvePositions have confirmed the deletions. */
+    void delete_queued_nodes() throw();
+    
+    
     /** The list of curve points. */
     NodeSkipList<Point> m_data;
     
     /** The ID of the controller this curve is for. */
     ControllerID m_cid;
+    
+    /** The active CurvePositions. */
+    std::set<CurvePosition*> m_positions;
     
   };
   

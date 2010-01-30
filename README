@@ -1,74 +1,12 @@
-Dino is a MIDI sequencer for GNU/Linux. It uses the JACK system to send MIDI 
-to other software and to synchronise with JACK transport. You need a version of
-JACK later than 0.102.6 - earlier versions do not have MIDI support.
+You have checked out the master branch from the Git repository. That
+was a mistake.
 
-Dino requires that jackd and lashd are running in order to work. If you set 
-the environment variables JACK_START_SERVER and LASH_START_SERVER to 1 they 
-will both be started automatically when you start Dino (this is true for 
-all programs that use JACK or LASH).
+This branch is under heavy refactoring. Nothing will work. It might
+not even compile, on any platform.
 
-
-The arrangement editor
-======================
-The GUI is divided into three tabs. The first tab, "Arrangement" is where you
-add new tracks, arrange patterns, and edit the tempo map. When you first
-start Dino there will be no tracks and all you will see is the "BPM" track.
-Here you can add new tempo changes with the left button, remove them with
-the right button (except the first one - if you removed it the BPM for the
-whole song would be undefined, so Dino will not let you remove it) and change
-their BPM by middle-clicking and dragging up and down. This mousing pattern
-is used in most places in Dino - left adds, middle modifies, right removes.
-
-If you click the '+' button in the arrangement tab you will add a track. When
-you add a track you can choose a name for it, which MIDI port it should connect
-to, and the MIDI channel it should send events to. You can edit all these
-properties later too by clicking the 'Properties' button (the one with the 
-tool). The selected track (the one that has a dark blue background for its
-name) can be removed by clicking the trashcan button. 
-
-Each track is shown as a strip of blocks, where each block represents a beat.
-When you have created patterns for your track (see the text about the "Patterns"
-tab below) you can use the left mouse button to click on a track and bring up
-a popup menu listing all patterns for that track. The one you select will be
-added to the track at the beat you clicked. You can modify its length with
-the middle mouse button and delete it with the right (this does not affect
-the actual pattern at all, just how this instance of it is played).
+If you want a functioning MIDI sequencer, check out the branch
+Branch_0_2 instead, or get the latest release from
+http://dino.nongnu.org.
 
 
-The pattern editor
-==================
-In the pattern editor you can add, edit, and remove patterns for the different
-tracks. Look at the tooltips for the buttons in the upper row and it should
-be fairly obvious how to add and delete patterns. When you have added a pattern
-you can also add and delete controllers in it. Controllers are e.g. pitchbend
-and MIDI CC controllers. The active controller can be edited in the box at the
-bottom of this tab.
-
-The main box here is the note editor, where you edit the notes in the active
-pattern. You add new notes with Ctrl-left button, change their length with the
-middle button, change their velocity with Ctrl-middle button and delete them 
-with Ctrl-right button. You can also use the left mouse button to select, 
-unselect, and drag notes around - clicking a note will select it, shift-clicking
-will unselect or select it depending on whether it was selected or not, clicking
-and dragging notes will move the selected notes around on the grid.
-
-There are also basic clipboard commands, you can cut, copy, paste and delete
-the current selection. When you paste you will have to click where you want
-the clipboard content to appear. You can also middle-click outside all notes to
-insert a copy of the current selection there without affecting the clipboard
-content.
-
-
-The info editor
-===============
-The third tab simply has entry fields for the songs title, author, and info.
-It should be obvious how to use them.
-
-
-Saving
-======
-Dino does not have any save or load commands. Instead, you should use your
-favourite LASH controller program to save and load entire sessions.
-
-
-Send bug reports and suggestions to Lars Luthman <lars.luthman@gmail.com>
+                               --Lars Luthman <lars.luthman@gmail.com>

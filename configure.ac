@@ -3,10 +3,9 @@
 
 AC_PREREQ(2.59)
 
-# Don't touch this line - it's updated automagically by dcvs
-AC_INIT(dino, 0.2.2)
+AC_INIT(dino, 0.2.3)
 AC_CONFIG_HEADERS([src/config.hpp])
-AC_DEFINE([CR_YEAR], ["2006"], [The copyright year])
+AC_DEFINE([CR_YEAR], ["2006 - 2010"], [The copyright year])
 
 AC_PROG_LIBTOOL
 AC_CONFIG_SRCDIR([src/gui/main.cpp])

@@ -176,7 +176,7 @@ libdinoseq_test_LIBRARIES = $(BUILDPREFIX)src/libdinoseq/libdinoseq.so
 include Makefile.template
 
 dox:
-	cat Doxyfile | sed s@VERSION_SUBST@`./VERSION`@ > Doxyfile.subst
+	cat Doxyfile | sed s@VERSION_SUBST@$(PACKAGE_VERSION)@ > Doxyfile.subst
 	doxygen Doxyfile.subst
 	rm Doxyfile.subst
 

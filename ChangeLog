@@ -1,3 +1,6 @@
+Version 0.2.4 (ONGOING):
+	* Fixed bug with missing <cstdio> header (reported by Harry Van Haaren)
+
 Version 0.2.3 (2010-01-30)
 	* Updated to latest JACK API (MIDI functions)
 	* Fixed some code errors detected by GCC 4.3 and later

@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <set>

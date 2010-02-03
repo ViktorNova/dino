@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cassert>
+#include <cstdio>
 #include <cstring>
 
 #include <jack/midiport.h>
@@ -215,7 +216,7 @@ namespace Dino {
   void Sequencer::track_added(int track) {
     if (m_valid) {
       char track_name[10];
-      sprintf(track_name, "Track %d", track);
+      std::sprintf(track_name, "Track %d", track);
       jack_port_t* port = jack_port_register(m_jack_client, track_name, 
 					     JACK_DEFAULT_MIDI_TYPE, 
 					     JackPortIsOutput, 0);

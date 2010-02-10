@@ -1,4 +1,4 @@
-Version 0.2.4 (ONGOING):
+Version 0.2.4 (2010-02-10):
 	* Fixed bug with missing <cstdio> header (reported by Harry Van Haaren)
 
 Version 0.2.3 (2010-01-30)

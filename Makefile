@@ -5,12 +5,7 @@ CXXFLAGS = -std=c++0x
 PACKAGE_NAME = dino
 PACKAGE_VERSION = $(shell ./VERSION)
 PKG_DEPS = \
-	gtkmm-2.4>=2.10 \
-	libxml++-2.6>=2.6.1 \
-	jack>=0.109.0 \
-	lash-1.0>=0.5.0 \
-	dbus-1>=1.1.1 \
-	vte>=0.16.6
+	glib-2.0>=2.22.4
 
 
 # Data files

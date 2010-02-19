@@ -387,8 +387,44 @@ dist:
 
 
 # PKG-CONFIG DEPENDENCY CHECK
-PKG_DEPDIRS = `pkg-config --cflags $(filter-out =%,$(subst >, ,$(PKG_DEPS))) 2> /dev/null`
+PKG_NAMES = $(filter-out =%,$(subst >, ,$(PKG_DEPS))) 
+PKG_DEPDIRS = `pkg-config --cflags $(PKG_NAMES) 2> /dev/null`
 check-pkg-deps:
 	@$(foreach pkg, $(PKG_DEPS), if pkg-config --atleast-version $(sort $(subst >=, ,$(pkg))) ; then true; else echo "*** You don't have $(pkg), which you need in order to build this software."; false; fi && ) true
 
 
+# TEST REPORT GENERATION
+TESTREPORT = $(PACKAGE_NAME)-$(PACKAGE_VERSION)-testreport.xml
+KERNEL_NAME = $(shell uname -s | sed 's/"/\\"/g')
+KERNEL_RELEASE = $(shell uname -r | sed 's/"/\\"/g')
+MACHINE = $(shell uname -m | sed 's/"/\\"/g')
+OPERATING_SYSTEM = $(shell uname -o | sed 's/"/\\"/g')
+
+test-report: $(TESTS)
+	rm -f $(TESTREPORT).bz2
+	echo "<testroot package=\"$(PACKAGE_NAME)\" version=\"$(PACKAGE_VERSION)\">" > $(TESTREPORT)
+	echo >> $(TESTREPORT)
+	echo "  <environment kernel=\"$(KERNEL_NAME)\" kernel_release=\"$(KERNEL_RELEASE)\" machine=\"$(MACHINE)\" operating_system=\"$(OPERATING_SYSTEM)\" c_compiler=\"$(shell $(CC) --version | head -n 1)\" cxx_compiler=\"$(shell $(CXX) --version | head -n 1)\" />" >> $(TESTREPORT)
+	echo >> $(TESTREPORT)
+	$(foreach pkgname, $(PKG_NAMES), echo "  <dependency name=\"$(pkgname)\" version=\""`pkg-config --modversion $(pkgname)`"\" />" >> $(TESTREPORT);)
+	echo >> $(TESTREPORT)
+	for test in $(TESTS); do \
+	  ./$$test -r detailed -o xml -l all > testlog.tmp 2> testreport.tmp; \
+	  status=$$?; \
+	  echo "  <test program=\"$$test\" exit_status=\"$$status\" >" >> $(TESTREPORT); \
+	  echo "    <stderr>" >> $(TESTREPORT); \
+	  echo -n "      <![CDATA[" >> $(TESTREPORT); \
+	  cat testreport.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
+	  echo "]]>" >> $(TESTREPORT); \
+	  echo "    </stderr>" >> $(TESTREPORT); \
+	  echo "    <stdout>" >> $(TESTREPORT); \
+	  echo -n "      <![CDATA[" >> $(TESTREPORT); \
+	  cat testlog.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
+	  echo "]]>" >> $(TESTREPORT); \
+	  echo "    </stdout>" >> $(TESTREPORT); \
+	  echo "  </test>" >> $(TESTREPORT); \
+	  rm -f testreport.tmp testlog.tmp; \
+	done
+	echo >> $(TESTREPORT)
+	echo "</testroot>" >> $(TESTREPORT)
+	bzip2 $(TESTREPORT)

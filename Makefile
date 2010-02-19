@@ -17,6 +17,7 @@ PKG_DEPS = \
 #DATA = src/gui/pixmaps/midisaurus.png src/gui/pixmaps/head.png src/gui/pixmaps/tinykeyboard.png
 DOCS = AUTHORS COPYING HACKING README TODO ChangeLog
 
+TESTS = src/test/libdinoseq/libdinoseq_test
 
 # The main program (we need to link it with -Wl,-E to allow RTTI with plugins)
 PROGRAMS = libdinoseq_test #dino

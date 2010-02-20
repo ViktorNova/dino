@@ -394,12 +394,12 @@ check-pkg-deps:
 
 
 # TEST REPORT GENERATION
-TESTREPORT = $(PACKAGE_NAME)-$(PACKAGE_VERSION)-testreport.xml
-KERNEL_NAME = $(shell uname -s | sed 's/"/\\"/g')
-KERNEL_RELEASE = $(shell uname -r | sed 's/"/\\"/g')
-MACHINE = $(shell uname -m | sed 's/"/\\"/g')
-OPERATING_SYSTEM = $(shell uname -o | sed 's/"/\\"/g')
-UNIQUE_TOKEN = $(shell for i in 1 2 3 4; do printf '%04x' $$RANDOM; done)
+KERNEL_NAME := $(shell uname -s | sed 's/"/\\"/g')
+KERNEL_RELEASE := $(shell uname -r | sed 's/"/\\"/g')
+MACHINE := $(shell uname -m | sed 's/"/\\"/g')
+OPERATING_SYSTEM := $(shell uname -o | sed 's/"/\\"/g')
+UNIQUE_TOKEN := $(shell for i in 1 2 3 4; do printf '%04x' $$RANDOM; done)
+TESTREPORT := $(PACKAGE_NAME)-$(PACKAGE_VERSION)-test-$(UNIQUE_TOKEN).xml
 
 test-report: $(TESTS)
 	rm -f $(TESTREPORT).bz2

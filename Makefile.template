@@ -102,6 +102,7 @@ ALL_OBJECTS += $$($(2)_OBJECTS)
 ALL_SOURCES += $$($(2)_FULLSOURCES)
 LIBRARIES_REAL += $$($(2)_BLDPRF)/$(1)
 LIBRARIES_NOINST += $$(if $$($(2)_NOINST),$(2),)
+LIBRARY_DIRS := $$(LIBRARY_DIRS):$$($(2)_BLDPRF)
 ALL_LIBHEADER_INSTALLS += $$(if $$($(2)_HEADERS),install-$(2)-headers)
 $(2)_INSTDIR = $$(if $$($(2)_INSTALLDIR),$$($(2)_INSTALLDIR),$(libdir))
 
@@ -117,6 +118,7 @@ $$($(2)_CXXOBJECTS): Makefile.config $$(filter-out $$(wildcard $$($(2)_BUILDDIR)
 
 $$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $$($(2)_ARCHIVES) $$($(2)_LIBRARIES) $$(filter-out $$(wildcard $$($(2)_BUILDDIR)), $$($(2)_BUILDDIR))
 	$(CXX) $(SHARED_LIBRARY_LDFLAGS) $$($(2)_OBJECTS) -Wl,--whole-archive $$($(2)_ARCHIVES) -Wl,--no-whole-archive $$($(2)_LOCALLDFLAGS) $$($(2)_LOCALLIBRARIES) $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@ -Wl,-soname=$(1).0
+	/sbin/ldconfig -n $$($(2)_BLDPRF)
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
 	mkdir -p $(DESTDIR)/$(pkgincludedir)
@@ -409,6 +411,7 @@ test-report: $(TESTS)
 	echo >> $(TESTREPORT)
 	$(foreach pkgname, $(PKG_NAMES), echo "  <dependency name=\"$(pkgname)\" version=\""`pkg-config --modversion $(pkgname)`"\" />" >> $(TESTREPORT);)
 	echo >> $(TESTREPORT)
+	export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}$(LIBRARY_DIRS); \
 	for test in $(TESTS); do \
 	  ./$$test $(TESTFLAGS) > test.stdout.tmp 2> test.stderr.tmp; \
 	  status=$$?; \

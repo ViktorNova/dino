@@ -167,6 +167,7 @@ libdinoseq_test_SOURCEDIR = src/test/libdinoseq
 libdinoseq_test_CFLAGS = -Isrc/libdinoseq `pkg-config --cflags glib-2.0` -DBOOST_TEST_DYN_LINK
 libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0` -lboost_unit_test_framework
 libdinoseq_test_LIBRARIES = $(BUILDPREFIX)src/libdinoseq/libdinoseq.so
+libdinoseq_test_NOINST = true
 
 
 # Do the magic

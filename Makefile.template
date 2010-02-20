@@ -399,10 +399,11 @@ KERNEL_NAME = $(shell uname -s | sed 's/"/\\"/g')
 KERNEL_RELEASE = $(shell uname -r | sed 's/"/\\"/g')
 MACHINE = $(shell uname -m | sed 's/"/\\"/g')
 OPERATING_SYSTEM = $(shell uname -o | sed 's/"/\\"/g')
+UNIQUE_TOKEN = $(shell for i in 1 2 3 4; do printf '%04x' $$RANDOM; done)
 
 test-report: $(TESTS)
 	rm -f $(TESTREPORT).bz2
-	echo "<testroot package=\"$(PACKAGE_NAME)\" version=\"$(PACKAGE_VERSION)\">" > $(TESTREPORT)
+	echo "<testroot package=\"$(PACKAGE_NAME)\" version=\"$(PACKAGE_VERSION)\" unique_token=\"$(UNIQUE_TOKEN)\">" > $(TESTREPORT)
 	echo >> $(TESTREPORT)
 	echo "  <environment kernel=\"$(KERNEL_NAME)\" kernel_release=\"$(KERNEL_RELEASE)\" machine=\"$(MACHINE)\" operating_system=\"$(OPERATING_SYSTEM)\" c_compiler=\"$(shell $(CC) --version | head -n 1)\" cxx_compiler=\"$(shell $(CXX) --version | head -n 1)\" />" >> $(TESTREPORT)
 	echo >> $(TESTREPORT)

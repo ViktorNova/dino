@@ -410,21 +410,21 @@ test-report: $(TESTS)
 	$(foreach pkgname, $(PKG_NAMES), echo "  <dependency name=\"$(pkgname)\" version=\""`pkg-config --modversion $(pkgname)`"\" />" >> $(TESTREPORT);)
 	echo >> $(TESTREPORT)
 	for test in $(TESTS); do \
-	  ./$$test -r detailed -o xml -l all > testlog.tmp 2> testreport.tmp; \
+	  ./$$test $(TESTFLAGS) > test.stdout.tmp 2> test.stderr.tmp; \
 	  status=$$?; \
 	  echo "  <test program=\"$$test\" exit_status=\"$$status\" >" >> $(TESTREPORT); \
 	  echo "    <stderr>" >> $(TESTREPORT); \
 	  echo -n "      <![CDATA[" >> $(TESTREPORT); \
-	  cat testreport.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
+	  cat test.stderr.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
 	  echo "]]>" >> $(TESTREPORT); \
 	  echo "    </stderr>" >> $(TESTREPORT); \
 	  echo "    <stdout>" >> $(TESTREPORT); \
 	  echo -n "      <![CDATA[" >> $(TESTREPORT); \
-	  cat testlog.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
+	  cat test.stdout.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
 	  echo "]]>" >> $(TESTREPORT); \
 	  echo "    </stdout>" >> $(TESTREPORT); \
 	  echo "  </test>" >> $(TESTREPORT); \
-	  rm -f testreport.tmp testlog.tmp; \
+	  rm -f test.stderr.tmp test.stdout.tmp; \
 	done
 	echo >> $(TESTREPORT)
 	echo "</testroot>" >> $(TESTREPORT)

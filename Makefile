@@ -13,6 +13,7 @@ PKG_DEPS = \
 DOCS = AUTHORS COPYING HACKING README TODO ChangeLog
 
 TESTS = src/test/libdinoseq/libdinoseq_test
+TESTFLAGS = -r detailed -m xml -l all
 
 # The main program (we need to link it with -Wl,-E to allow RTTI with plugins)
 PROGRAMS = libdinoseq_test #dino

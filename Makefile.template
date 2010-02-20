@@ -299,9 +299,9 @@ really-all: $(if $(PKG_DEPS),check-pkg-deps) $(ARCHIVES_REAL) $(LIBRARIES_REAL) 
 
 
 # DEPENDENCY COMPUTATION
-DEP_SOURCES = $(filter %.c,$(ALL_SOURCES)) $(filter %.cpp,$(ALL_SOURCES))
-DEP_FILES = $(patsubst %,%.dep,$(DEP_SOURCES))
-DEPDIRS = $(shell for i in . */ */*/ */*/*/ */*/*/*/; do echo -n " -I\"$$i\""; done)
+DEP_SOURCES := $(filter %.c,$(ALL_SOURCES)) $(filter %.cpp,$(ALL_SOURCES))
+DEP_FILES := $(patsubst %,%.dep,$(DEP_SOURCES))
+DEPDIRS := $(shell for i in . */ */*/ */*/*/ */*/*/*/; do echo -n " -I\"$$i\""; done)
 %.dep: %
 	@echo -n Generating dependencies for $<...
 	@echo -n .
@@ -326,20 +326,20 @@ clean:
 
 
 # GLOBAL INSTALL
-ARCHIVES_INST = $(filter-out $(ARCHIVES_NOINST),$(ARCHIVES))
+ARCHIVES_INST := $(filter-out $(ARCHIVES_NOINST),$(ARCHIVES))
 install-archives: $(patsubst %,install-%,$(subst .,_,$(ARCHIVES_INST)))
 
-PROGRAMS_INST = $(filter-out $(PROGRAMS_NOINST),$(PROGRAMS))
+PROGRAMS_INST := $(filter-out $(PROGRAMS_NOINST),$(PROGRAMS))
 install-programs: $(patsubst %,install-%,$(subst .,_,$(PROGRAMS_INST)))
 
-MODULES_INST = $(filter-out $(MODULES_NOINST),$(MODULES))
+MODULES_INST := $(filter-out $(MODULES_NOINST),$(MODULES))
 install-modules: $(patsubst %,install-%,$(subst .,_,$(MODULES_INST)))
 
-LIBRARIES_INST = $(filter-out $(LIBRARIES_NOINST),$(LIBRARIES))
+LIBRARIES_INST := $(filter-out $(LIBRARIES_NOINST),$(LIBRARIES))
 install-libraries: $(patsubst %,install-%,$(subst .,_,$(LIBRARIES_INST)))
 	$(if $(LIBRARIES),/sbin/ldconfig -n $(libdir))
 
-LV2_BUNDLES_INST = $(filter-out $(LV2_BUNDLES_NOINST),$(LV2_BUNDLES))
+LV2_BUNDLES_INST := $(filter-out $(LV2_BUNDLES_NOINST),$(LV2_BUNDLES))
 install-lv2-plugins: $(patsubst %,install-%,$(subst .,_,$(LV2_BUNDLES_INST)))
 
 install-data: $(DATA)

@@ -582,7 +582,9 @@ bool NoteEditor::on_expose_event(GdkEventExpose* event) {
   // draw box for editing note velocity
   if (m_drag_operation == DragChangingNoteVelocity) {
     iter = m_pat->find_note(m_drag_step, m_drag_note);
-    draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
+    // XXX - Why is this needed?
+    if (iter != m_pat->notes_end())
+      draw_velocity_box(iter, m_selection.find(iter) != m_selection.end());
   }
   
   // draw outline

@@ -303,7 +303,8 @@ void PatternEditor::set_active_pattern(int pattern) {
   }
 
   update_controller_combo();
-  m_ne.set_pattern(&*p);
+  Pattern* pptr = (p == t->pat_end()? 0 : &*p);
+  m_ne.set_pattern(pptr);
   m_pattern_ruler.set_pattern(m_active_track, m_active_pattern);
 
   bool active = (m_active_pattern != -1);

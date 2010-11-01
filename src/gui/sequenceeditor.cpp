@@ -110,11 +110,12 @@ SequenceEditor::SequenceEditor(BaseObjectType* cobject,
 
 void SequenceEditor::set_song(Song* song) {
   m_song = song;
-  slot<void, int> update_track_view = 
-    sigc::hide(mem_fun(*this, &SequenceEditor::reset_gui));
-  m_song->signal_track_added.connect(update_track_view);
-  m_song->signal_track_removed.connect(update_track_view);
-  m_song->signal_length_changed.connect(update_track_view);
+  slot<void> update_track_view = mem_fun(*this, &SequenceEditor::reset_gui);
+  slot<void, int> update_track_view2 = sigc::hide(update_track_view);
+  m_song->signal_track_added.connect(update_track_view2);
+  m_song->signal_track_removed.connect(update_track_view2);
+  m_song->signal_length_changed.connect(update_track_view2);
+  m_song->signal_tempo_changed.connect(update_track_view);
   m_song->signal_length_changed.connect(mem_fun(*m_spb_song_length,
 						&SpinButton::set_value));
   m_spb_song_length->signal_value_changed().

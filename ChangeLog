@@ -1,4 +1,5 @@
 Version 0.2.5 (ONGOING):
+	* Fixed bug where the UI wasn't updated after a tempo change
 	* Fixed crashing bug that was triggered by selecting a track with no
 	  patterns in the pattern editor
 

@@ -79,6 +79,8 @@ namespace Dino {
   
   
   bool Pattern::NoteIterator::operator<(const NoteIterator& iter) const {
+    if (!m_note)
+      return false;
     return (m_note->get_step() < iter->get_step()) || 
       ((m_note->get_step() == iter->get_step()) && 
        (m_note->get_key() < iter->get_key()));

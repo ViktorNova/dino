@@ -114,8 +114,8 @@ void SequenceEditor::set_song(Song* song) {
   slot<void, int> update_track_view2 = sigc::hide(update_track_view);
   m_song->signal_track_added.connect(update_track_view2);
   m_song->signal_track_removed.connect(update_track_view2);
-  m_song->signal_length_changed.connect(update_track_view2);
   m_song->signal_tempo_changed.connect(update_track_view);
+  m_song->signal_length_changed.connect(update_track_view2);
   m_song->signal_length_changed.connect(mem_fun(*m_spb_song_length,
 						&SpinButton::set_value));
   m_spb_song_length->signal_value_changed().
@@ -123,6 +123,9 @@ void SequenceEditor::set_song(Song* song) {
 		    mem_fun(*m_spb_song_length, &SpinButton::get_value_as_int)));
   m_song->signal_length_changed.
     connect(mem_fun(m_sequence_ruler, &::Ruler::set_length));
+  
+  // Need to trigger this signal so the spin button and ruler are resized
+  m_song->signal_length_changed(m_song->get_length());
 }
 
 
@@ -140,6 +143,9 @@ void SequenceEditor::reset_gui() {
   
   m_vbx_track_editor->children().clear();
   m_vbx_track_labels->children().clear();
+
+  m_spb_song_length->set_value(m_song->get_length());
+  m_sequence_ruler.set_length(m_song->get_length());
   
   TempoWidget* tmpw = manage(new TempoWidget(m_song));
   m_vbx_track_editor->pack_start(*tmpw, PACK_SHRINK);

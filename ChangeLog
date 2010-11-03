@@ -1,4 +1,6 @@
 Version 0.2.5 (ONGOING):
+	* Fixed bug where the pattern names were overwritten by empty strings
+	  when loading songs
 	* Fixed bug where the spinbutton and song ruler wasn't updated when
 	  a song was loaded
 	* Fixed bug where the UI wasn't updated after a tempo change

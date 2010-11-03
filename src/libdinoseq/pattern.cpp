@@ -690,17 +690,7 @@ namespace Dino {
 
 
   bool Pattern::parse_xml_node(const Element* elt) {
-    m_name = "";
-    Node::NodeList nodes = elt->get_children("name");
-    if (nodes.begin() != nodes.end()) {
-      const Element* name_elt = dynamic_cast<const Element*>(*nodes.begin());
-      if (name_elt) {
-	m_name = name_elt->get_child_text()->get_content();
-	signal_name_changed(m_name);
-      }
-    }
-
-    nodes = elt->get_children("note");
+    Node::NodeList nodes = elt->get_children("note");
     Node::NodeList::const_iterator iter;
     for (iter = nodes.begin(); iter != nodes.end(); ++iter) {
       const Element* note_elt = dynamic_cast<const Element*>(*iter);

@@ -429,6 +429,7 @@ void PatternEditor::edit_pattern_properties() {
       pat->set_name(m_dlg_pattern->get_name());
       pat->set_length(m_dlg_pattern->get_length());
       pat->set_steps(m_dlg_pattern->get_steps());
+      update_pattern_combo();
     }
     m_dlg_pattern->hide();
   }

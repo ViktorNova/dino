@@ -130,11 +130,11 @@ bool TrackWidget::on_expose_event(GdkEventExpose* event) {
     win->draw_rectangle(m_gc, false, se->start * m_col_width, 4,
 			length * m_col_width, height - 1);
     Glib::RefPtr<Pango::Layout> l = Pango::Layout::create(get_pango_context());
-    sprintf(tmp, "%03d", se->pattern_id);
+    sprintf(tmp, "%03d %s", se->pattern_id, se->pattern->get_name().c_str());
     l->set_text(tmp);
     int lHeight = l->get_pixel_logical_extents().get_height();
-    Gdk::Rectangle textBounds(se->start * m_col_width, 0, 
-			      length * m_col_width, height - 1);
+    Gdk::Rectangle textBounds(se->start * m_col_width, 4, 
+			      length * m_col_width, height);
     m_gc->set_clip_rectangle(textBounds);
     win->draw_layout(m_gc, se->start * m_col_width + 2, 
 		     4 + (height - lHeight)/2, l);

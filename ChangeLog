@@ -1,4 +1,5 @@
 Version 0.2.5 (ONGOING):
+	* Actually save and load automation curves
 	* Don't send All Notes Off at pattern ends unless there are active notes
 	* Fixed bug where the pattern combo box wasn't updated when the
 	  pattern name changed

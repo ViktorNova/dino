@@ -227,7 +227,8 @@ namespace Dino {
     /// @name Sequencing
     //@{
     void sequence(MIDIBuffer& buffer, double from, double to, double offset, 
-		  unsigned int pattern_length,int channel) const;
+		  unsigned int pattern_length, int channel,
+		  bool& notes_on) const;
     //@}
     
   public:

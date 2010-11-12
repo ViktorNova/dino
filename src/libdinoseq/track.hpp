@@ -211,6 +211,9 @@ namespace Dino {
     vector<SequenceEntry*>* volatile m_sequence;
   
     mutable bool m_dirty;
+    
+    /* This is touched only by the audio thread, except for initialisation. */
+    mutable bool m_notes_on;
   
   };
 

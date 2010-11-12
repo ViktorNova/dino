@@ -181,7 +181,8 @@ namespace Dino {
     : m_id(id),
       m_name(name),
       m_sequence(new vector<SequenceEntry*>(length, (SequenceEntry*)0)),
-      m_dirty(false) {
+      m_dirty(false),
+      m_notes_on(false) {
   
     dbg1<<"Creating track \""<<name<<"\""<<endl;
   }
@@ -605,15 +606,18 @@ namespace Dino {
 	SequenceEntry* const& se = sequence[beat];
 	se->pattern->sequence(buffer, from - se->start, 
 			      to - se->start, se->start, 
-			      se->length, m_channel);
+			      se->length, m_channel, m_notes_on);
 	beat += sequence[beat]->start + sequence[beat]->length - beat;
       }
       else {
-	unsigned char all_notes_off[] = { 0xB0, 123, 0 };
-	unsigned char* data = buffer.reserve(beat, 3);
-	if (data) {
-	  memcpy(data, all_notes_off, 3);
-	  data[0] |= (unsigned char)m_channel;
+	if (m_notes_on) {
+	  unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+	  unsigned char* data = buffer.reserve(beat, 3);
+	  if (data) {
+	    memcpy(data, all_notes_off, 3);
+	    data[0] |= (unsigned char)m_channel;
+	    m_notes_on = false;
+	  }
 	}
 	++beat;
       }

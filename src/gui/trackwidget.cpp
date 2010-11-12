@@ -151,11 +151,11 @@ bool TrackWidget::on_button_press_event(GdkEventButton* event) {
 
   switch (event->button) {
   case 1: {
-    char tmp[10];
+    char tmp[128];
     Track::ConstPatternIterator iter = m_track->pat_begin();
     m_pattern_menu.items().clear();
     for ( ; iter != m_track->pat_end(); ++iter) {
-      sprintf(tmp, "%03d", iter->get_id());
+      snprintf(tmp, 128, "%03d %s", iter->get_id(), iter->get_name().c_str());
       Menu_Helpers::MenuElem
 	elem(tmp, bind(bind(mem_fun(*this, &TrackWidget::slot_insert_pattern), 
 			    beat), iter->get_id()));

@@ -1,4 +1,5 @@
 Version 0.2.5 (ONGOING):
+	* Show pattern names in popup menu in the arrangement editor
 	* Actually save and load automation curves
 	* Don't send All Notes Off at pattern ends unless there are active notes
 	* Fixed bug where the pattern combo box wasn't updated when the

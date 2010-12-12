@@ -56,7 +56,10 @@ using namespace Dino;
 
 
 DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml) 
-  : m_seq("Dino", m_song) {
+  : m_seq("Dino"),
+    m_song(m_seq.get_frame_rate()) {
+  
+  m_seq.set_song(m_song);
   
   if (!m_seq.is_valid()) {
     MessageDialog dlg("Could not initialise the sequencer! You will not be "

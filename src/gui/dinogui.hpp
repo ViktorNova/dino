@@ -108,8 +108,6 @@ private:
   bool slot_check_ladcca_events();
   void page_switched(guint index);
   
-  Dino::Song m_song;
-  
   Gtk::Window* m_window;
   std::map<std::string, Gtk::MenuItem*> m_menuitems;
 
@@ -120,7 +118,8 @@ private:
   Gtk::AboutDialog* m_about_dialog;
   
   Dino::Sequencer m_seq;
-  
+  Dino::Song m_song;
+    
   lash_client_t* m_lash_client;
 };
 

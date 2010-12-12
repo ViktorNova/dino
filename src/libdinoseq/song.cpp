@@ -168,9 +168,11 @@ namespace Dino {
   }
 
   
-  Song::Song() 
+  Song::Song(unsigned long frame_rate) 
     : m_tracks(new map<int, Track*>()), 
-      m_length(32), 
+      m_length(32),
+      m_frame_rate(frame_rate),
+      m_tempo_map(m_frame_rate),
       m_dirty(false) {
   
     dbg1<<"Initialising song"<<endl;
@@ -483,7 +485,7 @@ namespace Dino {
       Deleter::queue(iter->second);
     Deleter::queue(old_tracks);
     
-    m_tempo_map = TempoMap();
+    m_tempo_map = TempoMap(m_frame_rate);
   }
 
 

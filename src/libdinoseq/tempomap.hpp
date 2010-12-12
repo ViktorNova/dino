@@ -59,7 +59,7 @@ namespace Dino {
     };
   
     /** Create a new tempo map for the given frame rate. */
-    TempoMap(unsigned long frame_rate = 48000); 
+    TempoMap(unsigned long frame_rate); 
     
     /** Add a new tempo change. */
     TempoChange* add_tempo_change(unsigned long beat, unsigned int bpm);

@@ -117,7 +117,7 @@ namespace Dino {
     };
     
     
-    Song();
+    Song(unsigned long frame_rate);
     ~Song();
   
     /// @name Accessors
@@ -187,14 +187,15 @@ namespace Dino {
   
     // non-copyable for now
     Song& operator=(const Song&) { return *this; }
-    Song(const Song&) { }
+    Song(const Song&);
   
     string m_title;
     string m_author;
     string m_info;
     map<int, Track*>* volatile m_tracks;
     volatile int m_length;
-  
+    
+    unsigned long m_frame_rate;
     TempoMap m_tempo_map;
   
     mutable bool m_dirty;

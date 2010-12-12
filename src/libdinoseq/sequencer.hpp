@@ -57,9 +57,15 @@ namespace Dino {
     };
   
     /** This will create a new Sequencer object with the JACK client name 
-	@c client_name and the Song object @c song. */
-    Sequencer(const string& client_name, Song& song);
+	@c client_name. */
+    Sequencer(const string& client_name);
     ~Sequencer();
+    
+    /** This must be called before any other member function, except
+	get_frame_rate(), and may only be called once. */
+    bool set_song(Song& song);
+    
+    unsigned long get_frame_rate();
     
     /// @name Transport
     //@{
@@ -163,7 +169,7 @@ namespace Dino {
 	locking m_song.get_big_mutex() - the exception is the list of tempo 
 	changes, which always must be readable for the JACK timebase 
 	callback. */
-    Song& m_song;
+    Song* m_song;
     /** This is @c true if JACK and ALSA has been initialised succesfully. */
     bool m_valid;
   

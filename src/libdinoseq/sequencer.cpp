@@ -37,9 +37,9 @@
 
 namespace Dino {
 
-  Sequencer::Sequencer(const string& client_name, Song& song) 
-    : m_client_name(client_name), 
-      m_song(song), 
+  Sequencer::Sequencer(const string& client_name) 
+    : m_client_name(client_name),
+      m_song(0),
       m_valid(false),
       m_cc_resolution(0.01),
       m_time_to_next_cc(0),
@@ -61,13 +61,8 @@ namespace Dino {
 
     m_valid = true;
 
-    m_song.signal_track_added.connect(mem_fun(*this, &Sequencer::track_added));
-    m_song.signal_track_removed.
-      connect(mem_fun(*this, &Sequencer::track_removed));
-
     Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::beat_checker), 20);
     Glib::signal_timeout().connect(mem_fun(*this,&Sequencer::ports_checker),20);
-    reset_ports();
   }
 
 
@@ -80,6 +75,25 @@ namespace Dino {
       if (m_jack_client)
 	jack_client_close(m_jack_client);
     }
+  }
+
+
+  bool Sequencer::set_song(Song& song) {
+    if (m_song)
+      return false;
+    m_song = &song;
+    m_song->signal_track_added.connect(mem_fun(*this, &Sequencer::track_added));
+    m_song->signal_track_removed.
+      connect(mem_fun(*this, &Sequencer::track_removed));
+    reset_ports();
+    return true;
+  }
+
+
+  unsigned long Sequencer::get_frame_rate() {
+    if (!m_jack_client)
+      return 48000;
+    return jack_get_sample_rate(m_jack_client);
   }
   
 
@@ -97,7 +111,7 @@ namespace Dino {
 
   void Sequencer::go_to_beat(double beat) {
     if (m_valid) {
-      jack_transport_locate(m_jack_client, m_song.bt2frame(beat));
+      jack_transport_locate(m_jack_client, m_song->bt2frame(beat));
     }
   }
   
@@ -168,7 +182,7 @@ namespace Dino {
 
   void Sequencer::reset_ports() {
     Song::ConstTrackIterator iter;
-    for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter)
+    for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter)
       track_added(iter->get_id());
   }
 
@@ -244,7 +258,7 @@ namespace Dino {
     // can't pass references to pos-> members directly since it's packed
     int32_t beat, tick;
     double bpm, frame_offset;
-    m_song.get_timebase_info(pos->frame, pos->frame_rate, pos->ticks_per_beat,
+    m_song->get_timebase_info(pos->frame, pos->frame_rate, pos->ticks_per_beat,
 			     bpm, beat, tick, frame_offset);
     pos->beats_per_minute = bpm;
     pos->bar_start_tick = frame_offset;
@@ -296,7 +310,7 @@ namespace Dino {
     m_current_beat = pos.bar * int(pos.beats_per_bar) + pos.beat;
     
     // at the end of the song, stop and go back to the beginning
-    if (m_current_beat >= m_song.get_length()) {
+    if (m_current_beat >= m_song->get_length()) {
       jack_transport_stop(m_jack_client);
       jack_transport_locate(m_jack_client, 0);
       return 0;
@@ -333,7 +347,7 @@ namespace Dino {
     // if we're not rolling, turn off all notes and return
     Song::ConstTrackIterator iter;
     if (state != JackTransportRolling) {
-      for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
+      for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
 	jack_port_t* port = m_output_ports[iter->get_id()];
 	if (port) {
 	  void* port_buf = jack_port_get_buffer(port, nframes);
@@ -358,7 +372,7 @@ namespace Dino {
       pos.tick / double(pos.ticks_per_beat) + offset;
     double end = start + pos.beats_per_minute * nframes / 
       (60 * pos.frame_rate) + offset;
-    for (iter = m_song.tracks_begin(); iter != m_song.tracks_end(); ++iter) {
+    for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter) {
 
       // get the MIDI buffer
       jack_port_t* port = m_output_ports[iter->get_id()];

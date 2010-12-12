@@ -352,12 +352,13 @@ namespace Dino {
 	if (port) {
 	  void* port_buf = jack_port_get_buffer(port, nframes);
 	  jack_midi_clear_buffer(port_buf);
-	  unsigned char all_notes_off[] = { 0xB0, 123, 0 };
+	  unsigned char all_notes_off[] = { 0xB0 | (iter->get_channel() & 0xF),
+					    123, 0 };
 	  if (!m_sent_all_off)
 	    jack_midi_event_write(port_buf, 0, all_notes_off, 3);
 	}
-	m_sent_all_off = true;
       }
+      m_sent_all_off = true;
       return;
     }
     m_sent_all_off = false;

@@ -1,4 +1,6 @@
 Version 0.2.5 (ONGOING):
+	* Send All Notes Off to all tracks and to the right channels
+	  when pausing
 	* Fixed bug that caused timing problems at certain JACK sample rates
 	* Show pattern names in popup menu in the arrangement editor
 	* Actually save and load automation curves

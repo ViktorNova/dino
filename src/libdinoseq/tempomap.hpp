@@ -2,7 +2,7 @@
     
     tempomap.hpp - A tempo map for the Dino sequencer
     
-    Copyright (C) 2006  Lars Luthman <larsl@users.sourceforge.net>
+    Copyright (C) 2006 - 2010  Lars Luthman <lars.luthman@gmail.com>
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -37,6 +37,7 @@ using namespace std;
 namespace Dino {
 
 
+  class Deleter;
   class Song;
 
 
@@ -187,6 +188,8 @@ namespace Dino {
     volatile int m_old_current_beat;
     volatile int m_ports_changed;
     int m_old_ports_changed;
+
+    Deleter& m_deleter;
   };
 
 

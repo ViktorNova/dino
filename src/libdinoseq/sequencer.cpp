@@ -49,7 +49,8 @@ namespace Dino {
       m_current_beat(0), 
       m_old_current_beat(-1),
       m_ports_changed(0),
-      m_old_ports_changed(0) {
+      m_old_ports_changed(0),
+      m_deleter(Deleter::get_instance()) {
   
     dbg1<<"Initialising sequencer"<<endl;
   

@@ -1,4 +1,5 @@
 Version 0.2.5 (ONGOING):
+	* Fixed bug that could cause xrun when Dino is started
 	* Send All Notes Off to all tracks and to the right channels
 	  when pausing
 	* Fixed bug that caused timing problems at certain JACK sample rates

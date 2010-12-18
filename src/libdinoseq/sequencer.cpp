@@ -259,38 +259,43 @@ namespace Dino {
     // can't pass references to pos-> members directly since it's packed
     int32_t beat, tick;
     double bpm, frame_offset;
-    m_song->get_timebase_info(pos->frame, pos->frame_rate, pos->ticks_per_beat,
-			     bpm, beat, tick, frame_offset);
-    pos->beats_per_minute = bpm;
-    pos->bar_start_tick = frame_offset;
+    if (m_song) {
+      m_song->get_timebase_info(pos->frame, pos->frame_rate,
+				pos->ticks_per_beat,
+				bpm, beat, tick, frame_offset);
+      pos->beats_per_minute = bpm;
+      pos->bar_start_tick = frame_offset;
 
-    // if we are standing still or if we just relocated, calculate 
-    // the new position
-    if (new_pos || state != JackTransportRolling) {
-      pos->beat = beat;
-      pos->tick = tick;
-    }
-    // otherwise, just increase the BBT by a period
-    else {
-      double db = nframes * pos->beats_per_minute / (pos->frame_rate * 60.0);
-      pos->beat = m_last_beat + int32_t(db);
-      pos->tick = m_last_tick + int32_t((db - int(db)) * pos->ticks_per_beat);
-      if (pos->tick >= pos->ticks_per_beat) {
-	pos->tick -= int32_t(pos->ticks_per_beat);
-	++pos->beat;
+      // if we are standing still or if we just relocated, calculate
+      // the new position
+      if (new_pos || state != JackTransportRolling) {
+	pos->beat = beat;
+	pos->tick = tick;
       }
-    }
-  
-    m_last_beat = pos->beat;
-    m_last_tick = pos->tick;
+      // otherwise, just increase the BBT by a period
+      else {
+	double db = nframes * pos->beats_per_minute / (pos->frame_rate * 60.0);
+	pos->beat = m_last_beat + int32_t(db);
+	pos->tick = m_last_tick + int32_t((db - int(db)) * pos->ticks_per_beat);
+	if (pos->tick >= pos->ticks_per_beat) {
+	  pos->tick -= int32_t(pos->ticks_per_beat);
+	  ++pos->beat;
+	}
+      }
 
-    pos->bar = int32_t(pos->beat / pos->beats_per_bar);
-    pos->beat %= int(pos->beats_per_bar);
-    pos->valid = JackPositionBBT;
-    
-    // bars and beats start from 1 by convention (but ticks don't!)
-    ++pos->bar;
-    ++pos->beat;
+      m_last_beat = pos->beat;
+      m_last_tick = pos->tick;
+
+      pos->bar = int32_t(pos->beat / pos->beats_per_bar);
+      pos->beat %= int(pos->beats_per_bar);
+      pos->valid = JackPositionBBT;
+
+      // bars and beats start from 1 by convention (but ticks don't!)
+      ++pos->bar;
+      ++pos->beat;
+    }
+    else
+      pos->valid = jack_position_bits_t(0);
   }
 
 

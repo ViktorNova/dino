@@ -1,4 +1,7 @@
-Version 0.2.5 (ONGOING):
+Version 0.2.6 (ONGOING):
+	* Fixed a timebase related bug that could crash Dino on startup
+
+Version 0.2.5 (2010-12-17):
 	* Fixed bug that could cause xrun when Dino is started
 	* Send All Notes Off to all tracks and to the right channels
 	  when pausing

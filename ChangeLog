@@ -1,4 +1,6 @@
 Version 0.2.7 (ONGOING):
+	* Fixed Gtk warning about spinbutton adjustment settings (patch by
+	  Jof Thibaut)
 	* Fixed a tempo widget related crashing bug (reported by Jof Thibaut)
 
 Version 0.2.6 (2010-12-18):

@@ -224,8 +224,11 @@ bool TempoWidget::on_motion_notify_event(GdkEventMotion* event) {
 
 void TempoWidget::update() {
   RefPtr<Gdk::Window> win = get_window();
-  win->invalidate_rect(Rectangle(0, 0, get_width(), get_height()), false);
-  win->process_updates(false);
+  // band-aid mode
+  if (win) {
+    win->invalidate_rect(Rectangle(0, 0, get_width(), get_height()), false);
+    win->process_updates(false);
+  }
 }
 
 

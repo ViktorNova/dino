@@ -1,4 +1,4 @@
-Version 0.2.7 (ONGOING):
+Version 0.2.7 (2010-12-31):
 	* Fixed a track widget related crashing bug (reported by Jof Thibaut)
 	* Fixed Gtk warning about spinbutton adjustment settings (patch by
 	  Jof Thibaut)

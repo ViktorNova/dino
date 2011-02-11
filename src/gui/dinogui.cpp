@@ -75,6 +75,7 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   
   m_window = w<Gtk::Window>(xml, "main_window");
   m_about_dialog = w<AboutDialog>(xml, "dlg_about");
+  m_about_dialog->set_transient_for(*m_window);
   m_about_dialog->set_copyright("\u00A9 " CR_YEAR " Lars Luthman "
 				"<larsl@users.sourceforge.net>");
   m_about_dialog->set_version(PACKAGE_VERSION);

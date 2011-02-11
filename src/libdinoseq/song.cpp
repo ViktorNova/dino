@@ -377,6 +377,8 @@ namespace Dino {
   bool Song::write_file(const string& filename) const {
     Document doc;
     Element* dino_elt = doc.create_root_node("dinosong");
+
+    dbg1<<"Writing song to "<<filename<<endl;
   
     // write metadata 
     dino_elt->set_attribute("title", m_title);
@@ -425,6 +427,8 @@ namespace Dino {
     const TextNode* text_node;
     Node::NodeList::const_iterator iter;
   
+    dbg1<<"Loading song from "<<filename<<endl;
+
     // get attributes
     set_title(dino_elt->get_attribute("title")->get_value());
     set_author(dino_elt->get_attribute("author")->get_value());

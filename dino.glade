@@ -38,6 +38,30 @@
 	      <child>
 		<widget class="GtkMenu" id="menuitem1_menu">
 
+		  <!-- <child> -->
+		  <!--   <widget class="GtkImageMenuItem" id="file_open"> -->
+		  <!--     <property name="visible">True</property> -->
+		  <!--     <property name="label">gtk-open</property> -->
+		  <!--     <property name="use_stock">True</property> -->
+		  <!--   </widget> -->
+		  <!-- </child> -->
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="file_save">
+		      <property name="visible">True</property>
+		      <property name="label">gtk-save</property>
+		      <property name="use_stock">True</property>
+		    </widget>
+		  </child>
+
+		  <!-- <child> -->
+		  <!--   <widget class="GtkImageMenuItem" id="file_save_as"> -->
+		  <!--     <property name="visible">True</property> -->
+		  <!--     <property name="label">gtk-save-as</property> -->
+		  <!--     <property name="use_stock">True</property> -->
+		  <!--   </widget> -->
+		  <!-- </child> -->
+
 		  <child>
 		    <widget class="GtkImageMenuItem" id="file_clear_all">
 		      <property name="visible">True</property>

@@ -68,9 +68,9 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   }
   
   if (!init_lash(argc, argv)) {
-    MessageDialog dlg("Could not initialise LASH! You will not be able "
-		      "to save your session.", false, MESSAGE_WARNING);
-    dlg.run();
+    // MessageDialog dlg("Could not initialise LASH! You will not be able "
+		//       "to save your session.", false, MESSAGE_WARNING);
+    // dlg.run();
   }
   
   m_window = w<Gtk::Window>(xml, "main_window");
@@ -95,6 +95,16 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   reset_gui();
   
   m_window->show_all();
+
+  if (argc == 2) {
+    //dbg1<<"arg: "<<argv[1]<<endl;
+    m_filename = argv[1];
+  }
+  else {
+    m_filename = "output.dino";
+  }
+
+  slot_file_open();
 }
 
 
@@ -105,7 +115,13 @@ Gtk::Window* DinoGUI::get_window() {
 
 void DinoGUI::slot_file_open() {
   m_seq.stop();
-  m_song.load_file("output.dino");
+  try {
+    m_song.load_file(m_filename);
+  }
+  catch (...) {
+    m_song.clear();
+    m_song.set_length(32);
+  }
   reset_gui();
   m_seq.reset_ports();
   m_seq.go_to_beat(0);
@@ -113,12 +129,12 @@ void DinoGUI::slot_file_open() {
 
 
 void DinoGUI::slot_file_save() {
-  m_song.write_file("output.dino");
+  m_song.write_file(m_filename);
 }
 
 
 void DinoGUI::slot_file_save_as() {
-  m_song.write_file("output.dino");
+  m_song.write_file(m_filename);
 }
 
 
@@ -191,6 +207,9 @@ void DinoGUI::reset_gui() {
 
 void DinoGUI::init_menus(RefPtr<Xml>& xml) {
   map<string, void (DinoGUI::*)(void)> menuSlots;
+  // menuSlots["file_open"] = &DinoGUI::slot_file_open;
+  menuSlots["file_save"] = &DinoGUI::slot_file_save;
+  // menuSlots["file_save_as"] = &DinoGUI::slot_file_save_as;
   menuSlots["file_clear_all"] = &DinoGUI::slot_file_clear_all;
   menuSlots["file_quit"] = &DinoGUI::slot_file_quit;
   menuSlots["edit_cut"] = &DinoGUI::slot_edit_cut;

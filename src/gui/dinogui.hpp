@@ -121,6 +121,8 @@ private:
   Dino::Song m_song;
     
   lash_client_t* m_lash_client;
+
+  string m_filename;
 };
 
 

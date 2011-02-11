@@ -51,13 +51,20 @@ static void print_version() {
 }
 
 
+DinoGUI * g_dino_ptr;
 static bool do_quit = false;
+static bool do_save = false;
 static int signum = 0;
 
 
 static void signal_handler(int signal) {
-  signum = signal;
-  do_quit = true;
+  if (signal == SIGUSR1) {
+    do_save = true;
+  }
+  else {
+    signum = signal;
+    do_quit = true;
+  }
 }
 
 
@@ -65,6 +72,10 @@ static bool signal_checker() {
   if (do_quit) {
     dbg0<<"Caught signal "<<signum<<endl;
     Main::quit();
+  }
+  else if (do_save) {
+    do_save = false;
+    g_dino_ptr->save();
   }
   return true;
 }
@@ -91,6 +102,7 @@ int main(int argc, char** argv) {
   refXml = Xml::create(filename);
     
   DinoGUI dino(argc, argv, refXml);
+  g_dino_ptr = &dino; // In a perfect world DinoGUI will be inherited from Gtk::Main and this will not be needed
   
   // setup a signal handler and a timeout function that will let us
   // quit cleanly if the user terminates us with a signal

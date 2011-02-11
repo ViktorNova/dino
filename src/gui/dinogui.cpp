@@ -113,6 +113,11 @@ Gtk::Window* DinoGUI::get_window() {
 }
 
 
+void DinoGUI::save() {
+  m_song.write_file(m_filename);
+}
+
+
 void DinoGUI::slot_file_open() {
   m_seq.stop();
   try {
@@ -129,12 +134,12 @@ void DinoGUI::slot_file_open() {
 
 
 void DinoGUI::slot_file_save() {
-  m_song.write_file(m_filename);
+  save();
 }
 
 
 void DinoGUI::slot_file_save_as() {
-  m_song.write_file(m_filename);
+  save();
 }
 
 

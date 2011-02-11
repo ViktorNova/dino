@@ -50,6 +50,8 @@ public:
   DinoGUI(int argc, char** argv, Glib::RefPtr<Gnome::Glade::Xml> xml);
   
   Gtk::Window* get_window();
+
+  void save();
   
 private:
 

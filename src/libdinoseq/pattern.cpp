@@ -699,7 +699,7 @@ namespace Dino {
       ctrl_elt->set_attribute("max", tmp_txt);
 
       // add control points
-      for (int i = 0; i < citer->get_size(); ++i) {
+      for (unsigned int i = 0; i < citer->get_size(); ++i) {
 	InterpolatedEvent const* evt = citer->get_event(i);
 	if (evt && evt->get_step() == i) {
 	  Element* point_elt = ctrl_elt->add_child("point");

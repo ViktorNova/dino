@@ -193,7 +193,7 @@ namespace Dino {
     dbg1<<"Initialising JACK client"<<endl;
   
     jack_set_error_function(&Sequencer::jack_error_function);
-    m_jack_client = jack_client_new(client_name.c_str());
+    m_jack_client = jack_client_open(client_name.c_str(), JackNullOption, NULL);
     if (!m_jack_client)
       return false;
     int err;

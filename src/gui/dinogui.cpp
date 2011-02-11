@@ -128,7 +128,6 @@ void DinoGUI::slot_file_open() {
     m_song.set_length(32);
   }
   reset_gui();
-  m_seq.reset_ports();
   m_seq.go_to_beat(0);
 }
 

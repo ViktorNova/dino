@@ -86,7 +86,6 @@ namespace Dino {
     m_song->signal_track_added.connect(mem_fun(*this, &Sequencer::track_added));
     m_song->signal_track_removed.
       connect(mem_fun(*this, &Sequencer::track_removed));
-    reset_ports();
     return true;
   }
 
@@ -181,13 +180,6 @@ namespace Dino {
   }
 
 
-  void Sequencer::reset_ports() {
-    Song::ConstTrackIterator iter;
-    for (iter = m_song->tracks_begin(); iter != m_song->tracks_end(); ++iter)
-      track_added(iter->get_id());
-  }
-
-  
   bool Sequencer::init_jack(const string& client_name) {
   
     dbg1<<"Initialising JACK client"<<endl;
@@ -232,6 +224,13 @@ namespace Dino {
     if (m_valid) {
       char track_name[10];
       std::sprintf(track_name, "Track %d", track);
+
+      if (m_output_ports[track]) {
+        dbg0<<track_name<<" already added"<<endl;
+        assert(false);
+        return;
+      }
+
       jack_port_t* port = jack_port_register(m_jack_client, track_name, 
 					     JACK_DEFAULT_MIDI_TYPE, 
 					     JackPortIsOutput, 0);

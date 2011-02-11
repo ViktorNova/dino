@@ -91,8 +91,6 @@ namespace Dino {
 	saved in the .dino file since all connections are supposed to be
 	restored by LASH. */
     void set_instrument(int track, const string& instrument);
-    /** This creates new MIDI output ports for all tracks. */
-    void reset_ports();
     //@}
     
     /// @name Signals

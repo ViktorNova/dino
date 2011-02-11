@@ -1313,6 +1313,7 @@
 </widget>
 
 <widget class="GtkDialog" id="dlg_pattern_properties">
+  <property name="transient_for">main_window</property>
   <property name="title" translatable="yes">Pattern properties</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
@@ -1542,6 +1543,7 @@
 </widget>
 
 <widget class="GtkDialog" id="dlg_track_properties">
+  <property name="transient_for">main_window</property>
   <property name="title" translatable="yes">Track properties</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>

@@ -330,7 +330,8 @@ void PatternEditor::set_active_controller(long controller) {
     return;
   }
   
-  m_cce.set_controller(&*p, m_active_controller);
+  m_cce.set_controller((m_active_controller == -1 ? 0 : &*p),
+		       m_active_controller);
   
   bool active = controller_is_set(m_active_controller);
   m_toolbuttons["tbn_delete_controller"]->set_sensitive(active);

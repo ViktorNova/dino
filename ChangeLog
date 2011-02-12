@@ -1,4 +1,5 @@
 Version 0.2.8 (ONGOING):
+	* Fixed crashing bug that was triggered by clicking the empty CC editor
 	* Made About, Track properties and Pattern properties windows
 	  transient (patches by Nedko Arnaudov)
 	* Fixed warning about deprecated JACK API function (patch by Nedko

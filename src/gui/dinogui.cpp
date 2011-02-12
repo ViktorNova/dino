@@ -68,9 +68,9 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
   }
   
   if (!init_lash(argc, argv)) {
-    // MessageDialog dlg("Could not initialise LASH! You will not be able "
-		//       "to save your session.", false, MESSAGE_WARNING);
-    // dlg.run();
+    MessageDialog dlg("Could not initialise LASH! You will not be able "
+		      "to save your session.", false, MESSAGE_WARNING);
+    dlg.run();
   }
   
   m_window = w<Gtk::Window>(xml, "main_window");
@@ -211,9 +211,6 @@ void DinoGUI::reset_gui() {
 
 void DinoGUI::init_menus(RefPtr<Xml>& xml) {
   map<string, void (DinoGUI::*)(void)> menuSlots;
-  // menuSlots["file_open"] = &DinoGUI::slot_file_open;
-  menuSlots["file_save"] = &DinoGUI::slot_file_save;
-  // menuSlots["file_save_as"] = &DinoGUI::slot_file_save_as;
   menuSlots["file_clear_all"] = &DinoGUI::slot_file_clear_all;
   menuSlots["file_quit"] = &DinoGUI::slot_file_quit;
   menuSlots["edit_cut"] = &DinoGUI::slot_edit_cut;

@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <list>
 #include <sstream>
@@ -67,7 +68,7 @@ DinoGUI::DinoGUI(int argc, char** argv, RefPtr<Xml> xml)
     dlg.run();
   }
   
-  if (!init_lash(argc, argv)) {
+  if (!init_lash(argc, argv) &&!std::getenv("LADISH_APP_NAME")) {
     MessageDialog dlg("Could not initialise LASH! You will not be able "
 		      "to save your session.", false, MESSAGE_WARNING);
     dlg.run();

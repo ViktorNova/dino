@@ -1772,6 +1772,7 @@
 </widget>
 
 <widget class="GtkDialog" id="dlg_controller_properties">
+  <property name="transient_for">main_window</property>
   <property name="title" translatable="yes">Controller properties</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>

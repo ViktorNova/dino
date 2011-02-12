@@ -1,3 +1,11 @@
+Version 0.2.8 (ONGOING):
+	* Made About, Track properties and Pattern properties windows
+	  transient (patches by Nedko Arnaudov)
+	* Fixed warning about deprecated JACK API function (patch by Nedko
+	  Arnaudov)
+	* Fixed warning about unsigned/signed comparison (patch by Nedko
+	  Arnaudov)
+
 Version 0.2.7 (2010-12-31):
 	* Fixed a track widget related crashing bug (reported by Jof Thibaut)
 	* Fixed Gtk warning about spinbutton adjustment settings (patch by

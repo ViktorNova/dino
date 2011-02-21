@@ -1,4 +1,4 @@
-Version 0.2.8 (ONGOING):
+Version 0.2.8 (2011-02-21):
 	* Made the Controller properties dialog transient
 	* Fixed crashing bug that was triggered by clicking the empty CC editor
 	* Made About, Track properties and Pattern properties windows

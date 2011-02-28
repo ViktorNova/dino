@@ -14,6 +14,7 @@ lv2plugindir = $(libdir)/lv2
 LV2PEG = lv2peg
 
 # Don't modify any variables below this line
+SHELL := /bin/bash
 UNAME = $(shell uname)
 
 

@@ -415,8 +415,11 @@ test-report:
 	rm -rf tmp-test-dist
 	$(MAKE) DIST_NAME=tmp-test-dist dist-dir
 	cp Makefile.config tmp-test-dist
-	cd tmp-test-dist; $(MAKE) -k all-tests > build.stdout 2> build.stderr; echo $$? > build.status
-	cd tmp-test-dist; $(MAKE) UNIQUE_TOKEN=$(UNIQUE_TOKEN) internal-test-report
+	@echo " + Compiling tests..."
+	@cd tmp-test-dist; $(MAKE) -k all-tests > build.stdout 2> >(tee build.stderr >&2); status=$$?; echo $$status > build.status; if [ $$status != 0 ]; then echo " *** Failed to compile some tests, will continue anyway."; else echo " + Done compiling."; fi
+	@echo " + Running tests..."
+	@cd tmp-test-dist; $(MAKE) UNIQUE_TOKEN=$(UNIQUE_TOKEN) internal-test-report
+	@echo " + Done testing."
 	cd tmp-test-dist; cp build.stdout build.stderr build.status $(TESTREPORT)
 	mv tmp-test-dist/$(TESTREPORT) $(TESTREPORT)
 	tar cj $(TESTREPORT) > $(TESTREPORT).tar.bz2
@@ -426,20 +429,20 @@ test-report:
 all-tests: $(TESTS)
 
 internal-test-report:
-	rm -f $(TESTREPORT)
-	mkdir $(TESTREPORT)
-	echo "package = \"$(PACKAGE_NAME)\"" > $(TESTREPORT)/info
-	echo "version = \"$(PACKAGE_VERSION)\"" >> $(TESTREPORT)/info
-	echo "unique_token = \"$(UNIQUE_TOKEN)\"" >> $(TESTREPORT)/info
-	echo >> $(TESTREPORT)/info
-	echo "kernel = \"$(KERNEL_NAME)\"" >> $(TESTREPORT)/info
-	echo "kernel_release = \"$(KERNEL_RELEASE)\"" >> $(TESTREPORT)/info
-	echo "machine = \"$(MACHINE)\"" >> $(TESTREPORT)/info
-	echo "operating_system = \"$(OPERATING_SYSTEM)\"" >> $(TESTREPORT)/info
-	echo "c_compiler = \"$(shell $(CC) --version | head -n 1)\"" >> $(TESTREPORT)/info
-	echo "cxx_compiler = \"$(shell $(CXX) --version | head -n 1)\"" >> $(TESTREPORT)/info
-	echo >> $(TESTREPORT)/info
-	$(foreach pkgname, $(PKG_NAMES), echo "dependency.$(pkgname) = \""`pkg-config --modversion $(pkgname)`"\"" >> $(TESTREPORT)/info;)
+	@rm -f $(TESTREPORT)
+	@mkdir $(TESTREPORT)
+	@echo "package = \"$(PACKAGE_NAME)\"" > $(TESTREPORT)/info
+	@echo "version = \"$(PACKAGE_VERSION)\"" >> $(TESTREPORT)/info
+	@echo "unique_token = \"$(UNIQUE_TOKEN)\"" >> $(TESTREPORT)/info
+	@echo >> $(TESTREPORT)/info
+	@echo "kernel = \"$(KERNEL_NAME)\"" >> $(TESTREPORT)/info
+	@echo "kernel_release = \"$(KERNEL_RELEASE)\"" >> $(TESTREPORT)/info
+	@echo "machine = \"$(MACHINE)\"" >> $(TESTREPORT)/info
+	@echo "operating_system = \"$(OPERATING_SYSTEM)\"" >> $(TESTREPORT)/info
+	@echo "c_compiler = \"$(shell $(CC) --version | head -n 1)\"" >> $(TESTREPORT)/info
+	@echo "cxx_compiler = \"$(shell $(CXX) --version | head -n 1)\"" >> $(TESTREPORT)/info
+	@echo >> $(TESTREPORT)/info
+	@$(foreach pkgname, $(PKG_NAMES), echo "dependency.$(pkgname) = \""`pkg-config --modversion $(pkgname)`"\"" >> $(TESTREPORT)/info;)
 	export LD_LIBRARY_PATH=$${LD_LIBRARY_PATH}$(LIBRARY_DIRS); \
 	for test in $(TESTS); do \
 	  mkdir -p $(TESTREPORT)/$$test; \

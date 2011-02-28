@@ -373,20 +373,24 @@ install: install-archives install-libraries install-modules install-programs ins
 THIS_FILE = $(patsubst ./%,%,$(firstword $(filter %/Makefile.template,$(patsubst %,./%,$(MAKEFILE_LIST)))))
 CONFIGURE_SCRIPT = $(if $(__path_to_configure),$(__path_to_configure),configure)
 ALL_DIST_FILES = $(sort $(ALL_SOURCES) $(DATA) $(DOCS) $(EXTRA_DIST) $(ALL_DATA))
-dist: 
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
-	mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	@echo "Copying files to $(PACKAGE_NAME)-$(PACKAGE_VERSION)/..."
-	cp $(THIS_FILE) $(CONFIGURE_SCRIPT) $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	cat Makefile | sed s/$(subst /,\\/,$(THIS_FILE))/Makefile.template/ | sed 's/PACKAGE_VERSION = .*/PACKAGE_VERSION = $(PACKAGE_VERSION)/' > $(PACKAGE_NAME)-$(PACKAGE_VERSION)/Makefile
-	@$(foreach file, $(patsubst %,./%,$(ALL_DIST_FILES)), mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)/`echo $(file) | sed 's/\/[^\/]*$$//'` &&) true
-	@$(foreach file, $(ALL_DIST_FILES), cp $(file) $(PACKAGE_NAME)-$(PACKAGE_VERSION)/$(file) &&) true
-	touch $(PACKAGE_NAME)-$(PACKAGE_VERSION)/Makefile.config
-	tar c $(PACKAGE_NAME)-$(PACKAGE_VERSION) > $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	bzip2 $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
+DIST_NAME = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+
+dist: dist-dir
+	rm -rf $(DIST_NAME).tar.bz2
+	rm -rf $(DIST_NAME).tar
+	tar c $(DIST_NAME) > $(DIST_NAME).tar
+	rm -rf $(DIST_NAME)
+	bzip2 $(DIST_NAME).tar
+
+dist-dir:
+	rm -rf $(DIST_NAME)
+	mkdir -p $(DIST_NAME)
+	@echo "Copying files to $(DIST_NAME)/..."
+	cp $(THIS_FILE) $(CONFIGURE_SCRIPT) $(DIST_NAME)
+	cat Makefile | sed s/$(subst /,\\/,$(THIS_FILE))/Makefile.template/ | sed 's/PACKAGE_VERSION = .*/PACKAGE_VERSION = $(PACKAGE_VERSION)/' > $(DIST_NAME)/Makefile
+	@$(foreach file, $(patsubst %,./%,$(ALL_DIST_FILES)), mkdir -p $(DIST_NAME)/`echo $(file) | sed 's/\/[^\/]*$$//'` &&) true
+	@$(foreach file, $(ALL_DIST_FILES), cp $(file) $(DIST_NAME)/$(file) &&) true
+	touch $(DIST_NAME)/Makefile.config
 
 
 # PKG-CONFIG DEPENDENCY CHECK
@@ -397,6 +401,8 @@ check-pkg-deps:
 
 
 # TEST REPORT GENERATION
+# We want a report of the clean test builds as well, so tests are built
+# and run in a separate dist directory.
 KERNEL_NAME := $(shell uname -s | sed 's/"/\\"/g')
 KERNEL_RELEASE := $(shell uname -r | sed 's/"/\\"/g')
 MACHINE := $(shell uname -m | sed 's/"/\\"/g')
@@ -404,8 +410,23 @@ OPERATING_SYSTEM := $(shell uname -o | sed 's/"/\\"/g')
 UNIQUE_TOKEN := $(shell for i in 1 2 3 4; do printf '%04x' $$RANDOM; done)
 TESTREPORT := $(PACKAGE_NAME)-$(PACKAGE_VERSION)-test-$(UNIQUE_TOKEN)
 
-test-report: $(TESTS)
-	rm -f $(TESTREPORT).bz2
+test-report:
+	rm -rf $(TESTREPORT)
+	rm -rf tmp-test-dist
+	$(MAKE) DIST_NAME=tmp-test-dist dist-dir
+	cp Makefile.config tmp-test-dist
+	cd tmp-test-dist; $(MAKE) -k all-tests > build.stdout 2> build.stderr; echo $$? > build.status
+	cd tmp-test-dist; $(MAKE) UNIQUE_TOKEN=$(UNIQUE_TOKEN) internal-test-report
+	cd tmp-test-dist; cp build.stdout build.stderr build.status $(TESTREPORT)
+	mv tmp-test-dist/$(TESTREPORT) $(TESTREPORT)
+	tar cj $(TESTREPORT) > $(TESTREPORT).tar.bz2
+	rm -rf tmp-test-dist
+	rm -rf $(TESTREPORT)
+
+all-tests: $(TESTS)
+
+internal-test-report:
+	rm -f $(TESTREPORT)
 	mkdir $(TESTREPORT)
 	echo "package = \"$(PACKAGE_NAME)\"" > $(TESTREPORT)/info
 	echo "version = \"$(PACKAGE_VERSION)\"" >> $(TESTREPORT)/info
@@ -426,5 +447,3 @@ test-report: $(TESTS)
 	  status=$$?; \
 	  echo $$status > $(TESTREPORT)/$$test/exit_status; \
 	done
-	tar cj $(TESTREPORT) > $(TESTREPORT).tar.bz2
-	rm -rf $(TESTREPORT)

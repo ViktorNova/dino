@@ -54,9 +54,13 @@ libdinoseq_so_SOURCES = \
 	songtime.cpp songtime.hpp
 libdinoseq_so_HEADERS = \
 	atomicptr.hpp \
+	eventbuffer.hpp \
 	linkedlist.hpp \
+	meta.hpp \
 	nodelist.hpp \
-	nodequeue.hpp
+	nodequeue.hpp \
+	nodeskiplist.hpp \
+	tempomap.hpp
 libdinoseq_so_SOURCEDIR = src/libdinoseq
 libdinoseq_so_CFLAGS = `pkg-config --cflags glib-2.0`
 libdinoseq_so_LDFLAGS = `pkg-config --libs glib-2.0`

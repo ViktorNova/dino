@@ -1,5 +1,3 @@
-CXX = g++-4.4
-CC = gcc-4.4
 CXXFLAGS = -std=c++0x
 
 PACKAGE_NAME = dino

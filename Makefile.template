@@ -402,34 +402,29 @@ KERNEL_RELEASE := $(shell uname -r | sed 's/"/\\"/g')
 MACHINE := $(shell uname -m | sed 's/"/\\"/g')
 OPERATING_SYSTEM := $(shell uname -o | sed 's/"/\\"/g')
 UNIQUE_TOKEN := $(shell for i in 1 2 3 4; do printf '%04x' $$RANDOM; done)
-TESTREPORT := $(PACKAGE_NAME)-$(PACKAGE_VERSION)-test-$(UNIQUE_TOKEN).xml
+TESTREPORT := $(PACKAGE_NAME)-$(PACKAGE_VERSION)-test-$(UNIQUE_TOKEN)
 
 test-report: $(TESTS)
 	rm -f $(TESTREPORT).bz2
-	echo "<testroot package=\"$(PACKAGE_NAME)\" version=\"$(PACKAGE_VERSION)\" unique_token=\"$(UNIQUE_TOKEN)\">" > $(TESTREPORT)
-	echo >> $(TESTREPORT)
-	echo "  <environment kernel=\"$(KERNEL_NAME)\" kernel_release=\"$(KERNEL_RELEASE)\" machine=\"$(MACHINE)\" operating_system=\"$(OPERATING_SYSTEM)\" c_compiler=\"$(shell $(CC) --version | head -n 1)\" cxx_compiler=\"$(shell $(CXX) --version | head -n 1)\" />" >> $(TESTREPORT)
-	echo >> $(TESTREPORT)
-	$(foreach pkgname, $(PKG_NAMES), echo "  <dependency name=\"$(pkgname)\" version=\""`pkg-config --modversion $(pkgname)`"\" />" >> $(TESTREPORT);)
-	echo >> $(TESTREPORT)
-	export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}$(LIBRARY_DIRS); \
+	mkdir $(TESTREPORT)
+	echo "package = \"$(PACKAGE_NAME)\"" > $(TESTREPORT)/info
+	echo "version = \"$(PACKAGE_VERSION)\"" >> $(TESTREPORT)/info
+	echo "unique_token = \"$(UNIQUE_TOKEN)\"" >> $(TESTREPORT)/info
+	echo >> $(TESTREPORT)/info
+	echo "kernel = \"$(KERNEL_NAME)\"" >> $(TESTREPORT)/info
+	echo "kernel_release = \"$(KERNEL_RELEASE)\"" >> $(TESTREPORT)/info
+	echo "machine = \"$(MACHINE)\"" >> $(TESTREPORT)/info
+	echo "operating_system = \"$(OPERATING_SYSTEM)\"" >> $(TESTREPORT)/info
+	echo "c_compiler = \"$(shell $(CC) --version | head -n 1)\"" >> $(TESTREPORT)/info
+	echo "cxx_compiler = \"$(shell $(CXX) --version | head -n 1)\"" >> $(TESTREPORT)/info
+	echo >> $(TESTREPORT)/info
+	$(foreach pkgname, $(PKG_NAMES), echo "dependency.$(pkgname) = \""`pkg-config --modversion $(pkgname)`"\"" >> $(TESTREPORT)/info;)
+	export LD_LIBRARY_PATH=$${LD_LIBRARY_PATH}$(LIBRARY_DIRS); \
 	for test in $(TESTS); do \
-	  ./$$test $(TESTFLAGS) > test.stdout.tmp 2> test.stderr.tmp; \
+	  mkdir -p $(TESTREPORT)/$$test; \
+	  ./$$test $(TESTFLAGS) > $(TESTREPORT)/$$test/stdout 2> $(TESTREPORT)/$$test/stderr; \
 	  status=$$?; \
-	  echo "  <test program=\"$$test\" exit_status=\"$$status\" >" >> $(TESTREPORT); \
-	  echo "    <stderr>" >> $(TESTREPORT); \
-	  echo -n "      <![CDATA[" >> $(TESTREPORT); \
-	  cat test.stderr.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
-	  echo "]]>" >> $(TESTREPORT); \
-	  echo "    </stderr>" >> $(TESTREPORT); \
-	  echo "    <stdout>" >> $(TESTREPORT); \
-	  echo -n "      <![CDATA[" >> $(TESTREPORT); \
-	  cat test.stdout.tmp | sed 's/]]>/]]]]><![CDATA[>/g' >> $(TESTREPORT); \
-	  echo "]]>" >> $(TESTREPORT); \
-	  echo "    </stdout>" >> $(TESTREPORT); \
-	  echo "  </test>" >> $(TESTREPORT); \
-	  rm -f test.stderr.tmp test.stdout.tmp; \
+	  echo $$status > $(TESTREPORT)/$$test/exit_status; \
 	done
-	echo >> $(TESTREPORT)
-	echo "</testroot>" >> $(TESTREPORT)
-	bzip2 $(TESTREPORT)
+	tar cj $(TESTREPORT) > $(TESTREPORT).tar.bz2
+	rm -rf $(TESTREPORT)

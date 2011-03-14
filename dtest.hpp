@@ -5,6 +5,12 @@
 #include <iostream>
 #include <string>
 
+/** @mainpage
+    This is the documentation for DTest, a simple testing framework for
+    unit tests and regression tests. See the documentation for dtest.hpp
+    for details.
+*/
+
 
 /** @file
     This is a very simple testing framework for unit and regression tests.

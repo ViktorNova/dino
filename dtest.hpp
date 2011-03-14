@@ -35,6 +35,11 @@ extern DTest::State* _dtest;
   })									\
 
 
+#define DTEST_MSG(msg)							\
+  DTEST_LAMBDA({							\
+    std::cout<<std::string(_dtest->indent + 2, ' ')<<(msg)<<std::endl; \
+  })
+
 #define DTEST_SUCCEEDED				\
   DTEST_LAMBDA({				\
     std::cout<<"succeeded"<<endl; ++_dtest->good;	\
@@ -89,13 +94,24 @@ extern DTest::State* _dtest;
   })
 
 
-#define DTEST_TRUE(code)					\
-  DTEST_LAMBDA({						\
-    DTEST_INTRO(code, "should be true");			\
-    if (code)							\
-      DTEST_SUCCEEDED;						\
-    else							\
-      DTEST_FAILED;						\
+#define DTEST_TRUE(code)						\
+  DTEST_LAMBDA({							\
+    DTEST_INTRO(code, "should be true");				\
+    try {								\
+      if (code)								\
+	DTEST_SUCCEEDED;						\
+      else								\
+	DTEST_FAILED;							\
+    }									\
+    catch (std::exception& e) {						\
+      DTEST_FAILED;							\
+      DTEST_MSG(std::string("    Unexpected ") +			\
+		typeid(e).name() + " thrown: '" + e.what() + "'");	\
+    }									\
+    catch (...) {						\
+      DTEST_FAILED;							\
+      DTEST_MSG(std::string("    Unexpected object of unknown type thrown"));\
+    }									\
   })
 
 

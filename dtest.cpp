@@ -66,32 +66,47 @@ namespace {
       bool passed = true;
       string indent_str(indent, ' ');
       int good = 0, bad = 0;
-      for (auto ti = m_tests.begin(); ti != m_tests.end(); ++ti) {
-	DTest::state.indent = indent;
-	DTest::state.good = DTest::state.bad = 0;
-	cout<<indent_str<<"* "<<ti->first<<": "<<endl;
-	ti->second();
-	if (DTest::state.bad)
-	  ++bad;
-	else
-	  ++good;
+
+      if (!m_tests.empty()) {
+	for (auto ti = m_tests.begin(); ti != m_tests.end(); ++ti) {
+	  DTest::state.indent = indent;
+	  DTest::state.good = DTest::state.bad = 0;
+	  cout<<indent_str<<"* "<<ti->first<<": "<<endl;
+	  try {
+	    ti->second();
+	  }
+	  catch (std::exception& e) {
+	    DTEST_MSG(std::string("  Unexpected ") + typeid(e).name() +
+		      " thrown outside test code: '" + e.what() + "'");
+	  }
+	  catch (...) {
+	    DTEST_MSG("  Unexpected exception of unknown type "
+		      "thrown outside test code");
+	  }
+	  if (DTest::state.bad)
+	    ++bad;
+	  else
+	    ++good;
+	}
+	cout<<indent_str<<"Summary (tests): "<<good<<"/"<<(good + bad)<<endl;
+	if (bad)
+	  passed = false;
       }
-      if (!m_tests.empty())
-	cout<<indent_str<<"Summary: "<<good<<"/"<<(good + bad)<<endl;
-      if (bad)
-	passed = false;
-      good = bad = 0;
-      for (auto si = m_suites.begin(); si != m_suites.end(); ++si) {
-	cout<<indent_str<<"* Suite: "<<si->first<<endl;
-	if (si->second.run(indent + 2))
-	  ++bad;
-	else
-	  ++good;
+
+      if (!m_suites.empty()) {
+	good = 0; bad = 0;
+	for (auto si = m_suites.begin(); si != m_suites.end(); ++si) {
+	  cout<<indent_str<<"* Suite: "<<si->first<<endl;
+	  if (si->second.run(indent + 2))
+	    ++good;
+	  else
+	    ++bad;
+	}
+	cout<<indent_str<<"Summary (suites): "<<good<<"/"<<(good + bad)<<endl;
+	if (bad)
+	  passed = false;
       }
-      if (!m_suites.empty())
-	cout<<indent_str<<"Summary: "<<good<<"/"<<(good + bad)<<endl;
-      if (bad)
-	passed = false;
+
       return passed;
     }
     
@@ -134,6 +149,7 @@ int main(int argc, char** argv) {
     throw runtime_error("Could not dlopen() myself");
   auto state_ptr = static_cast<DTest::State**>(dlsym(self.get(), "_dtest"));
   *state_ptr = &DTest::state;
+  _dtest = &DTest::state;
   while (std::fgets(line, 255, cmd_pipe.get())) {
     char* space;
     for (space = line; *space != 0 && *space != ' '; ++space);

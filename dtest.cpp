@@ -126,18 +126,15 @@ int main(int argc, char** argv) {
   unique_ptr<char[]> real_symbol_cmd(new char[std::strlen(symbol_cmd) - 2 +
 					      std::strlen(argv[0]) + 1]);
   std::sprintf(real_symbol_cmd.get(), symbol_cmd, argv[0]);
-  auto cmd_pipe = make_unique(popen(real_symbol_cmd.get(), "r"),
-			      [](FILE* f) { pclose(f); });
+  auto cmd_pipe = make_unique(popen(real_symbol_cmd.get(), "r"), &pclose);
   
   /* Then, build the test suites. */
   char line[256];
   TestSuite root;
-  auto self = make_unique(dlopen(argv[0], RTLD_LAZY | RTLD_GLOBAL),
-			  [](void* h) { dlclose(h); });
+  auto self = make_unique(dlopen(argv[0], RTLD_LAZY | RTLD_GLOBAL), &dlclose);
   if (!self)
     throw runtime_error("Could not dlopen() myself");
-  auto state_ptr = reinterpret_cast<DTest::State**>(dlsym(self.get(),
-							  "_dtest"));
+  auto state_ptr = static_cast<DTest::State**>(dlsym(self.get(), "_dtest"));
   *state_ptr = &DTest::state;
   while (std::fgets(line, 255, cmd_pipe.get())) {
     char* space;

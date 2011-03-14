@@ -92,7 +92,7 @@ namespace DTest {
     
     /** @internal
 	Resets the indentation to 0. */
-    State() : indent(0) { }
+    State() : indent(0), good(0), bad(0) { }
     
     /** @internal
 	The current indentation level. */

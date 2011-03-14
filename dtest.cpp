@@ -45,52 +45,14 @@ namespace {
     return unique_ptr<T, D>(ptr, deleter);
   }
 
-
-  /** Need this to avoid C I/O. */
-  struct CFileBuf : public std::streambuf {
-    CFileBuf(FILE* file)
-      : m_file(file) {
-      char* end = &m_buffer[0] + m_buffer.size();
-      setg(end, end, end);
-    }
-    
-  private:
-    
-    int_type underflow() {
-      
-      if (gptr() == egptr()) {
-	
-	char* base = &m_buffer[0];
-	char* start = base;
-	
-	/* Copy previously read (or put back) data to the beginning. */
-	if (eback() == base) {
-	  std::memmove(base, egptr() - m_putback, m_putback);
-	  start += m_putback;
-	}
-	
-	/* Actually read from the FILE. */
-	size_t n = std::fread(start, 1,
-			      m_buffer.size() - (start - base), m_file);
-	if (n == 0)
-	  return traits_type::eof();
-	
-	/* Reset buffer pointers. */
-	setg(base, start, start + n);
-      }
-      
-      return traits_type::to_int_type(*gptr());
-    }
-    
-    FILE* m_file;
-    static size_t const m_putback = 8;
-    std::array<char, 256> m_buffer;
-  };
-
-
+  
+  /** A test suite is a set of tests and/or other suits. */
   struct TestSuite {
     typedef void(*Test)();
     
+    /** Add a test to this test suite. The name should be a fully
+	qualified C++ function name, namespaces will be added automatically
+	as subsuites. */
     void add_test(string const& name, Test const& test) {
       size_t suite_end = name.find("::");
       if (suite_end == string::npos)
@@ -101,6 +63,7 @@ namespace {
       }
     }
     
+    /** Run all tests and suites and print some info. */
     bool run(size_t indent = 0) {
       bool passed = true;
       string indent_str(indent, ' ');
@@ -165,21 +128,27 @@ int main(int argc, char** argv) {
   std::sprintf(real_symbol_cmd.get(), symbol_cmd, argv[0]);
   auto cmd_pipe = make_unique(popen(real_symbol_cmd.get(), "r"),
 			      [](FILE* f) { pclose(f); });
-  std::istream cmd(new CFileBuf(cmd_pipe.get()));
   
   /* Then, build the test suites. */
-  string line;
+  char line[256];
   TestSuite root;
-  auto self = dlopen(argv[0], RTLD_LAZY | RTLD_GLOBAL);  
+  auto self = make_unique(dlopen(argv[0], RTLD_LAZY | RTLD_GLOBAL),
+			  [](void* h) { dlclose(h); });
   if (!self)
     throw runtime_error("Could not dlopen() myself");
-  auto state_ptr = reinterpret_cast<DTest::State**>(dlsym(self, "_dtest"));
+  auto state_ptr = reinterpret_cast<DTest::State**>(dlsym(self.get(),
+							  "_dtest"));
   *state_ptr = &DTest::state;
-  while (std::getline(cmd, line)) {
-    string symbol = line.substr(0, line.find(' '));
-    if (symbol.size() == line.size())
+  while (std::fgets(line, 255, cmd_pipe.get())) {
+    char* space;
+    for (space = line; *space != 0 && *space != ' '; ++space);
+    if (space == 0)
       throw runtime_error(string("Invalid line: ") + line);
-    root.add_test(line.substr(symbol.size() + 1), dltestsym(self, symbol));
+    *space = 0;
+    char* i;
+    for (i = space + 1; *i != 0 && *i != '\n'; ++i);
+    *i = 0;
+    root.add_test(space + 1, dltestsym(self.get(), line));
   }
   
   /* And run the test suites. */
@@ -188,4 +157,3 @@ int main(int argc, char** argv) {
   
   return 0;
 }
-

@@ -1,7 +1,8 @@
 #ifndef DTEST_HPP
 #define DTEST_HPP
 
-#include <memory>
+#include <iomanip>
+#include <iostream>
 #include <string>
 
 
@@ -26,19 +27,23 @@ extern DTest::State* _dtest;
 #define DTEST_LAMBDA(block) [&]() -> void block ()
 
 
-#define DTEST_INTRO(code, msg) \
-  cout<<std::string(_dtest->indent + 2, ' ')<<"+ '"<<#code<<"' " msg "... "
+#define DTEST_INTRO(code, msg)						\
+  DTEST_LAMBDA({							\
+    std::cout<<std::string(_dtest->indent + 2, ' ')<<"+ "		\
+	     <<__FILE__<<':'<<std::setfill('0')<<std::setw(3)<<__LINE__<<": "; \
+    std::cout<<'\''<<#code<<"' " msg "... ";				\
+  })									\
 
 
 #define DTEST_SUCCEEDED				\
   DTEST_LAMBDA({				\
-    cout<<"succeeded"<<endl; ++_dtest->good;	\
+    std::cout<<"succeeded"<<endl; ++_dtest->good;	\
   })
 
 
 #define DTEST_FAILED				\
   DTEST_LAMBDA({				\
-    cout<<"failed"<<endl; ++_dtest->bad;		\
+    std::cout<<"failed"<<endl; ++_dtest->bad;	\
   })
 
 

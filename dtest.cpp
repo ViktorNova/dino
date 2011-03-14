@@ -153,20 +153,24 @@ namespace {
   
 int main(int argc, char** argv) {
   
+  /* If there's an argument, load that. Otherwise, load ourself. */
+  char const* lib = (argc > 1 ? argv[1] : argv[0]);
+  
   /* First, get the list of functions that we should run. */
   unique_ptr<char[]> real_symbol_cmd(new char[std::strlen(symbol_cmd) - 2 +
-					      std::strlen(argv[0]) + 1]);
-  std::sprintf(real_symbol_cmd.get(), symbol_cmd, argv[0]);
+					      std::strlen(lib) + 1]);
+  std::sprintf(real_symbol_cmd.get(), symbol_cmd, lib);
   auto cmd_pipe = make_unique(popen(real_symbol_cmd.get(), "r"), &pclose);
   
   /* Then, build the test suites. */
   char line[256];
   TestSuite root;
-  auto self = make_unique(dlopen(argv[0], RTLD_LAZY | RTLD_GLOBAL), &dlclose);
+  auto self = make_unique(dlopen(lib, RTLD_LAZY | RTLD_GLOBAL), &dlclose);
   if (!self)
-    throw runtime_error("Could not dlopen() myself");
+    throw runtime_error(string("Could not dlopen() ") + lib);
   auto state_ptr = static_cast<DTest::State**>(dlsym(self.get(), "_dtest"));
-  *state_ptr = &DTest::state;
+  if (state_ptr)
+    *state_ptr = &DTest::state;
   _dtest = &DTest::state;
   while (std::fgets(line, 255, cmd_pipe.get())) {
     char* space;

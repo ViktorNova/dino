@@ -32,11 +32,15 @@
 
 /** @file
     This is a very simple testing framework for unit and regression tests.
-    You create a test program by compiling and linking dtest.cpp with your
-    tests. dtest.cpp defines a main() function that will run your tests and
-    print a report. Your tests should be free functions taking no arguments
-    and returning @c void, and their names should begin with @c dtest_.
-    You can arrange them into nested test suites using namespaces, like this:
+    You create a test program by either compiling and linking @c dtest.cpp with
+    your tests, or compiling @c dtest.cpp as a separate program and compiling
+    and linking your tests as a shared library, the path of which you then pass
+    as the only command line parameter to the @c dtest program. @c dtest.cpp
+    defines a @c main() function that will run your tests and print a report.
+    
+    Your tests should be free functions taking no arguments and returning
+    @c void, and their names should begin with @c dtest_. You can arrange them
+    into nested test suites using namespaces, like this:
 
     @code
     namespace MyTests {
@@ -66,11 +70,15 @@
     
     Test programs need to be compiled with @c -fPIC and @c -pie, and linked with
     @c -fPIC, @c -pie, @c -ldl and @c -rdynamic. This is because the program
-    will @c dlopen() itself to get pointers to the test function.
+    will @c dlopen() itself to get pointers to the test functions.
+    
+    If you link your tests into separate shared libraries, they need to be
+    compiled with @c -fPIC and linked with @c -shared @c -fPIC as per usual.
     
     The test program must not be stripped. Also, your default shell (the one
-    used by @c std::system() must have the programs @c awk, @c c++filt,
-    @c grep, @c nm, @c sed, @c sh and @c xargs available.
+    used by @c popen()) must have the programs @c awk, @c c++filt,
+    @c grep, @c nm, @c sed, @c sh and @c xargs available, and your dynamic
+    linker must support backlinking.
 */
 
 

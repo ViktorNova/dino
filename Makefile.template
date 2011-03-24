@@ -123,6 +123,9 @@ $$($(2)_CXXOBJECTS): Makefile.config $$(filter-out $$(wildcard $$($(2)_BUILDDIR)
 $$($(2)_BLDPRF)/$(1): $$($(2)_BLDPRF)/$(1).$$($(2)_IFSFX)
 	cd $$($(2)_BLDPRF) && ln -f -s $(1).$$($(2)_IFSFX) $(1)
 
+$$($(2)_BLDPRF)/$(1).$$($(2)_IFSFX): Makefile.config $$($(2)_COBJECTS) $$($(2)_CXXOBJECTS)
+	$(CXX) $(SHARED_LIBRARY_LDFLAGS) $$($(2)_OBJECTS) $$($(1)_ARCHIVES) $$($(1)_LOCALLDFLAGS) $$($(1)_LOCALLIBRARIES) $$($(1)_LDFLAGS) $(LDFLAGS) -o $$@
+
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
 	mkdir -p $(DESTDIR)/$(pkgincludedir)
 	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(DESTDIR)/$(pkgincludedir)
@@ -389,20 +392,26 @@ install: install-archives install-libraries install-modules install-programs ins
 THIS_FILE = $(patsubst ./%,%,$(firstword $(filter %/Makefile.template,$(patsubst %,./%,$(MAKEFILE_LIST)))))
 CONFIGURE_SCRIPT = $(if $(__path_to_configure),$(__path_to_configure),configure)
 ALL_DIST_FILES = $(sort $(ALL_SOURCES) $(DATA) $(DOCS) $(PCFILES) $(MANUALS) $(EXTRA_DIST) $(ALL_DATA))
-dist: 
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
-	mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	@echo "Copying files to $(PACKAGE_NAME)-$(PACKAGE_VERSION)/..."
-	cp $(THIS_FILE) $(CONFIGURE_SCRIPT) $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	cat Makefile | sed s/$(subst /,\\/,$(THIS_FILE))/Makefile.template/ | sed 's/PACKAGE_VERSION = .*/PACKAGE_VERSION = $(PACKAGE_VERSION)/' > $(PACKAGE_NAME)-$(PACKAGE_VERSION)/Makefile
-	@$(foreach file, $(patsubst %,./%,$(ALL_DIST_FILES)), mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)/`echo $(file) | sed 's/\/[^\/]*$$//'` &&) true
-	@$(foreach file, $(ALL_DIST_FILES), cp $(file) $(PACKAGE_NAME)-$(PACKAGE_VERSION)/$(file) &&) true
-	touch $(PACKAGE_NAME)-$(PACKAGE_VERSION)/Makefile.config
-	tar c $(PACKAGE_NAME)-$(PACKAGE_VERSION) > $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
-	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
-	bzip2 $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
+
+
+DIST_NAME = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+
+dist: dist-dir
+	rm -rf $(DIST_NAME).tar.bz2
+	rm -rf $(DIST_NAME).tar
+	tar c $(DIST_NAME) > $(DIST_NAME).tar
+	rm -rf $(DIST_NAME)
+	bzip2 $(DIST_NAME).tar
+
+dist-dir:
+	rm -rf $(DIST_NAME)
+	mkdir -p $(DIST_NAME)
+	@echo "Copying files to $(DIST_NAME)/..."
+	cp $(THIS_FILE) $(CONFIGURE_SCRIPT) $(DIST_NAME)
+	cat Makefile | sed s/$(subst /,\\/,$(THIS_FILE))/Makefile.template/ | sed 's/PACKAGE_VERSION = .*/PACKAGE_VERSION = $(PACKAGE_VERSION)/' > $(DIST_NAME)/Makefile
+	@$(foreach file, $(patsubst %,./%,$(ALL_DIST_FILES)), mkdir -p $(DIST_NAME)/`echo $(file) | sed 's/\/[^\/]*$$//'` &&) true
+	@$(foreach file, $(ALL_DIST_FILES), cp $(file) $(DIST_NAME)/$(file) &&) true
+	touch $(DIST_NAME)/Makefile.config
 
 dist-test: dist
 	tar xjvf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2

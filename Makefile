@@ -2,6 +2,15 @@ CXXFLAGS = -std=c++0x
 
 PACKAGE_NAME = dino
 PACKAGE_VERSION = $(shell ./VERSION)
+PACKAGE_DISPLAY_NAME = Dino
+define PACKAGE_DESCRIPTION
+Dino is a MIDI sequencer for GNU/Linux. It uses the JACK infrastructure
+to send and receive MIDI messages.
+endef
+PACKAGE_WEBPAGE = http://dino.nongnu.org/
+PACKAGE_BUGTRACKER = https://savannah.nongnu.org/bugs/?group=dino
+PACKAGE_VC = http://git.savannah.gnu.org/cgit/dino.git
+
 PKG_DEPS = \
 	glib-2.0>=2.22.4
 

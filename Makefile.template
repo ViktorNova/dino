@@ -11,6 +11,7 @@ pkgdocdir = $(docdir)/$(PACKAGE_NAME)
 includedir = $(prefix)/include
 pkgincludedir = $(includedir)/$(PACKAGE_NAME)
 lv2plugindir = $(libdir)/lv2
+mandir = $(datadir)/man
 LV2PEG = lv2peg
 
 # Don't modify any variables below this line
@@ -58,7 +59,7 @@ $$($(2)_CXXOBJECTS): Makefile.config $$(filter-out $$(wildcard $$($(2)_BUILDDIR)
 	$(CXX) -c -o $$@ -fPIC -DPIC $(CFLAGS) $(CXXFLAGS) $$($(2)_CFLAGS) $$($$(patsubst %.o,%_cpp_CFLAGS,$$(notdir $$@))) $$(patsubst $$($(2)_BLDPRF)%,$$($(2)_SRCPRF)%,$$(subst .o,.cpp,$$@))
 
 $$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $$(filter-out $$(wildcard $$($(2)_BUILDDIR)), $$($(2)_BUILDDIR))
-	ar rcs $$@ $$^ $(LDFLAGS) $$($(2)_LDFLAGS)
+	ar rcs $$@ $$^
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
 	mkdir -p $(DESTDIR)/$(pkgincludedir)
@@ -88,6 +89,8 @@ endif
 define LIBRARY_template
 
 # variables
+$(2)_IFACE = $$(if $$($(2)_ABI),$$($(2)_ABI),0)
+$(2)_IFSFX = $$($(2)_IFACE).0.0
 $(2)_SRCPRF = $$(if $$($(2)_SOURCEDIR),$$($(2)_SOURCEDIR),.)
 $(2)_BLDPRF1 = $$(if $$($(2)_BUILDDIR),$$($(2)_BUILDDIR),$$($(2)_SRCPRF))
 $(2)_BLDPRF = $(BUILDPREFIX)$$($(2)_BLDPRF1)
@@ -101,7 +104,7 @@ $(2)_LOCALLIBRARIES = $$(patsubst lib%.so,-l%,$$(notdir $$($(2)_LIBRARIES)))
 $(2)_LOCALLDFLAGS = $$(patsubst %,-L%,$$(sort $$(dir $$($(2)_LIBRARIES))))
 ALL_OBJECTS += $$($(2)_OBJECTS)
 ALL_SOURCES += $$($(2)_FULLSOURCES)
-LIBRARIES_REAL += $$($(2)_BLDPRF)/$(1)
+LIBRARIES_REAL += $$($(2)_BLDPRF)/$(1).$$($(2)_IFSFX)
 LIBRARIES_NOINST += $$(if $$($(2)_NOINST),$(2),)
 LIBRARY_DIRS := $$(LIBRARY_DIRS):$$($(2)_BLDPRF)
 ALL_LIBHEADER_INSTALLS += $$(if $$($(2)_HEADERS),install-$(2)-headers)
@@ -117,16 +120,16 @@ $$($(2)_COBJECTS): Makefile.config $$(filter-out $$(wildcard $$($(2)_BUILDDIR)),
 $$($(2)_CXXOBJECTS): Makefile.config $$(filter-out $$(wildcard $$($(2)_BUILDDIR)), $$($(2)_BUILDDIR))
 	$(CXX) -c -o $$@ $(SHARED_LIBRARY_CFLAGS) $(CFLAGS) $(CXXFLAGS) $$($(2)_CFLAGS) $$(patsubst $$($(2)_BLDPRF)%,$$($(2)_SRCPRF)%,$$(subst .o,.cpp,$$@))
 
-$$($(2)_BLDPRF)/$(1): $$($(2)_OBJECTS) $$($(2)_ARCHIVES) $$($(2)_LIBRARIES) $$(filter-out $$(wildcard $$($(2)_BUILDDIR)), $$($(2)_BUILDDIR))
-	$(CXX) $(SHARED_LIBRARY_LDFLAGS) $$($(2)_OBJECTS) -Wl,--whole-archive $$($(2)_ARCHIVES) -Wl,--no-whole-archive $$($(2)_LOCALLDFLAGS) $$($(2)_LOCALLIBRARIES) $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@ -Wl,-soname=$(1).0
-	/sbin/ldconfig -n $$($(2)_BLDPRF)
+$$($(2)_BLDPRF)/$(1): $$($(2)_BLDPRF)/$(1).$$($(2)_IFSFX)
+	cd $$($(2)_BLDPRF) && ln -f -s $(1).$$($(2)_IFSFX) $(1)
 
 install-$(2)-headers: $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS))
 	mkdir -p $(DESTDIR)/$(pkgincludedir)
 	cp $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_HEADERS)) $(DESTDIR)/$(pkgincludedir)
 
-install-$(2): $$($(2)_BLDPRF)/$(1) $$(if $$($(2)_HEADERS),install-$(2)-headers)
-	mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1) $(DESTDIR)/$$($(2)_INSTDIR)
+install-$(2): $$($(2)_BLDPRF)/$(1).$$($(2)_IFSFX) $$(if $$($(2)_HEADERS),install-$(2)-headers)
+	mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp $$($(2)_BLDPRF)/$(1).$$($(2)_IFSFX) $(DESTDIR)/$$($(2)_INSTDIR)
+	cd $(DESTDIR)/$$($(2)_INSTDIR) && ln -f -s $(1).$$($(2)_IFSFX) $(1)
 
 endef
 bad_libraries = $(filter-out lib%.so,$(LIBRARIES))
@@ -135,8 +138,17 @@ $(foreach badlib, $(bad_libraries), $(eval \
 $(foreach lib,$(LIBRARIES),$(eval $(call LIBRARY_template,$(lib),$(subst .,_,$(lib)))))
 #END OF LIBRARIES
 
+$$($(2)_BLDPRF)/$(1).$$($(2)_IFSFX): $$($(2)_OBJECTS) $$($(2)_ARCHIVES) $$($(2)_LIBRARIES)
+	$(CXX) $(SHARED_LIBRARY_LDFLAGS) $$($(2)_OBJECTS) -Wl,--whole-archive $$($(2)_ARCHIVES) -Wl,--no-whole-archive $$($(2)_LOCALLDFLAGS) $$($(2)_LOCALLIBRARIES) $(LDFLAGS) $$($(2)_LDFLAGS) -o $$@ -Wl,-soname=$(1).$$($(2)_IFACE)
 
 # LV2 PLUGINS
+ifeq ($(UNAME),Darwin)
+LV2PLUGIN_LDFLAGS = -bundle
+LV2PLUGIN_CFLAGS = -fno-common
+else
+LV2PLUGIN_LDFLAGS = -shared -fPIC
+LV2PLUGIN_CFLAGS = -fPIC -DPIC
+endif
 
 define LV2_BUNDLE_template
 
@@ -169,6 +181,7 @@ $$($(2)_BLDPRF)/$(1): $$($(2)_FULLDATA) $$(patsubst %,$$($(2)_SRCPRF)/%,$$($(2)_
 install-$(2): $$($(2)_BLDPRF)/$(1) $$(if $$($(2)_HEADERS),install-$(2)-headers)
 	rm -rf $(DESTDIR)/$$($(2)_INSTDIR)/$(1)
 	mkdir -p $(DESTDIR)/$$($(2)_INSTDIR) && cp -R $$($(2)_BLDPRF)/$(1) $(DESTDIR)/$$($(2)_INSTDIR)
+	$$(if $$($(2)_POSTINSTALL),cd $(DESTDIR)/$$($(2)_INSTDIR) && $$($(2)_POSTINSTALL))
 
 endef
 $(foreach lv2,$(LV2_BUNDLES),$(eval $(call LV2_BUNDLE_template,$(lv2),$(subst .,_,$(lv2)))))
@@ -353,44 +366,68 @@ install-docs: $(DOCS)
 	$(if $(DOCS),mkdir -p $(DESTDIR)/$(pkgdocdir))
 	$(if $(DOCS),cp $(DOCS) $(DESTDIR)/$(pkgdocdir))
 
+install-manuals: $(MANUALS)
+	$(foreach manpage,$(MANUALS),man_section=`echo $(manpage) | sed 's/.*\.\([0-9]\)/\1/'`; mkdir -p $(DESTDIR)/$(mandir)/man$$man_section; gzip -c $(manpage) > $(DESTDIR)/$(mandir)/man$$man_section/`basename $(manpage)`.gz)
+
 install-pcfiles: $(PCFILES)
 	$(if $(PCFILES),mkdir -p $(DESTDIR)/$(libdir)/pkgconfig)
 	$(if $(PCFILES),@echo Installing pkg-config-files...)
-	@$(foreach pcf,$(PCFILES),echo PACKAGE_NAME = $(PACKAGE_NAME) > $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo PACKAGE_VERSION = $(PACKAGE_VERSION) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo libdir = $(libdir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo pkglibdir = $(pkglibdir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo includedir = $(includedir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),echo pkgincludedir = $(pkgincludedir) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
-	@$(foreach pcf,$(PCFILES),cat $(pcf) >> $(DESTDIR)/$(libdir)/pkgconfig/$(pcf) &&) true
+	@$(foreach pcf,$(PCFILES),echo PACKAGE_NAME = $(PACKAGE_NAME) > $(DESTDIR)/$(libdir)/pkgconfig/`basename $(pcf)` &&) true
+	@$(foreach pcf,$(PCFILES),echo PACKAGE_VERSION = $(PACKAGE_VERSION) >> $(DESTDIR)/$(libdir)/pkgconfig/`basename $(pcf)` &&) true
+	@$(foreach pcf,$(PCFILES),echo libdir = $(libdir) >> $(DESTDIR)/$(libdir)/pkgconfig/`basename $(pcf)` &&) true
+	@$(foreach pcf,$(PCFILES),echo pkglibdir = $(pkglibdir) >> $(DESTDIR)/$(libdir)/pkgconfig/`basename $(pcf)` &&) true
+	@$(foreach pcf,$(PCFILES),echo includedir = $(includedir) >> $(DESTDIR)/$(libdir)/pkgconfig/`basename $(pcf)` &&) true
+	@$(foreach pcf,$(PCFILES),echo pkgincludedir = $(pkgincludedir) >> $(DESTDIR)/$(libdir)/pkgconfig/`basename $(pcf)` &&) true
+	@$(foreach pcf,$(PCFILES),cat $(pcf) >> $(DESTDIR)/$(libdir)/pkgconfig/`basename $(pcf)` &&) true
 
 install-datapacks: $(patsubst %,install-%,$(subst .,_,$(DATAPACKS)))
 
-install: install-archives install-libraries install-modules install-programs install-lv2-plugins install-data install-docs install-pcfiles install-datapacks
+install: install-archives install-libraries install-modules install-programs install-lv2-plugins install-data install-docs install-manuals install-pcfiles install-datapacks
 
 
 # DISTRIBUTION
 THIS_FILE = $(patsubst ./%,%,$(firstword $(filter %/Makefile.template,$(patsubst %,./%,$(MAKEFILE_LIST)))))
 CONFIGURE_SCRIPT = $(if $(__path_to_configure),$(__path_to_configure),configure)
-ALL_DIST_FILES = $(sort $(ALL_SOURCES) $(DATA) $(DOCS) $(EXTRA_DIST) $(ALL_DATA))
-DIST_NAME = $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+ALL_DIST_FILES = $(sort $(ALL_SOURCES) $(DATA) $(DOCS) $(PCFILES) $(MANUALS) $(EXTRA_DIST) $(ALL_DATA))
+dist: 
+	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2
+	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
+	mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	@echo "Copying files to $(PACKAGE_NAME)-$(PACKAGE_VERSION)/..."
+	cp $(THIS_FILE) $(CONFIGURE_SCRIPT) $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	cat Makefile | sed s/$(subst /,\\/,$(THIS_FILE))/Makefile.template/ | sed 's/PACKAGE_VERSION = .*/PACKAGE_VERSION = $(PACKAGE_VERSION)/' > $(PACKAGE_NAME)-$(PACKAGE_VERSION)/Makefile
+	@$(foreach file, $(patsubst %,./%,$(ALL_DIST_FILES)), mkdir -p $(PACKAGE_NAME)-$(PACKAGE_VERSION)/`echo $(file) | sed 's/\/[^\/]*$$//'` &&) true
+	@$(foreach file, $(ALL_DIST_FILES), cp $(file) $(PACKAGE_NAME)-$(PACKAGE_VERSION)/$(file) &&) true
+	touch $(PACKAGE_NAME)-$(PACKAGE_VERSION)/Makefile.config
+	tar c $(PACKAGE_NAME)-$(PACKAGE_VERSION) > $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
+	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	bzip2 $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
 
-dist: dist-dir
-	rm -rf $(DIST_NAME).tar.bz2
-	rm -rf $(DIST_NAME).tar
-	tar c $(DIST_NAME) > $(DIST_NAME).tar
-	rm -rf $(DIST_NAME)
-	bzip2 $(DIST_NAME).tar
+dist-test: dist
+	tar xjvf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2
+	cd $(PACKAGE_NAME)-$(PACKAGE_VERSION) && ./configure --prefix=`pwd`/installation
+	cd $(PACKAGE_NAME)-$(PACKAGE_VERSION) && make && make install
+	rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	@echo Distribution test succeded!
 
-dist-dir:
-	rm -rf $(DIST_NAME)
-	mkdir -p $(DIST_NAME)
-	@echo "Copying files to $(DIST_NAME)/..."
-	cp $(THIS_FILE) $(CONFIGURE_SCRIPT) $(DIST_NAME)
-	cat Makefile | sed s/$(subst /,\\/,$(THIS_FILE))/Makefile.template/ | sed 's/PACKAGE_VERSION = .*/PACKAGE_VERSION = $(PACKAGE_VERSION)/' > $(DIST_NAME)/Makefile
-	@$(foreach file, $(patsubst %,./%,$(ALL_DIST_FILES)), mkdir -p $(DIST_NAME)/`echo $(file) | sed 's/\/[^\/]*$$//'` &&) true
-	@$(foreach file, $(ALL_DIST_FILES), cp $(file) $(DIST_NAME)/$(file) &&) true
-	touch $(DIST_NAME)/Makefile.config
+
+# DEBIAN PACKAGES
+deb-dir: debian dist
+	rm -rf deb
+	mkdir deb
+	cp $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2 deb
+	cd deb && tar xjf $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2
+	cd deb && bunzip2 $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.bz2
+	cd deb && gzip $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar
+	cd deb && mv $(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz $(PACKAGE_NAME)_$(PACKAGE_VERSION).orig.tar.gz
+	cp -R debian deb/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	cd deb/$(PACKAGE_NAME)-$(PACKAGE_VERSION) && (dch -v $(PACKAGE_VERSION) "User package build" || true)
+	cd deb/$(PACKAGE_NAME)-$(PACKAGE_VERSION) && dpkg-buildpackage -b -ptrue -i -rfakeroot
+
+deb: deb-dir
+	mv -f deb/*.deb .
+	rm -rf deb
 
 
 # PKG-CONFIG DEPENDENCY CHECK
@@ -450,3 +487,21 @@ internal-test-report:
 	  status=$$?; \
 	  echo $$status > $(TESTREPORT)/$$test/exit_status; \
 	done
+
+
+# RELEASE ANNOUNCEMENT
+export PACKAGE_DESCRIPTION
+release-mail:
+	@echo "$(PACKAGE_DISPLAY_NAME) $(PACKAGE_VERSION) has been released."
+	@echo ""
+	@echo "$$PACKAGE_DESCRIPTION"
+	@echo ""
+	@echo "Changes:"
+	@end=`grep -n -m 1 '^$$' ChangeLog | sed 's/:.*//'`; head -n $$(($$end - 1)) ChangeLog | tail -n +2 | sed 's/\t/ /g'
+	@echo ""
+	@echo "Tarball:"
+	@echo "GPG signature file:"
+	@echo ""
+	@echo "Webpage: $(PACKAGE_WEBPAGE)"
+	@echo "Bug tracker: $(PACKAGE_BUGTRACKER)"
+	@echo "Version control: $(PACKAGE_VC)"

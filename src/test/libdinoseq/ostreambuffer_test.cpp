@@ -18,8 +18,7 @@
 
 #include <sstream>
 
-#include <boost/test/unit_test.hpp>
-
+#include "dtest.hpp"
 #include "ostreambuffer.hpp"
 #include "songtime.hpp"
 
@@ -28,32 +27,32 @@ using namespace Dino;
 using namespace std;
 
 
-BOOST_AUTO_TEST_SUITE(OStreamBufferTest)
+namespace OStreamBufferTest {
 
 
-BOOST_AUTO_TEST_CASE(constructor) {
-  ostringstream os;
-  BOOST_CHECK_NO_THROW(OStreamBuffer osb(os));
+  void dtest_constructor() {
+    ostringstream os;
+    DTEST_NOTHROW(OStreamBuffer osb(os));
+  }
+
+
+  void dtest_write_event() {
+    ostringstream os;
+    OStreamBuffer osb(os);
+    
+    unsigned char event1[] = {0x80, 0x34, 0x00};
+    unsigned char event2[] = {0x90, 0x34, 0x42};
+    
+    SongTime st1(0, 0x238388);
+    SongTime st2(5, 0xFFAD03);
+    
+    osb.write_event(st1, 3, event1);
+    osb.write_event(st2, 3, event2);
+    
+    os<<flush;
+    
+    DTEST_TRUE(os.str() == "0:238388: 80 34 00\n5:FFAD03: 90 34 42\n");
+  }
+
+
 }
-
-
-BOOST_AUTO_TEST_CASE(write_event) {
-  ostringstream os;
-  OStreamBuffer osb(os);
-  
-  unsigned char event1[] = {0x80, 0x34, 0x00};
-  unsigned char event2[] = {0x90, 0x34, 0x42};
-  
-  SongTime st1(0, 0x238388);
-  SongTime st2(5, 0xFFAD03);
-  
-  osb.write_event(st1, 3, event1);
-  osb.write_event(st2, 3, event2);
-  
-  os<<flush;
-  
-  BOOST_CHECK(os.str() == "0:238388: 80 34 00\n5:FFAD03: 90 34 42\n");
-}
-
-
-BOOST_AUTO_TEST_SUITE_END()

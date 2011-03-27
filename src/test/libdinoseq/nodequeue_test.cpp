@@ -16,8 +16,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#include <boost/test/unit_test.hpp>
-
+#include "dtest.hpp"
 #include "nodequeue.hpp"
 
 
@@ -27,45 +26,45 @@ using namespace Dino;
 /* We can't really test the atomicity in any reasonable way, so we do some
    read and write tests. */
 
-BOOST_AUTO_TEST_SUITE(NodeQueueTest)
+namespace NodeQueueTest {
 
 
-BOOST_AUTO_TEST_CASE(constructor) {
-  BOOST_CHECK_NO_THROW(NodeQueue<int> nq);
+  void dtest_constructor() {
+    DTEST_NOTHROW(NodeQueue<int> nq);
+  }
+  
+  void dtest_push_pop() {
+    NodeQueue<int> nq;
+    typedef NodeQueue<int>::Node Node;
+    
+    nq.push_node(new Node(1));
+    nq.push_node(new Node(2));
+    nq.push_node(new Node(3));
+    
+    Node* node;
+    
+    DTEST_TRUE((node = nq.pop_node()) != 0);
+    
+    DTEST_TRUE(node->data == 1);
+    
+    delete node;
+    
+    DTEST_TRUE((node = nq.pop_node()) != 0);
+    
+    DTEST_TRUE(node->data == 2);
+    
+    delete node;
+    
+    DTEST_TRUE((node = nq.pop_node()) == 0);
+    
+    nq.push_node(new Node(4));
+    
+    DTEST_TRUE((node = nq.pop_node()) != 0);
+    
+    DTEST_TRUE(node->data == 3);
+    
+    delete node;
+  }
+  
+
 }
-
-BOOST_AUTO_TEST_CASE(push_pop) {
-  NodeQueue<int> nq;
-  typedef NodeQueue<int>::Node Node;
-  
-  nq.push_node(new Node(1));
-  nq.push_node(new Node(2));
-  nq.push_node(new Node(3));
-  
-  Node* node;
-  
-  BOOST_CHECK((node = nq.pop_node()) != 0);
-  
-  BOOST_CHECK(node->data == 1);
-  
-  delete node;
-  
-  BOOST_CHECK((node = nq.pop_node()) != 0);
-  
-  BOOST_CHECK(node->data == 2);
-
-  delete node;
-  
-  BOOST_CHECK((node = nq.pop_node()) == 0);
-  
-  nq.push_node(new Node(4));
-  
-  BOOST_CHECK((node = nq.pop_node()) != 0);
-  
-  BOOST_CHECK(node->data == 3);
-  
-  delete node;
-}
-
-
-BOOST_AUTO_TEST_SUITE_END()

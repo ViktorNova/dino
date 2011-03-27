@@ -16,8 +16,7 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#include <boost/test/unit_test.hpp>
-
+#include "dtest.hpp"
 #include "atomicptr.hpp"
 
 
@@ -27,31 +26,31 @@ using namespace Dino;
 /* We can't really test the atomicity in any reasonable way, so we just
    do some trivial read and write tests. */
 
-BOOST_AUTO_TEST_SUITE(AtomicPtrTest)
+namespace AtomicPtrTest {
 
 
-BOOST_AUTO_TEST_CASE(constructor) {
-  int* iptr = new int(42);
-  BOOST_CHECK_NO_THROW(AtomicPtr<int> ap(iptr));
-  delete iptr;
+  void dtest_constructor() {
+    int* iptr = new int(42);
+    DTEST_NOTHROW(AtomicPtr<int> ap(iptr));
+    delete iptr;
+  }
+
+
+  void dtest_get_set() {
+    int a = 42;
+    int b = 666;
+    AtomicPtr<int> ap = &a;
+    
+    DTEST_TRUE(&a == ap.get());
+  
+    ap.set(&b);
+    
+    DTEST_TRUE(&b == ap.get());
+  
+    AtomicPtr<int> const ap_c = &b;
+    
+    DTEST_TRUE(&b == ap_c.get());
+  }
+
+
 }
-
-
-BOOST_AUTO_TEST_CASE(get_set) {
-  int a = 42;
-  int b = 666;
-  AtomicPtr<int> ap = &a;
-  
-  BOOST_CHECK_EQUAL(&a, ap.get());
-  
-  ap.set(&b);
-  
-  BOOST_CHECK_EQUAL(&b, ap.get());
-  
-  AtomicPtr<int> const ap_c = &b;
-
-  BOOST_CHECK_EQUAL(&b, ap_c.get());
-}
-
-
-BOOST_AUTO_TEST_SUITE_END()

@@ -16,9 +16,8 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#include <boost/test/unit_test.hpp>
-
 #include "atomicint.hpp"
+#include "dtest.hpp"
 
 
 using namespace Dino;
@@ -27,35 +26,35 @@ using namespace Dino;
 /* We can't really test the atomicity in any reasonable way, so we just
    do some trivial read and write tests. */
 
-BOOST_AUTO_TEST_SUITE(AtomicIntTest)
+namespace AtomicIntTest {
 
 
-BOOST_AUTO_TEST_CASE(constructor) {
-  AtomicInt::Type i = 3;
-  BOOST_CHECK_NO_THROW(AtomicInt ai(i));
+  void dtest_constructor(){
+    AtomicInt::Type i = 3;
+    DTEST_NOTHROW(AtomicInt ai(i));
+  }
+
+
+  void dtest_get_set() {
+    AtomicInt::Type a = 42;
+    AtomicInt::Type b = 666;
+    AtomicInt ai = a;
+  
+    DTEST_TRUE(a == ai.get());
+  
+    ai.set(b);
+    
+    DTEST_TRUE(b == ai.get());
+  }
+
+
+  void dtest_increase() {
+    AtomicInt::Type a = 42;
+    AtomicInt ai = a;
+    ai.increase();
+    
+    DTEST_TRUE(++a == ai.get());
+  }
+
+
 }
-
-
-BOOST_AUTO_TEST_CASE(get_set) {
-  AtomicInt::Type a = 42;
-  AtomicInt::Type b = 666;
-  AtomicInt ai = a;
-  
-  BOOST_CHECK_EQUAL(a, ai.get());
-  
-  ai.set(b);
-  
-  BOOST_CHECK_EQUAL(b, ai.get());
-}
-
-
-BOOST_AUTO_TEST_CASE(increase) {
-  AtomicInt::Type a = 42;
-  AtomicInt ai = a;
-  ai.increase();
-  
-  BOOST_CHECK_EQUAL(++a, ai.get());
-}
-
-
-BOOST_AUTO_TEST_SUITE_END()

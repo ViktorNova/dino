@@ -16,54 +16,53 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************/
 
-#include <boost/test/unit_test.hpp>
-
+#include "dtest.hpp"
 #include "meta.hpp"
 
 
 using namespace Dino;
 
 
-BOOST_AUTO_TEST_SUITE(MetaTest)
+namespace MetaTest {
 
 
-BOOST_AUTO_TEST_CASE(is_same_test) {
-  BOOST_CHECK((is_same<int, int>::value));
-  
-  BOOST_CHECK((!is_same<int, float>::value));
-  
-  BOOST_CHECK((!is_same<int, int const>::value));
-  
-  BOOST_CHECK((!is_same<int const*, int*>::value));
+  void dtest_is_same_test() {
+    DTEST_TRUE((is_same<int, int>::value));
+    
+    DTEST_TRUE((!is_same<int, float>::value));
+    
+    DTEST_TRUE((!is_same<int, int const>::value));
+    
+    DTEST_TRUE((!is_same<int const*, int*>::value));
+  }
+
+
+  void dtest_const_if_test() {
+    DTEST_TRUE((is_same<const_if<int, false>::type, int>::value));
+    
+    DTEST_TRUE((is_same<const_if<int, true>::type, int const>::value));
+    
+    DTEST_TRUE((is_same<const_if<int*, false>::type, int*>::value));
+    
+    DTEST_TRUE((is_same<const_if<int*, true>::type, int* const>::value));
+    
+    DTEST_TRUE((is_same<const_if<int* const, false>::type, int* const>::value));
+  }
+
+
+  void dtest_copy_const_test() {
+    DTEST_TRUE((is_same<copy_const<int const, float>::type,
+		float const>::value));
+    
+    DTEST_TRUE((is_same<copy_const<int, float>::type
+		, float>::value));
+    
+    DTEST_TRUE((is_same<copy_const<int const, float const>::type, 
+		float const>::value));
+    
+    DTEST_TRUE((is_same<copy_const<int, float const>::type,
+		float const>::value));
+  }
+
+
 }
-
-
-BOOST_AUTO_TEST_CASE(const_if_test) {
-  BOOST_CHECK((is_same<const_if<int, false>::type, int>::value));
-  
-  BOOST_CHECK((is_same<const_if<int, true>::type, int const>::value));
-  
-  BOOST_CHECK((is_same<const_if<int*, false>::type, int*>::value));
-
-  BOOST_CHECK((is_same<const_if<int*, true>::type, int* const>::value));
-
-  BOOST_CHECK((is_same<const_if<int* const, false>::type, int* const>::value));
-}
-
-
-BOOST_AUTO_TEST_CASE(copy_const_test) {
-  BOOST_CHECK((is_same<copy_const<int const, float>::type,
-	       float const>::value));
-
-  BOOST_CHECK((is_same<copy_const<int, float>::type
-	       , float>::value));
-
-  BOOST_CHECK((is_same<copy_const<int const, float const>::type, 
-	       float const>::value));
-
-BOOST_CHECK((is_same<copy_const<int, float const>::type,
-	     float const>::value));
-}
-
-
-BOOST_AUTO_TEST_SUITE_END()

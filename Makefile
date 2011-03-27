@@ -21,10 +21,9 @@ PKG_DEPS = \
 DOCS = AUTHORS COPYING HACKING README TODO ChangeLog
 
 TESTS = src/test/libdinoseq/libdinoseq_test
-TESTFLAGS = -r detailed -l all
 
 # The main program (we need to link it with -Wl,-E to allow RTTI with plugins)
-PROGRAMS = dtest libdinoseq_test #dino
+PROGRAMS = libdinoseq_test #dino
 dino_SOURCES = \
 	action.hpp \
 	main.cpp \
@@ -160,16 +159,10 @@ debugging_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq
 debugging_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui -Isrc/gui/libdinoseq_gui
 
 
-# Test driver
-dtest_SOURCES = dtest.hpp dtest.cpp
-dtest_SOURCEDIR = src/test/dtest
-dtest_CFLAGS = -fPIC -pie
-dtest_LDFLAGS = -fPIC -pie -ldl -rdynamic
-
 # Test modules
 
 libdinoseq_test_SOURCES = \
-	libdinoseq_test.cpp \
+	../dtest/dtest.cpp ../dtest/dtest.hpp \
 	atomicint_test.cpp \
 	atomicptr_test.cpp \
 	curve_test.cpp \
@@ -182,8 +175,8 @@ libdinoseq_test_SOURCES = \
 	sequencer_test.cpp \
 	songtime_test.cpp
 libdinoseq_test_SOURCEDIR = src/test/libdinoseq
-libdinoseq_test_CFLAGS = -Isrc/libdinoseq `pkg-config --cflags glib-2.0` -DBOOST_TEST_DYN_LINK
-libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0` -lboost_unit_test_framework
+libdinoseq_test_CFLAGS = -Isrc/libdinoseq -Isrc/test/dtest `pkg-config --cflags glib-2.0` -fPIC -pie
+libdinoseq_test_LDFLAGS = -Wl,-E `pkg-config --libs glib-2.0` -ldl -fPIC -pie -ldl -rdynamic
 libdinoseq_test_LIBRARIES = $(BUILDPREFIX)src/libdinoseq/libdinoseq.so
 libdinoseq_test_NOINST = true
 

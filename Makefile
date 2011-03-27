@@ -1,4 +1,5 @@
 CXXFLAGS = -std=c++0x
+CXX = g++-4.5
 
 PACKAGE_NAME = dino
 PACKAGE_VERSION = $(shell ./VERSION)
@@ -23,7 +24,7 @@ TESTS = src/test/libdinoseq/libdinoseq_test
 TESTFLAGS = -r detailed -l all
 
 # The main program (we need to link it with -Wl,-E to allow RTTI with plugins)
-PROGRAMS = libdinoseq_test #dino
+PROGRAMS = dtest libdinoseq_test #dino
 dino_SOURCES = \
 	action.hpp \
 	main.cpp \
@@ -158,6 +159,12 @@ debugging_so_LDFLAGS = `pkg-config --libs gtkmm-2.4`
 debugging_so_LIBRARIES = src/gui/libdinoseq_gui/libdinoseq_gui.so src/libdinoseq/libdinoseq.so
 debugging_so_CFLAGS = `pkg-config --cflags gtkmm-2.4 libxml++-2.6 jack lash-1.0` -Isrc/libdinoseq -Isrc/gui -Isrc/gui/libdinoseq_gui
 
+
+# Test driver
+dtest_SOURCES = dtest.hpp dtest.cpp
+dtest_SOURCEDIR = src/test/dtest
+dtest_CFLAGS = -fPIC -pie
+dtest_LDFLAGS = -fPIC -pie -ldl -rdynamic
 
 # Test modules
 

@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <typeinfo>
 
 /** @mainpage
     This is the documentation for DTest, a simple testing framework for
@@ -145,7 +146,7 @@ extern DTest::State* _dtest;
     Bump the good counter and print "succeeded". */
 #define DTEST_SUCCEEDED				\
   DTEST_LAMBDA({				\
-    std::cout<<"succeeded"<<endl; ++_dtest->good;	\
+    std::cout<<"succeeded"<<std::endl; ++_dtest->good;	\
   })
 
 
@@ -153,7 +154,7 @@ extern DTest::State* _dtest;
     Bump the bad counter and print "failed". */
 #define DTEST_FAILED				\
   DTEST_LAMBDA({				\
-    std::cout<<"failed"<<endl; ++_dtest->bad;	\
+    std::cout<<"failed"<<std::endl; ++_dtest->bad;	\
   })
 
 

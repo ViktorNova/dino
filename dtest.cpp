@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
   
   /* And run the test suites. */
   cout<<"Running tests..."<<endl;
-  root.run();
-  
-  return 0;
+  if (root.run())
+    return 0;
+  return 1;
 }

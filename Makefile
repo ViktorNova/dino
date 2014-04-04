@@ -1,5 +1,5 @@
 CXXFLAGS = -std=c++0x
-CXX = g++-4.5
+CXX = g++
 
 PACKAGE_NAME = dino
 PACKAGE_VERSION = $(shell ./VERSION)
